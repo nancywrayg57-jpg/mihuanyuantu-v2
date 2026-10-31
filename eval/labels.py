@@ -1,59 +1,77 @@
-"""Filename → ground-truth label rules (work order §3.3 / Q1 / Q4)."""
+"""Filename → ground-truth label rules.
+
+Work order §3.3 / Q1 / Q4, adapted to the renamed asset pack uploaded 2026-10-31:
+
+  AI生图-即梦-NNNN.(png|jpg)     → ai_generated
+  AI生图-豆包-NNNN.(png|jpg)     → ai_generated
+  手机实拍-NNNN.jpg              → physical_device
+  手机实拍-微信导出-NNNN.jpg     → physical_device
+  其他-NNNN.(jpg|png)            → physical_device  (Q4: screenshots/web-saved)
+
+R-1 exclusions (no processed counterpart): AI生图-即梦-0025 .. 0029
+Processed rounds share the same stem; files are always .jpg (no _legacy_ suffix).
+"""
 
 from __future__ import annotations
 
 import re
 from pathlib import Path
 
-AI_PATTERNS = [
-    re.compile(r"AI图片1-即梦生成"),
-    re.compile(r"即梦AI图片3"),
-    re.compile(r"AI生图-即梦"),
-    re.compile(r"即梦AI生图"),
-    re.compile(r"AI生图-豆包"),
-    re.compile(r"豆包AI生成"),
-]
+AI_PREFIXES = (
+    "AI生图-即梦-",
+    "AI生图-豆包-",
+)
 
-# Screenshots + web-saved + phone real / wechat exports → physical_device (Q4)
-PHYSICAL_HINTS = [
-    "手机实拍",
-    "手机直出",
-    "手机截屏",
-    "电脑截屏",
-    "真实拍摄-网页保存",
-]
+PHYSICAL_PREFIXES = (
+    "手机实拍-微信导出-",
+    "手机实拍-",
+    "其他-",
+)
 
+# R-1: five originals without processed products
+EXCLUDED_STEMS = {f"AI生图-即梦-{i:04d}" for i in range(25, 30)}
+
+# Legacy suffix support (older pack); current pack has none.
 ROUND_SUFFIXES = {
     "r1": "_legacy_20261029_exif",
     "r2": "_legacy_r2_20261031",
     "r3": "_legacy_r3_20261031",
 }
 
-EXCLUDED_PNG_STEMS = {f"即梦AI生图 ({i})" for i in range(1, 6)}
-
 
 def stem_of(path: Path) -> str:
     name = path.name
     for suf in ROUND_SUFFIXES.values():
         if suf in name:
-            # e.g. foo_legacy_....jpg → foo
-            base = name.split(suf)[0]
-            return base
+            return name.split(suf)[0]
     return path.stem
 
 
 def label_for_stem(stem: str) -> str:
-    for pat in AI_PATTERNS:
-        if pat.search(stem):
+    # Order matters: 微信导出 before 手机实拍-
+    for pref in AI_PREFIXES:
+        if stem.startswith(pref):
             return "ai_generated"
-    for hint in PHYSICAL_HINTS:
-        if hint in stem:
+    for pref in PHYSICAL_PREFIXES:
+        if stem.startswith(pref):
             return "physical_device"
-    # Fallback: unknown — must be registered as anomaly, not silently labeled
     return "UNKNOWN"
 
 
 def is_excluded_original(path: Path) -> bool:
-    if path.suffix.lower() != ".png":
-        return False
-    return path.stem in EXCLUDED_PNG_STEMS
+    """Exclude R-1 stems (any extension) that have no processed counterpart."""
+    return stem_of(path) in EXCLUDED_STEMS
+
+
+def subclass_for_stem(stem: str) -> str:
+    if stem.startswith("AI生图-即梦-"):
+        return "ai_jimeng"
+    if stem.startswith("AI生图-豆包-"):
+        return "ai_doubao"
+    if stem.startswith("手机实拍-微信导出-"):
+        return "physical_wechat"
+    if stem.startswith("手机实拍-"):
+        return "physical_phone"
+    if stem.startswith("其他-"):
+        return "physical_other"  # screenshots / web-saved (Q4)
+    return "unknown"

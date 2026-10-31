@@ -4,47 +4,32 @@
 | --- | --- |
 | 工单 | MH-YT-20261031-01 v1.1 |
 | 产出日期 | 2026-10-31（Asia/Shanghai） |
-| 出处声明 | 见假设 A-H1：`00-BLOCKERS.md`；逐条出处 = 工单 §3.2 |
-| 状态 | **草案待源文件二次核对** |
+| 状态 | **已用入库源文件二次核对** |
 
----
+## 出处
 
-## 六项契约对照表
+| 契约项 | 出处 |
+| --- | --- |
+| 位置第 6 层 | `输入材料/蜜獾原图技术原理.md` §9 / 分层表 |
+| 默认模型 `gemini-2.5-flash` | `exifVerifier.ts:390`；技术原理表 |
+| 输入=成图+预设 EXIF 文本 | `exifVerifier.ts` 构建 prompt（品牌/型号/镜头/ISO/快门/光圈/软件） |
+| 输出 passed/score/confidence/五维/conclusion/suggestions | `exifVerifier.ts` prompt JSON Schema（约 116–132 行） |
+| 阈值 `score ≥ 75` 且 `passed = true` | `exifVerifier.ts:134`；PRD D-14 / FR-19 |
+| 五维 | noise / depthOfField / lighting / colorRealism / overallRealism |
+| 技术失败不得伪装低分 | PRD **LD-19 / RG-05**；**旧源码 catch 仍返回 score:0（缺陷，见差异清单）** |
+| 方案层标签体系 | `基于 Gemini API 的全自动照片真实性验证解决方案.md`：`physical_device` / `ai_generated` / `uncertain` / `invalid_or_unverifiable` |
 
-| # | 契约项 | 基线现状（出处：工单 §3.2） | 替代方案必须对齐 |
+## 六项契约对照
+
+| # | 契约项 | 基线 | 替代必须对齐 |
 | --- | --- | --- | --- |
-| 1 | 判定范式 / 位置 | 第 6 层 AI 检测验证（`exifVerifier.ts`） | 是否同样作为独立后置环节 |
-| 2 | 输入 | 最终成图 + **预设 EXIF 文本上下文**（品牌/型号/镜头/ISO/快门/光圈/软件） | 是否看像素、是否看元数据，必须分开测；当前评测默认变量 = **仅像素**（见下） |
-| 3 | 输出 | `passed`、`score`(0–100)、`confidence`、五维分、`conclusion`、`suggestions` | 输出能否映射为统一判定 `physical_device` / `ai_generated` / `uncertain` / `tech_fail` |
-| 4 | 阈值 | `score ≥ 75` 且 `passed = true` | 阈值是否可配、误判方向是否一致 |
-| 5 | 可解释性 | 五维：噪点颗粒、景深焦外、光线曝光、色彩真实、整体真实感 + 文字结论 | 维度不可比时如何对齐；允许降级为概率+理由 |
-| 6 | 失败语义 | 异常**不得**写 0 分伪装低分，必须记技术失败（LD-19 / RG-05） | 技术失败要单独统计 |
+| 1 | 判定范式/位置 | 第 6 层独立后置（`exifVerifier.ts`） | 独立后置 |
+| 2 | 输入 | 像素 + **预设 EXIF 文本** | 本评测默认 **仅像素**（变量固定）；与 Gemini 非同输入 |
+| 3 | 输出 | passed/score/五维等 | 映射到 `physical_device`/`ai_generated`/`uncertain`/`tech_fail` |
+| 4 | 阈值 | ≥75 且 passed=true | 可配阈值；记录所用阈值 |
+| 5 | 可解释性 | 五维+文案 | 允许降级为概率 |
+| 6 | 失败语义 | 技术失败≠业务低分（LD-19） | 适配器必须 `tech_fail` |
 
-### 附加基线字段
+## 统一映射
 
-| 项 | 现状 |
-| --- | --- |
-| 默认模型 | `gemini-2.5-flash`（`GEMINI_MODEL` 可覆盖） |
-| 已知局限 | 主观评分非来源鉴定；模型漂移（RK-01）；预设文本会影响判定（RK-12） |
-| 本工单非目标 | **不复跑 Gemini**（Q8）；差异仅定性 |
-
----
-
-## 统一判定映射（评测侧）
-
-| 检测器输出 | 统一标签 |
-| --- | --- |
-| `physical_device` / `passed=true` / AI 概率 < 阈值 | `physical_device` |
-| `ai_generated` / `passed=false` / AI 概率 ≥ 阈值 | `ai_generated` |
-| 模型明确拒判 / 置信落在不确定带 | `uncertain` |
-| 超时 / 报错 / 空响应 | `tech_fail` |
-
-**固定评测变量（ASSUMPTION A-H2）**：本轮替代方案默认 **只看像素、不喂预设 EXIF 文本**。与 Gemini「像素+预设 EXIF」不是同一件事；报告必须披露。若后续要对齐 Gemini 输入，需增加「像素+元数据」第二矩阵，不得与本矩阵混报。
-
----
-
-## 验收口径摘要（不可放宽）
-
-- 原图门禁：`A_ai ≤ 30%`，`A_real ≤ 5%`，uncertain ≤ 5%，技术失败 ≤ 2%
-- 处理主验收：第 1/2/3 轮各自 `B_round < 5%`（每轮最多约 9 张未通过）
-- 反指标见工单 §6.6
+见 `eval/schema.py`。默认阈值 P(AI)=0.5；uncertain_band 默认 0（主口径）。

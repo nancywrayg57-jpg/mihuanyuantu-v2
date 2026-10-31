@@ -5,9 +5,17 @@
 ## 计数快照
 
 ```
-(empty)
+{'g0:excluded': 5, 'g0:ok': 198, 'r1:ok': 198, 'r2:ok': 198, 'r3:ok': 198}
 ```
 
 ## 清单
 
-- CRITICAL: test assets missing under `/workspace/data/测试用` (expected `测试图/` with images). Blocker B-02.
+- （无异常）
+
+## R-1 排除（已登记，不计分母）
+
+- `AI生图-即梦-0025`
+- `AI生图-即梦-0026`
+- `AI生图-即梦-0027`
+- `AI生图-即梦-0028`
+- `AI生图-即梦-0029`
