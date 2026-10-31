@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+weights/
+results/raw/*.jsonl
+*.onnx
+*.safetensors
+.DS_Store
