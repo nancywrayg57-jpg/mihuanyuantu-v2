@@ -165,7 +165,8 @@ def summarize_detector(detector_id: str, manifest: list[dict], results: dict) ->
                 ai_fail += 1
             elif v == "physical_device":
                 phys += 1
-            if "截屏" in row["stem"]:
+            # Q4 subclass: renamed pack uses 其他-* ; legacy names used 截屏
+            if "截屏" in row["stem"] or row["stem"].startswith("其他-"):
                 screenshot_n += 1
                 if v == "ai_generated":
                     screenshot_ai += 1
