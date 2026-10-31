@@ -1,0 +1,5578 @@
+[
+  {
+    "stem": "AI生图-即梦-0001",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.836883,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0001.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0001",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.842201,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0001.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0001",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.840037,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0001.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0002",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.679113,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0002.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0002",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.692443,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0002.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0002",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.803857,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0002.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0003",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.797496,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0003.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0003",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.829504,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0003.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0003",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.832829,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0003.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0004",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.82595,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0004.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0004",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.829122,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0004.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0004",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.830737,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0004.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0005",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.674494,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0005.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0005",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.831781,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0005.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0005",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.837442,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0005.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0006",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.822109,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0006.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0006",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844453,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0006.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0006",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.847927,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0006.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0007",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.546153,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0007.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0007",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.825545,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0007.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0007",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.842083,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0007.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0008",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.824796,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0008.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0008",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.830936,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0008.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0008",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.841345,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0008.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0009",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.841197,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0009.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0009",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.846935,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0009.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0009",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.847291,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0009.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0010",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.8372,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0010.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0010",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844805,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0010.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0010",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850501,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0010.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0011",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.831198,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0011.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0011",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.83528,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0011.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0011",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.836082,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0011.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0012",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.504302,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0012.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0012",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.706375,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0012.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0012",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833054,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0012.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0013",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.790405,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0013.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0013",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.832109,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0013.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0013",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.829524,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0013.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0014",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.750687,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0014.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0014",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.834128,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0014.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0014",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833744,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0014.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0015",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.834766,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0015.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0015",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.834371,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0015.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0015",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.826338,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0015.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0016",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.829042,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0016.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0016",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833825,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0016.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0016",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.832922,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0016.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0017",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.840894,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0017.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0017",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.841038,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0017.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0017",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.846668,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0017.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0018",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.785866,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0018.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0018",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.842603,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0018.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0018",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848445,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0018.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0019",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.535709,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0019.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0019",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.787167,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0019.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0019",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.819417,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0019.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0020",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.828979,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0020.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0020",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.836119,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0020.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0020",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.83877,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0020.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0021",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.827371,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0021.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0021",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.827678,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0021.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0021",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.838429,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0021.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0022",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.823256,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0022.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0022",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.846987,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0022.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0022",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848417,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0022.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0023",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.784988,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0023.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0023",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.827444,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0023.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0023",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.839355,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0023.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0024",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.809221,
+    "path": "测试用/测试图_处理后/AI生图-即梦-0024.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0024",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.818313,
+    "path": "测试用/测试图_二次处理后/AI生图-即梦-0024.jpg"
+  },
+  {
+    "stem": "AI生图-即梦-0024",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.829687,
+    "path": "测试用/测试图_三次处理后/AI生图-即梦-0024.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0001",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.691484,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0001.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0001",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.660718,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0001.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0001",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.716341,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0001.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0002",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.861139,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0002.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0002",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.860878,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0002.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0002",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.855672,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0002.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0003",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.845824,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0003.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0003",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.847782,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0003.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0003",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848574,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0003.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0004",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.800487,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0004.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0004",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.847117,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0004.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0004",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.853007,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0004.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0005",
+    "round": "g0",
+    "label": "ai_generated",
+    "verdict": "physical_device",
+    "ai_probability": 0.404761,
+    "path": "测试用/测试图/AI生图-豆包-0005.png"
+  },
+  {
+    "stem": "AI生图-豆包-0005",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.535368,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0005.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0005",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.765423,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0005.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0006",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.852064,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0006.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0006",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850384,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0006.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0006",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.8506,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0006.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0007",
+    "round": "g0",
+    "label": "ai_generated",
+    "verdict": "physical_device",
+    "ai_probability": 0.408456,
+    "path": "测试用/测试图/AI生图-豆包-0007.png"
+  },
+  {
+    "stem": "AI生图-豆包-0007",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.66717,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0007.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0007",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.76527,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0007.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0008",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.851926,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0008.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0008",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.851599,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0008.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0008",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850761,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0008.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0009",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.81909,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0009.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0009",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848682,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0009.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0009",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.847852,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0009.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0010",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.545157,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0010.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0010",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.771696,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0010.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0010",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.845536,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0010.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0011",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.852101,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0011.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0011",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.852379,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0011.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0011",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850691,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0011.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0012",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.796061,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0012.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0012",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.819162,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0012.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0012",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.827207,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0012.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0013",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.829907,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0013.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0013",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.832764,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0013.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0013",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.840182,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0013.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0014",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.698067,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0014.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0014",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.818308,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0014.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0014",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.810442,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0014.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0015",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.826965,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0015.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0015",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.825076,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0015.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0015",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.841973,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0015.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0016",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.829856,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0016.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0016",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.834881,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0016.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0016",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.839092,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0016.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0017",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.818659,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0017.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0017",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.823894,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0017.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0017",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.830384,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0017.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0018",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.783718,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0018.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0018",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.769745,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0018.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0018",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.756127,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0018.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0019",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.866816,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0019.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0019",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.867384,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0019.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0019",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.870408,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0019.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0020",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.863381,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0020.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0020",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.866825,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0020.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0020",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.864759,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0020.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0021",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.860305,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0021.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0021",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.863536,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0021.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0021",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.860315,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0021.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0022",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.838222,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0022.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0022",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.841191,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0022.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0022",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844073,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0022.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0023",
+    "round": "g0",
+    "label": "ai_generated",
+    "verdict": "physical_device",
+    "ai_probability": 0.427088,
+    "path": "测试用/测试图/AI生图-豆包-0023.png"
+  },
+  {
+    "stem": "AI生图-豆包-0023",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.752992,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0023.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0023",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.795363,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0023.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0024",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.83588,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0024.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0024",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.837447,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0024.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0024",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.843686,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0024.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0025",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.863151,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0025.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0025",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.868322,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0025.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0025",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.863011,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0025.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0026",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.805263,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0026.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0026",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856399,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0026.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0026",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.858108,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0026.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0027",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.799488,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0027.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0027",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.831593,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0027.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0027",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844686,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0027.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0028",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.779142,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0028.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0028",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.828572,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0028.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0028",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.837317,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0028.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0029",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844018,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0029.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0029",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.862167,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0029.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0029",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.861697,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0029.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0030",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.668658,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0030.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0030",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.774349,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0030.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0030",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.806574,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0030.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0031",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.841919,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0031.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0031",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848902,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0031.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0031",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850907,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0031.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0032",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.63065,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0032.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0032",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.627923,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0032.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0032",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.790544,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0032.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0033",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.825142,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0033.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0033",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.831354,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0033.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0033",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.842125,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0033.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0034",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.835934,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0034.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0034",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.83955,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0034.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0034",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.841161,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0034.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0035",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.815852,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0035.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0035",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.822298,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0035.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0035",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.839204,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0035.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0036",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.797873,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0036.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0036",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.814541,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0036.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0036",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.818326,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0036.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0037",
+    "round": "g0",
+    "label": "ai_generated",
+    "verdict": "physical_device",
+    "ai_probability": 0.469735,
+    "path": "测试用/测试图/AI生图-豆包-0037.png"
+  },
+  {
+    "stem": "AI生图-豆包-0037",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.755545,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0037.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0037",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.782674,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0037.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0037",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.809914,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0037.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0038",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.805587,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0038.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0038",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.816828,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0038.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0038",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.830583,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0038.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0039",
+    "round": "g0",
+    "label": "ai_generated",
+    "verdict": "physical_device",
+    "ai_probability": 0.490886,
+    "path": "测试用/测试图/AI生图-豆包-0039.png"
+  },
+  {
+    "stem": "AI生图-豆包-0039",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.671336,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0039.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0039",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.765075,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0039.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0039",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833851,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0039.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0040",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.863907,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0040.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0040",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.862639,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0040.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0040",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.861903,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0040.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0041",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.556255,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0041.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0041",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.57592,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0041.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0041",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.581001,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0041.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0042",
+    "round": "g0",
+    "label": "ai_generated",
+    "verdict": "physical_device",
+    "ai_probability": 0.468956,
+    "path": "测试用/测试图/AI生图-豆包-0042.png"
+  },
+  {
+    "stem": "AI生图-豆包-0042",
+    "round": "r1",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.565615,
+    "path": "测试用/测试图_处理后/AI生图-豆包-0042.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0042",
+    "round": "r2",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.567264,
+    "path": "测试用/测试图_二次处理后/AI生图-豆包-0042.jpg"
+  },
+  {
+    "stem": "AI生图-豆包-0042",
+    "round": "r3",
+    "label": "ai_generated",
+    "verdict": "ai_generated",
+    "ai_probability": 0.674815,
+    "path": "测试用/测试图_三次处理后/AI生图-豆包-0042.jpg"
+  },
+  {
+    "stem": "其他-0001",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.83923,
+    "path": "测试用/测试图/其他-0001.jpg"
+  },
+  {
+    "stem": "其他-0001",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844506,
+    "path": "测试用/测试图_处理后/其他-0001.jpg"
+  },
+  {
+    "stem": "其他-0001",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844724,
+    "path": "测试用/测试图_二次处理后/其他-0001.jpg"
+  },
+  {
+    "stem": "其他-0001",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.832137,
+    "path": "测试用/测试图_三次处理后/其他-0001.jpg"
+  },
+  {
+    "stem": "其他-0002",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.816634,
+    "path": "测试用/测试图/其他-0002.jpg"
+  },
+  {
+    "stem": "其他-0002",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.826583,
+    "path": "测试用/测试图_处理后/其他-0002.jpg"
+  },
+  {
+    "stem": "其他-0002",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833156,
+    "path": "测试用/测试图_二次处理后/其他-0002.jpg"
+  },
+  {
+    "stem": "其他-0002",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.824343,
+    "path": "测试用/测试图_三次处理后/其他-0002.jpg"
+  },
+  {
+    "stem": "其他-0003",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.783151,
+    "path": "测试用/测试图/其他-0003.jpg"
+  },
+  {
+    "stem": "其他-0003",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.774937,
+    "path": "测试用/测试图_处理后/其他-0003.jpg"
+  },
+  {
+    "stem": "其他-0003",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.775639,
+    "path": "测试用/测试图_二次处理后/其他-0003.jpg"
+  },
+  {
+    "stem": "其他-0003",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.758908,
+    "path": "测试用/测试图_三次处理后/其他-0003.jpg"
+  },
+  {
+    "stem": "其他-0004",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.527884,
+    "path": "测试用/测试图/其他-0004.jpg"
+  },
+  {
+    "stem": "其他-0004",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.537713,
+    "path": "测试用/测试图_处理后/其他-0004.jpg"
+  },
+  {
+    "stem": "其他-0004",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.78483,
+    "path": "测试用/测试图_二次处理后/其他-0004.jpg"
+  },
+  {
+    "stem": "其他-0004",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.757903,
+    "path": "测试用/测试图_三次处理后/其他-0004.jpg"
+  },
+  {
+    "stem": "其他-0005",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.83923,
+    "path": "测试用/测试图/其他-0005.jpg"
+  },
+  {
+    "stem": "其他-0005",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.8419,
+    "path": "测试用/测试图_处理后/其他-0005.jpg"
+  },
+  {
+    "stem": "其他-0005",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.843056,
+    "path": "测试用/测试图_二次处理后/其他-0005.jpg"
+  },
+  {
+    "stem": "其他-0005",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.839652,
+    "path": "测试用/测试图_三次处理后/其他-0005.jpg"
+  },
+  {
+    "stem": "其他-0006",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.783915,
+    "path": "测试用/测试图/其他-0006.png"
+  },
+  {
+    "stem": "其他-0006",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850591,
+    "path": "测试用/测试图_处理后/其他-0006.jpg"
+  },
+  {
+    "stem": "其他-0006",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.858321,
+    "path": "测试用/测试图_二次处理后/其他-0006.jpg"
+  },
+  {
+    "stem": "其他-0006",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.863394,
+    "path": "测试用/测试图_三次处理后/其他-0006.jpg"
+  },
+  {
+    "stem": "其他-0007",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.826052,
+    "path": "测试用/测试图/其他-0007.png"
+  },
+  {
+    "stem": "其他-0007",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.851075,
+    "path": "测试用/测试图_处理后/其他-0007.jpg"
+  },
+  {
+    "stem": "其他-0007",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.843851,
+    "path": "测试用/测试图_二次处理后/其他-0007.jpg"
+  },
+  {
+    "stem": "其他-0007",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.83576,
+    "path": "测试用/测试图_三次处理后/其他-0007.jpg"
+  },
+  {
+    "stem": "其他-0008",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.825269,
+    "path": "测试用/测试图/其他-0008.jpg"
+  },
+  {
+    "stem": "其他-0008",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833819,
+    "path": "测试用/测试图_处理后/其他-0008.jpg"
+  },
+  {
+    "stem": "其他-0008",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.834147,
+    "path": "测试用/测试图_二次处理后/其他-0008.jpg"
+  },
+  {
+    "stem": "其他-0008",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.837033,
+    "path": "测试用/测试图_三次处理后/其他-0008.jpg"
+  },
+  {
+    "stem": "手机实拍-0001",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.82964,
+    "path": "测试用/测试图/手机实拍-0001.jpg"
+  },
+  {
+    "stem": "手机实拍-0001",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856136,
+    "path": "测试用/测试图_处理后/手机实拍-0001.jpg"
+  },
+  {
+    "stem": "手机实拍-0001",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.861194,
+    "path": "测试用/测试图_二次处理后/手机实拍-0001.jpg"
+  },
+  {
+    "stem": "手机实拍-0001",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.858588,
+    "path": "测试用/测试图_三次处理后/手机实拍-0001.jpg"
+  },
+  {
+    "stem": "手机实拍-0002",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.787596,
+    "path": "测试用/测试图/手机实拍-0002.jpg"
+  },
+  {
+    "stem": "手机实拍-0002",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.842611,
+    "path": "测试用/测试图_处理后/手机实拍-0002.jpg"
+  },
+  {
+    "stem": "手机实拍-0002",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.842057,
+    "path": "测试用/测试图_二次处理后/手机实拍-0002.jpg"
+  },
+  {
+    "stem": "手机实拍-0002",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844415,
+    "path": "测试用/测试图_三次处理后/手机实拍-0002.jpg"
+  },
+  {
+    "stem": "手机实拍-0003",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.660266,
+    "path": "测试用/测试图/手机实拍-0003.jpg"
+  },
+  {
+    "stem": "手机实拍-0003",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.766796,
+    "path": "测试用/测试图_处理后/手机实拍-0003.jpg"
+  },
+  {
+    "stem": "手机实拍-0003",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.808864,
+    "path": "测试用/测试图_二次处理后/手机实拍-0003.jpg"
+  },
+  {
+    "stem": "手机实拍-0003",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.81294,
+    "path": "测试用/测试图_三次处理后/手机实拍-0003.jpg"
+  },
+  {
+    "stem": "手机实拍-0004",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.791528,
+    "path": "测试用/测试图_处理后/手机实拍-0004.jpg"
+  },
+  {
+    "stem": "手机实拍-0004",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833624,
+    "path": "测试用/测试图_二次处理后/手机实拍-0004.jpg"
+  },
+  {
+    "stem": "手机实拍-0004",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.831579,
+    "path": "测试用/测试图_三次处理后/手机实拍-0004.jpg"
+  },
+  {
+    "stem": "手机实拍-0005",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.613786,
+    "path": "测试用/测试图/手机实拍-0005.jpg"
+  },
+  {
+    "stem": "手机实拍-0005",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.594114,
+    "path": "测试用/测试图_二次处理后/手机实拍-0005.jpg"
+  },
+  {
+    "stem": "手机实拍-0005",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.675682,
+    "path": "测试用/测试图_三次处理后/手机实拍-0005.jpg"
+  },
+  {
+    "stem": "手机实拍-0006",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.830256,
+    "path": "测试用/测试图/手机实拍-0006.jpg"
+  },
+  {
+    "stem": "手机实拍-0006",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.85208,
+    "path": "测试用/测试图_处理后/手机实拍-0006.jpg"
+  },
+  {
+    "stem": "手机实拍-0006",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.858126,
+    "path": "测试用/测试图_二次处理后/手机实拍-0006.jpg"
+  },
+  {
+    "stem": "手机实拍-0006",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.859977,
+    "path": "测试用/测试图_三次处理后/手机实拍-0006.jpg"
+  },
+  {
+    "stem": "手机实拍-0007",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.836109,
+    "path": "测试用/测试图/手机实拍-0007.jpg"
+  },
+  {
+    "stem": "手机实拍-0007",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.865361,
+    "path": "测试用/测试图_处理后/手机实拍-0007.jpg"
+  },
+  {
+    "stem": "手机实拍-0007",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.873985,
+    "path": "测试用/测试图_二次处理后/手机实拍-0007.jpg"
+  },
+  {
+    "stem": "手机实拍-0007",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.877114,
+    "path": "测试用/测试图_三次处理后/手机实拍-0007.jpg"
+  },
+  {
+    "stem": "手机实拍-0009",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.822304,
+    "path": "测试用/测试图/手机实拍-0009.jpg"
+  },
+  {
+    "stem": "手机实拍-0009",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.853945,
+    "path": "测试用/测试图_处理后/手机实拍-0009.jpg"
+  },
+  {
+    "stem": "手机实拍-0009",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.857106,
+    "path": "测试用/测试图_二次处理后/手机实拍-0009.jpg"
+  },
+  {
+    "stem": "手机实拍-0009",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.858961,
+    "path": "测试用/测试图_三次处理后/手机实拍-0009.jpg"
+  },
+  {
+    "stem": "手机实拍-0010",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.648772,
+    "path": "测试用/测试图/手机实拍-0010.jpg"
+  },
+  {
+    "stem": "手机实拍-0010",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.825966,
+    "path": "测试用/测试图_处理后/手机实拍-0010.jpg"
+  },
+  {
+    "stem": "手机实拍-0010",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.835071,
+    "path": "测试用/测试图_二次处理后/手机实拍-0010.jpg"
+  },
+  {
+    "stem": "手机实拍-0010",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.836221,
+    "path": "测试用/测试图_三次处理后/手机实拍-0010.jpg"
+  },
+  {
+    "stem": "手机实拍-0011",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.807011,
+    "path": "测试用/测试图/手机实拍-0011.jpg"
+  },
+  {
+    "stem": "手机实拍-0011",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.823578,
+    "path": "测试用/测试图_处理后/手机实拍-0011.jpg"
+  },
+  {
+    "stem": "手机实拍-0011",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.839368,
+    "path": "测试用/测试图_二次处理后/手机实拍-0011.jpg"
+  },
+  {
+    "stem": "手机实拍-0011",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850401,
+    "path": "测试用/测试图_三次处理后/手机实拍-0011.jpg"
+  },
+  {
+    "stem": "手机实拍-0012",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.773772,
+    "path": "测试用/测试图/手机实拍-0012.jpg"
+  },
+  {
+    "stem": "手机实拍-0012",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.839157,
+    "path": "测试用/测试图_处理后/手机实拍-0012.jpg"
+  },
+  {
+    "stem": "手机实拍-0012",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.854972,
+    "path": "测试用/测试图_二次处理后/手机实拍-0012.jpg"
+  },
+  {
+    "stem": "手机实拍-0012",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.859176,
+    "path": "测试用/测试图_三次处理后/手机实拍-0012.jpg"
+  },
+  {
+    "stem": "手机实拍-0013",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.76354,
+    "path": "测试用/测试图/手机实拍-0013.jpg"
+  },
+  {
+    "stem": "手机实拍-0013",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.842953,
+    "path": "测试用/测试图_处理后/手机实拍-0013.jpg"
+  },
+  {
+    "stem": "手机实拍-0013",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848811,
+    "path": "测试用/测试图_二次处理后/手机实拍-0013.jpg"
+  },
+  {
+    "stem": "手机实拍-0013",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.85028,
+    "path": "测试用/测试图_三次处理后/手机实拍-0013.jpg"
+  },
+  {
+    "stem": "手机实拍-0014",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.82401,
+    "path": "测试用/测试图/手机实拍-0014.jpg"
+  },
+  {
+    "stem": "手机实拍-0014",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.845526,
+    "path": "测试用/测试图_处理后/手机实拍-0014.jpg"
+  },
+  {
+    "stem": "手机实拍-0014",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.851398,
+    "path": "测试用/测试图_二次处理后/手机实拍-0014.jpg"
+  },
+  {
+    "stem": "手机实拍-0014",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.85299,
+    "path": "测试用/测试图_三次处理后/手机实拍-0014.jpg"
+  },
+  {
+    "stem": "手机实拍-0015",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.821674,
+    "path": "测试用/测试图/手机实拍-0015.jpg"
+  },
+  {
+    "stem": "手机实拍-0015",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.852835,
+    "path": "测试用/测试图_处理后/手机实拍-0015.jpg"
+  },
+  {
+    "stem": "手机实拍-0015",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.857635,
+    "path": "测试用/测试图_二次处理后/手机实拍-0015.jpg"
+  },
+  {
+    "stem": "手机实拍-0015",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.85582,
+    "path": "测试用/测试图_三次处理后/手机实拍-0015.jpg"
+  },
+  {
+    "stem": "手机实拍-0016",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.75917,
+    "path": "测试用/测试图/手机实拍-0016.jpg"
+  },
+  {
+    "stem": "手机实拍-0016",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.832652,
+    "path": "测试用/测试图_处理后/手机实拍-0016.jpg"
+  },
+  {
+    "stem": "手机实拍-0016",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.837885,
+    "path": "测试用/测试图_二次处理后/手机实拍-0016.jpg"
+  },
+  {
+    "stem": "手机实拍-0016",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.835682,
+    "path": "测试用/测试图_三次处理后/手机实拍-0016.jpg"
+  },
+  {
+    "stem": "手机实拍-0017",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.732411,
+    "path": "测试用/测试图/手机实拍-0017.jpg"
+  },
+  {
+    "stem": "手机实拍-0017",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.798765,
+    "path": "测试用/测试图_处理后/手机实拍-0017.jpg"
+  },
+  {
+    "stem": "手机实拍-0017",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.814391,
+    "path": "测试用/测试图_二次处理后/手机实拍-0017.jpg"
+  },
+  {
+    "stem": "手机实拍-0017",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.820315,
+    "path": "测试用/测试图_三次处理后/手机实拍-0017.jpg"
+  },
+  {
+    "stem": "手机实拍-0018",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.81405,
+    "path": "测试用/测试图/手机实拍-0018.jpg"
+  },
+  {
+    "stem": "手机实拍-0018",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.851668,
+    "path": "测试用/测试图_处理后/手机实拍-0018.jpg"
+  },
+  {
+    "stem": "手机实拍-0018",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.849411,
+    "path": "测试用/测试图_二次处理后/手机实拍-0018.jpg"
+  },
+  {
+    "stem": "手机实拍-0018",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.854246,
+    "path": "测试用/测试图_三次处理后/手机实拍-0018.jpg"
+  },
+  {
+    "stem": "手机实拍-0019",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.676101,
+    "path": "测试用/测试图/手机实拍-0019.jpg"
+  },
+  {
+    "stem": "手机实拍-0019",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.793126,
+    "path": "测试用/测试图_处理后/手机实拍-0019.jpg"
+  },
+  {
+    "stem": "手机实拍-0019",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.816515,
+    "path": "测试用/测试图_二次处理后/手机实拍-0019.jpg"
+  },
+  {
+    "stem": "手机实拍-0019",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.829339,
+    "path": "测试用/测试图_三次处理后/手机实拍-0019.jpg"
+  },
+  {
+    "stem": "手机实拍-0020",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.740192,
+    "path": "测试用/测试图/手机实拍-0020.jpg"
+  },
+  {
+    "stem": "手机实拍-0020",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.627734,
+    "path": "测试用/测试图_处理后/手机实拍-0020.jpg"
+  },
+  {
+    "stem": "手机实拍-0020",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.830144,
+    "path": "测试用/测试图_二次处理后/手机实拍-0020.jpg"
+  },
+  {
+    "stem": "手机实拍-0020",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.830432,
+    "path": "测试用/测试图_三次处理后/手机实拍-0020.jpg"
+  },
+  {
+    "stem": "手机实拍-0021",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.51436,
+    "path": "测试用/测试图/手机实拍-0021.jpg"
+  },
+  {
+    "stem": "手机实拍-0021",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.549614,
+    "path": "测试用/测试图_处理后/手机实拍-0021.jpg"
+  },
+  {
+    "stem": "手机实拍-0021",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.817718,
+    "path": "测试用/测试图_二次处理后/手机实拍-0021.jpg"
+  },
+  {
+    "stem": "手机实拍-0021",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.83387,
+    "path": "测试用/测试图_三次处理后/手机实拍-0021.jpg"
+  },
+  {
+    "stem": "手机实拍-0022",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.645372,
+    "path": "测试用/测试图/手机实拍-0022.jpg"
+  },
+  {
+    "stem": "手机实拍-0022",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.832266,
+    "path": "测试用/测试图_处理后/手机实拍-0022.jpg"
+  },
+  {
+    "stem": "手机实拍-0022",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.838123,
+    "path": "测试用/测试图_二次处理后/手机实拍-0022.jpg"
+  },
+  {
+    "stem": "手机实拍-0022",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844605,
+    "path": "测试用/测试图_三次处理后/手机实拍-0022.jpg"
+  },
+  {
+    "stem": "手机实拍-0023",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856439,
+    "path": "测试用/测试图_处理后/手机实拍-0023.jpg"
+  },
+  {
+    "stem": "手机实拍-0023",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.859322,
+    "path": "测试用/测试图_二次处理后/手机实拍-0023.jpg"
+  },
+  {
+    "stem": "手机实拍-0023",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.860375,
+    "path": "测试用/测试图_三次处理后/手机实拍-0023.jpg"
+  },
+  {
+    "stem": "手机实拍-0024",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.768781,
+    "path": "测试用/测试图_处理后/手机实拍-0024.jpg"
+  },
+  {
+    "stem": "手机实拍-0024",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850587,
+    "path": "测试用/测试图_二次处理后/手机实拍-0024.jpg"
+  },
+  {
+    "stem": "手机实拍-0024",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.853085,
+    "path": "测试用/测试图_三次处理后/手机实拍-0024.jpg"
+  },
+  {
+    "stem": "手机实拍-0025",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.852108,
+    "path": "测试用/测试图_处理后/手机实拍-0025.jpg"
+  },
+  {
+    "stem": "手机实拍-0025",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.847719,
+    "path": "测试用/测试图_二次处理后/手机实拍-0025.jpg"
+  },
+  {
+    "stem": "手机实拍-0025",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.852861,
+    "path": "测试用/测试图_三次处理后/手机实拍-0025.jpg"
+  },
+  {
+    "stem": "手机实拍-0026",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.742704,
+    "path": "测试用/测试图_二次处理后/手机实拍-0026.jpg"
+  },
+  {
+    "stem": "手机实拍-0026",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.827371,
+    "path": "测试用/测试图_三次处理后/手机实拍-0026.jpg"
+  },
+  {
+    "stem": "手机实拍-0027",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.847668,
+    "path": "测试用/测试图_二次处理后/手机实拍-0027.jpg"
+  },
+  {
+    "stem": "手机实拍-0027",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.857966,
+    "path": "测试用/测试图_三次处理后/手机实拍-0027.jpg"
+  },
+  {
+    "stem": "手机实拍-0028",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.719189,
+    "path": "测试用/测试图/手机实拍-0028.jpg"
+  },
+  {
+    "stem": "手机实拍-0028",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.853385,
+    "path": "测试用/测试图_处理后/手机实拍-0028.jpg"
+  },
+  {
+    "stem": "手机实拍-0028",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856975,
+    "path": "测试用/测试图_二次处理后/手机实拍-0028.jpg"
+  },
+  {
+    "stem": "手机实拍-0028",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.85847,
+    "path": "测试用/测试图_三次处理后/手机实拍-0028.jpg"
+  },
+  {
+    "stem": "手机实拍-0029",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.792401,
+    "path": "测试用/测试图/手机实拍-0029.jpg"
+  },
+  {
+    "stem": "手机实拍-0029",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.852206,
+    "path": "测试用/测试图_处理后/手机实拍-0029.jpg"
+  },
+  {
+    "stem": "手机实拍-0029",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.853891,
+    "path": "测试用/测试图_二次处理后/手机实拍-0029.jpg"
+  },
+  {
+    "stem": "手机实拍-0029",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.853191,
+    "path": "测试用/测试图_三次处理后/手机实拍-0029.jpg"
+  },
+  {
+    "stem": "手机实拍-0030",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.675935,
+    "path": "测试用/测试图/手机实拍-0030.jpg"
+  },
+  {
+    "stem": "手机实拍-0030",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.851105,
+    "path": "测试用/测试图_处理后/手机实拍-0030.jpg"
+  },
+  {
+    "stem": "手机实拍-0030",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856927,
+    "path": "测试用/测试图_二次处理后/手机实拍-0030.jpg"
+  },
+  {
+    "stem": "手机实拍-0030",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.858029,
+    "path": "测试用/测试图_三次处理后/手机实拍-0030.jpg"
+  },
+  {
+    "stem": "手机实拍-0031",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.546734,
+    "path": "测试用/测试图/手机实拍-0031.jpg"
+  },
+  {
+    "stem": "手机实拍-0031",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.815959,
+    "path": "测试用/测试图_处理后/手机实拍-0031.jpg"
+  },
+  {
+    "stem": "手机实拍-0031",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.810312,
+    "path": "测试用/测试图_二次处理后/手机实拍-0031.jpg"
+  },
+  {
+    "stem": "手机实拍-0031",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.84346,
+    "path": "测试用/测试图_三次处理后/手机实拍-0031.jpg"
+  },
+  {
+    "stem": "手机实拍-0032",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.805944,
+    "path": "测试用/测试图/手机实拍-0032.jpg"
+  },
+  {
+    "stem": "手机实拍-0032",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.823921,
+    "path": "测试用/测试图_处理后/手机实拍-0032.jpg"
+  },
+  {
+    "stem": "手机实拍-0032",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.811336,
+    "path": "测试用/测试图_二次处理后/手机实拍-0032.jpg"
+  },
+  {
+    "stem": "手机实拍-0032",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.813448,
+    "path": "测试用/测试图_三次处理后/手机实拍-0032.jpg"
+  },
+  {
+    "stem": "手机实拍-0033",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.647418,
+    "path": "测试用/测试图/手机实拍-0033.jpg"
+  },
+  {
+    "stem": "手机实拍-0033",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.710647,
+    "path": "测试用/测试图_处理后/手机实拍-0033.jpg"
+  },
+  {
+    "stem": "手机实拍-0033",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.716845,
+    "path": "测试用/测试图_二次处理后/手机实拍-0033.jpg"
+  },
+  {
+    "stem": "手机实拍-0033",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.781012,
+    "path": "测试用/测试图_三次处理后/手机实拍-0033.jpg"
+  },
+  {
+    "stem": "手机实拍-0034",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.581378,
+    "path": "测试用/测试图_处理后/手机实拍-0034.jpg"
+  },
+  {
+    "stem": "手机实拍-0034",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.580589,
+    "path": "测试用/测试图_二次处理后/手机实拍-0034.jpg"
+  },
+  {
+    "stem": "手机实拍-0034",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.626739,
+    "path": "测试用/测试图_三次处理后/手机实拍-0034.jpg"
+  },
+  {
+    "stem": "手机实拍-0035",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.565485,
+    "path": "测试用/测试图_处理后/手机实拍-0035.jpg"
+  },
+  {
+    "stem": "手机实拍-0035",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.567923,
+    "path": "测试用/测试图_二次处理后/手机实拍-0035.jpg"
+  },
+  {
+    "stem": "手机实拍-0035",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.634534,
+    "path": "测试用/测试图_三次处理后/手机实拍-0035.jpg"
+  },
+  {
+    "stem": "手机实拍-0036",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.538839,
+    "path": "测试用/测试图/手机实拍-0036.jpg"
+  },
+  {
+    "stem": "手机实拍-0037",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.785262,
+    "path": "测试用/测试图/手机实拍-0037.jpg"
+  },
+  {
+    "stem": "手机实拍-0037",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.834082,
+    "path": "测试用/测试图_处理后/手机实拍-0037.jpg"
+  },
+  {
+    "stem": "手机实拍-0037",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.841414,
+    "path": "测试用/测试图_二次处理后/手机实拍-0037.jpg"
+  },
+  {
+    "stem": "手机实拍-0037",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.840391,
+    "path": "测试用/测试图_三次处理后/手机实拍-0037.jpg"
+  },
+  {
+    "stem": "手机实拍-0038",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.797235,
+    "path": "测试用/测试图/手机实拍-0038.jpg"
+  },
+  {
+    "stem": "手机实拍-0038",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.845656,
+    "path": "测试用/测试图_处理后/手机实拍-0038.jpg"
+  },
+  {
+    "stem": "手机实拍-0038",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848425,
+    "path": "测试用/测试图_二次处理后/手机实拍-0038.jpg"
+  },
+  {
+    "stem": "手机实拍-0038",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848043,
+    "path": "测试用/测试图_三次处理后/手机实拍-0038.jpg"
+  },
+  {
+    "stem": "手机实拍-0039",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.806224,
+    "path": "测试用/测试图/手机实拍-0039.jpg"
+  },
+  {
+    "stem": "手机实拍-0039",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.830677,
+    "path": "测试用/测试图_处理后/手机实拍-0039.jpg"
+  },
+  {
+    "stem": "手机实拍-0039",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833199,
+    "path": "测试用/测试图_二次处理后/手机实拍-0039.jpg"
+  },
+  {
+    "stem": "手机实拍-0039",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.834012,
+    "path": "测试用/测试图_三次处理后/手机实拍-0039.jpg"
+  },
+  {
+    "stem": "手机实拍-0040",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.776504,
+    "path": "测试用/测试图/手机实拍-0040.jpg"
+  },
+  {
+    "stem": "手机实拍-0040",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.837666,
+    "path": "测试用/测试图_处理后/手机实拍-0040.jpg"
+  },
+  {
+    "stem": "手机实拍-0040",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.839112,
+    "path": "测试用/测试图_二次处理后/手机实拍-0040.jpg"
+  },
+  {
+    "stem": "手机实拍-0040",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.839605,
+    "path": "测试用/测试图_三次处理后/手机实拍-0040.jpg"
+  },
+  {
+    "stem": "手机实拍-0041",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.829771,
+    "path": "测试用/测试图/手机实拍-0041.jpg"
+  },
+  {
+    "stem": "手机实拍-0041",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844483,
+    "path": "测试用/测试图_处理后/手机实拍-0041.jpg"
+  },
+  {
+    "stem": "手机实拍-0041",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856003,
+    "path": "测试用/测试图_二次处理后/手机实拍-0041.jpg"
+  },
+  {
+    "stem": "手机实拍-0041",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.860912,
+    "path": "测试用/测试图_三次处理后/手机实拍-0041.jpg"
+  },
+  {
+    "stem": "手机实拍-0042",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.816982,
+    "path": "测试用/测试图_处理后/手机实拍-0042.jpg"
+  },
+  {
+    "stem": "手机实拍-0042",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.852498,
+    "path": "测试用/测试图_二次处理后/手机实拍-0042.jpg"
+  },
+  {
+    "stem": "手机实拍-0042",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848142,
+    "path": "测试用/测试图_三次处理后/手机实拍-0042.jpg"
+  },
+  {
+    "stem": "手机实拍-0043",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.775229,
+    "path": "测试用/测试图/手机实拍-0043.jpg"
+  },
+  {
+    "stem": "手机实拍-0043",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833905,
+    "path": "测试用/测试图_处理后/手机实拍-0043.jpg"
+  },
+  {
+    "stem": "手机实拍-0043",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.84461,
+    "path": "测试用/测试图_二次处理后/手机实拍-0043.jpg"
+  },
+  {
+    "stem": "手机实拍-0043",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.837624,
+    "path": "测试用/测试图_三次处理后/手机实拍-0043.jpg"
+  },
+  {
+    "stem": "手机实拍-0044",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.7998,
+    "path": "测试用/测试图/手机实拍-0044.jpg"
+  },
+  {
+    "stem": "手机实拍-0044",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.830134,
+    "path": "测试用/测试图_处理后/手机实拍-0044.jpg"
+  },
+  {
+    "stem": "手机实拍-0044",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833353,
+    "path": "测试用/测试图_二次处理后/手机实拍-0044.jpg"
+  },
+  {
+    "stem": "手机实拍-0044",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.832809,
+    "path": "测试用/测试图_三次处理后/手机实拍-0044.jpg"
+  },
+  {
+    "stem": "手机实拍-0045",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.8172,
+    "path": "测试用/测试图/手机实拍-0045.jpg"
+  },
+  {
+    "stem": "手机实拍-0045",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844373,
+    "path": "测试用/测试图_处理后/手机实拍-0045.jpg"
+  },
+  {
+    "stem": "手机实拍-0045",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.846754,
+    "path": "测试用/测试图_二次处理后/手机实拍-0045.jpg"
+  },
+  {
+    "stem": "手机实拍-0045",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856579,
+    "path": "测试用/测试图_三次处理后/手机实拍-0045.jpg"
+  },
+  {
+    "stem": "手机实拍-0046",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.817533,
+    "path": "测试用/测试图/手机实拍-0046.jpg"
+  },
+  {
+    "stem": "手机实拍-0046",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.820556,
+    "path": "测试用/测试图_处理后/手机实拍-0046.jpg"
+  },
+  {
+    "stem": "手机实拍-0046",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.841201,
+    "path": "测试用/测试图_二次处理后/手机实拍-0046.jpg"
+  },
+  {
+    "stem": "手机实拍-0046",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.841431,
+    "path": "测试用/测试图_三次处理后/手机实拍-0046.jpg"
+  },
+  {
+    "stem": "手机实拍-0047",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.790765,
+    "path": "测试用/测试图/手机实拍-0047.jpg"
+  },
+  {
+    "stem": "手机实拍-0047",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.784511,
+    "path": "测试用/测试图_处理后/手机实拍-0047.jpg"
+  },
+  {
+    "stem": "手机实拍-0047",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.796803,
+    "path": "测试用/测试图_二次处理后/手机实拍-0047.jpg"
+  },
+  {
+    "stem": "手机实拍-0047",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833818,
+    "path": "测试用/测试图_三次处理后/手机实拍-0047.jpg"
+  },
+  {
+    "stem": "手机实拍-0048",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.852816,
+    "path": "测试用/测试图/手机实拍-0048.jpg"
+  },
+  {
+    "stem": "手机实拍-0048",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.862736,
+    "path": "测试用/测试图_处理后/手机实拍-0048.jpg"
+  },
+  {
+    "stem": "手机实拍-0048",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.866165,
+    "path": "测试用/测试图_二次处理后/手机实拍-0048.jpg"
+  },
+  {
+    "stem": "手机实拍-0048",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.865436,
+    "path": "测试用/测试图_三次处理后/手机实拍-0048.jpg"
+  },
+  {
+    "stem": "手机实拍-0049",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.865298,
+    "path": "测试用/测试图/手机实拍-0049.jpg"
+  },
+  {
+    "stem": "手机实拍-0049",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.863527,
+    "path": "测试用/测试图_处理后/手机实拍-0049.jpg"
+  },
+  {
+    "stem": "手机实拍-0049",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.870791,
+    "path": "测试用/测试图_二次处理后/手机实拍-0049.jpg"
+  },
+  {
+    "stem": "手机实拍-0049",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.874885,
+    "path": "测试用/测试图_三次处理后/手机实拍-0049.jpg"
+  },
+  {
+    "stem": "手机实拍-0050",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.865399,
+    "path": "测试用/测试图/手机实拍-0050.jpg"
+  },
+  {
+    "stem": "手机实拍-0050",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.873482,
+    "path": "测试用/测试图_处理后/手机实拍-0050.jpg"
+  },
+  {
+    "stem": "手机实拍-0050",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.877826,
+    "path": "测试用/测试图_二次处理后/手机实拍-0050.jpg"
+  },
+  {
+    "stem": "手机实拍-0050",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.879169,
+    "path": "测试用/测试图_三次处理后/手机实拍-0050.jpg"
+  },
+  {
+    "stem": "手机实拍-0051",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.79515,
+    "path": "测试用/测试图/手机实拍-0051.jpg"
+  },
+  {
+    "stem": "手机实拍-0051",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.71329,
+    "path": "测试用/测试图_处理后/手机实拍-0051.jpg"
+  },
+  {
+    "stem": "手机实拍-0051",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.714903,
+    "path": "测试用/测试图_二次处理后/手机实拍-0051.jpg"
+  },
+  {
+    "stem": "手机实拍-0051",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.789196,
+    "path": "测试用/测试图_三次处理后/手机实拍-0051.jpg"
+  },
+  {
+    "stem": "手机实拍-0052",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.821773,
+    "path": "测试用/测试图/手机实拍-0052.jpg"
+  },
+  {
+    "stem": "手机实拍-0052",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.834007,
+    "path": "测试用/测试图_处理后/手机实拍-0052.jpg"
+  },
+  {
+    "stem": "手机实拍-0052",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.838185,
+    "path": "测试用/测试图_二次处理后/手机实拍-0052.jpg"
+  },
+  {
+    "stem": "手机实拍-0052",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.842244,
+    "path": "测试用/测试图_三次处理后/手机实拍-0052.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0001",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.820963,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0001.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0001",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.81889,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0001.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0001",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.806744,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0001.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0002",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.745225,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0002.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0002",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.839286,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0002.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0002",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.858704,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0002.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0003",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.727907,
+    "path": "测试用/测试图/手机实拍-微信导出-0003.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0003",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.822705,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0003.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0003",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.826167,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0003.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0003",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.821252,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0003.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0004",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.828082,
+    "path": "测试用/测试图/手机实拍-微信导出-0004.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0004",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.84507,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0004.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0004",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844348,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0004.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0004",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848008,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0004.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0005",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.779048,
+    "path": "测试用/测试图/手机实拍-微信导出-0005.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0005",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.723614,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0005.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0005",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.778102,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0005.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0005",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.823995,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0005.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0006",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.815584,
+    "path": "测试用/测试图/手机实拍-微信导出-0006.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0006",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.849478,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0006.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0006",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.854531,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0006.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0006",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850938,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0006.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0007",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.577908,
+    "path": "测试用/测试图/手机实拍-微信导出-0007.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0007",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.825663,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0007.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0007",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.834568,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0007.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0007",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.836573,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0007.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0008",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.675029,
+    "path": "测试用/测试图/手机实拍-微信导出-0008.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0008",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.825462,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0008.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0008",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.828025,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0008.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0008",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.831721,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0008.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0009",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.816979,
+    "path": "测试用/测试图/手机实拍-微信导出-0009.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0009",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.858966,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0009.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0009",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.860654,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0009.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0009",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.861959,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0009.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0010",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.837168,
+    "path": "测试用/测试图/手机实拍-微信导出-0010.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0010",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.853175,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0010.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0010",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.857582,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0010.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0010",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.866042,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0010.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0011",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848971,
+    "path": "测试用/测试图/手机实拍-微信导出-0011.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0011",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.86439,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0011.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0011",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.864266,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0011.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0011",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.865191,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0011.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0012",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.859256,
+    "path": "测试用/测试图/手机实拍-微信导出-0012.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0012",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.86769,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0012.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0012",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.865432,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0012.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0012",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.862596,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0012.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0013",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.822645,
+    "path": "测试用/测试图/手机实拍-微信导出-0013.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0013",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.842508,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0013.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0013",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.855181,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0013.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0013",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848919,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0013.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0014",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.852026,
+    "path": "测试用/测试图/手机实拍-微信导出-0014.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0014",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.854937,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0014.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0014",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850492,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0014.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0014",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.853972,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0014.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0015",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.82577,
+    "path": "测试用/测试图/手机实拍-微信导出-0015.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0015",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.834622,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0015.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0015",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.836296,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0015.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0015",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.832606,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0015.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0016",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.537979,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0016.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0016",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.639774,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0016.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0016",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.770909,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0016.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0017",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.586984,
+    "path": "测试用/测试图/手机实拍-微信导出-0017.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0017",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.802623,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0017.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0017",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.807689,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0017.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0017",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833149,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0017.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0018",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.814868,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0018.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0018",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.79167,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0018.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0018",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.827114,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0018.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0019",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.827157,
+    "path": "测试用/测试图/手机实拍-微信导出-0019.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0019",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.867621,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0019.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0019",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.871042,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0019.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0019",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.873366,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0019.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0020",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.832023,
+    "path": "测试用/测试图/手机实拍-微信导出-0020.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0020",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.862046,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0020.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0020",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.862197,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0020.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0020",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856227,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0020.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0021",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.753549,
+    "path": "测试用/测试图/手机实拍-微信导出-0021.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0021",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.855774,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0021.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0021",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.851633,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0021.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0021",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844694,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0021.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0022",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.809493,
+    "path": "测试用/测试图/手机实拍-微信导出-0022.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0022",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.849764,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0022.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0022",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856953,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0022.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0022",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856819,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0022.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0023",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.746204,
+    "path": "测试用/测试图/手机实拍-微信导出-0023.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0023",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848528,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0023.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0023",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.801502,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0023.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0023",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.740757,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0023.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0024",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.834736,
+    "path": "测试用/测试图/手机实拍-微信导出-0024.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0024",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.854145,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0024.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0024",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.854966,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0024.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0024",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.852768,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0024.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0025",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.815032,
+    "path": "测试用/测试图/手机实拍-微信导出-0025.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0025",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.854397,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0025.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0025",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856029,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0025.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0025",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.862401,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0025.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0026",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.7848,
+    "path": "测试用/测试图/手机实拍-微信导出-0026.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0026",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.857636,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0026.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0026",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.865519,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0026.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0026",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.869113,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0026.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0027",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.845626,
+    "path": "测试用/测试图/手机实拍-微信导出-0027.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0027",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.861607,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0027.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0027",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.867978,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0027.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0027",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.871909,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0027.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0028",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.777162,
+    "path": "测试用/测试图/手机实拍-微信导出-0028.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0028",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.855901,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0028.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0028",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.863387,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0028.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0028",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.869686,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0028.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0029",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833996,
+    "path": "测试用/测试图/手机实拍-微信导出-0029.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0029",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850233,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0029.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0029",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856794,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0029.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0029",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.863973,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0029.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0030",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.790565,
+    "path": "测试用/测试图/手机实拍-微信导出-0030.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0030",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.863716,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0030.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0030",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.843253,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0030.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0030",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.859924,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0030.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0031",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.842956,
+    "path": "测试用/测试图/手机实拍-微信导出-0031.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0031",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.858952,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0031.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0031",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.860337,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0031.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0031",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.864224,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0031.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0032",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.827619,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0032.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0032",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.841337,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0032.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0032",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.862503,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0032.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0033",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.757184,
+    "path": "测试用/测试图/手机实拍-微信导出-0033.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0033",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856671,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0033.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0033",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.858748,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0033.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0033",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.851898,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0033.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0034",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833603,
+    "path": "测试用/测试图/手机实拍-微信导出-0034.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0034",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856265,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0034.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0034",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.85411,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0034.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0034",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.856794,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0034.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0035",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.81814,
+    "path": "测试用/测试图/手机实拍-微信导出-0035.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0035",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.854799,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0035.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0035",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.861255,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0035.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0035",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.86218,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0035.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0036",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.797079,
+    "path": "测试用/测试图/手机实拍-微信导出-0036.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0036",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.858637,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0036.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0036",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.860497,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0036.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0036",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.85996,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0036.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0037",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.541083,
+    "path": "测试用/测试图/手机实拍-微信导出-0037.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0037",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.862471,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0037.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0037",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.87036,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0037.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0037",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.872816,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0037.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0038",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.828707,
+    "path": "测试用/测试图/手机实拍-微信导出-0038.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0038",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.859825,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0038.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0038",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.864802,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0038.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0038",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.865941,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0038.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0039",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.826343,
+    "path": "测试用/测试图/手机实拍-微信导出-0039.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0039",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.849927,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0039.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0039",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.849636,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0039.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0039",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.849339,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0039.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0040",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.830077,
+    "path": "测试用/测试图/手机实拍-微信导出-0040.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0040",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.846432,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0040.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0040",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.8498,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0040.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0040",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.843733,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0040.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0041",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.743438,
+    "path": "测试用/测试图/手机实拍-微信导出-0041.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0041",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.750995,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0041.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0041",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.735906,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0041.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0041",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.759255,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0041.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0042",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.701227,
+    "path": "测试用/测试图/手机实拍-微信导出-0042.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0042",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.73705,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0042.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0042",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.717593,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0042.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0042",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.722328,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0042.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0043",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.741127,
+    "path": "测试用/测试图/手机实拍-微信导出-0043.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0043",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.758536,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0043.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0043",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.744671,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0043.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0043",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.733775,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0043.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0044",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.814353,
+    "path": "测试用/测试图/手机实拍-微信导出-0044.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0044",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.815128,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0044.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0044",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.819381,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0044.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0044",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.813482,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0044.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0045",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.72981,
+    "path": "测试用/测试图/手机实拍-微信导出-0045.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0045",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.618284,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0045.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0045",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.673353,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0045.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0045",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.792479,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0045.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0046",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.697154,
+    "path": "测试用/测试图/手机实拍-微信导出-0046.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0046",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.798794,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0046.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0046",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.837214,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0046.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0046",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.845762,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0046.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0047",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.812962,
+    "path": "测试用/测试图/手机实拍-微信导出-0047.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0047",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.840335,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0047.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0047",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.83679,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0047.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0047",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.832956,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0047.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0048",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.549708,
+    "path": "测试用/测试图/手机实拍-微信导出-0048.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0048",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.795953,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0048.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0048",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.844635,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0048.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0048",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.83216,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0048.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0049",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.514122,
+    "path": "测试用/测试图/手机实拍-微信导出-0049.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0049",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850833,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0049.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0049",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.860847,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0049.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0049",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.859604,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0049.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0050",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.616472,
+    "path": "测试用/测试图/手机实拍-微信导出-0050.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0050",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.827987,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0050.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0050",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.843731,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0050.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0050",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.849703,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0050.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0051",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.516306,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0051.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0051",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.726358,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0051.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0051",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.835073,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0051.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0052",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.794324,
+    "path": "测试用/测试图/手机实拍-微信导出-0052.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0052",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.83768,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0052.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0052",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.801211,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0052.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0052",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.827067,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0052.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0053",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.536999,
+    "path": "测试用/测试图/手机实拍-微信导出-0053.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0053",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.737573,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0053.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0053",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.754521,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0053.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0053",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.772854,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0053.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0054",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.801821,
+    "path": "测试用/测试图/手机实拍-微信导出-0054.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0054",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.846863,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0054.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0054",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.858008,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0054.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0054",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850335,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0054.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0055",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.617291,
+    "path": "测试用/测试图/手机实拍-微信导出-0055.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0055",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.8401,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0055.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0055",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.841698,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0055.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0055",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.847235,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0055.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0056",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.772765,
+    "path": "测试用/测试图/手机实拍-微信导出-0056.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0056",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.861926,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0056.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0056",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.862051,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0056.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0056",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.86407,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0056.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0057",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.63608,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0057.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0057",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.85087,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0057.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0057",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.855174,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0057.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0058",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833723,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0058.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0058",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.854481,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0058.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0058",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.854734,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0058.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0059",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.551459,
+    "path": "测试用/测试图/手机实拍-微信导出-0059.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0059",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.866986,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0059.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0059",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.866314,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0059.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0059",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.864626,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0059.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0060",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.803889,
+    "path": "测试用/测试图/手机实拍-微信导出-0060.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0060",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.826479,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0060.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0060",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.849586,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0060.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0060",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.84596,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0060.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0061",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.73331,
+    "path": "测试用/测试图/手机实拍-微信导出-0061.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0061",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.852319,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0061.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0061",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.852893,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0061.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0061",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.846944,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0061.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0062",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.772748,
+    "path": "测试用/测试图/手机实拍-微信导出-0062.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0062",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.858856,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0062.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0062",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.860515,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0062.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0062",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.860476,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0062.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0063",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.741035,
+    "path": "测试用/测试图/手机实拍-微信导出-0063.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0063",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.873625,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0063.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0063",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.867524,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0063.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0063",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.863534,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0063.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0064",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.728796,
+    "path": "测试用/测试图/手机实拍-微信导出-0064.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0064",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.666419,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0064.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0064",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.829101,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0064.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0065",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.835641,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0065.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0065",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.838481,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0065.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0065",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.839951,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0065.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0066",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.827711,
+    "path": "测试用/测试图/手机实拍-微信导出-0066.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0066",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.838863,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0066.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0066",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850305,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0066.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0066",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.853916,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0066.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0067",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.767862,
+    "path": "测试用/测试图/手机实拍-微信导出-0067.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0067",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850823,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0067.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0067",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.85131,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0067.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0067",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.851584,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0067.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0068",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.800244,
+    "path": "测试用/测试图/手机实拍-微信导出-0068.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0068",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.83939,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0068.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0068",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.840814,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0068.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0068",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.848149,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0068.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0069",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.535731,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0069.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0069",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.529305,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0069.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0070",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.833322,
+    "path": "测试用/测试图/手机实拍-微信导出-0070.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0070",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.850229,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0070.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0070",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.853415,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0070.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0070",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.849863,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0070.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0071",
+    "round": "g0",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.784693,
+    "path": "测试用/测试图/手机实拍-微信导出-0071.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0071",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.832683,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0071.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0071",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.845679,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0071.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0071",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.845709,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0071.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0072",
+    "round": "r1",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.831234,
+    "path": "测试用/测试图_处理后/手机实拍-微信导出-0072.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0072",
+    "round": "r2",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.849419,
+    "path": "测试用/测试图_二次处理后/手机实拍-微信导出-0072.jpg"
+  },
+  {
+    "stem": "手机实拍-微信导出-0072",
+    "round": "r3",
+    "label": "physical_device",
+    "verdict": "ai_generated",
+    "ai_probability": 0.851085,
+    "path": "测试用/测试图_三次处理后/手机实拍-微信导出-0072.jpg"
+  }
+]
