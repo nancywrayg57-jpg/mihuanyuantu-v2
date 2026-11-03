@@ -1,0 +1,316 @@
+{
+  "_readme": "红队语料。每条给出输入、以及绝不允许出现在脱敏输出里的字符串。新增绕过写法时往这里加，不要只加正则。",
+  "cases": [
+    {
+      "id": "cn-adjacent-phone",
+      "why": "第一版就死在这里：中文与数字之间不构成 \\b 词边界，规则静默失效",
+      "fields": {
+        "done": "客户手机13800138000，请回电"
+      },
+      "must_not_contain": [
+        "13800138000"
+      ]
+    },
+    {
+      "id": "fullwidth-phone",
+      "why": "全角数字不做 NFKC 就匹配不上",
+      "fields": {
+        "done": "联系方式１３８００１３８０００"
+      },
+      "must_not_contain": [
+        "13800138000",
+        "１３８００１３８０００"
+      ]
+    },
+    {
+      "id": "separated-phone",
+      "why": "分隔符写法",
+      "fields": {
+        "done": "打了138-0013-8000 和 139 0013 8001 都没人接"
+      },
+      "must_not_contain": [
+        "138-0013-8000",
+        "13900138001",
+        "139 0013 8001"
+      ]
+    },
+    {
+      "id": "phone-tail",
+      "why": "只写尾号也是可关联的个人信息",
+      "fields": {
+        "done": "跟尾号8000的客户确认过了"
+      },
+      "known_values": [
+        {
+          "kind": "phone",
+          "value": "13800138000"
+        }
+      ],
+      "must_not_contain": [
+        "尾号8000"
+      ]
+    },
+    {
+      "id": "id-card-adjacent",
+      "why": "身份证必须排在手机号规则之前，否则被切走一段",
+      "fields": {
+        "done": "身份证110101199001011234已核验"
+      },
+      "must_not_contain": [
+        "110101199001011234"
+      ]
+    },
+    {
+      "id": "bank-card-grouped",
+      "why": "四位一组的银行卡写法",
+      "fields": {
+        "done": "打款到6222 0212 3456 7890 123"
+      },
+      "must_not_contain": [
+        "6222021234567890123",
+        "6222 0212 3456 7890"
+      ]
+    },
+    {
+      "id": "email-in-cn",
+      "fields": {
+        "done": "邮箱zhang.wei@example.com已发过方案"
+      },
+      "must_not_contain": [
+        "zhang.wei@example.com"
+      ]
+    },
+    {
+      "id": "known-person-alias",
+      "why": "结构化字段里知道联系人叫张伟，正文里写的是张总",
+      "fields": {
+        "done": "上午见了张总，下午小张又来电话"
+      },
+      "known_values": [
+        {
+          "kind": "person",
+          "value": "张伟"
+        }
+      ],
+      "must_not_contain": [
+        "张总",
+        "小张"
+      ]
+    },
+    {
+      "id": "known-org-shortform",
+      "why": "长值优先：先替换全称再替换简称，否则会切成半截",
+      "fields": {
+        "done": "华为技术有限公司签了，华为技术后续还有单，华为那边很积极"
+      },
+      "known_values": [
+        {
+          "kind": "org",
+          "value": "华为技术有限公司"
+        }
+      ],
+      "must_not_contain": [
+        "华为技术有限公司",
+        "华为技术",
+        "华为"
+      ]
+    },
+    {
+      "id": "cross-field-leak",
+      "why": "结构化字段里的值出现在另一个自由文本字段里",
+      "fields": {
+        "done": "拜访客户",
+        "results": "张伟说13800138000这个号可以直接打"
+      },
+      "known_values": [
+        {
+          "kind": "person",
+          "value": "张伟"
+        },
+        {
+          "kind": "phone",
+          "value": "13800138000"
+        }
+      ],
+      "must_not_contain": [
+        "张伟",
+        "13800138000"
+      ]
+    },
+    {
+      "id": "serial-number",
+      "fields": {
+        "done": "合同HT2026080012已经签回"
+      },
+      "must_not_contain": [
+        "HT2026080012"
+      ]
+    },
+    {
+      "id": "business-evidence-preserved",
+      "why": "反向用例：业务证据不能被误伤，否则模型给不出评分依据",
+      "fields": {
+        "done": "今日签约2家，回款18万，拜访5个客户"
+      },
+      "must_not_contain": [],
+      "must_contain": [
+        "签约2家",
+        "回款18万",
+        "拜访5个客户"
+      ]
+    },
+    {
+      "id": "cn-numeral-phone",
+      "why": "中文数字。NFKC 不管这个——第二版在这里全漏，L2/L3/L4 三层都看不见",
+      "fields": {
+        "done": "客户手机号一三八〇〇一三八〇〇〇，请回电"
+      },
+      "must_not_contain": [
+        "一三八〇〇一三八〇〇〇"
+      ]
+    },
+    {
+      "id": "cn-numeral-not-a-phone",
+      "why": "反向用例：中文数字规则不能把普通句子当成号码",
+      "fields": {
+        "done": "一二三四五六七八九十，按顺序排"
+      },
+      "must_not_contain": [],
+      "must_contain": [
+        "一二三四五六七八九十"
+      ]
+    },
+    {
+      "id": "comma-separated-phone",
+      "why": "分隔符不止空格和连字符，这些都是自然写法，第二版一个都挡不住",
+      "fields": {
+        "done": "电话138，0013，8000"
+      },
+      "must_not_contain": [
+        "138，0013，8000",
+        "13800138000"
+      ]
+    },
+    {
+      "id": "dot-separated-phone",
+      "fields": {
+        "done": "电话138.0013.8000"
+      },
+      "must_not_contain": [
+        "138.0013.8000",
+        "13800138000"
+      ]
+    },
+    {
+      "id": "paren-separated-phone",
+      "fields": {
+        "done": "电话138（0013）8000"
+      },
+      "must_not_contain": [
+        "138（0013）8000",
+        "138(0013)8000",
+        "13800138000"
+      ]
+    },
+    {
+      "id": "zero-width-inside-phone",
+      "why": "零宽字符对人不可见、对语义没贡献，却能把号码切成正则匹配不到的东西",
+      "fields": {
+        "done": "电话138​0013​8000"
+      },
+      "must_not_contain": [
+        "13800138000",
+        "138​0013​8000"
+      ]
+    },
+    {
+      "id": "newline-inside-phone",
+      "why": "复制粘贴常见。守卫能拦住，但拦住只是没泄露，不该让用户白白用不了 AI",
+      "fields": {
+        "done": "电话138\n0013\n8000"
+      },
+      "must_not_contain": [
+        "13800138000"
+      ]
+    },
+    {
+      "id": "id-card-with-separators",
+      "fields": {
+        "done": "身份证110105 19491231 002X"
+      },
+      "must_not_contain": [
+        "110105 19491231 002X",
+        "11010519491231002X"
+      ]
+    }
+  ],
+  "guard_cases": [
+    {
+      "id": "guard-catches-raw-phone",
+      "why": "守卫是独立实现，即使前面全漏也要拦住",
+      "fields": {
+        "done": "13800138000"
+      },
+      "expect_blocked": true
+    },
+    {
+      "id": "guard-catches-fullwidth",
+      "fields": {
+        "done": "１３８００１３８０００"
+      },
+      "expect_blocked": true
+    },
+    {
+      "id": "guard-allows-clean",
+      "fields": {
+        "done": "拜访了〔客户1〕，回款18万"
+      },
+      "expect_blocked": false
+    },
+    {
+      "id": "guard-allows-counts",
+      "why": "误拒会让用户绕过整套机制，所以正常业务数字必须放行",
+      "fields": {
+        "done": "签约2家，跟进12个客户，完成率85%"
+      },
+      "expect_blocked": false
+    },
+    {
+      "id": "guard-independent-phone-then-count",
+      "why": "守卫不能整段贪心取数字：号码后面跟个业务数字就整段漏掉，独立兜底的承诺就不成立了",
+      "fields": {
+        "done": "联系13800138000 2次"
+      },
+      "expect_blocked": true
+    },
+    {
+      "id": "guard-independent-phone-then-year",
+      "fields": {
+        "done": "联系13800138000 2026年"
+      },
+      "expect_blocked": true
+    },
+    {
+      "id": "guard-independent-cn-numerals",
+      "fields": {
+        "done": "一三八〇〇一三八〇〇〇"
+      },
+      "expect_blocked": true
+    },
+    {
+      "id": "guard-independent-dot-separator",
+      "fields": {
+        "done": "138.0013.8000"
+      },
+      "expect_blocked": true
+    },
+    {
+      "id": "guard-allows-percentages-and-counts",
+      "why": "误拒会让用户绕过整套机制，正常业务数字必须放行",
+      "fields": {
+        "done": "签约2家，跟进12个客户，完成率85%，回款18万"
+      },
+      "expect_blocked": false
+    }
+  ]
+}

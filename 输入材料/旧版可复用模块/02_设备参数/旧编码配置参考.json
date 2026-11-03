@@ -1,0 +1,97 @@
+{
+  "source_line": 80,
+  "profiles": {
+    "tiktok": {
+      "displayName": "TikTok",
+      "jpegQuality": 92,
+      "chromaSubsampling": "4:2:0",
+      "maxWidth": 4096,
+      "maxHeight": 4096,
+      "quantizationBias": 2,
+      "addProcessingNoise": true,
+      "colorShift": {
+        "brightness": 1.0,
+        "saturation": 1.02
+      }
+    },
+    "xiaohongshu": {
+      "displayName": "小红书",
+      "jpegQuality": 90,
+      "chromaSubsampling": "4:2:0",
+      "maxWidth": 4096,
+      "maxHeight": 4096,
+      "quantizationBias": 3,
+      "addProcessingNoise": true,
+      "colorShift": {
+        "brightness": 1.01,
+        "saturation": 1.05
+      }
+    },
+    "instagram": {
+      "displayName": "Instagram",
+      "jpegQuality": 92,
+      "chromaSubsampling": "4:2:0",
+      "maxWidth": 4096,
+      "maxHeight": 4096,
+      "quantizationBias": 2,
+      "addProcessingNoise": false,
+      "colorShift": {
+        "brightness": 1.0,
+        "saturation": 1.0
+      }
+    },
+    "wechat": {
+      "displayName": "微信朋友圈",
+      "jpegQuality": 90,
+      "chromaSubsampling": "4:2:0",
+      "maxWidth": 4096,
+      "maxHeight": 4096,
+      "quantizationBias": 5,
+      "addProcessingNoise": true,
+      "colorShift": {
+        "brightness": 0.99,
+        "saturation": 0.98
+      }
+    },
+    "weibo": {
+      "displayName": "微博",
+      "jpegQuality": 90,
+      "chromaSubsampling": "4:2:0",
+      "maxWidth": 4096,
+      "maxHeight": 4096,
+      "quantizationBias": 4,
+      "addProcessingNoise": false,
+      "colorShift": {
+        "brightness": 1.0,
+        "saturation": 1.0
+      }
+    },
+    "douyin": {
+      "displayName": "抖音",
+      "jpegQuality": 92,
+      "chromaSubsampling": "4:2:0",
+      "maxWidth": 4096,
+      "maxHeight": 4096,
+      "quantizationBias": 2,
+      "addProcessingNoise": true,
+      "colorShift": {
+        "brightness": 1.0,
+        "saturation": 1.03
+      }
+    },
+    "generic": {
+      "displayName": "通用",
+      "jpegQuality": 92,
+      "chromaSubsampling": "4:2:0",
+      "maxWidth": 4096,
+      "maxHeight": 4096,
+      "quantizationBias": 2,
+      "addProcessingNoise": false,
+      "colorShift": {
+        "brightness": 1.0,
+        "saturation": 1.0
+      }
+    }
+  },
+  "reuse": "JPEG 编码字段参考；maxWidth/maxHeight、平台选择、颜色调整不得继承为 v2 默认。源码自称实测不等于本轮已验证。"
+}

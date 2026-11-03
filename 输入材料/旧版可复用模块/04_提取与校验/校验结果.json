@@ -1,0 +1,221 @@
+{
+  "checked_on": "2026-10-23",
+  "status": "FAIL",
+  "total": 27,
+  "passed": 26,
+  "failed": 1,
+  "checks": [
+    {
+      "check": "literal_comments_escapes_types",
+      "result": "PASS",
+      "detail": "Literal parser preserves Unicode, escapes, comments, trailing commas and types."
+    },
+    {
+      "check": "nonliteral_and_duplicate_key_rejection",
+      "result": "PASS",
+      "detail": "Four executable/ambiguous fixtures rejected without executing source code."
+    },
+    {
+      "check": "name_classification_regressions",
+      "result": "PASS",
+      "detail": "Phone/model substring and non-360 Insta360 cases stay distinct; unknown names retained."
+    },
+    {
+      "check": "online_count_and_unique_ids",
+      "result": "PASS",
+      "detail": {
+        "rows": 405,
+        "unique": 405,
+        "declared_total": 405
+      }
+    },
+    {
+      "check": "candidate_coverage",
+      "result": "PASS",
+      "detail": "All source IDs appear exactly once in the complete candidate file."
+    },
+    {
+      "check": "exact_preservation_of_retained_values",
+      "result": "PASS",
+      "detail": {
+        "mismatching_source_ids": []
+      }
+    },
+    {
+      "check": "runtime_and_identity_values_excluded",
+      "result": "PASS",
+      "detail": {
+        "retained_key_count": 58,
+        "forbidden_keys_present": []
+      }
+    },
+    {
+      "check": "full_source_field_coverage_audit",
+      "result": "PASS",
+      "detail": {
+        "audited_records": 405,
+        "source_keys": 117,
+        "retained_keys": 58,
+        "extended_ai_strength_retained": true
+      }
+    },
+    {
+      "check": "category_partition_no_loss_no_duplicates",
+      "result": "PASS",
+      "detail": {
+        "phone": 125,
+        "dslr": 119,
+        "mirrorless": 101,
+        "action": 60
+      }
+    },
+    {
+      "check": "advisory_family_partition_no_loss_no_duplicates",
+      "result": "PASS",
+      "detail": {
+        "groups": 9,
+        "total": 405
+      }
+    },
+    {
+      "check": "private_provenance_and_activation_boundary",
+      "result": "PASS",
+      "detail": "405 private-source candidates retained; no automatic public/system activation."
+    },
+    {
+      "check": "review_bucket_and_flag_totals",
+      "result": "PASS",
+      "detail": {
+        "structural_candidates": 233,
+        "review_needed": 172
+      }
+    },
+    {
+      "check": "valid_long_exposure_units_preserved",
+      "result": "PASS",
+      "detail": "Ten second-unit shutter values kept verbatim, with a separate normalization proposal."
+    },
+    {
+      "check": "schema_and_import_columns_preserved",
+      "result": "PASS",
+      "detail": {
+        "schema_fields": 67,
+        "import_columns": 58,
+        "examples": 4
+      }
+    },
+    {
+      "check": "schema_import_online_differences_visible",
+      "result": "PASS",
+      "detail": "Template-only fields, missing fields and the deployed extension are explicitly retained."
+    },
+    {
+      "check": "camera_spec_provenance_and_no_fake_defaults",
+      "result": "PASS",
+      "detail": {
+        "records": 93,
+        "unique_models": 48,
+        "source_presence_differences": 3
+      }
+    },
+    {
+      "check": "exif_mapping_integrity",
+      "result": "PASS",
+      "detail": {
+        "assignments": 66,
+        "apex_risk_tags_retained": true
+      }
+    },
+    {
+      "check": "source_fingerprints_unchanged",
+      "result": "PASS",
+      "detail": {
+        "checked_sources": 28,
+        "changed": []
+      }
+    },
+    {
+      "check": "byte_exact_source_snapshots",
+      "result": "PASS",
+      "detail": {
+        "files": 21,
+        "changed": []
+      }
+    },
+    {
+      "check": "source_excerpts_match_declared_lines",
+      "result": "PASS",
+      "detail": {
+        "files": 5,
+        "changed": []
+      }
+    },
+    {
+      "check": "online_capture_fingerprint",
+      "result": "PASS",
+      "detail": "71ED074FA302022F9F005B3EB82DD459AF04DEB8F03E6837908FD516CE8ED620"
+    },
+    {
+      "check": "existing_requirement_architecture_material_baselines_unchanged",
+      "result": "FAIL",
+      "detail": {
+        "checked": 4,
+        "changed": [
+          "docs/蜜獾原图-v2-PRD-v1.0.md",
+          "docs/蜜獾原图-v2-待决策清单-v1.0.md",
+          "docs/蜜獾原图-v2-项目架构-v1.0.md",
+          "docs/蜜獾原图-v2-生产物料清单-v1.0.md"
+        ]
+      }
+    },
+    {
+      "check": "local_document_links",
+      "result": "PASS",
+      "detail": {
+        "checked": 46,
+        "missing": [],
+        "self_generated_report_links_checked_after_write": 0
+      }
+    },
+    {
+      "check": "markdown_table_alignment",
+      "result": "PASS",
+      "detail": {
+        "issues": []
+      }
+    },
+    {
+      "check": "no_credentials_or_repository_state_files_copied",
+      "result": "PASS",
+      "detail": {
+        "unexpected_files": []
+      }
+    },
+    {
+      "check": "common_secret_signature_scan",
+      "result": "PASS",
+      "detail": {
+        "flagged_files": [],
+        "scope": "Heuristic common access-key/private-key patterns only; not a universal secret proof."
+      }
+    },
+    {
+      "check": "final_artifact_fingerprints",
+      "result": "PASS",
+      "detail": {
+        "files": 59,
+        "manifest_and_result_excluded_to_avoid_self_reference": true
+      }
+    }
+  ],
+  "not_run": [
+    "legacy_test_suite",
+    "manufacturer_specs",
+    "image_effects",
+    "exif_roundtrip",
+    "model_calls",
+    "v2_runtime_or_e2e",
+    "deployment"
+  ],
+  "production_mutations": "NONE"
+}

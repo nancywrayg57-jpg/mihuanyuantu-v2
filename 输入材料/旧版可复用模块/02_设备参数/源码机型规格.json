@@ -1,0 +1,2093 @@
+{
+  "records": [
+    {
+      "model": "Canon EOS-1D X",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 5184,
+        "pixelHeight": 3456,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1440.0,
+        "expected_y_if_cm": 1440.0,
+        "relative_error_x": 1.4623819444444446,
+        "relative_error_y": 1.4489791666666667,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS-1D X Mark II",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 5472,
+        "pixelHeight": 3648,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1520.0,
+        "expected_y_if_cm": 1520.0,
+        "relative_error_x": 1.3327828947368419,
+        "relative_error_y": 1.3200855263157898,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS-1D X Mark III",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 5472,
+        "pixelHeight": 3648,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1520.0,
+        "expected_y_if_cm": 1520.0,
+        "relative_error_x": 1.3327828947368419,
+        "relative_error_y": 1.3200855263157898,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS 5D Mark IV",
+      "parameters": {
+        "focalPlaneXRes": 3796.99,
+        "focalPlaneYRes": 3797.0,
+        "pixelWidth": 6720,
+        "pixelHeight": 4480,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1866.6666666666667,
+        "expected_y_if_cm": 1866.6666666666667,
+        "relative_error_x": 1.0341017857142853,
+        "relative_error_y": 1.0341071428571427,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS 5D Mark III",
+      "parameters": {
+        "focalPlaneXRes": 3479.17,
+        "focalPlaneYRes": 3479.17,
+        "pixelWidth": 5760,
+        "pixelHeight": 3840,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1600.0,
+        "expected_y_if_cm": 1600.0,
+        "relative_error_x": 1.17448125,
+        "relative_error_y": 1.17448125,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS 6D Mark II",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6240,
+        "pixelHeight": 4160,
+        "sensorWidth": 35.9,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1738.1615598885794,
+        "expected_y_if_cm": 1733.3333333333333,
+        "relative_error_x": 1.0399887339743588,
+        "relative_error_y": 1.0345365384615386,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS 90D",
+      "parameters": {
+        "focalPlaneXRes": 5765.0,
+        "focalPlaneYRes": 5765.0,
+        "pixelWidth": 6960,
+        "pixelHeight": 4640,
+        "sensorWidth": 22.3,
+        "sensorHeight": 14.9
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 3121.0762331838564,
+        "expected_y_if_cm": 3114.0939597315437,
+        "relative_error_x": 0.8471192528735634,
+        "relative_error_y": 0.8512607758620689,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS 850D",
+      "parameters": {
+        "focalPlaneXRes": 5765.0,
+        "focalPlaneYRes": 5765.0,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 22.3,
+        "sensorHeight": 14.9
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2690.5829596412555,
+        "expected_y_if_cm": 2684.5637583892617,
+        "relative_error_x": 1.1426583333333333,
+        "relative_error_y": 1.1474625,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS R5",
+      "parameters": {
+        "focalPlaneXRes": 4016.06,
+        "focalPlaneYRes": 4016.06,
+        "pixelWidth": 8192,
+        "pixelHeight": 5464,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2275.5555555555557,
+        "expected_y_if_cm": 2276.6666666666665,
+        "relative_error_x": 0.7648701171874999,
+        "relative_error_y": 0.7640087847730601,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS R6",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 5472,
+        "pixelHeight": 3648,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1520.0,
+        "expected_y_if_cm": 1520.0,
+        "relative_error_x": 1.3327828947368419,
+        "relative_error_y": 1.3200855263157898,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS R6 Mark II",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 5472,
+        "pixelHeight": 3648,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1520.0,
+        "expected_y_if_cm": 1520.0,
+        "relative_error_x": 1.3327828947368419,
+        "relative_error_y": 1.3200855263157898,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS R3",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1666.6666666666667,
+        "expected_y_if_cm": 1666.6666666666667,
+        "relative_error_x": 1.1274979999999997,
+        "relative_error_y": 1.1159180000000002,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon D850",
+      "parameters": {
+        "focalPlaneXRes": 4016.06,
+        "focalPlaneYRes": 4016.06,
+        "pixelWidth": 8256,
+        "pixelHeight": 5504,
+        "sensorWidth": 35.9,
+        "sensorHeight": 23.9
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2299.7214484679666,
+        "expected_y_if_cm": 2302.928870292887,
+        "relative_error_x": 0.7463245397286822,
+        "relative_error_y": 0.7438923328488372,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon D780",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6048,
+        "pixelHeight": 4024,
+        "sensorWidth": 35.9,
+        "sensorHeight": 23.9
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1684.6796657381617,
+        "expected_y_if_cm": 1683.682008368201,
+        "relative_error_x": 1.1047502810846557,
+        "relative_error_y": 1.0945344681908549,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon D750",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6016,
+        "pixelHeight": 4016,
+        "sensorWidth": 35.9,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1675.766016713092,
+        "expected_y_if_cm": 1673.3333333333333,
+        "relative_error_x": 1.1159457613031911,
+        "relative_error_y": 1.107488047808765,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon D7500",
+      "parameters": {
+        "focalPlaneXRes": 5765.0,
+        "focalPlaneYRes": 5765.0,
+        "pixelWidth": 5568,
+        "pixelHeight": 3712,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.7
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2369.3617021276596,
+        "expected_y_if_cm": 2364.331210191083,
+        "relative_error_x": 1.4331447557471266,
+        "relative_error_y": 1.4383216594827584,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon D5600",
+      "parameters": {
+        "focalPlaneXRes": 5765.0,
+        "focalPlaneYRes": 5765.0,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.6
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2553.191489361702,
+        "expected_y_if_cm": 2564.102564102564,
+        "relative_error_x": 1.2579583333333333,
+        "relative_error_y": 1.2483500000000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon Z6 II",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6048,
+        "pixelHeight": 4024,
+        "sensorWidth": 35.9,
+        "sensorHeight": 23.9
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1684.6796657381617,
+        "expected_y_if_cm": 1683.682008368201,
+        "relative_error_x": 1.1047502810846557,
+        "relative_error_y": 1.0945344681908549,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon Z7 II",
+      "parameters": {
+        "focalPlaneXRes": 4267.72,
+        "focalPlaneYRes": 4267.72,
+        "pixelWidth": 8256,
+        "pixelHeight": 5504,
+        "sensorWidth": 35.9,
+        "sensorHeight": 23.9
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2299.7214484679666,
+        "expected_y_if_cm": 2302.928870292887,
+        "relative_error_x": 0.8557551841085271,
+        "relative_error_y": 0.8531705668604652,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Sony A7R IV",
+      "parameters": {
+        "focalPlaneXRes": 4267.72,
+        "focalPlaneYRes": 4267.72,
+        "pixelWidth": 9504,
+        "pixelHeight": 6336,
+        "sensorWidth": 35.7,
+        "sensorHeight": 23.8
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2662.1848739495795,
+        "expected_y_if_cm": 2662.18487394958,
+        "relative_error_x": 0.6030892676767681,
+        "relative_error_y": 0.6030892676767676,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Sony A7R V",
+      "parameters": {
+        "focalPlaneXRes": 4267.72,
+        "focalPlaneYRes": 4267.72,
+        "pixelWidth": 9504,
+        "pixelHeight": 6336,
+        "sensorWidth": 35.7,
+        "sensorHeight": 23.8
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2662.1848739495795,
+        "expected_y_if_cm": 2662.18487394958,
+        "relative_error_x": 0.6030892676767681,
+        "relative_error_y": 0.6030892676767676,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Sony A7 IV",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 7008,
+        "pixelHeight": 4672,
+        "sensorWidth": 35.9,
+        "sensorHeight": 23.9
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1952.0891364902507,
+        "expected_y_if_cm": 1954.8117154811716,
+        "relative_error_x": 0.8164283247716895,
+        "relative_error_y": 0.8040254066780823,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Sony A7 III",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 35.6,
+        "sensorHeight": 23.8
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1685.3932584269662,
+        "expected_y_if_cm": 1680.672268907563,
+        "relative_error_x": 1.1038591333333332,
+        "relative_error_y": 1.0982853500000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Sony A9 II",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 35.6,
+        "sensorHeight": 23.8
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1685.3932584269662,
+        "expected_y_if_cm": 1680.672268907563,
+        "relative_error_x": 1.1038591333333332,
+        "relative_error_y": 1.0982853500000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Sony A6600",
+      "parameters": {
+        "focalPlaneXRes": 6240.0,
+        "focalPlaneYRes": 6240.0,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.6
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2553.191489361702,
+        "expected_y_if_cm": 2564.102564102564,
+        "relative_error_x": 1.444,
+        "relative_error_y": 1.4336000000000002,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Pentax K-1 Mark II",
+      "parameters": {
+        "focalPlaneXRes": 3543.31,
+        "focalPlaneYRes": 3543.31,
+        "pixelWidth": 7360,
+        "pixelHeight": 4912,
+        "sensorWidth": 35.9,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2050.139275766017,
+        "expected_y_if_cm": 2046.6666666666667,
+        "relative_error_x": 0.7283264809782606,
+        "relative_error_y": 0.731258957654723,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Pentax K-3 Mark III",
+      "parameters": {
+        "focalPlaneXRes": 5765.0,
+        "focalPlaneYRes": 5765.0,
+        "pixelWidth": 6192,
+        "pixelHeight": 4128,
+        "sensorWidth": 23.3,
+        "sensorHeight": 15.5
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2657.510729613734,
+        "expected_y_if_cm": 2663.2258064516127,
+        "relative_error_x": 1.1693233204134366,
+        "relative_error_y": 1.164668120155039,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Pentax K-70",
+      "parameters": {
+        "focalPlaneXRes": 5765.0,
+        "focalPlaneYRes": 5765.0,
+        "pixelWidth": 6016,
+        "pixelHeight": 4000,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.6
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2560.0,
+        "expected_y_if_cm": 2564.102564102564,
+        "relative_error_x": 1.251953125,
+        "relative_error_y": 1.2483500000000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Fujifilm X-T4",
+      "parameters": {
+        "focalPlaneXRes": 6240.0,
+        "focalPlaneYRes": 6240.0,
+        "pixelWidth": 6240,
+        "pixelHeight": 4160,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.6
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2655.31914893617,
+        "expected_y_if_cm": 2666.6666666666665,
+        "relative_error_x": 1.35,
+        "relative_error_y": 1.3400000000000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Fujifilm X-T5",
+      "parameters": {
+        "focalPlaneXRes": 7752.0,
+        "focalPlaneYRes": 7752.0,
+        "pixelWidth": 8240,
+        "pixelHeight": 5504,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.6
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 3506.3829787234044,
+        "expected_y_if_cm": 3528.2051282051284,
+        "relative_error_x": 1.2108252427184465,
+        "relative_error_y": 1.1971511627906977,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Fujifilm X-S10",
+      "parameters": {
+        "focalPlaneXRes": 6240.0,
+        "focalPlaneYRes": 6240.0,
+        "pixelWidth": 6240,
+        "pixelHeight": 4160,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.6
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2655.31914893617,
+        "expected_y_if_cm": 2666.6666666666665,
+        "relative_error_x": 1.35,
+        "relative_error_y": 1.3400000000000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Fujifilm GFX 50S II",
+      "parameters": {
+        "focalPlaneXRes": 3200.0,
+        "focalPlaneYRes": 3200.0,
+        "pixelWidth": 8256,
+        "pixelHeight": 6192,
+        "sensorWidth": 43.8,
+        "sensorHeight": 32.9
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1884.9315068493152,
+        "expected_y_if_cm": 1882.066869300912,
+        "relative_error_x": 0.6976744186046511,
+        "relative_error_y": 0.7002583979328163,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "OM System OM-1",
+      "parameters": {
+        "focalPlaneXRes": 9600.0,
+        "focalPlaneYRes": 9600.0,
+        "pixelWidth": 5184,
+        "pixelHeight": 3888,
+        "sensorWidth": 17.4,
+        "sensorHeight": 13.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2979.3103448275865,
+        "expected_y_if_cm": 2990.769230769231,
+        "relative_error_x": 2.222222222222222,
+        "relative_error_y": 2.209876543209876,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Olympus OM-D E-M1 Mark III",
+      "parameters": {
+        "focalPlaneXRes": 9600.0,
+        "focalPlaneYRes": 9600.0,
+        "pixelWidth": 5184,
+        "pixelHeight": 3888,
+        "sensorWidth": 17.4,
+        "sensorHeight": 13.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2979.3103448275865,
+        "expected_y_if_cm": 2990.769230769231,
+        "relative_error_x": 2.222222222222222,
+        "relative_error_y": 2.209876543209876,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Panasonic Lumix S5 II",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 35.6,
+        "sensorHeight": 23.8
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1685.3932584269662,
+        "expected_y_if_cm": 1680.672268907563,
+        "relative_error_x": 1.1038591333333332,
+        "relative_error_y": 1.0982853500000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Panasonic Lumix G9 II",
+      "parameters": {
+        "focalPlaneXRes": 9600.0,
+        "focalPlaneYRes": 9600.0,
+        "pixelWidth": 5776,
+        "pixelHeight": 4336,
+        "sensorWidth": 17.3,
+        "sensorHeight": 13.0
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 3338.7283236994217,
+        "expected_y_if_cm": 3335.3846153846152,
+        "relative_error_x": 1.8753462603878117,
+        "relative_error_y": 1.878228782287823,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 15 Pro",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 15 Pro Max",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 16",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 16 Pro",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 16 Pro Max",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 14 Pro",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 14",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 13 Pro",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 13",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "HUAWEI P60 Pro",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4000,
+        "pixelHeight": 3000,
+        "sensorWidth": 6.4,
+        "sensorHeight": 4.8
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 6250.0,
+        "expected_y_if_cm": 6250.0,
+        "relative_error_x": 1.3039999999999998,
+        "relative_error_y": 1.3039999999999998,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "HUAWEI Mate 60 Pro",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4000,
+        "pixelHeight": 3000,
+        "sensorWidth": 6.4,
+        "sensorHeight": 4.8
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 6250.0,
+        "expected_y_if_cm": 6250.0,
+        "relative_error_x": 1.3039999999999998,
+        "relative_error_y": 1.3039999999999998,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Samsung Galaxy S24 Ultra",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4000,
+        "pixelHeight": 3000,
+        "sensorWidth": 6.4,
+        "sensorHeight": 4.8
+      },
+      "source": "server/exifToolWriter.ts",
+      "constant_line": 81,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 6250.0,
+        "expected_y_if_cm": 6250.0,
+        "relative_error_x": 1.3039999999999998,
+        "relative_error_y": 1.3039999999999998,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS-1D X",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 5184,
+        "pixelHeight": 3456,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1440.0,
+        "expected_y_if_cm": 1440.0,
+        "relative_error_x": 1.4623819444444446,
+        "relative_error_y": 1.4489791666666667,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS-1D X Mark II",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 5472,
+        "pixelHeight": 3648,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1520.0,
+        "expected_y_if_cm": 1520.0,
+        "relative_error_x": 1.3327828947368419,
+        "relative_error_y": 1.3200855263157898,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS-1D X Mark III",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 5472,
+        "pixelHeight": 3648,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1520.0,
+        "expected_y_if_cm": 1520.0,
+        "relative_error_x": 1.3327828947368419,
+        "relative_error_y": 1.3200855263157898,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS 5D Mark IV",
+      "parameters": {
+        "focalPlaneXRes": 3796.99,
+        "focalPlaneYRes": 3797.0,
+        "pixelWidth": 6720,
+        "pixelHeight": 4480,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1866.6666666666667,
+        "expected_y_if_cm": 1866.6666666666667,
+        "relative_error_x": 1.0341017857142853,
+        "relative_error_y": 1.0341071428571427,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS 5D Mark III",
+      "parameters": {
+        "focalPlaneXRes": 3479.17,
+        "focalPlaneYRes": 3479.17,
+        "pixelWidth": 5760,
+        "pixelHeight": 3840,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1600.0,
+        "expected_y_if_cm": 1600.0,
+        "relative_error_x": 1.17448125,
+        "relative_error_y": 1.17448125,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS 6D Mark II",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6240,
+        "pixelHeight": 4160,
+        "sensorWidth": 35.9,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1738.1615598885794,
+        "expected_y_if_cm": 1733.3333333333333,
+        "relative_error_x": 1.0399887339743588,
+        "relative_error_y": 1.0345365384615386,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS 90D",
+      "parameters": {
+        "focalPlaneXRes": 5765.0,
+        "focalPlaneYRes": 5765.0,
+        "pixelWidth": 6960,
+        "pixelHeight": 4640,
+        "sensorWidth": 22.3,
+        "sensorHeight": 14.9
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 3121.0762331838564,
+        "expected_y_if_cm": 3114.0939597315437,
+        "relative_error_x": 0.8471192528735634,
+        "relative_error_y": 0.8512607758620689,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS 850D",
+      "parameters": {
+        "focalPlaneXRes": 5765.0,
+        "focalPlaneYRes": 5765.0,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 22.3,
+        "sensorHeight": 14.9
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2690.5829596412555,
+        "expected_y_if_cm": 2684.5637583892617,
+        "relative_error_x": 1.1426583333333333,
+        "relative_error_y": 1.1474625,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS R5",
+      "parameters": {
+        "focalPlaneXRes": 4016.06,
+        "focalPlaneYRes": 4016.06,
+        "pixelWidth": 8192,
+        "pixelHeight": 5464,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2275.5555555555557,
+        "expected_y_if_cm": 2276.6666666666665,
+        "relative_error_x": 0.7648701171874999,
+        "relative_error_y": 0.7640087847730601,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS R6",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 5472,
+        "pixelHeight": 3648,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1520.0,
+        "expected_y_if_cm": 1520.0,
+        "relative_error_x": 1.3327828947368419,
+        "relative_error_y": 1.3200855263157898,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS R6 Mark II",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 5472,
+        "pixelHeight": 3648,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1520.0,
+        "expected_y_if_cm": 1520.0,
+        "relative_error_x": 1.3327828947368419,
+        "relative_error_y": 1.3200855263157898,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Canon EOS R3",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 36.0,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1666.6666666666667,
+        "expected_y_if_cm": 1666.6666666666667,
+        "relative_error_x": 1.1274979999999997,
+        "relative_error_y": 1.1159180000000002,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon D850",
+      "parameters": {
+        "focalPlaneXRes": 4016.06,
+        "focalPlaneYRes": 4016.06,
+        "pixelWidth": 8256,
+        "pixelHeight": 5504,
+        "sensorWidth": 35.9,
+        "sensorHeight": 23.9
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2299.7214484679666,
+        "expected_y_if_cm": 2302.928870292887,
+        "relative_error_x": 0.7463245397286822,
+        "relative_error_y": 0.7438923328488372,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon D780",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6048,
+        "pixelHeight": 4024,
+        "sensorWidth": 35.9,
+        "sensorHeight": 23.9
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1684.6796657381617,
+        "expected_y_if_cm": 1683.682008368201,
+        "relative_error_x": 1.1047502810846557,
+        "relative_error_y": 1.0945344681908549,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon D750",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6016,
+        "pixelHeight": 4016,
+        "sensorWidth": 35.9,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1675.766016713092,
+        "expected_y_if_cm": 1673.3333333333333,
+        "relative_error_x": 1.1159457613031911,
+        "relative_error_y": 1.107488047808765,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon D7500",
+      "parameters": {
+        "focalPlaneXRes": 5765.0,
+        "focalPlaneYRes": 5765.0,
+        "pixelWidth": 5568,
+        "pixelHeight": 3712,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.7
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2369.3617021276596,
+        "expected_y_if_cm": 2364.331210191083,
+        "relative_error_x": 1.4331447557471266,
+        "relative_error_y": 1.4383216594827584,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon D5600",
+      "parameters": {
+        "focalPlaneXRes": 5765.0,
+        "focalPlaneYRes": 5765.0,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.6
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2553.191489361702,
+        "expected_y_if_cm": 2564.102564102564,
+        "relative_error_x": 1.2579583333333333,
+        "relative_error_y": 1.2483500000000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon Z6 II",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6048,
+        "pixelHeight": 4024,
+        "sensorWidth": 35.9,
+        "sensorHeight": 23.9
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1684.6796657381617,
+        "expected_y_if_cm": 1683.682008368201,
+        "relative_error_x": 1.1047502810846557,
+        "relative_error_y": 1.0945344681908549,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Nikon Z7 II",
+      "parameters": {
+        "focalPlaneXRes": 4267.72,
+        "focalPlaneYRes": 4267.72,
+        "pixelWidth": 8256,
+        "pixelHeight": 5504,
+        "sensorWidth": 35.9,
+        "sensorHeight": 23.9
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2299.7214484679666,
+        "expected_y_if_cm": 2302.928870292887,
+        "relative_error_x": 0.8557551841085271,
+        "relative_error_y": 0.8531705668604652,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Sony A7R IV",
+      "parameters": {
+        "focalPlaneXRes": 4267.72,
+        "focalPlaneYRes": 4267.72,
+        "pixelWidth": 9504,
+        "pixelHeight": 6336,
+        "sensorWidth": 35.7,
+        "sensorHeight": 23.8
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2662.1848739495795,
+        "expected_y_if_cm": 2662.18487394958,
+        "relative_error_x": 0.6030892676767681,
+        "relative_error_y": 0.6030892676767676,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Sony A7R V",
+      "parameters": {
+        "focalPlaneXRes": 4267.72,
+        "focalPlaneYRes": 4267.72,
+        "pixelWidth": 9504,
+        "pixelHeight": 6336,
+        "sensorWidth": 35.7,
+        "sensorHeight": 23.8
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2662.1848739495795,
+        "expected_y_if_cm": 2662.18487394958,
+        "relative_error_x": 0.6030892676767681,
+        "relative_error_y": 0.6030892676767676,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Sony A7 IV",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 7008,
+        "pixelHeight": 4672,
+        "sensorWidth": 35.9,
+        "sensorHeight": 23.9
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1952.0891364902507,
+        "expected_y_if_cm": 1954.8117154811716,
+        "relative_error_x": 0.8164283247716895,
+        "relative_error_y": 0.8040254066780823,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Sony A7 III",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 35.6,
+        "sensorHeight": 23.8
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1685.3932584269662,
+        "expected_y_if_cm": 1680.672268907563,
+        "relative_error_x": 1.1038591333333332,
+        "relative_error_y": 1.0982853500000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Sony A9 II",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 35.6,
+        "sensorHeight": 23.8
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1685.3932584269662,
+        "expected_y_if_cm": 1680.672268907563,
+        "relative_error_x": 1.1038591333333332,
+        "relative_error_y": 1.0982853500000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Sony A6600",
+      "parameters": {
+        "focalPlaneXRes": 6240.0,
+        "focalPlaneYRes": 6240.0,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.6
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2553.191489361702,
+        "expected_y_if_cm": 2564.102564102564,
+        "relative_error_x": 1.444,
+        "relative_error_y": 1.4336000000000002,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Pentax K-1 Mark II",
+      "parameters": {
+        "focalPlaneXRes": 3543.31,
+        "focalPlaneYRes": 3543.31,
+        "pixelWidth": 7360,
+        "pixelHeight": 4912,
+        "sensorWidth": 35.9,
+        "sensorHeight": 24.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2050.139275766017,
+        "expected_y_if_cm": 2046.6666666666667,
+        "relative_error_x": 0.7283264809782606,
+        "relative_error_y": 0.731258957654723,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Pentax K-3 Mark III",
+      "parameters": {
+        "focalPlaneXRes": 5765.0,
+        "focalPlaneYRes": 5765.0,
+        "pixelWidth": 6192,
+        "pixelHeight": 4128,
+        "sensorWidth": 23.3,
+        "sensorHeight": 15.5
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2657.510729613734,
+        "expected_y_if_cm": 2663.2258064516127,
+        "relative_error_x": 1.1693233204134366,
+        "relative_error_y": 1.164668120155039,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Pentax K-70",
+      "parameters": {
+        "focalPlaneXRes": 5765.0,
+        "focalPlaneYRes": 5765.0,
+        "pixelWidth": 6016,
+        "pixelHeight": 4000,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.6
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2560.0,
+        "expected_y_if_cm": 2564.102564102564,
+        "relative_error_x": 1.251953125,
+        "relative_error_y": 1.2483500000000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Fujifilm X-T4",
+      "parameters": {
+        "focalPlaneXRes": 6240.0,
+        "focalPlaneYRes": 6240.0,
+        "pixelWidth": 6240,
+        "pixelHeight": 4160,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.6
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2655.31914893617,
+        "expected_y_if_cm": 2666.6666666666665,
+        "relative_error_x": 1.35,
+        "relative_error_y": 1.3400000000000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Fujifilm X-T5",
+      "parameters": {
+        "focalPlaneXRes": 7752.0,
+        "focalPlaneYRes": 7752.0,
+        "pixelWidth": 8240,
+        "pixelHeight": 5504,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.6
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 3506.3829787234044,
+        "expected_y_if_cm": 3528.2051282051284,
+        "relative_error_x": 1.2108252427184465,
+        "relative_error_y": 1.1971511627906977,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Fujifilm X-S10",
+      "parameters": {
+        "focalPlaneXRes": 6240.0,
+        "focalPlaneYRes": 6240.0,
+        "pixelWidth": 6240,
+        "pixelHeight": 4160,
+        "sensorWidth": 23.5,
+        "sensorHeight": 15.6
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2655.31914893617,
+        "expected_y_if_cm": 2666.6666666666665,
+        "relative_error_x": 1.35,
+        "relative_error_y": 1.3400000000000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Fujifilm GFX 50S II",
+      "parameters": {
+        "focalPlaneXRes": 3200.0,
+        "focalPlaneYRes": 3200.0,
+        "pixelWidth": 8256,
+        "pixelHeight": 6192,
+        "sensorWidth": 43.8,
+        "sensorHeight": 32.9
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1884.9315068493152,
+        "expected_y_if_cm": 1882.066869300912,
+        "relative_error_x": 0.6976744186046511,
+        "relative_error_y": 0.7002583979328163,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "OM System OM-1",
+      "parameters": {
+        "focalPlaneXRes": 9600.0,
+        "focalPlaneYRes": 9600.0,
+        "pixelWidth": 5184,
+        "pixelHeight": 3888,
+        "sensorWidth": 17.4,
+        "sensorHeight": 13.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2979.3103448275865,
+        "expected_y_if_cm": 2990.769230769231,
+        "relative_error_x": 2.222222222222222,
+        "relative_error_y": 2.209876543209876,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Olympus OM-D E-M1 Mark III",
+      "parameters": {
+        "focalPlaneXRes": 9600.0,
+        "focalPlaneYRes": 9600.0,
+        "pixelWidth": 5184,
+        "pixelHeight": 3888,
+        "sensorWidth": 17.4,
+        "sensorHeight": 13.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 2979.3103448275865,
+        "expected_y_if_cm": 2990.769230769231,
+        "relative_error_x": 2.222222222222222,
+        "relative_error_y": 2.209876543209876,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Panasonic Lumix S5 II",
+      "parameters": {
+        "focalPlaneXRes": 3545.83,
+        "focalPlaneYRes": 3526.53,
+        "pixelWidth": 6000,
+        "pixelHeight": 4000,
+        "sensorWidth": 35.6,
+        "sensorHeight": 23.8
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 1685.3932584269662,
+        "expected_y_if_cm": 1680.672268907563,
+        "relative_error_x": 1.1038591333333332,
+        "relative_error_y": 1.0982853500000003,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Panasonic Lumix G9 II",
+      "parameters": {
+        "focalPlaneXRes": 9600.0,
+        "focalPlaneYRes": 9600.0,
+        "pixelWidth": 5776,
+        "pixelHeight": 4336,
+        "sensorWidth": 17.3,
+        "sensorHeight": 13.0
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 3338.7283236994217,
+        "expected_y_if_cm": 3335.3846153846152,
+        "relative_error_x": 1.8753462603878117,
+        "relative_error_y": 1.878228782287823,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 15 Pro",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 15 Pro Max",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 14 Pro",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 14",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 13 Pro",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Apple iPhone 13",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4032,
+        "pixelHeight": 3024,
+        "sensorWidth": 6.765,
+        "sensorHeight": 5.074
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 5960.088691796009,
+        "expected_y_if_cm": 5959.795033504139,
+        "relative_error_x": 1.4160714285714286,
+        "relative_error_y": 1.4161904761904762,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "HUAWEI P60 Pro",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4000,
+        "pixelHeight": 3000,
+        "sensorWidth": 6.4,
+        "sensorHeight": 4.8
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 6250.0,
+        "expected_y_if_cm": 6250.0,
+        "relative_error_x": 1.3039999999999998,
+        "relative_error_y": 1.3039999999999998,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "HUAWEI Mate 60 Pro",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4000,
+        "pixelHeight": 3000,
+        "sensorWidth": 6.4,
+        "sensorHeight": 4.8
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 6250.0,
+        "expected_y_if_cm": 6250.0,
+        "relative_error_x": 1.3039999999999998,
+        "relative_error_y": 1.3039999999999998,
+        "needs_review_if_cm": true
+      }
+    },
+    {
+      "model": "Samsung Galaxy S24 Ultra",
+      "parameters": {
+        "focalPlaneXRes": 14400.0,
+        "focalPlaneYRes": 14400.0,
+        "pixelWidth": 4000,
+        "pixelHeight": 3000,
+        "sensorWidth": 6.4,
+        "sensorHeight": 4.8
+      },
+      "source": "server/exifWriter.ts",
+      "constant_line": 85,
+      "status": "REFERENCE_NOT_MANUFACTURER_VERIFIED",
+      "conditional_consistency_check": {
+        "assumed_resolution_unit": "cm (schema default 3; assumption only)",
+        "expected_x_if_cm": 6250.0,
+        "expected_y_if_cm": 6250.0,
+        "relative_error_x": 1.3039999999999998,
+        "relative_error_y": 1.3039999999999998,
+        "needs_review_if_cm": true
+      }
+    }
+  ],
+  "unique_models": 48,
+  "differences": [
+    {
+      "model": "Apple iPhone 16",
+      "variants": {
+        "server/exifToolWriter.ts": {
+          "focalPlaneXRes": 14400.0,
+          "focalPlaneYRes": 14400.0,
+          "pixelWidth": 4032,
+          "pixelHeight": 3024,
+          "sensorWidth": 6.765,
+          "sensorHeight": 5.074
+        }
+      }
+    },
+    {
+      "model": "Apple iPhone 16 Pro",
+      "variants": {
+        "server/exifToolWriter.ts": {
+          "focalPlaneXRes": 14400.0,
+          "focalPlaneYRes": 14400.0,
+          "pixelWidth": 4032,
+          "pixelHeight": 3024,
+          "sensorWidth": 6.765,
+          "sensorHeight": 5.074
+        }
+      }
+    },
+    {
+      "model": "Apple iPhone 16 Pro Max",
+      "variants": {
+        "server/exifToolWriter.ts": {
+          "focalPlaneXRes": 14400.0,
+          "focalPlaneYRes": 14400.0,
+          "pixelWidth": 4032,
+          "pixelHeight": 3024,
+          "sensorWidth": 6.765,
+          "sensorHeight": 5.074
+        }
+      }
+    }
+  ],
+  "warning": "像素宽高与传感器尺寸仅是旧表参考；不得用其强行改输出尺寸。FocalPlane 单位和数值均须实证。"
+}

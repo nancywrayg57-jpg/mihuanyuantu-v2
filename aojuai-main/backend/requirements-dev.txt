@@ -1,0 +1,12 @@
+# AOJUAI Backend - Development dependencies
+#
+# Install:
+#   pip install -r requirements-dev.txt
+#
+-r requirements.txt
+pytest
+pytest-asyncio
+pytest-cov
+ruff
+mypy
+factory-boy

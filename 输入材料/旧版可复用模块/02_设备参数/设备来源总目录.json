@@ -1,0 +1,5334 @@
+{
+  "devices": [
+    {
+      "display_name": "A6700",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "A7 IV",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "A7C II",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "A7CR",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "A7R V",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Apple iPhone 13",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-709"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-686"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-665"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-644"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-655"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Apple iPhone 13 Pro",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-677"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-664"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-640"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-632"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-635"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-637"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Apple iPhone 13 Pro Max",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-719"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-705"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-641"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Apple iPhone 14",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-713"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-700"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-708"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-690"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Apple iPhone 14 Pro",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-695"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-699"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-702"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-680"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-681"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-666"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Apple iPhone 14 Pro Max",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-722"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Apple iPhone 15",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1063"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-703"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-687"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-661"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Apple iPhone 15 Plus",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-684"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-638"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Apple iPhone 15 Pro",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-718"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-659"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-649"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-651"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Apple iPhone 15 Pro Max",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1061"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-729"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-689"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-668"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-672"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Apple iPhone 16",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1062"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Apple iPhone 16 Pro",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1060"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Apple iPhone 16 Pro Max",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1059"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS 1D X Mark III",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-789"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-782"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-748"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS 5D Mark III",
+      "source_kinds": [
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS 5D Mark IV",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-990"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-991"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-992"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-993"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-994"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-995"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-996"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-997"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-998"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-825"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-781"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-750"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-753"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-758"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-764"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS 6D Mark II",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-830"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-803"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-779"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS 850D",
+      "source_kinds": [
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS 90D",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-776"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-777"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-751"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-734"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-749"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS M50 Mark II",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-858"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS R10",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-797"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-760"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS R3",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-815"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-774"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-775"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-759"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS R5",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-788"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-799"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS R5 Mark II",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-790"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-735"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-743"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS R6",
+      "source_kinds": [
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS R6 Mark II",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-791"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-792"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-802"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-783"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-752"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-754"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-745"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS R7",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-828"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-793"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-741"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS-1D X",
+      "source_kinds": [
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS-1D X Mark II",
+      "source_kinds": [
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Canon EOS-1D X Mark III",
+      "source_kinds": [
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "D3500",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1883"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "D5600",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1883"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "D7500",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1883"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "D780",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1883"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "D850",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1883"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "DJI Action 2",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1999"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "DJI Osmo Action 3",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1091"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-919"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-920"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-921"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-929"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-883"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-892"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "DJI Osmo Action 4",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_NAME_ONLY",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1089"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1090"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1092"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-931"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-915"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-895"
+        },
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1999"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "DJI Osmo Action 5 Pro",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1999"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "DJI Osmo Pocket 3",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-928"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-901"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-885"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "DJI Pocket 3",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1093"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "EOS 5D Mark IV",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1883"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "EOS 6D Mark II",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1883"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "EOS 850D",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1883"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "EOS 90D",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1883"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "EOS R5 Mark II",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "EOS R50",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "EOS R6 Mark II",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "EOS R8",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "EOS-1D X Mark III",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1883"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Find X8 Pro",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Fujifilm GFX 100S",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1024"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Fujifilm GFX 100S II",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-865"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-867"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-872"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-876"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-851"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-832"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-838"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-842"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Fujifilm GFX 50S II",
+      "source_kinds": [
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Fujifilm X-H2",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1027"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Fujifilm X-H2S",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1021"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-871"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-846"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-856"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-841"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Fujifilm X-S10",
+      "source_kinds": [
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Fujifilm X-S20",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1025"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-863"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-864"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Fujifilm X-T4",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1022"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1028"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Fujifilm X-T5",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1026"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1019"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1020"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-874"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-875"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-879"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-845"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Fujifilm X100VI",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1023"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-839"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "G9 II",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Galaxy S24 Ultra",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Galaxy S25 Ultra",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Garmin VIRB 360",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-900"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-909"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-914"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-882"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-889"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-891"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "GH7",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Google Pixel 7 Pro",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-717"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-701"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-712"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-675"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-679"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-663"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-646"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-652"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Google Pixel 8",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-720"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-725"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-696"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-711"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-671"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-673"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-639"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-645"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Google Pixel 8 Pro",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-682"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-693"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-669"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-647"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "GoPro HERO10 Black",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_NAME_ONLY",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-918"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-903"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-887"
+        },
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1999"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "GoPro HERO11 Black",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_NAME_ONLY",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1087"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-925"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-926"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-904"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-911"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-917"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-884"
+        },
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1999"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "GoPro HERO11 Black Mini",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-923"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-899"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-906"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-907"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "GoPro HERO12 Black",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_NAME_ONLY",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1085"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-922"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-930"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-902"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-898"
+        },
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1999"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "GoPro HERO13 Black",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1084"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1086"
+        },
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1999"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "GoPro HERO9 Black",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-924"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-908"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-913"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-886"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-888"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-893"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-894"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-897"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "GoPro MAX",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1088"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Huawei Mate 60 Pro",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1070"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Huawei Mate 60 Pro+",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1072"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Huawei P60 Art",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1073"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Huawei P60 Pro",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1069"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1071"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-715"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-698"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Insta360 GO 3S",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1999"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Insta360 ONE RS",
+      "source_kinds": [
+        "UI_NAME_ONLY",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1999"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Insta360 ONE RS 1-Inch 360",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-905"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-910"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-912"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Insta360 X4",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_NAME_ONLY",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-916"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-890"
+        },
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1999"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "iPhone 13 Pro",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "iPhone 14 Pro",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "iPhone 14 Pro Max",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "iPhone 15 Pro",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "iPhone 15 Pro Max",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "iPhone 16 Pro",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "iPhone 16 Pro Max",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "K-1 Mark II",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1883"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "K-70",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1883"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Leica M11",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1051"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1054"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-808"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-814"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-816"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-755"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-763"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-737"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless",
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Leica M11-P",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1057"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Leica Q3",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1050"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1053"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1056"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Leica SL3",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1049"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1052"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1055"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1058"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-819"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-771"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-738"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless",
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Mate 60 Pro",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon D5600",
+      "source_kinds": [
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon D6",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-827"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon D750",
+      "source_kinds": [
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon D7500",
+      "source_kinds": [
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon D780",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-831"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-787"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-732"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon D850",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1002"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1003"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1004"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1005"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1006"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1007"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1008"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-999"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1000"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1001"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-807"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-756"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-757"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon Z30",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-873"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-847"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-850"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-834"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-835"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon Z5 II",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-818"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-822"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-823"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-796"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-736"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-746"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon Z50 II",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-805"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-786"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-733"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon Z6 II",
+      "source_kinds": [
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon Z6 III",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-826"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-766"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-742"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon Z7 II",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-811"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-820"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon Z8",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-810"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-795"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-804"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-744"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon Z9",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-817"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-773"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-785"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Nikon Zfc",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-824"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-813"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-794"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Olympus OM-1 Mark II",
+      "source_kinds": [
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Olympus OM-5",
+      "source_kinds": [
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Olympus OM-D E-M1 Mark III",
+      "source_kinds": [
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "OM System OM-1",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1029"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1030"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1032"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1034"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1036"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1037"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "OM System OM-1 Mark II",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1033"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1038"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-870"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-849"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-854"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-836"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "OM System OM-5",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1031"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1035"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-843"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-852"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-853"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-855"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-860"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "OM-1 Mark II",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "OM-5",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "OnePlus 12",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-723"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-730"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-694"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-678"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "OPPO Find X6 Pro",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1081"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "OPPO Find X7",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1082"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "OPPO Find X7 Ultra",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1083"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1079"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1080"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-716"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-724"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-658"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-654"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "P60 Pro",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Panasonic DC-GH6",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1041"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1044"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1046"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Panasonic DC-S1",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1045"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Panasonic DC-S1R",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1042"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1048"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Panasonic DC-S5M2",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1043"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1047"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1039"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1040"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Panasonic Lumix G9 II",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-877"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-844"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-861"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Panasonic Lumix S5 II",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-866"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-848"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-859"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-840"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Pentax K-1 Mark II",
+      "source_kinds": [
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Pentax K-3 Mark III",
+      "source_kinds": [
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Pentax K-70",
+      "source_kinds": [
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Pixel 8 Pro",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Pixel 9 Pro",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "RX0 II",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1999"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Samsung Galaxy S23 Ultra",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-662"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-653"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Samsung Galaxy S23+",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-726"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-706"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-685"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-688"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-667"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-634"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Samsung Galaxy S24",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-714"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-721"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-728"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-656"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-633"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Samsung Galaxy S24 Ultra",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-704"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-676"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-670"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Samsung Galaxy S24+",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-710"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-692"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-642"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-636"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Samsung Galaxy Z Fold 5",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-727"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-731"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-683"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-660"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-648"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Samsung SM-S918B",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1068"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Samsung SM-S926B",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1067"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Samsung SM-S928B",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1064"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1065"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Samsung SM-S931B",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1066"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "SL3",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony A1",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-798"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-762"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony A6600",
+      "source_kinds": [
+        "SOURCE_SPEC"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony A6700",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-880"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-862"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-878"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-809"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-780"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless",
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony A7 III",
+      "source_kinds": [
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony A7 IV",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-932"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-769"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-765"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-767"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless",
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony A7C II",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-857"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-833"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-739"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless",
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony A7R IV",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-761"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-768"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-747"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony A7R V",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-881"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-869"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-829"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-837"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-784"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless",
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony A7S III",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-821"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-800"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-770"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-740"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony A9 II",
+      "source_kinds": [
+        "SOURCE_SPEC",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifToolWriter.ts"
+        },
+        {
+          "kind": "SOURCE_SPEC",
+          "reference": "server/exifWriter.ts"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2267"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony A9 III",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-806"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-812"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-801"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-772"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-778"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "dslr"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony FDR-X3000",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1999"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony ILCE-1",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1014"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony ILCE-7CM2",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1016"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony ILCE-7M3",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1012"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony ILCE-7M4",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1011"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1018"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony ILCE-7RM5",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1009"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1010"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1015"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony ILCE-7SM3",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1013"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony RX0 II",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-927"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-896"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "action"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Sony ZV-E1",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1017"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-868"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "mirrorless"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "vivo X100 Pro",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-657"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-643"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "vivo X200 Pro",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "X-H2",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "X-H2S",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "X-S20",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "X-T5",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "X2D 100C",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Xiaomi 13 Ultra",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1077"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Xiaomi 14",
+      "source_kinds": [
+        "ONLINE_PRESET"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1076"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Xiaomi 14 Pro",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1078"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-697"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-707"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-650"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Xiaomi 14 Ultra",
+      "source_kinds": [
+        "ONLINE_PRESET",
+        "UI_NAME_ONLY",
+        "UI_MAKERNOTE_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1074"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-1075"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-691"
+        },
+        {
+          "kind": "ONLINE_PRESET",
+          "reference": "legacy-online-674"
+        },
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        },
+        {
+          "kind": "UI_MAKERNOTE_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:2909"
+        }
+      ],
+      "legacy_categories": [
+        "phone"
+      ],
+      "complete_preset_available": true,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Xiaomi 15 Ultra",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1841"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Z5 II",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Z6 III",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Z7 II",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Z8",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "Z9",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    },
+    {
+      "display_name": "ZV-E1",
+      "source_kinds": [
+        "UI_NAME_ONLY"
+      ],
+      "references": [
+        {
+          "kind": "UI_NAME_ONLY",
+          "reference": "client/src/pages/ParameterConfig.tsx:1941"
+        }
+      ],
+      "legacy_categories": [],
+      "complete_preset_available": false,
+      "support_status": "NOT_ACTIVATED_NOT_RUNTIME_VERIFIED",
+      "alias_policy": "ONLY_WHITESPACE_CASE_AND_DUPLICATE_BRAND_NORMALIZED_NO_PRODUCT_CODE_ALIAS_MERGE"
+    }
+  ],
+  "warning": "品牌+型号显示键不是厂商唯一型号ID。ILCE 等别名未擅自合并；名称目录不能作为可用模板数量。"
+}

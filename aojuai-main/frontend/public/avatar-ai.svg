@@ -1,0 +1,244 @@
+<svg
+  width="256"
+  height="256"
+  viewBox="0 0 256 256"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-label="AI"
+>
+  <defs>
+    <linearGradient id="bg" x1="32" y1="32" x2="224" y2="224" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3B82F6">
+        <animate
+          attributeName="stop-color"
+          values="#3B82F6;#06B6D4;#22C55E;#7C3AED;#3B82F6"
+          dur="8s"
+          repeatCount="indefinite"
+        />
+      </stop>
+      <stop offset="1" stop-color="#7C3AED">
+        <animate
+          attributeName="stop-color"
+          values="#7C3AED;#F472B6;#F59E0B;#06B6D4;#7C3AED"
+          dur="8s"
+          repeatCount="indefinite"
+        />
+      </stop>
+      <animateTransform
+        attributeName="gradientTransform"
+        attributeType="XML"
+        type="rotate"
+        from="0 128 128"
+        to="360 128 128"
+        dur="16s"
+        repeatCount="indefinite"
+      />
+    </linearGradient>
+    <radialGradient
+      id="spot"
+      cx="0"
+      cy="0"
+      r="1"
+      gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(88 70) rotate(55) scale(220)"
+    >
+      <stop stop-color="white" stop-opacity="0.18" />
+      <stop offset="1" stop-color="white" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="holo" x1="0" y1="0" x2="256" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22D3EE">
+        <animate
+          attributeName="stop-color"
+          values="#22D3EE;#A78BFA;#F472B6;#22D3EE"
+          dur="4.8s"
+          repeatCount="indefinite"
+        />
+      </stop>
+      <stop offset="0.5" stop-color="#A78BFA">
+        <animate
+          attributeName="stop-color"
+          values="#A78BFA;#F472B6;#22D3EE;#A78BFA"
+          dur="4.8s"
+          repeatCount="indefinite"
+        />
+      </stop>
+      <stop offset="1" stop-color="#F472B6">
+        <animate
+          attributeName="stop-color"
+          values="#F472B6;#22D3EE;#A78BFA;#F472B6"
+          dur="4.8s"
+          repeatCount="indefinite"
+        />
+      </stop>
+      <animateTransform
+        attributeName="gradientTransform"
+        attributeType="XML"
+        type="rotate"
+        from="0 128 128"
+        to="360 128 128"
+        dur="6s"
+        repeatCount="indefinite"
+      />
+    </linearGradient>
+    <linearGradient id="ringGrad" x1="0" y1="0" x2="256" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22D3EE" stop-opacity="0" />
+      <stop offset="0.22" stop-color="#22D3EE" stop-opacity="0.92" />
+      <stop offset="0.52" stop-color="#A78BFA" stop-opacity="0.92" />
+      <stop offset="0.82" stop-color="#F472B6" stop-opacity="0.92" />
+      <stop offset="1" stop-color="#F472B6" stop-opacity="0" />
+      <animateTransform
+        attributeName="gradientTransform"
+        attributeType="XML"
+        type="rotate"
+        from="0 128 128"
+        to="360 128 128"
+        dur="3.4s"
+        repeatCount="indefinite"
+      />
+    </linearGradient>
+    <linearGradient id="shimmer" x1="0" y1="0" x2="256" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="white" stop-opacity="0" />
+      <stop offset="0.5" stop-color="white" stop-opacity="0.55" />
+      <stop offset="1" stop-color="white" stop-opacity="0" />
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.6" result="blur" />
+      <feColorMatrix
+        in="blur"
+        type="matrix"
+        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.35 0"
+        result="glow"
+      />
+      <feMerge>
+        <feMergeNode in="glow" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0.6" />
+    </filter>
+    <clipPath id="cardClip" clipPathUnits="userSpaceOnUse">
+      <rect x="20" y="20" width="216" height="216" rx="64" />
+    </clipPath>
+    <clipPath id="textClip" clipPathUnits="userSpaceOnUse">
+      <text
+        x="128"
+        y="158"
+        text-anchor="middle"
+        font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial"
+        font-size="96"
+        font-weight="800"
+        letter-spacing="2"
+      >
+        AI
+      </text>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#cardClip)">
+    <rect x="20" y="20" width="216" height="216" rx="64" fill="url(#bg)" />
+    <rect x="20" y="20" width="216" height="216" rx="64" fill="url(#spot)" />
+
+    <g opacity="0.9" filter="url(#soft)">
+      <circle
+        cx="128"
+        cy="128"
+        r="86"
+        fill="none"
+        stroke="url(#ringGrad)"
+        stroke-width="8"
+        stroke-linecap="round"
+        stroke-dasharray="180 360"
+      >
+        <animate attributeName="stroke-dashoffset" from="0" to="540" dur="2.8s" repeatCount="indefinite" />
+      </circle>
+      <circle
+        cx="128"
+        cy="128"
+        r="72"
+        fill="none"
+        stroke="white"
+        stroke-opacity="0.22"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-dasharray="4 18"
+      >
+        <animate attributeName="stroke-dashoffset" from="0" to="-220" dur="3.4s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="128" cy="44" r="3.2" fill="white" opacity="0.85">
+        <animateTransform
+          attributeName="transform"
+          attributeType="XML"
+          type="rotate"
+          from="0 128 128"
+          to="360 128 128"
+          dur="2.6s"
+          repeatCount="indefinite"
+        />
+        <animate attributeName="opacity" values="0.12;0.88;0.12" dur="1.3s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="128" cy="44" r="2" fill="#22D3EE" opacity="0.65">
+        <animateTransform
+          attributeName="transform"
+          attributeType="XML"
+          type="rotate"
+          from="0 128 128"
+          to="-360 128 128"
+          dur="4.8s"
+          repeatCount="indefinite"
+        />
+        <animate attributeName="opacity" values="0.08;0.55;0.08" dur="2.4s" repeatCount="indefinite" />
+      </circle>
+    </g>
+
+    <g filter="url(#glow)">
+      <g>
+        <animateTransform
+          attributeName="transform"
+          attributeType="XML"
+          type="rotate"
+          values="-3 128 128;3 128 128;-3 128 128"
+          dur="3.2s"
+          repeatCount="indefinite"
+        />
+
+        <text
+          x="128"
+          y="158"
+          text-anchor="middle"
+          font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial"
+          font-size="96"
+          font-weight="900"
+          letter-spacing="2"
+          fill="white"
+          opacity="0.92"
+        >
+          AI
+          <animate attributeName="opacity" values="0.78;0.96;0.78" dur="2.1s" repeatCount="indefinite" />
+        </text>
+
+        <g clip-path="url(#textClip)">
+          <rect x="-64" y="88" width="128" height="80" fill="url(#shimmer)" opacity="0.58">
+            <animate attributeName="x" values="-64;256" dur="2.3s" repeatCount="indefinite" />
+          </rect>
+          <rect x="0" y="0" width="256" height="256" fill="url(#holo)" opacity="0.34">
+            <animate attributeName="opacity" values="0.2;0.4;0.2" dur="2.6s" repeatCount="indefinite" />
+          </rect>
+        </g>
+      </g>
+    </g>
+
+    <rect
+      x="20"
+      y="20"
+      width="216"
+      height="216"
+      rx="64"
+      fill="none"
+      stroke="white"
+      stroke-opacity="0.14"
+      stroke-width="2"
+    />
+  </g>
+</svg>

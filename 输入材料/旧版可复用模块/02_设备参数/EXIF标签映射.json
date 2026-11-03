@@ -1,0 +1,434 @@
+{
+  "source": "server/exifToolWriter.ts",
+  "assignments": [
+    {
+      "tag": "Make",
+      "expression": "preset.camera_make",
+      "source_line": 338,
+      "preset_fields": [
+        "camera_make"
+      ]
+    },
+    {
+      "tag": "Model",
+      "expression": "preset.camera_model",
+      "source_line": 339,
+      "preset_fields": [
+        "camera_model"
+      ]
+    },
+    {
+      "tag": "Software",
+      "expression": "preset.software",
+      "source_line": 340,
+      "preset_fields": [
+        "software"
+      ]
+    },
+    {
+      "tag": "Artist",
+      "expression": "preset.author",
+      "source_line": 341,
+      "preset_fields": [
+        "author"
+      ]
+    },
+    {
+      "tag": "Copyright",
+      "expression": "preset.copyright",
+      "source_line": 342,
+      "preset_fields": [
+        "copyright"
+      ]
+    },
+    {
+      "tag": "DateTime",
+      "expression": "dateStr",
+      "source_line": 343,
+      "preset_fields": []
+    },
+    {
+      "tag": "Orientation",
+      "expression": "1",
+      "source_line": 344,
+      "preset_fields": []
+    },
+    {
+      "tag": "XResolution",
+      "expression": "72",
+      "source_line": 345,
+      "preset_fields": []
+    },
+    {
+      "tag": "YResolution",
+      "expression": "72",
+      "source_line": 346,
+      "preset_fields": []
+    },
+    {
+      "tag": "ResolutionUnit",
+      "expression": "2",
+      "source_line": 347,
+      "preset_fields": []
+    },
+    {
+      "tag": "YCbCrPositioning",
+      "expression": "2",
+      "source_line": 348,
+      "preset_fields": []
+    },
+    {
+      "tag": "ExifVersion",
+      "expression": "'0230'",
+      "source_line": 351,
+      "preset_fields": []
+    },
+    {
+      "tag": "FlashpixVersion",
+      "expression": "'0100'",
+      "source_line": 352,
+      "preset_fields": []
+    },
+    {
+      "tag": "DateTimeOriginal",
+      "expression": "dateStr",
+      "source_line": 353,
+      "preset_fields": []
+    },
+    {
+      "tag": "CreateDate",
+      "expression": "dateStr",
+      "source_line": 354,
+      "preset_fields": []
+    },
+    {
+      "tag": "SubSecTime",
+      "expression": "subsecMs",
+      "source_line": 355,
+      "preset_fields": []
+    },
+    {
+      "tag": "SubSecTimeOriginal",
+      "expression": "subsecMs",
+      "source_line": 356,
+      "preset_fields": []
+    },
+    {
+      "tag": "SubSecTimeDigitized",
+      "expression": "subsecMs",
+      "source_line": 357,
+      "preset_fields": []
+    },
+    {
+      "tag": "ComponentsConfiguration",
+      "expression": "'1 2 3 0'",
+      "source_line": 358,
+      "preset_fields": []
+    },
+    {
+      "tag": "ColorSpace",
+      "expression": "(preset.color_space?.toLowerCase() === 'adobergb') ? 65535 : 1",
+      "source_line": 359,
+      "preset_fields": [
+        "color_space"
+      ]
+    },
+    {
+      "tag": "ExifImageWidth",
+      "expression": "pixelWidth",
+      "source_line": 360,
+      "preset_fields": []
+    },
+    {
+      "tag": "ExifImageHeight",
+      "expression": "pixelHeight",
+      "source_line": 361,
+      "preset_fields": []
+    },
+    {
+      "tag": "ExposureBiasValue",
+      "expression": "0",
+      "source_line": 362,
+      "preset_fields": []
+    },
+    {
+      "tag": "CustomRendered",
+      "expression": "0",
+      "source_line": 363,
+      "preset_fields": []
+    },
+    {
+      "tag": "SensingMethod",
+      "expression": "2",
+      "source_line": 364,
+      "preset_fields": []
+    },
+    {
+      "tag": "DigitalZoomRatio",
+      "expression": "0",
+      "source_line": 365,
+      "preset_fields": []
+    },
+    {
+      "tag": "Contrast",
+      "expression": "0",
+      "source_line": 366,
+      "preset_fields": []
+    },
+    {
+      "tag": "Saturation",
+      "expression": "0",
+      "source_line": 367,
+      "preset_fields": []
+    },
+    {
+      "tag": "Sharpness",
+      "expression": "0",
+      "source_line": 368,
+      "preset_fields": []
+    },
+    {
+      "tag": "SubjectDistanceRange",
+      "expression": "0",
+      "source_line": 369,
+      "preset_fields": []
+    },
+    {
+      "tag": "ImageUniqueID",
+      "expression": "uniqueId.slice(0, 32)",
+      "source_line": 373,
+      "preset_fields": []
+    },
+    {
+      "tag": "FocalPlaneXResolution",
+      "expression": "focalPlaneXRes",
+      "source_line": 380,
+      "preset_fields": []
+    },
+    {
+      "tag": "FocalPlaneYResolution",
+      "expression": "focalPlaneYRes",
+      "source_line": 381,
+      "preset_fields": []
+    },
+    {
+      "tag": "FocalPlaneResolutionUnit",
+      "expression": "focalPlaneUnit",
+      "source_line": 382,
+      "preset_fields": []
+    },
+    {
+      "tag": "ISO",
+      "expression": "normalizedISO",
+      "source_line": 391,
+      "preset_fields": []
+    },
+    {
+      "tag": "ExposureTime",
+      "expression": "shutterStr",
+      "source_line": 397,
+      "preset_fields": []
+    },
+    {
+      "tag": "ShutterSpeedValue",
+      "expression": "shutterStr",
+      "source_line": 398,
+      "preset_fields": []
+    },
+    {
+      "tag": "FNumber",
+      "expression": "normalizedAperture",
+      "source_line": 407,
+      "preset_fields": []
+    },
+    {
+      "tag": "ApertureValue",
+      "expression": "normalizedAperture",
+      "source_line": 408,
+      "preset_fields": []
+    },
+    {
+      "tag": "FocalLength",
+      "expression": "normalizedFocalLength",
+      "source_line": 417,
+      "preset_fields": []
+    },
+    {
+      "tag": "FocalLengthIn35mmFormat",
+      "expression": "Math.round(preset.focal_length_equiv)",
+      "source_line": 419,
+      "preset_fields": [
+        "focal_length_equiv"
+      ]
+    },
+    {
+      "tag": "LensModel",
+      "expression": "preset.lens_model",
+      "source_line": 420,
+      "preset_fields": [
+        "lens_model"
+      ]
+    },
+    {
+      "tag": "LensMake",
+      "expression": "preset.lens_make",
+      "source_line": 421,
+      "preset_fields": [
+        "lens_make"
+      ]
+    },
+    {
+      "tag": "MaxApertureValue",
+      "expression": "preset.lens_max_aperture",
+      "source_line": 422,
+      "preset_fields": [
+        "lens_max_aperture"
+      ]
+    },
+    {
+      "tag": "MeteringMode",
+      "expression": "meteringModeToCode(preset.metering_mode)",
+      "source_line": 425,
+      "preset_fields": [
+        "metering_mode"
+      ]
+    },
+    {
+      "tag": "WhiteBalance",
+      "expression": "(!preset.white_balance || preset.white_balance.toLowerCase() === 'auto') ? 0 : 1",
+      "source_line": 426,
+      "preset_fields": [
+        "white_balance"
+      ]
+    },
+    {
+      "tag": "ExposureMode",
+      "expression": "exposureModeToCode(preset.exposure_mode)",
+      "source_line": 427,
+      "preset_fields": [
+        "exposure_mode"
+      ]
+    },
+    {
+      "tag": "Flash",
+      "expression": "flashToCode(preset.flash_mode)",
+      "source_line": 428,
+      "preset_fields": [
+        "flash_mode"
+      ]
+    },
+    {
+      "tag": "ExposureProgram",
+      "expression": "expProgramMap[preset.exposure_mode ?? 'auto'] ?? 2",
+      "source_line": 435,
+      "preset_fields": [
+        "exposure_mode"
+      ]
+    },
+    {
+      "tag": "SceneCaptureType",
+      "expression": "scene === 'portrait' ? 2 : scene === 'landscape' ? 1 : scene === 'night' ? 3 : 0",
+      "source_line": 439,
+      "preset_fields": []
+    },
+    {
+      "tag": "LightSource",
+      "expression": "lightSourceMap[preset.white_balance?.toLowerCase() ?? 'auto'] ?? 0",
+      "source_line": 446,
+      "preset_fields": [
+        "white_balance"
+      ]
+    },
+    {
+      "tag": "GPSLatitude",
+      "expression": "Math.abs(gpsLat)",
+      "source_line": 471,
+      "preset_fields": []
+    },
+    {
+      "tag": "GPSLatitudeRef",
+      "expression": "gpsLat >= 0 ? 'N' : 'S'",
+      "source_line": 472,
+      "preset_fields": []
+    },
+    {
+      "tag": "GPSLongitude",
+      "expression": "Math.abs(gpsLng)",
+      "source_line": 473,
+      "preset_fields": []
+    },
+    {
+      "tag": "GPSLongitudeRef",
+      "expression": "gpsLng >= 0 ? 'E' : 'W'",
+      "source_line": 474,
+      "preset_fields": []
+    },
+    {
+      "tag": "GPSAltitude",
+      "expression": "Math.abs(gpsAlt)",
+      "source_line": 476,
+      "preset_fields": []
+    },
+    {
+      "tag": "GPSAltitudeRef",
+      "expression": "gpsAlt >= 0 ? 0 : 1",
+      "source_line": 477,
+      "preset_fields": []
+    },
+    {
+      "tag": "GPSTimeStamp",
+      "expression": "`${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`",
+      "source_line": 480,
+      "preset_fields": []
+    },
+    {
+      "tag": "GPSDateStamp",
+      "expression": "`${now.getUTCFullYear()}:${pad(now.getUTCMonth() + 1)}:${pad(now.getUTCDate())}`",
+      "source_line": 481,
+      "preset_fields": []
+    },
+    {
+      "tag": "GPSMeasureMode",
+      "expression": "'3'",
+      "source_line": 482,
+      "preset_fields": []
+    },
+    {
+      "tag": "GPSImgDirectionRef",
+      "expression": "'T'",
+      "source_line": 483,
+      "preset_fields": []
+    },
+    {
+      "tag": "GPSImgDirection",
+      "expression": "Math.floor(Math.random() * 360)",
+      "source_line": 484,
+      "preset_fields": []
+    },
+    {
+      "tag": "GPSSpeedRef",
+      "expression": "'K'",
+      "source_line": 485,
+      "preset_fields": []
+    },
+    {
+      "tag": "GPSSpeed",
+      "expression": "0",
+      "source_line": 486,
+      "preset_fields": []
+    },
+    {
+      "tag": "GPSProcessingMethod",
+      "expression": "'GPS'",
+      "source_line": 487,
+      "preset_fields": []
+    },
+    {
+      "tag": "ThumbnailImage",
+      "expression": "`@${thumbFile}`",
+      "source_line": 498,
+      "preset_fields": []
+    }
+  ],
+  "warning": "记录旧赋值表达式而非批准正确性。ShutterSpeedValue、ApertureValue、MaxApertureValue 的数值/APEX及 ExifTool 输入输出约定须单独验证；当前 writer 未实际使用 maker_note_template。"
+}

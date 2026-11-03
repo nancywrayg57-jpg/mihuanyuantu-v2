@@ -1,0 +1,108 @@
+{
+  "PARAMETER_CATEGORIES": {
+    "values": [
+      "phone",
+      "dslr",
+      "mirrorless",
+      "action"
+    ],
+    "source_line": 9
+  },
+  "PARAMETER_METERING_MODES": {
+    "values": [
+      "evaluative",
+      "center",
+      "spot",
+      "partial"
+    ],
+    "source_line": 10
+  },
+  "PARAMETER_EXPOSURE_MODES": {
+    "values": [
+      "auto",
+      "P",
+      "A",
+      "S",
+      "M"
+    ],
+    "source_line": 11
+  },
+  "PARAMETER_SHUTTER_TYPES": {
+    "values": [
+      "mechanical",
+      "electronic",
+      "efcs"
+    ],
+    "source_line": 12
+  },
+  "PARAMETER_SENSOR_TYPES": {
+    "values": [
+      "CMOS",
+      "CCD"
+    ],
+    "source_line": 13
+  },
+  "PARAMETER_FLASH_MODES": {
+    "values": [
+      "off",
+      "auto",
+      "forced",
+      "redeye",
+      "slow"
+    ],
+    "source_line": 14
+  },
+  "PARAMETER_STABILIZATION_TYPES": {
+    "values": [
+      "none",
+      "ois",
+      "eis",
+      "ibis"
+    ],
+    "source_line": 15
+  },
+  "PARAMETER_IMAGE_FORMATS": {
+    "values": [
+      "JPEG",
+      "RAW",
+      "HEIC",
+      "PNG"
+    ],
+    "source_line": 16
+  },
+  "PARAMETER_COLOR_SPACES": {
+    "values": [
+      "sRGB",
+      "AdobeRGB",
+      "ProPhotoRGB",
+      "DisplayP3"
+    ],
+    "source_line": 17
+  },
+  "PARAMETER_IMAGE_ORIENTATIONS": {
+    "values": [
+      "landscape",
+      "portrait"
+    ],
+    "source_line": 18
+  },
+  "PARAMETER_GPS_MODES": {
+    "values": [
+      "none",
+      "fixed",
+      "random_by_scene"
+    ],
+    "source_line": 19
+  },
+  "PARAMETER_SCENE_TYPES": {
+    "values": [
+      "landscape",
+      "urban",
+      "indoor",
+      "beach",
+      "mountain",
+      "street"
+    ],
+    "source_line": 20
+  }
+}

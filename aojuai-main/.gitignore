@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+/lib/
+/lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.venv/
+venv/
+ENV/
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+*.pid
+
+# Node
+node_modules/
+.pnpm-store/
+.uv-cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+backend/.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+frontend/dist/
+# Frontend build helpers are source files (track them)
+!frontend/build/
+!frontend/build/**
+
+# Local run artifacts
+run/
+.autubuild/
+
+# Git subdirectories (will use main repo)
+backend/.git/
+frontend/.git/
+support_dev_source_code/
+
+# local CMS preview artifacts
+.cms-preview/
+frontend/.env.local
+backend/.env
+
+# SQLite 轻量档数据库与备份
+backend/data/

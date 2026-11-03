@@ -1,0 +1,6 @@
+          {() => <ProtectedRoute component={Dashboard} />}
+        </Route>
+        <Route path="/parameters">
+          {() => <ProtectedRoute component={ParameterConfig} />}
+        </Route>
+        <Route path="/history">

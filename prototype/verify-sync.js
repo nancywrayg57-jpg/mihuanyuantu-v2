@@ -1,0 +1,12 @@
+const fs = require('fs');
+const path = require('path');
+const js = fs.readFileSync(path.join(__dirname, 'prototype.js'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const m = html.match(/<script>\r?\n([\s\S]*?)\r?\n\s*<\/script>\s*<\/body>/);
+console.log('html script found', !!m);
+console.log('html===js', !!(m && m[1] === js.replace(/\s+$/, '')));
+console.log('has canManageUsers', js.includes('canManageUsers'));
+console.log('has visibleHistory', js.includes('visibleHistory'));
+console.log('html has canManageUsers', html.includes('canManageUsers'));
+console.log('actorId role().userId', js.includes('actorId: role().userId'));
+console.log('support user.manage', js.includes("permissions: ['ticket.read', 'account.unfreeze', 'user.manage']"));

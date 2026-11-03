@@ -1,0 +1,126 @@
+{
+  "modules": [
+    {
+      "code": "assistant",
+      "label": "AI 助手",
+      "description": "租户级 AI 助手配置基座，提供统一的模型、密钥与提示词基线",
+      "labelKey": "system.moduleCatalog.assistant.label",
+      "descriptionKey": "system.moduleCatalog.assistant.description",
+      "layer": "capability",
+      "defaultEnabled": true,
+      "aliases": [
+        "ai_assistant"
+      ],
+      "routePrefixes": [
+        "/assistant"
+      ],
+      "apiPrefixes": [
+        "/api/v1/assistant",
+        "/api/v1/ai-config"
+      ],
+      "permissionPrefixes": [
+        "assistant"
+      ]
+    },
+    {
+      "code": "speech",
+      "label": "语音能力",
+      "description": "基础语音能力，规范入口统一收口到租户设置的语音 tab",
+      "labelKey": "system.moduleCatalog.speech.label",
+      "descriptionKey": "system.moduleCatalog.speech.description",
+      "layer": "capability",
+      "defaultEnabled": true,
+      "aliases": [],
+      "routePrefixes": [
+        "/speech",
+        "/system/speech-settings"
+      ],
+      "apiPrefixes": [
+        "/api/v1/speech"
+      ],
+      "permissionPrefixes": [
+        "speech"
+      ]
+    },
+    {
+      "code": "public_site",
+      "label": "公开站 / CMS",
+      "description": "可选的公开营销站点与内容管理（页面/文章/导航/语言/留言）。默认关闭；启用后接管公开首页。",
+      "labelKey": "system.moduleCatalog.publicSite.label",
+      "descriptionKey": "system.moduleCatalog.publicSite.description",
+      "layer": "capability",
+      "defaultEnabled": false,
+      "aliases": [
+        "cms",
+        "site_cms"
+      ],
+      "routePrefixes": [
+        "/cms"
+      ],
+      "apiPrefixes": [
+        "/api/v1/cms",
+        "/api/v1/site/cms"
+      ],
+      "permissionPrefixes": [
+        "cms"
+      ]
+    },
+    {
+      "code": "sample_items",
+      "label": "样例条目",
+      "description": "官方可选模块样例：独立迁移、租户 CRUD、权限、菜单与前端页面",
+      "labelKey": "样例条目",
+      "descriptionKey": "官方可选模块样例：独立迁移、租户 CRUD、权限、菜单与前端页面",
+      "layer": "sample",
+      "defaultEnabled": false,
+      "aliases": [],
+      "routePrefixes": [
+        "/sample-items"
+      ],
+      "apiPrefixes": [
+        "/api/v1/sample-items"
+      ],
+      "permissionPrefixes": [
+        "sample_items"
+      ]
+    },
+    {
+      "code": "support",
+      "label": "工单中心",
+      "description": "可选工单能力：分类/状态/优先级的工单、回复线程、匿名公开提单，并可选桥接公开站留言",
+      "labelKey": "system.moduleCatalog.support.label",
+      "descriptionKey": "system.moduleCatalog.support.description",
+      "layer": "pack",
+      "defaultEnabled": false,
+      "aliases": [],
+      "routePrefixes": [
+        "/support"
+      ],
+      "apiPrefixes": [
+        "/api/v1/support"
+      ],
+      "permissionPrefixes": [
+        "support"
+      ]
+    }
+  ],
+  "capabilities": [
+    {
+      "code": "verification_sms",
+      "label": "手机号验证码",
+      "description": "登录后绑定手机号验证码发送",
+      "labelKey": "system.capabilityCatalog.verificationSms.label",
+      "descriptionKey": "system.capabilityCatalog.verificationSms.description",
+      "defaultEnabled": true
+    },
+    {
+      "code": "verification_email",
+      "label": "邮箱验证码",
+      "description": "登录后绑定邮箱验证码发送",
+      "labelKey": "system.capabilityCatalog.verificationEmail.label",
+      "descriptionKey": "system.capabilityCatalog.verificationEmail.description",
+      "defaultEnabled": true
+    }
+  ],
+  "catalogDigest": "4b79efa5c6bbc8ef4a2f16b87d72f8e64028d9e37fbea64854ba941f98479102"
+}

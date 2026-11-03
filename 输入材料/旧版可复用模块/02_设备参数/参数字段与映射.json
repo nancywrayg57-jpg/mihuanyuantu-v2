@@ -1,0 +1,806 @@
+{
+  "fields": [
+    {
+      "column": "id",
+      "orm_alias": "id",
+      "legacy_builder": "int",
+      "description": "",
+      "definition": "id: int(\"id\").autoincrement().primaryKey(),",
+      "source_line": 59,
+      "v2_policy": "PROVENANCE_ONLY_DO_NOT_IMPORT"
+    },
+    {
+      "column": "name",
+      "orm_alias": "name",
+      "legacy_builder": "varchar",
+      "description": "预设名称",
+      "definition": "name: varchar(\"name\", { length: 128 }).notNull(),",
+      "source_line": 61,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "description",
+      "orm_alias": "description",
+      "legacy_builder": "text",
+      "description": "描述",
+      "definition": "description: text(\"description\"),",
+      "source_line": 63,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "ai_positive_prompt",
+      "orm_alias": "aiPositivePrompt",
+      "legacy_builder": "text",
+      "description": "AI正向提示词（图生图质感增强）",
+      "definition": "aiPositivePrompt: text(\"ai_positive_prompt\"),",
+      "source_line": 65,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "ai_negative_prompt",
+      "orm_alias": "aiNegativePrompt",
+      "legacy_builder": "text",
+      "description": "AI负向提示词（图生图质感增强）",
+      "definition": "aiNegativePrompt: text(\"ai_negative_prompt\"),",
+      "source_line": 67,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "ai_strength",
+      "orm_alias": "aiStrength",
+      "legacy_builder": "float",
+      "description": "AI图生图强度（0.05-0.30，按设备类型建议范围）",
+      "definition": "aiStrength: float(\"ai_strength\").default(0.15),",
+      "source_line": 69,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "category",
+      "orm_alias": "category",
+      "legacy_builder": "varchar",
+      "description": "分类：phone=手机拍摄, dslr=单反相机, mirrorless=微单相机, action=运动相机",
+      "definition": "category: varchar(\"category\", { length: 32 }).notNull().default(\"phone\"),",
+      "source_line": 71,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "is_default",
+      "orm_alias": "isDefault",
+      "legacy_builder": "tinyint",
+      "description": "是否为系统内置预设",
+      "definition": "isDefault: tinyint(\"is_default\").default(0).notNull(),",
+      "source_line": 73,
+      "v2_policy": "PROVENANCE_ONLY_DO_NOT_IMPORT"
+    },
+    {
+      "column": "usage_count",
+      "orm_alias": "usageCount",
+      "legacy_builder": "int",
+      "description": "使用次数",
+      "definition": "usageCount: int(\"usage_count\").default(0).notNull(),",
+      "source_line": 75,
+      "v2_policy": "PROVENANCE_ONLY_DO_NOT_IMPORT"
+    },
+    {
+      "column": "iso",
+      "orm_alias": "iso",
+      "legacy_builder": "int",
+      "description": "ISO感光度，如 100, 200, 400, 800, 1600, 3200, 6400",
+      "definition": "iso: int(\"iso\"),",
+      "source_line": 79,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "iso_range",
+      "orm_alias": "isoRange",
+      "legacy_builder": "varchar",
+      "description": "ISO范围，如 \"100-6400\"",
+      "definition": "isoRange: varchar(\"iso_range\", { length: 32 }),",
+      "source_line": 81,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "shutter_speed",
+      "orm_alias": "shutterSpeed",
+      "legacy_builder": "varchar",
+      "description": "快门速度，如 \"1/1000\", \"1/250\", \"1/60\", \"1/30\"",
+      "definition": "shutterSpeed: varchar(\"shutter_speed\", { length: 32 }),",
+      "source_line": 83,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "aperture",
+      "orm_alias": "aperture",
+      "legacy_builder": "float",
+      "description": "光圈值，如 1.4, 1.8, 2.0, 2.8, 4.0, 5.6, 8.0",
+      "definition": "aperture: float(\"aperture\"),",
+      "source_line": 85,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "ev_value",
+      "orm_alias": "evValue",
+      "legacy_builder": "float",
+      "description": "EV曝光值，如 0, +0.3, -0.7",
+      "definition": "evValue: float(\"ev_value\"),",
+      "source_line": 87,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "exposure_compensation",
+      "orm_alias": "exposureCompensation",
+      "legacy_builder": "float",
+      "description": "曝光补偿，如 0, +1, -1",
+      "definition": "exposureCompensation: float(\"exposure_compensation\"),",
+      "source_line": 89,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "focal_length",
+      "orm_alias": "focalLength",
+      "legacy_builder": "float",
+      "description": "焦距（实际），单位mm，如 24, 35, 50, 85, 135",
+      "definition": "focalLength: float(\"focal_length\"),",
+      "source_line": 91,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "focal_length_equiv",
+      "orm_alias": "focalLengthEquiv",
+      "legacy_builder": "float",
+      "description": "等效焦距（35mm换算），单位mm",
+      "definition": "focalLengthEquiv: float(\"focal_length_equiv\"),",
+      "source_line": 93,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "focus_distance",
+      "orm_alias": "focusDistance",
+      "legacy_builder": "float",
+      "description": "对焦距离，单位m，如 0.3, 1.0, 5.0",
+      "definition": "focusDistance: float(\"focus_distance\"),",
+      "source_line": 95,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "white_balance",
+      "orm_alias": "whiteBalance",
+      "legacy_builder": "varchar",
+      "description": "白平衡，如 \"Auto\", \"Daylight\", \"Cloudy\", \"Tungsten\", \"Fluorescent\", \"Custom\"",
+      "definition": "whiteBalance: varchar(\"white_balance\", { length: 64 }),",
+      "source_line": 97,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "color_temperature",
+      "orm_alias": "colorTemperature",
+      "legacy_builder": "int",
+      "description": "色温，单位K，如 5500, 6500, 3000",
+      "definition": "colorTemperature: int(\"color_temperature\"),",
+      "source_line": 99,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "metering_mode",
+      "orm_alias": "meteringMode",
+      "legacy_builder": "varchar",
+      "description": "测光模式：evaluative=评价测光, center=中央重点, spot=点测光, partial=局部测光",
+      "definition": "meteringMode: varchar(\"metering_mode\", { length: 32 }),",
+      "source_line": 101,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "exposure_mode",
+      "orm_alias": "exposureMode",
+      "legacy_builder": "varchar",
+      "description": "曝光模式：auto=自动, P=程序自动, A=光圈优先, S=快门优先, M=手动",
+      "definition": "exposureMode: varchar(\"exposure_mode\", { length: 32 }),",
+      "source_line": 103,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "shutter_type",
+      "orm_alias": "shutterType",
+      "legacy_builder": "varchar",
+      "description": "快门类型：mechanical=机械快门, electronic=电子快门, efcs=电子前帘快门",
+      "definition": "shutterType: varchar(\"shutter_type\", { length: 32 }),",
+      "source_line": 105,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "scene_mode",
+      "orm_alias": "sceneMode",
+      "legacy_builder": "varchar",
+      "description": "场景模式，如 \"portrait\", \"landscape\", \"sports\", \"night\", \"macro\", \"food\"",
+      "definition": "sceneMode: varchar(\"scene_mode\", { length: 64 }),",
+      "source_line": 107,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "color_mode",
+      "orm_alias": "colorMode",
+      "legacy_builder": "varchar",
+      "description": "色彩模式，如 \"standard\", \"vivid\", \"neutral\", \"monochrome\"",
+      "definition": "colorMode: varchar(\"color_mode\", { length: 32 }),",
+      "source_line": 109,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "camera_make",
+      "orm_alias": "cameraMake",
+      "legacy_builder": "varchar",
+      "description": "相机品牌，如 \"Canon\", \"Nikon\", \"Sony\", \"Apple\", \"Samsung\", \"Huawei\"",
+      "definition": "cameraMake: varchar(\"camera_make\", { length: 64 }),",
+      "source_line": 113,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "camera_model",
+      "orm_alias": "cameraModel",
+      "legacy_builder": "varchar",
+      "description": "相机型号，如 \"Canon EOS R6 Mark II\", \"iPhone 15 Pro\", \"HUAWEI P60 Pro\"",
+      "definition": "cameraModel: varchar(\"camera_model\", { length: 128 }),",
+      "source_line": 115,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "lens_make",
+      "orm_alias": "lensMake",
+      "legacy_builder": "varchar",
+      "description": "镜头品牌，如 \"Canon\", \"Nikon\", \"Sony\", \"Sigma\"",
+      "definition": "lensMake: varchar(\"lens_make\", { length: 64 }),",
+      "source_line": 117,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "lens_model",
+      "orm_alias": "lensModel",
+      "legacy_builder": "varchar",
+      "description": "镜头型号，如 \"RF 50mm F1.8 STM\", \"FE 24-70mm F2.8 GM\"",
+      "definition": "lensModel: varchar(\"lens_model\", { length: 128 }),",
+      "source_line": 119,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "lens_max_aperture",
+      "orm_alias": "lensMaxAperture",
+      "legacy_builder": "float",
+      "description": "镜头最大光圈，如 1.4, 1.8, 2.8",
+      "definition": "lensMaxAperture: float(\"lens_max_aperture\"),",
+      "source_line": 121,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "sensor_size",
+      "orm_alias": "sensorSize",
+      "legacy_builder": "varchar",
+      "description": "传感器尺寸，如 \"Full Frame 36×24mm\", \"APS-C 23.5×15.6mm\", \"1/1.28inch\"",
+      "definition": "sensorSize: varchar(\"sensor_size\", { length: 64 }),",
+      "source_line": 123,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "sensor_type",
+      "orm_alias": "sensorType",
+      "legacy_builder": "varchar",
+      "description": "传感器类型：CMOS, CCD",
+      "definition": "sensorType: varchar(\"sensor_type\", { length: 32 }).default(\"CMOS\"),",
+      "source_line": 125,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "flash_mode",
+      "orm_alias": "flashMode",
+      "legacy_builder": "varchar",
+      "description": "闪光灯模式：off=关闭, auto=自动, forced=强制, redeye=红眼消除, slow=慢速同步",
+      "definition": "flashMode: varchar(\"flash_mode\", { length: 32 }),",
+      "source_line": 127,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "stabilization",
+      "orm_alias": "stabilization",
+      "legacy_builder": "varchar",
+      "description": "防抖模式：none=无, ois=光学防抖, eis=电子防抖, ibis=机身防抖",
+      "definition": "stabilization: varchar(\"stabilization\", { length: 32 }),",
+      "source_line": 129,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "image_width",
+      "orm_alias": "imageWidth",
+      "legacy_builder": "int",
+      "description": "图像宽度（像素），如 4032, 5184, 8064",
+      "definition": "imageWidth: int(\"image_width\"),",
+      "source_line": 133,
+      "v2_policy": "FINAL_IMAGE_OR_RUNTIME_OVERRIDE"
+    },
+    {
+      "column": "image_height",
+      "orm_alias": "imageHeight",
+      "legacy_builder": "int",
+      "description": "图像高度（像素），如 3024, 3456, 6048",
+      "definition": "imageHeight: int(\"image_height\"),",
+      "source_line": 135,
+      "v2_policy": "FINAL_IMAGE_OR_RUNTIME_OVERRIDE"
+    },
+    {
+      "column": "image_format",
+      "orm_alias": "imageFormat",
+      "legacy_builder": "varchar",
+      "description": "图像格式：JPEG, RAW, HEIC, PNG",
+      "definition": "imageFormat: varchar(\"image_format\", { length: 32 }).default(\"JPEG\"),",
+      "source_line": 137,
+      "v2_policy": "FINAL_IMAGE_OR_RUNTIME_OVERRIDE"
+    },
+    {
+      "column": "color_space",
+      "orm_alias": "colorSpace",
+      "legacy_builder": "varchar",
+      "description": "色彩空间：sRGB, AdobeRGB, ProPhotoRGB, DisplayP3",
+      "definition": "colorSpace: varchar(\"color_space\", { length: 32 }).default(\"sRGB\"),",
+      "source_line": 139,
+      "v2_policy": "FINAL_IMAGE_OR_RUNTIME_OVERRIDE"
+    },
+    {
+      "column": "color_depth",
+      "orm_alias": "colorDepth",
+      "legacy_builder": "int",
+      "description": "色彩深度（位），如 8, 14, 16",
+      "definition": "colorDepth: int(\"color_depth\").default(8),",
+      "source_line": 141,
+      "v2_policy": "FINAL_IMAGE_OR_RUNTIME_OVERRIDE"
+    },
+    {
+      "column": "pixel_density",
+      "orm_alias": "pixelDensity",
+      "legacy_builder": "int",
+      "description": "像素密度（DPI），如 72, 96, 300",
+      "definition": "pixelDensity: int(\"pixel_density\").default(72),",
+      "source_line": 143,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "image_orientation",
+      "orm_alias": "imageOrientation",
+      "legacy_builder": "varchar",
+      "description": "图像方向：landscape=横向, portrait=纵向",
+      "definition": "imageOrientation: varchar(\"image_orientation\", { length: 32 }).default(\"landscape\"),",
+      "source_line": 145,
+      "v2_policy": "FINAL_IMAGE_OR_RUNTIME_OVERRIDE"
+    },
+    {
+      "column": "compression_ratio",
+      "orm_alias": "compressionRatio",
+      "legacy_builder": "int",
+      "description": "压缩比，如 8（JPEG质量系数的倒数）",
+      "definition": "compressionRatio: int(\"compression_ratio\"),",
+      "source_line": 147,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "ambient_light",
+      "orm_alias": "ambientLight",
+      "legacy_builder": "int",
+      "description": "环境光线（lux），如 50000（晴天室外）, 500（室内）, 10（夜晚）",
+      "definition": "ambientLight: int(\"ambient_light\"),",
+      "source_line": 151,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "gps_latitude",
+      "orm_alias": "gpsLatitude",
+      "legacy_builder": "decimal",
+      "description": "GPS纬度，如 23.1291",
+      "definition": "gpsLatitude: decimal(\"gps_latitude\", { precision: 10, scale: 6 }),",
+      "source_line": 153,
+      "v2_policy": "RUNTIME_OR_OWNERSHIP_DO_NOT_INHERIT"
+    },
+    {
+      "column": "gps_longitude",
+      "orm_alias": "gpsLongitude",
+      "legacy_builder": "decimal",
+      "description": "GPS经度，如 113.2644",
+      "definition": "gpsLongitude: decimal(\"gps_longitude\", { precision: 10, scale: 6 }),",
+      "source_line": 155,
+      "v2_policy": "RUNTIME_OR_OWNERSHIP_DO_NOT_INHERIT"
+    },
+    {
+      "column": "gps_altitude",
+      "orm_alias": "gpsAltitude",
+      "legacy_builder": "float",
+      "description": "GPS海拔（米），如 50.0",
+      "definition": "gpsAltitude: float(\"gps_altitude\"),",
+      "source_line": 157,
+      "v2_policy": "RUNTIME_OR_OWNERSHIP_DO_NOT_INHERIT"
+    },
+    {
+      "column": "gps_mode",
+      "orm_alias": "gpsMode",
+      "legacy_builder": "varchar",
+      "description": "GPS生成模式：none=不写入GPS, fixed=使用固定坐标, random_by_scene=按场景随机生成",
+      "definition": "gpsMode: varchar(\"gps_mode\", { length: 32 }).default(\"none\"),",
+      "source_line": 159,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "scene_type",
+      "orm_alias": "sceneType",
+      "legacy_builder": "varchar",
+      "description": "场景类型（用于GPS随机生成）：landscape=风景, urban=城市, indoor=室内, beach=海滩, mountain=山地, street=街拍",
+      "definition": "sceneType: varchar(\"scene_type\", { length: 32 }).default(\"urban\"),",
+      "source_line": 161,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "focal_plane_x_res",
+      "orm_alias": "focalPlaneXRes",
+      "legacy_builder": "float",
+      "description": "FocalPlane X方向分辨率（像素/单位），由机型决定，如 Canon EOS-1D X = 3849.21",
+      "definition": "focalPlaneXRes: float(\"focal_plane_x_res\"),",
+      "source_line": 165,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "focal_plane_y_res",
+      "orm_alias": "focalPlaneYRes",
+      "legacy_builder": "float",
+      "description": "FocalPlane Y方向分辨率（像素/单位）",
+      "definition": "focalPlaneYRes: float(\"focal_plane_y_res\"),",
+      "source_line": 167,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "focal_plane_res_unit",
+      "orm_alias": "focalPlaneResUnit",
+      "legacy_builder": "int",
+      "description": "FocalPlane分辨率单位：2=英寸, 3=厘米",
+      "definition": "focalPlaneResUnit: int(\"focal_plane_res_unit\").default(3),",
+      "source_line": 169,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "maker_note_template",
+      "orm_alias": "makerNoteTemplate",
+      "legacy_builder": "varchar",
+      "description": "MakerNote模板名称，如 \"Canon EOS-1D X\", \"Nikon D850\", \"Sony A7R V\"",
+      "definition": "makerNoteTemplate: varchar(\"maker_note_template\", { length: 128 }),",
+      "source_line": 171,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "software",
+      "orm_alias": "software",
+      "legacy_builder": "varchar",
+      "description": "后期软件，如 \"Adobe Lightroom 13.0\", \"Snapseed 2.21\", \"无\"",
+      "definition": "software: varchar(\"software\", { length: 128 }),",
+      "source_line": 175,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "sharpening",
+      "orm_alias": "sharpening",
+      "legacy_builder": "int",
+      "description": "锐化程度（0-100）",
+      "definition": "sharpening: int(\"sharpening\"),",
+      "source_line": 177,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "noise_reduction",
+      "orm_alias": "noiseReduction",
+      "legacy_builder": "int",
+      "description": "降噪程度（0-100）",
+      "definition": "noiseReduction: int(\"noise_reduction\"),",
+      "source_line": 179,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "author",
+      "orm_alias": "author",
+      "legacy_builder": "varchar",
+      "description": "作者",
+      "definition": "author: varchar(\"author\", { length: 128 }),",
+      "source_line": 183,
+      "v2_policy": "RUNTIME_OR_OWNERSHIP_DO_NOT_INHERIT"
+    },
+    {
+      "column": "copyright",
+      "orm_alias": "copyright",
+      "legacy_builder": "varchar",
+      "description": "版权信息",
+      "definition": "copyright: varchar(\"copyright\", { length: 256 }),",
+      "source_line": 185,
+      "v2_policy": "RUNTIME_OR_OWNERSHIP_DO_NOT_INHERIT"
+    },
+    {
+      "column": "image_description",
+      "orm_alias": "imageDescription",
+      "legacy_builder": "text",
+      "description": "图片描述",
+      "definition": "imageDescription: text(\"image_description\"),",
+      "source_line": 187,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "keywords",
+      "orm_alias": "keywords",
+      "legacy_builder": "text",
+      "description": "关键词（逗号分隔）",
+      "definition": "keywords: text(\"keywords\"),",
+      "source_line": 189,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "burst_sequence",
+      "orm_alias": "burstSequence",
+      "legacy_builder": "varchar",
+      "description": "连拍序列（如 \"3/10\"）",
+      "definition": "burstSequence: varchar(\"burst_sequence\", { length: 16 }),",
+      "source_line": 193,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "file_number",
+      "orm_alias": "fileNumber",
+      "legacy_builder": "varchar",
+      "description": "文件编号，如 \"DSC_1234\"",
+      "definition": "fileNumber: varchar(\"file_number\", { length: 32 }),",
+      "source_line": 195,
+      "v2_policy": "FINAL_IMAGE_OR_RUNTIME_OVERRIDE"
+    },
+    {
+      "column": "raw_version",
+      "orm_alias": "rawVersion",
+      "legacy_builder": "varchar",
+      "description": "RAW格式版本，如 \"CR3\", \"NEF\", \"ARW\"",
+      "definition": "rawVersion: varchar(\"raw_version\", { length: 16 }),",
+      "source_line": 197,
+      "v2_policy": "CANDIDATE_REQUIRES_TYPE_AND_SEMANTIC_VALIDATION"
+    },
+    {
+      "column": "user_id",
+      "orm_alias": "userId",
+      "legacy_builder": "varchar",
+      "description": "创建者用户ID；null 表示系统内置/管理员公共预设",
+      "definition": "userId: varchar(\"user_id\", { length: 128 }),",
+      "source_line": 200,
+      "v2_policy": "PROVENANCE_ONLY_DO_NOT_IMPORT"
+    },
+    {
+      "column": "is_public",
+      "orm_alias": "isPublic",
+      "legacy_builder": "tinyint",
+      "description": "是否公开：1=公共预设（所有人可见），0=私有预设（仅所有者可见）",
+      "definition": "isPublic: tinyint(\"is_public\").default(1).notNull(),",
+      "source_line": 202,
+      "v2_policy": "PROVENANCE_ONLY_DO_NOT_IMPORT"
+    },
+    {
+      "column": "created_at",
+      "orm_alias": "createdAt",
+      "legacy_builder": "timestamp",
+      "description": "",
+      "definition": "createdAt: timestamp(\"created_at\").defaultNow().notNull(),",
+      "source_line": 204,
+      "v2_policy": "PROVENANCE_ONLY_DO_NOT_IMPORT"
+    },
+    {
+      "column": "updated_at",
+      "orm_alias": "updatedAt",
+      "legacy_builder": "timestamp",
+      "description": "",
+      "definition": "updatedAt: timestamp(\"updated_at\").defaultNow().onUpdateNow().notNull(),",
+      "source_line": 205,
+      "v2_policy": "PROVENANCE_ONLY_DO_NOT_IMPORT"
+    },
+    {
+      "column": "deleted_at",
+      "orm_alias": "deletedAt",
+      "legacy_builder": "timestamp",
+      "description": "",
+      "definition": "deletedAt: timestamp(\"deleted_at\"),",
+      "source_line": 206,
+      "v2_policy": "PROVENANCE_ONLY_DO_NOT_IMPORT"
+    }
+  ],
+  "serializer_aliases": [
+    {
+      "alias": "shutterSpeed",
+      "column": "shutter_speed"
+    },
+    {
+      "alias": "shutterType",
+      "column": "shutter_type"
+    },
+    {
+      "alias": "evValue",
+      "column": "ev_value"
+    },
+    {
+      "alias": "focalLength",
+      "column": "focal_length"
+    },
+    {
+      "alias": "focalLengthEquiv",
+      "column": "focal_length_equiv"
+    },
+    {
+      "alias": "focusDistance",
+      "column": "focus_distance"
+    },
+    {
+      "alias": "whiteBalance",
+      "column": "white_balance"
+    },
+    {
+      "alias": "colorTemperature",
+      "column": "color_temperature"
+    },
+    {
+      "alias": "meteringMode",
+      "column": "metering_mode"
+    },
+    {
+      "alias": "exposureMode",
+      "column": "exposure_mode"
+    },
+    {
+      "alias": "exposureCompensation",
+      "column": "exposure_compensation"
+    },
+    {
+      "alias": "sceneMode",
+      "column": "scene_mode"
+    },
+    {
+      "alias": "cameraMake",
+      "column": "camera_make"
+    },
+    {
+      "alias": "cameraModel",
+      "column": "camera_model"
+    },
+    {
+      "alias": "lensMake",
+      "column": "lens_make"
+    },
+    {
+      "alias": "lensModel",
+      "column": "lens_model"
+    },
+    {
+      "alias": "lensMaxAperture",
+      "column": "lens_max_aperture"
+    },
+    {
+      "alias": "sensorSize",
+      "column": "sensor_size"
+    },
+    {
+      "alias": "sensorType",
+      "column": "sensor_type"
+    },
+    {
+      "alias": "flashMode",
+      "column": "flash_mode"
+    },
+    {
+      "alias": "imageWidth",
+      "column": "image_width"
+    },
+    {
+      "alias": "imageHeight",
+      "column": "image_height"
+    },
+    {
+      "alias": "imageFormat",
+      "column": "image_format"
+    },
+    {
+      "alias": "colorSpace",
+      "column": "color_space"
+    },
+    {
+      "alias": "colorDepth",
+      "column": "color_depth"
+    },
+    {
+      "alias": "pixelDensity",
+      "column": "pixel_density"
+    },
+    {
+      "alias": "imageOrientation",
+      "column": "image_orientation"
+    },
+    {
+      "alias": "compressionRatio",
+      "column": "compression_ratio"
+    },
+    {
+      "alias": "colorMode",
+      "column": "color_mode"
+    },
+    {
+      "alias": "gpsLatitude",
+      "column": "gps_latitude"
+    },
+    {
+      "alias": "gpsLongitude",
+      "column": "gps_longitude"
+    },
+    {
+      "alias": "gpsAltitude",
+      "column": "gps_altitude"
+    },
+    {
+      "alias": "gpsMode",
+      "column": "gps_mode"
+    },
+    {
+      "alias": "sceneType",
+      "column": "scene_type"
+    },
+    {
+      "alias": "focalPlaneXRes",
+      "column": "focal_plane_x_res"
+    },
+    {
+      "alias": "focalPlaneYRes",
+      "column": "focal_plane_y_res"
+    },
+    {
+      "alias": "focalPlaneResUnit",
+      "column": "focal_plane_res_unit"
+    },
+    {
+      "alias": "makerNoteTemplate",
+      "column": "maker_note_template"
+    },
+    {
+      "alias": "aiPositivePrompt",
+      "column": "ai_positive_prompt"
+    },
+    {
+      "alias": "aiNegativePrompt",
+      "column": "ai_negative_prompt"
+    },
+    {
+      "alias": "aiStrength",
+      "column": "ai_strength"
+    },
+    {
+      "alias": "imageDescription",
+      "column": "image_description"
+    },
+    {
+      "alias": "ip_geo",
+      "column": "ip_geo"
+    },
+    {
+      "alias": "isPublic",
+      "column": "is_public"
+    },
+    {
+      "alias": "ownerId",
+      "column": "user_id"
+    },
+    {
+      "alias": "isDefault",
+      "column": "is_default"
+    },
+    {
+      "alias": "usageCount",
+      "column": "usage_count"
+    },
+    {
+      "alias": "createdAt",
+      "column": "created_at"
+    },
+    {
+      "alias": "updatedAt",
+      "column": "updated_at"
+    }
+  ],
+  "note": "完整保留 schema 字段，不认为旧表、导入模板与线上列天然一致。摄影数值可有小数，项目资金另按整数账本。"
+}

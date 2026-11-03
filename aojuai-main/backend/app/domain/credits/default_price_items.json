@@ -1,0 +1,402 @@
+{
+  "_comment": "平台默认统一费率（积分）。2026-08-31 起统一口径：积分/1k = 官方牌价(¥/百万,不含折扣) × 1.3 ÷ 70（锚点 1 积分=¥0.07，各模型剔除缓存后成本加价30%，对应毛利约23.08%）；缓存行=官方缓存价同公式；DeepSeek 用谷时基价+rate_schedule 高峰×2；未核到官方价的行标'待核价'。未匹配兜底 * 维持 1/1（发现即补价）。",
+  "items": [
+    {
+      "item_type": "llm",
+      "match_key": "*",
+      "input_points_per_1k": "1",
+      "output_points_per_1k": "1",
+      "remark": "未命名模型兜底（等价旧口径 1 积分/1k token）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "gpt-5.6-sol*",
+      "input_points_per_1k": "0.63",
+      "output_points_per_1k": "3.8",
+      "cached_points_per_1k": "0.063",
+      "priority": 30,
+      "remark": "GPT-5.6 Sol 网关档位的平台参考价，沿用 $5/$30/$0.5·1M 折算；非本次核验的官方报价（锚点1积分=¥0.07，成本加价30%）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "gpt-5.6-terra*",
+      "input_points_per_1k": "0.25",
+      "output_points_per_1k": "1.5",
+      "cached_points_per_1k": "0.025",
+      "priority": 30,
+      "remark": "GPT-5.6 Terra 网关档位的平台参考价，沿用 $2/$12/$0.2·1M 折算；非本次核验的官方报价（锚点1积分=¥0.07，成本加价30%）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "gpt-5.6-luna*",
+      "input_points_per_1k": "0.025",
+      "output_points_per_1k": "0.15",
+      "cached_points_per_1k": "0.0025",
+      "priority": 30,
+      "remark": "GPT-5.6 Luna 网关档位的平台参考价，沿用 $0.2/$1.2·1M 折算；非本次核验的官方报价（锚点1积分=¥0.07，成本加价30%）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "gpt-5.6",
+      "input_points_per_1k": "0.63",
+      "output_points_per_1k": "3.8",
+      "cached_points_per_1k": "0.063",
+      "priority": 31,
+      "remark": "GPT-5.6 无后缀别名按 Sol（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "gpt-5.5*",
+      "input_points_per_1k": "0.63",
+      "output_points_per_1k": "3.8",
+      "remark": "GPT-5.5 官方 $5/$30（锚点1积分=¥0.07，成本加价30%统一公式）",
+      "cached_points_per_1k": "0.063"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "gpt-5*",
+      "input_points_per_1k": "0.16",
+      "output_points_per_1k": "1.25",
+      "remark": "gpt-5 基础款官方 $1.25/$10（锚点1积分=¥0.07，成本加价30%统一公式）",
+      "cached_points_per_1k": "0.016"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "gpt-5-mini*",
+      "input_points_per_1k": "0.031",
+      "output_points_per_1k": "0.25",
+      "priority": 10,
+      "cached_points_per_1k": "0.0031",
+      "remark": "官方 $0.25/$2（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "gpt-5-nano*",
+      "input_points_per_1k": "0.0063",
+      "output_points_per_1k": "0.05",
+      "priority": 10,
+      "cached_points_per_1k": "0.00063",
+      "remark": "官方 $0.05/$0.4（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "gpt-4.1*",
+      "input_points_per_1k": "0.25",
+      "output_points_per_1k": "1.0",
+      "cached_points_per_1k": "0.063",
+      "remark": "官方 $2/$8/hit $0.5（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "gpt-4o*",
+      "input_points_per_1k": "0.31",
+      "output_points_per_1k": "1.9",
+      "cached_points_per_1k": "0.16",
+      "remark": "官方 $2.5/$10/hit $1.25（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "o3*",
+      "input_points_per_1k": "0.25",
+      "output_points_per_1k": "1.0",
+      "cached_points_per_1k": "0.063",
+      "remark": "官方 $2/$8（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "claude-fable*",
+      "input_points_per_1k": "1.25",
+      "output_points_per_1k": "6.3",
+      "cached_points_per_1k": "0.125",
+      "priority": 10,
+      "remark": "Fable 5 官方 $10/$50（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "claude-opus*",
+      "input_points_per_1k": "0.63",
+      "output_points_per_1k": "3.1",
+      "cached_points_per_1k": "0.063",
+      "priority": 10,
+      "remark": "Opus 4.8 官方 $5/$25（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "claude-haiku*",
+      "input_points_per_1k": "0.13",
+      "output_points_per_1k": "0.63",
+      "cached_points_per_1k": "0.013",
+      "priority": 10,
+      "remark": "Haiku 4.5 官方 $1/$5（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "claude-*",
+      "input_points_per_1k": "0.38",
+      "output_points_per_1k": "1.9",
+      "cached_points_per_1k": "0.038",
+      "remark": "Claude 兜底按 Sonnet 4.6 官方 $3/$15（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "gemini-2.5-pro*",
+      "input_points_per_1k": "0.16",
+      "output_points_per_1k": "1.25",
+      "cached_points_per_1k": "0.04",
+      "remark": "官方 $1.25/$10（≤200k 档，锚点1积分=¥0.07，成本加价30%统一公式；待核最新价）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "gemini-2.5-flash*",
+      "input_points_per_1k": "0.038",
+      "output_points_per_1k": "0.31",
+      "cached_points_per_1k": "0.01",
+      "remark": "官方 $0.30/$2.50（锚点1积分=¥0.07，成本加价30%统一公式；待核最新价）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "gemini-*",
+      "input_points_per_1k": "0.038",
+      "output_points_per_1k": "0.31",
+      "cached_points_per_1k": "0.01",
+      "remark": "Gemini 兜底按 flash（锚点1积分=¥0.07，成本加价30%统一公式；待核最新价）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "deepseek-v4-flash-vision-exp*",
+      "input_points_per_1k": "0.028",
+      "output_points_per_1k": "0.084",
+      "cached_points_per_1k": "0.001",
+      "cache_write_points_per_1k": "0.028",
+      "priority": 31,
+      "rate_schedule": {
+        "timezone": "UTC",
+        "defaultBand": "off_peak",
+        "source": "DeepSeek official API pricing",
+        "sourceUrl": "https://api-docs.deepseek.com/quick_start/pricing/",
+        "verifiedAt": "2026-08-29",
+        "bands": [
+          {
+            "key": "peak",
+            "multiplier": "2",
+            "weekdays": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "windows": [
+              [
+                "01:00",
+                "04:00"
+              ],
+              [
+                "06:00",
+                "10:00"
+              ]
+            ]
+          }
+        ]
+      },
+      "remark": "DeepSeek V4 Flash 官方谷时 ¥1.5/4.5/hit0.05，高峰×2 由 rate_schedule（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "deepseek-v4-flash*",
+      "input_points_per_1k": "0.028",
+      "output_points_per_1k": "0.084",
+      "cached_points_per_1k": "0.001",
+      "cache_write_points_per_1k": "0.028",
+      "priority": 30,
+      "rate_schedule": {
+        "timezone": "UTC",
+        "defaultBand": "off_peak",
+        "source": "DeepSeek official API pricing",
+        "sourceUrl": "https://api-docs.deepseek.com/quick_start/pricing/",
+        "verifiedAt": "2026-08-29",
+        "bands": [
+          {
+            "key": "peak",
+            "multiplier": "2",
+            "weekdays": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "windows": [
+              [
+                "01:00",
+                "04:00"
+              ],
+              [
+                "06:00",
+                "10:00"
+              ]
+            ]
+          }
+        ]
+      },
+      "remark": "DeepSeek V4 Flash 官方谷时 ¥1.5/4.5/hit0.05，高峰×2 由 rate_schedule（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "deepseek-v4-pro*",
+      "input_points_per_1k": "0.084",
+      "output_points_per_1k": "0.25",
+      "cached_points_per_1k": "0.0028",
+      "cache_write_points_per_1k": "0.084",
+      "priority": 30,
+      "rate_schedule": {
+        "timezone": "UTC",
+        "defaultBand": "off_peak",
+        "source": "DeepSeek official API pricing",
+        "sourceUrl": "https://api-docs.deepseek.com/quick_start/pricing/",
+        "verifiedAt": "2026-08-29",
+        "bands": [
+          {
+            "key": "peak",
+            "multiplier": "2",
+            "weekdays": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "windows": [
+              [
+                "01:00",
+                "04:00"
+              ],
+              [
+                "06:00",
+                "10:00"
+              ]
+            ]
+          }
+        ]
+      },
+      "remark": "DeepSeek V4 Pro 官方谷时 ¥4.5/13.5/hit0.15，高峰×2（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "deepseek-*",
+      "input_points_per_1k": "0.056",
+      "output_points_per_1k": "0.17",
+      "remark": "旧 DeepSeek 型号兜底≈Flash 高峰（锚点1积分=¥0.07，成本加价30%统一公式）",
+      "cached_points_per_1k": "0.002"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "qwen3-max*",
+      "input_points_per_1k": "0.047",
+      "output_points_per_1k": "0.19",
+      "cached_points_per_1k": "0.012",
+      "priority": 10,
+      "remark": "Qwen3-Max 官方 ¥2.5/10（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "qwen*",
+      "input_points_per_1k": "0.015",
+      "output_points_per_1k": "0.09",
+      "cached_points_per_1k": "0.004",
+      "remark": "Qwen 兜底按 Qwen3.5-Plus ¥0.8/4.8（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "glm-*",
+      "input_points_per_1k": "0.15",
+      "output_points_per_1k": "0.52",
+      "cached_points_per_1k": "0.037",
+      "remark": "GLM-5.2/5.3 官方 ¥8/28/hit2（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "kimi*",
+      "input_points_per_1k": "0.075",
+      "output_points_per_1k": "0.30",
+      "cached_points_per_1k": "0.015",
+      "remark": "按 ¥4/16 估（锚点1积分=¥0.07，成本加价30%统一公式；待核官方价）"
+    },
+    {
+      "item_type": "llm",
+      "match_key": "doubao*",
+      "input_points_per_1k": "0.015",
+      "output_points_per_1k": "0.04",
+      "cached_points_per_1k": "0.003",
+      "remark": "按 ¥0.8/2 估（锚点1积分=¥0.07，成本加价30%统一公式；待核官方价）"
+    },
+    {
+      "item_type": "image",
+      "match_key": "*",
+      "points_per_unit": "1",
+      "remark": "未命名图片模型兜底（等价旧 credits_per_image=1）"
+    },
+    {
+      "item_type": "image",
+      "match_key": "gpt-image-2",
+      "points_per_unit": "6",
+      "remark": "官方 2K $0.05/张（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "image",
+      "match_key": "gpt-image-2/*/high",
+      "points_per_unit": "10",
+      "priority": 10,
+      "remark": "官方 4K $0.08/张（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "image",
+      "match_key": "gpt-image-2/*/low",
+      "points_per_unit": "4",
+      "priority": 10,
+      "remark": "官方 1K $0.03/张（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "image",
+      "match_key": "gpt-image-1*",
+      "points_per_unit": "5",
+      "remark": "官方≈$0.04/张（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "image",
+      "match_key": "dall-e-3*",
+      "points_per_unit": "5",
+      "remark": "官方≈$0.04/张（锚点1积分=¥0.07，成本加价30%统一公式）"
+    },
+    {
+      "item_type": "tool_call",
+      "match_key": "*",
+      "points_per_unit": "0",
+      "remark": "未知工具不额外计价"
+    },
+    {
+      "item_type": "tool_call",
+      "match_key": "web_search",
+      "points_per_unit": "1",
+      "remark": "Responses 内置搜索，每次"
+    },
+    {
+      "item_type": "tts",
+      "match_key": "*",
+      "points_per_unit": "10",
+      "remark": "每 1000 字符（等价旧 0.01/字符）"
+    },
+    {
+      "item_type": "asr",
+      "match_key": "*",
+      "points_per_unit": "1",
+      "remark": "每分钟"
+    },
+    {
+      "item_type": "flat",
+      "match_key": "*",
+      "points_per_unit": "1",
+      "remark": "按次动作兜底（等价旧 1 分/次）"
+    }
+  ]
+}

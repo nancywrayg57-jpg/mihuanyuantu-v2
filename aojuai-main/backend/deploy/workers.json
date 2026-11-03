@@ -1,0 +1,21 @@
+{
+  "installedOnly": false,
+  "version": 1,
+  "workers": [
+    {
+      "args": [
+        "--worker",
+        "sample_items_review"
+      ],
+      "code": "sample_items_review",
+      "concurrencySetting": "AOJ_WORKER_CONCURRENCY[sample_items_review]",
+      "defaultConcurrency": 1,
+      "description": "官方样例：演示 TaskSource 契约与 PDCA 宏循环的最小接法",
+      "label": "样例条目复核",
+      "maxConcurrency": 4,
+      "module": "sample_items",
+      "pollInterval": 2.0,
+      "runModule": "scripts.run_worker"
+    }
+  ]
+}

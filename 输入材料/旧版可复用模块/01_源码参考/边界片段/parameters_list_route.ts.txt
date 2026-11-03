@@ -1,0 +1,31 @@
+  // ==================== Parameters ====================
+  parameters: router({
+    list: protectedProcedure
+      .input(
+        z.object({
+          category: enumString(PARAMETER_CATEGORIES, "category").optional(),
+          search: z.string().optional(),
+          page: z.number().optional(),
+          pageSize: z.number().optional(),
+          // 高级搜索字段
+          cameraMake: z.string().optional(),
+          cameraModel: z.string().optional(),
+          isoMin: z.number().optional(),
+          isoMax: z.number().optional(),
+          apertureMin: z.number().optional(),
+          apertureMax: z.number().optional(),
+          focalLengthMin: z.number().optional(),
+          focalLengthMax: z.number().optional(),
+          // 排序
+          sortBy: z.enum(['default', 'usage_count', 'updated_at']).optional(),
+        }).optional()
+      )
+      .query(async ({ input, ctx }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        const userId = isAdmin ? undefined : ctx.user.id;
+        const result = await rds.getParameters({ ...(input ?? {}), userId, isAdmin });
+        // 将数据库返回的 snake_case 字段映射为前端期望的 camelCase。
+        // 序列化收敛到唯一可测试边界 mapParameterRow（server/presetSerializer.ts），
+        // 保证 GPS 模式 / MakerNote 等字段不再因内联映射遗漏而丢失（Issue #7）。
+        return { items: result.items.map(mapParameterRow), total: result.total };
+      }),

@@ -1,0 +1,990 @@
+{
+  "source": "client/src/pages/ParameterConfig.tsx",
+  "description_line": 775,
+  "headers_line": 843,
+  "field_descriptions": [
+    [
+      "字段名",
+      "中文名称",
+      "是否必填",
+      "数据类型",
+      "允许值/示例",
+      "说明"
+    ],
+    [
+      "name",
+      "预设名称",
+      "必填*",
+      "文本",
+      "iPhone 15 Pro 示例",
+      "唯一标识预设的名称"
+    ],
+    [
+      "category",
+      "设备类型",
+      "必填*",
+      "枚举",
+      "phone / dslr / mirrorless / action",
+      "手机/单反/微单/运动相机"
+    ],
+    [
+      "description",
+      "描述",
+      "可选",
+      "文本",
+      "手机拍摄示例预设",
+      "预设的简短描述"
+    ],
+    [
+      "iso",
+      "ISO感光度",
+      "必填*",
+      "整数",
+      "100 / 400 / 800 / 1600 / 3200",
+      "标准档位：100,200,400,800,1600,3200,6400,12800,25600"
+    ],
+    [
+      "iso_range",
+      "ISO范围",
+      "可选",
+      "文本",
+      "100-3200",
+      "相机支持的ISO范围"
+    ],
+    [
+      "shutter_speed",
+      "快门速度",
+      "必填*",
+      "文本",
+      "1/125 / 1/500 / 1/2000",
+      "分数格式，如 1/125"
+    ],
+    [
+      "shutter_type",
+      "快门类型",
+      "可选",
+      "枚举",
+      "Mechanical / Electronic / EFCS",
+      "机械/电子/电子前帘"
+    ],
+    [
+      "aperture",
+      "光圈值",
+      "必填*",
+      "小数",
+      "1.78 / 2.8 / 5.6 / 8.0",
+      "标准档位：1.4,2,2.8,4,5.6,8,11,16"
+    ],
+    [
+      "ev_value",
+      "曝光值EV",
+      "可选",
+      "小数",
+      "0 / 1.5 / 8.0",
+      "曝光值"
+    ],
+    [
+      "exposure_compensation",
+      "曝光补偿",
+      "可选",
+      "小数",
+      "0 / -0.3 / +1.0",
+      "曝光补偿值"
+    ],
+    [
+      "exposure_mode",
+      "曝光模式",
+      "可选",
+      "文本",
+      "Aperture Priority / Manual / Auto",
+      "曝光模式"
+    ],
+    [
+      "focal_length",
+      "焦距(mm)",
+      "必填*",
+      "小数",
+      "6.765 / 50 / 85 / 200",
+      "实际焦距（毫米）"
+    ],
+    [
+      "focal_length_equiv",
+      "等效焦距",
+      "可选",
+      "整数",
+      "26 / 50 / 85",
+      "35mm等效焦距"
+    ],
+    [
+      "focus_distance",
+      "对焦距离(m)",
+      "可选",
+      "小数",
+      "0.3 / 1.5 / 5.0",
+      "对焦距离（米）"
+    ],
+    [
+      "white_balance",
+      "白平衡",
+      "可选",
+      "文本",
+      "Auto / Daylight / Cloudy / Tungsten",
+      "白平衡模式"
+    ],
+    [
+      "color_temperature",
+      "色温(K)",
+      "可选",
+      "整数",
+      "5500 / 6500 / 3200",
+      "色温（开尔文）"
+    ],
+    [
+      "metering_mode",
+      "测光模式",
+      "可选",
+      "文本",
+      "Multi-segment / Center-weighted / Spot",
+      "测光模式"
+    ],
+    [
+      "scene_mode",
+      "场景模式",
+      "可选",
+      "文本",
+      "Portrait / Landscape / Sports / Night",
+      "场景模式"
+    ],
+    [
+      "camera_make",
+      "相机品牌",
+      "必填*",
+      "文本",
+      "Apple / Canon / Nikon / Sony / GoPro",
+      "相机制造商"
+    ],
+    [
+      "camera_model",
+      "相机型号",
+      "必填*",
+      "文本",
+      "iPhone 15 Pro / EOS R5 / Z9",
+      "相机型号"
+    ],
+    [
+      "lens_make",
+      "镜头品牌",
+      "可选",
+      "文本",
+      "Apple / Canon / Nikon / Sony",
+      "镜头制造商"
+    ],
+    [
+      "lens_model",
+      "镜头型号",
+      "可选",
+      "文本",
+      "EF 50mm f/1.4 USM",
+      "镜头型号"
+    ],
+    [
+      "lens_max_aperture",
+      "镜头最大光圈",
+      "可选",
+      "小数",
+      "1.4 / 1.8 / 2.8",
+      "镜头最大光圈"
+    ],
+    [
+      "sensor_size",
+      "传感器尺寸",
+      "可选",
+      "文本",
+      "1/1.28 inch / Full Frame / APS-C",
+      "传感器尺寸"
+    ],
+    [
+      "sensor_type",
+      "传感器类型",
+      "可选",
+      "文本",
+      "CMOS BSI / CMOS / CCD",
+      "传感器类型"
+    ],
+    [
+      "flash_mode",
+      "闪光灯模式",
+      "可选",
+      "文本",
+      "Off / Auto / Fill-in",
+      "闪光灯模式"
+    ],
+    [
+      "stabilization",
+      "防抖",
+      "可选",
+      "文本",
+      "OIS / IBIS / None",
+      "防抖类型"
+    ],
+    [
+      "image_width",
+      "图像宽度(px)",
+      "可选",
+      "整数",
+      "4032 / 6720 / 5472",
+      "图像宽度（像素）"
+    ],
+    [
+      "image_height",
+      "图像高度(px)",
+      "可选",
+      "整数",
+      "3024 / 4480 / 3648",
+      "图像高度（像素）"
+    ],
+    [
+      "image_format",
+      "图像格式",
+      "可选",
+      "枚举",
+      "JPEG / HEIC / RAW / PNG",
+      "图像文件格式"
+    ],
+    [
+      "color_space",
+      "色彩空间",
+      "可选",
+      "文本",
+      "Display P3 / sRGB / AdobeRGB",
+      "色彩空间"
+    ],
+    [
+      "color_depth",
+      "色深(bit)",
+      "可选",
+      "整数",
+      "8 / 10 / 12 / 14",
+      "色深位数"
+    ],
+    [
+      "pixel_density",
+      "像素密度(PPI)",
+      "可选",
+      "整数",
+      "460 / 326 / 264",
+      "像素密度"
+    ],
+    [
+      "image_orientation",
+      "图像方向",
+      "可选",
+      "整数",
+      "1 / 3 / 6 / 8",
+      "EXIF方向值（1=正常）"
+    ],
+    [
+      "compression_ratio",
+      "压缩比",
+      "可选",
+      "小数",
+      "0.85 / 0.9 / 0.95",
+      "压缩比（0-1）"
+    ],
+    [
+      "color_mode",
+      "色彩模式",
+      "可选",
+      "文本",
+      "Vivid / Natural / Monochrome",
+      "色彩模式"
+    ],
+    [
+      "ambient_light",
+      "环境光",
+      "可选",
+      "文本",
+      "Natural Light / Artificial / Mixed",
+      "环境光类型"
+    ],
+    [
+      "lighting",
+      "光线条件",
+      "可选",
+      "文本",
+      "Natural / Studio / Backlight",
+      "光线条件"
+    ],
+    [
+      "background",
+      "背景",
+      "可选",
+      "文本",
+      "White / Black / Outdoor",
+      "背景类型"
+    ],
+    [
+      "gps_mode",
+      "GPS模式",
+      "可选",
+      "枚举",
+      "random_by_scene / fixed / none",
+      "GPS坐标生成模式"
+    ],
+    [
+      "scene_type",
+      "场景类型",
+      "可选",
+      "枚举",
+      "urban / landscape / indoor / beach / mountain / street",
+      "场景类型（影响GPS随机范围）"
+    ],
+    [
+      "gps_latitude",
+      "GPS纬度",
+      "可选",
+      "小数",
+      "39.9042 / 31.2304",
+      "纬度（十进制度）"
+    ],
+    [
+      "gps_longitude",
+      "GPS经度",
+      "可选",
+      "小数",
+      "116.4074 / 121.4737",
+      "经度（十进制度）"
+    ],
+    [
+      "gps_altitude",
+      "GPS海拔(m)",
+      "可选",
+      "小数",
+      "50 / 100 / 200",
+      "海拔（米）"
+    ],
+    [
+      "software",
+      "后期软件",
+      "可选",
+      "文本",
+      "Apple iOS 17 / Adobe Lightroom / Capture One",
+      "后期处理软件"
+    ],
+    [
+      "sharpening",
+      "锐化",
+      "可选",
+      "文本",
+      "Normal / Low / High / None",
+      "锐化程度"
+    ],
+    [
+      "noise_reduction",
+      "降噪",
+      "可选",
+      "文本",
+      "Low / Normal / High / None",
+      "降噪程度"
+    ],
+    [
+      "post_processing",
+      "后期处理",
+      "可选",
+      "文本",
+      "None / Basic / Advanced",
+      "后期处理程度"
+    ],
+    [
+      "author",
+      "作者",
+      "可选",
+      "文本",
+      "John Smith",
+      "作者姓名（建议英文）"
+    ],
+    [
+      "copyright",
+      "版权声明",
+      "可选",
+      "文本",
+      "Copyright 2024 Smith Photography",
+      "版权声明"
+    ],
+    [
+      "image_description",
+      "图像描述",
+      "可选",
+      "文本",
+      "Product photo taken with iPhone 15 Pro",
+      "图像描述"
+    ],
+    [
+      "keywords",
+      "关键词",
+      "可选",
+      "文本",
+      "product,phone,iphone",
+      "逗号分隔的关键词"
+    ],
+    [
+      "maker_note_template",
+      "MakerNote模板",
+      "可选",
+      "枚举",
+      "apple_iphone15pro / canon_eos_r5 / nikon_z9 / sony_a7r5 / gopro_hero12",
+      "厂商元数据模板"
+    ],
+    [
+      "burst_sequence",
+      "连拍序号",
+      "可选",
+      "整数",
+      "1",
+      "连拍序号"
+    ],
+    [
+      "file_number",
+      "文件编号",
+      "可选",
+      "整数",
+      "1",
+      "文件编号"
+    ],
+    [
+      "raw_version",
+      "RAW版本",
+      "可选",
+      "文本",
+      "1.0",
+      "RAW文件版本"
+    ],
+    [
+      "prompt_template",
+      "提示词模板",
+      "可选",
+      "文本",
+      "",
+      "图像生成提示词模板"
+    ],
+    [
+      "is_default",
+      "是否默认",
+      "可选",
+      "整数",
+      "0 / 1",
+      "是否为默认预设（0=否，1=是）"
+    ]
+  ],
+  "headers": [
+    "name",
+    "category",
+    "description",
+    "iso",
+    "iso_range",
+    "shutter_speed",
+    "shutter_type",
+    "aperture",
+    "ev_value",
+    "exposure_compensation",
+    "exposure_mode",
+    "focal_length",
+    "focal_length_equiv",
+    "focus_distance",
+    "white_balance",
+    "color_temperature",
+    "metering_mode",
+    "scene_mode",
+    "camera_make",
+    "camera_model",
+    "lens_make",
+    "lens_model",
+    "lens_max_aperture",
+    "sensor_size",
+    "sensor_type",
+    "flash_mode",
+    "stabilization",
+    "image_width",
+    "image_height",
+    "image_format",
+    "color_space",
+    "color_depth",
+    "pixel_density",
+    "image_orientation",
+    "compression_ratio",
+    "color_mode",
+    "ambient_light",
+    "lighting",
+    "background",
+    "gps_mode",
+    "scene_type",
+    "gps_latitude",
+    "gps_longitude",
+    "gps_altitude",
+    "software",
+    "sharpening",
+    "noise_reduction",
+    "post_processing",
+    "author",
+    "copyright",
+    "image_description",
+    "keywords",
+    "maker_note_template",
+    "burst_sequence",
+    "file_number",
+    "raw_version",
+    "prompt_template",
+    "is_default"
+  ],
+  "samples": [
+    {
+      "source_symbol": "sampleRow",
+      "source_line": 869,
+      "status": "EXAMPLE_ONLY_NOT_PRODUCTION_PRESET",
+      "values": {
+        "name": "iPhone 15 Pro 示例",
+        "category": "phone",
+        "description": "iPhone 15 Pro 手机拍摄示例预设",
+        "iso": "400",
+        "iso_range": "50-3200",
+        "shutter_speed": "1/125",
+        "shutter_type": "Electronic",
+        "aperture": "1.78",
+        "ev_value": "0",
+        "exposure_compensation": "0",
+        "exposure_mode": "Aperture Priority",
+        "focal_length": "6.765",
+        "focal_length_equiv": "26",
+        "focus_distance": "0.3",
+        "white_balance": "Auto",
+        "color_temperature": "5500",
+        "metering_mode": "Multi-segment",
+        "scene_mode": "Portrait",
+        "camera_make": "Apple",
+        "camera_model": "iPhone 15 Pro",
+        "lens_make": "Apple",
+        "lens_model": "iPhone 15 Pro back camera 6.765mm f/1.78",
+        "lens_max_aperture": "1.78",
+        "sensor_size": "1/1.28 inch",
+        "sensor_type": "CMOS BSI",
+        "flash_mode": "Off",
+        "stabilization": "OIS",
+        "image_width": "4032",
+        "image_height": "3024",
+        "image_format": "HEIC",
+        "color_space": "Display P3",
+        "color_depth": "10",
+        "pixel_density": "460",
+        "image_orientation": "1",
+        "compression_ratio": "0.85",
+        "color_mode": "Vivid",
+        "ambient_light": "Natural Light",
+        "lighting": "Natural",
+        "background": "White",
+        "gps_mode": "random_by_scene",
+        "scene_type": "urban",
+        "gps_latitude": "",
+        "gps_longitude": "",
+        "gps_altitude": "",
+        "software": "Apple iOS 17",
+        "sharpening": "Normal",
+        "noise_reduction": "Low",
+        "post_processing": "None",
+        "author": "",
+        "copyright": "",
+        "image_description": "Product photo taken with iPhone 15 Pro",
+        "keywords": "product,phone,iphone",
+        "maker_note_template": "apple_iphone15pro",
+        "burst_sequence": "1",
+        "file_number": "1",
+        "raw_version": "1.0",
+        "prompt_template": "",
+        "is_default": "0"
+      }
+    },
+    {
+      "source_symbol": "sampleDslr",
+      "source_line": 895,
+      "status": "EXAMPLE_ONLY_NOT_PRODUCTION_PRESET",
+      "values": {
+        "name": "Canon EOS R5 示例",
+        "category": "dslr",
+        "description": "Canon EOS R5 全画幅单反示例预设",
+        "iso": "400",
+        "iso_range": "100-51200",
+        "shutter_speed": "1/250",
+        "shutter_type": "Mechanical",
+        "aperture": "5.6",
+        "ev_value": "11.5",
+        "exposure_compensation": "0",
+        "exposure_mode": "Manual",
+        "focal_length": "50",
+        "focal_length_equiv": "50",
+        "focus_distance": "1.2",
+        "white_balance": "Daylight",
+        "color_temperature": "5500",
+        "metering_mode": "Multi-segment",
+        "scene_mode": "Landscape",
+        "camera_make": "Canon",
+        "camera_model": "Canon EOS R5",
+        "lens_make": "Canon",
+        "lens_model": "EF 50mm f/1.4 USM",
+        "lens_max_aperture": "1.4",
+        "sensor_size": "Full Frame",
+        "sensor_type": "CMOS",
+        "flash_mode": "Off",
+        "stabilization": "IBIS",
+        "image_width": "8192",
+        "image_height": "5464",
+        "image_format": "JPEG",
+        "color_space": "sRGB",
+        "color_depth": "14",
+        "pixel_density": "240",
+        "image_orientation": "1",
+        "compression_ratio": "0.9",
+        "color_mode": "Natural",
+        "ambient_light": "Natural Light",
+        "lighting": "Natural",
+        "background": "Outdoor",
+        "gps_mode": "random_by_scene",
+        "scene_type": "landscape",
+        "gps_latitude": "",
+        "gps_longitude": "",
+        "gps_altitude": "",
+        "software": "Adobe Lightroom",
+        "sharpening": "Normal",
+        "noise_reduction": "Low",
+        "post_processing": "None",
+        "author": "James Wilson",
+        "copyright": "Copyright 2024 Wilson Photography",
+        "image_description": "Landscape photo taken with Canon EOS R5",
+        "keywords": "landscape,canon,fullframe",
+        "maker_note_template": "canon_eos_r5",
+        "burst_sequence": "1",
+        "file_number": "1",
+        "raw_version": "1.0",
+        "prompt_template": "",
+        "is_default": "0"
+      }
+    },
+    {
+      "source_symbol": "sampleMirrorless",
+      "source_line": 911,
+      "status": "EXAMPLE_ONLY_NOT_PRODUCTION_PRESET",
+      "values": {
+        "name": "Sony A7R V 示例",
+        "category": "mirrorless",
+        "description": "Sony A7R V 全画幅微单示例预设",
+        "iso": "800",
+        "iso_range": "100-32000",
+        "shutter_speed": "1/500",
+        "shutter_type": "Electronic",
+        "aperture": "2.8",
+        "ev_value": "13.5",
+        "exposure_compensation": "0",
+        "exposure_mode": "Aperture Priority",
+        "focal_length": "85",
+        "focal_length_equiv": "85",
+        "focus_distance": "2.0",
+        "white_balance": "Auto",
+        "color_temperature": "5600",
+        "metering_mode": "Multi-segment",
+        "scene_mode": "Portrait",
+        "camera_make": "Sony",
+        "camera_model": "ILCE-7RM5",
+        "lens_make": "Sony",
+        "lens_model": "FE 85mm F1.4 GM",
+        "lens_max_aperture": "1.4",
+        "sensor_size": "Full Frame",
+        "sensor_type": "CMOS BSI",
+        "flash_mode": "Off",
+        "stabilization": "IBIS",
+        "image_width": "9504",
+        "image_height": "6336",
+        "image_format": "JPEG",
+        "color_space": "sRGB",
+        "color_depth": "14",
+        "pixel_density": "240",
+        "image_orientation": "1",
+        "compression_ratio": "0.92",
+        "color_mode": "Natural",
+        "ambient_light": "Natural Light",
+        "lighting": "Studio",
+        "background": "White",
+        "gps_mode": "random_by_scene",
+        "scene_type": "urban",
+        "gps_latitude": "",
+        "gps_longitude": "",
+        "gps_altitude": "",
+        "software": "Capture One",
+        "sharpening": "Normal",
+        "noise_reduction": "Low",
+        "post_processing": "None",
+        "author": "Emily Chen",
+        "copyright": "Copyright 2024 Chen Photography",
+        "image_description": "Portrait photo taken with Sony A7R V",
+        "keywords": "portrait,sony,mirrorless",
+        "maker_note_template": "sony_a7r5",
+        "burst_sequence": "1",
+        "file_number": "1",
+        "raw_version": "1.0",
+        "prompt_template": "",
+        "is_default": "0"
+      }
+    },
+    {
+      "source_symbol": "sampleAction",
+      "source_line": 927,
+      "status": "EXAMPLE_ONLY_NOT_PRODUCTION_PRESET",
+      "values": {
+        "name": "GoPro HERO12 示例",
+        "category": "action",
+        "description": "GoPro HERO12 运动相机示例预设",
+        "iso": "400",
+        "iso_range": "100-6400",
+        "shutter_speed": "1/2000",
+        "shutter_type": "Electronic",
+        "aperture": "2.5",
+        "ev_value": "14.0",
+        "exposure_compensation": "0",
+        "exposure_mode": "Auto",
+        "focal_length": "4.0",
+        "focal_length_equiv": "27",
+        "focus_distance": "1.0",
+        "white_balance": "Auto",
+        "color_temperature": "5500",
+        "metering_mode": "Multi-segment",
+        "scene_mode": "Sports",
+        "camera_make": "GoPro",
+        "camera_model": "HERO12 Black",
+        "lens_make": "GoPro",
+        "lens_model": "GoPro HERO12 Black Wide Lens",
+        "lens_max_aperture": "2.5",
+        "sensor_size": "1/2.3 inch",
+        "sensor_type": "CMOS",
+        "flash_mode": "Off",
+        "stabilization": "HyperSmooth",
+        "image_width": "5568",
+        "image_height": "4176",
+        "image_format": "JPEG",
+        "color_space": "sRGB",
+        "color_depth": "8",
+        "pixel_density": "314",
+        "image_orientation": "1",
+        "compression_ratio": "0.85",
+        "color_mode": "Vivid",
+        "ambient_light": "Natural Light",
+        "lighting": "Natural",
+        "background": "Outdoor",
+        "gps_mode": "random_by_scene",
+        "scene_type": "mountain",
+        "gps_latitude": "",
+        "gps_longitude": "",
+        "gps_altitude": "",
+        "software": "GoPro App",
+        "sharpening": "Normal",
+        "noise_reduction": "Low",
+        "post_processing": "None",
+        "author": "Alex Johnson",
+        "copyright": "Copyright 2024 Johnson Media",
+        "image_description": "Action photo taken with GoPro HERO12",
+        "keywords": "action,gopro,sports",
+        "maker_note_template": "gopro_hero12",
+        "burst_sequence": "1",
+        "file_number": "1",
+        "raw_version": "1.0",
+        "prompt_template": "",
+        "is_default": "0"
+      }
+    }
+  ],
+  "enum_reference_line": 955,
+  "enum_reference": [
+    [
+      "字段名",
+      "允许的枚举值",
+      "说明"
+    ],
+    [
+      "category",
+      "phone",
+      "手机"
+    ],
+    [
+      "category",
+      "dslr",
+      "单反相机"
+    ],
+    [
+      "category",
+      "mirrorless",
+      "微单相机"
+    ],
+    [
+      "category",
+      "action",
+      "运动相机"
+    ],
+    [
+      "",
+      "",
+      ""
+    ],
+    [
+      "shutter_type",
+      "Mechanical",
+      "机械快门"
+    ],
+    [
+      "shutter_type",
+      "Electronic",
+      "电子快门"
+    ],
+    [
+      "shutter_type",
+      "EFCS",
+      "电子前帘快门"
+    ],
+    [
+      "",
+      "",
+      ""
+    ],
+    [
+      "gps_mode",
+      "random_by_scene",
+      "按场景类型随机生成GPS坐标"
+    ],
+    [
+      "gps_mode",
+      "fixed",
+      "使用固定GPS坐标（需填写纬度/经度/海拔）"
+    ],
+    [
+      "gps_mode",
+      "none",
+      "不写入GPS信息"
+    ],
+    [
+      "",
+      "",
+      ""
+    ],
+    [
+      "scene_type",
+      "urban",
+      "城市场景"
+    ],
+    [
+      "scene_type",
+      "landscape",
+      "风景场景"
+    ],
+    [
+      "scene_type",
+      "indoor",
+      "室内场景"
+    ],
+    [
+      "scene_type",
+      "beach",
+      "海滩场景"
+    ],
+    [
+      "scene_type",
+      "mountain",
+      "山地场景"
+    ],
+    [
+      "scene_type",
+      "street",
+      "街道场景"
+    ],
+    [
+      "",
+      "",
+      ""
+    ],
+    [
+      "iso",
+      "100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600, 51200, 102400",
+      "标准ISO档位（必须使用标准值）"
+    ],
+    [
+      "aperture",
+      "1.0, 1.2, 1.4, 1.8, 2.0, 2.8, 4.0, 5.6, 8.0, 11, 16, 22",
+      "标准光圈档位（必须使用标准值）"
+    ],
+    [
+      "focal_length",
+      "14, 16, 20, 24, 28, 35, 50, 85, 100, 105, 135, 200, 300, 400, 600",
+      "常用焦距（毫米）"
+    ],
+    [
+      "",
+      "",
+      ""
+    ],
+    [
+      "maker_note_template",
+      "apple_iphone15pro",
+      "Apple iPhone 15 Pro"
+    ],
+    [
+      "maker_note_template",
+      "apple_iphone15",
+      "Apple iPhone 15"
+    ],
+    [
+      "maker_note_template",
+      "apple_iphone14pro",
+      "Apple iPhone 14 Pro"
+    ],
+    [
+      "maker_note_template",
+      "canon_eos_r5",
+      "Canon EOS R5"
+    ],
+    [
+      "maker_note_template",
+      "canon_eos_r6",
+      "Canon EOS R6"
+    ],
+    [
+      "maker_note_template",
+      "nikon_z9",
+      "Nikon Z9"
+    ],
+    [
+      "maker_note_template",
+      "nikon_z8",
+      "Nikon Z8"
+    ],
+    [
+      "maker_note_template",
+      "sony_a7r5",
+      "Sony A7R V"
+    ],
+    [
+      "maker_note_template",
+      "sony_a1",
+      "Sony A1"
+    ],
+    [
+      "maker_note_template",
+      "fujifilm_x-t5",
+      "Fujifilm X-T5"
+    ],
+    [
+      "maker_note_template",
+      "gopro_hero12",
+      "GoPro HERO12"
+    ],
+    [
+      "maker_note_template",
+      "dji_osmo_action4",
+      "DJI Osmo Action 4"
+    ]
+  ],
+  "warning": "示例含来源标签、类型及格式矛盾，不导入为真实设备模板。示例作者是旧源码示例文本，不授予新系统署名权限。"
+}

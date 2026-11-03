@@ -1,0 +1,25 @@
+# Normalize text in Git; keep working-tree source and shell scripts on LF.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Preserve provenance hashes for project documents and original input material.
+docs/** -text !eol
+输入材料/** -text !eol
+
+# Preserve binary assets and original archives byte-for-byte.
+*.zip binary
+*.7z binary
+*.gz binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.pptx binary
+*.woff binary
+*.woff2 binary

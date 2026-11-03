@@ -1,0 +1,42 @@
+{
+  "capture_date": "2026-10-23",
+  "online_total": 405,
+  "unique_source_ids": 405,
+  "legacy_category_counts": {
+    "phone": 125,
+    "dslr": 119,
+    "mirrorless": 101,
+    "action": 60
+  },
+  "family_hint_counts": {
+    "phone": 125,
+    "legacy_dslr_pending_review": 113,
+    "legacy_mirrorless_pending_review": 84,
+    "action_camera": 44,
+    "gimbal_camera_candidate": 4,
+    "fixed_lens_candidate": 5,
+    "medium_format_candidate": 9,
+    "panoramic_360_candidate": 12,
+    "rangefinder_candidate": 9
+  },
+  "private_source_count": 405,
+  "structural_candidate_count": 233,
+  "quarantine_review_count": 172,
+  "review_flag_counts": {
+    "PHONE_ACTUAL_FOCAL_LENGTH_GT30MM_REVIEW_HEURISTIC": 96,
+    "LEGACY_DSLR_LABEL_NEEDS_MODEL_REVIEW": 76
+  },
+  "schema_field_count": 67,
+  "import_header_count": 58,
+  "import_example_count": 4,
+  "camera_spec_records": 93,
+  "camera_spec_unique_models": 48,
+  "camera_spec_source_differences": 3,
+  "tag_assignment_count": 66,
+  "unique_assigned_tags": 66,
+  "ui_option_groups": 65,
+  "device_directory_entries": 192,
+  "source_snapshot_files": 21,
+  "source_excerpt_files": 5,
+  "manufacturer_and_runtime_verification": "NOT_RUN"
+}

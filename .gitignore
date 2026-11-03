@@ -1,0 +1,130 @@
+# Local production accounts, credentials and resource details.
+# Keep the shareable inventory in docs/ under version control.
+/生产物料/
+
+# Local detector test photos (multi-GB originals, not product source).
+/测试用/
+
+# Generated prototype dumps, playwright traces and inline copies.
+# Canonical sync helper is prototype/sync-inline.js.
+/output/
+
+# Recreated detector research clones (not production docs).
+/docs/research/
+
+# Environment values are local; sanitized examples/templates are source.
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+!.env.*.example
+!.env.*.sample
+!.env.*.template
+
+# Private keys and local credential stores.
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+.ssh/
+.aws/
+.gnupg/
+.secrets/
+secrets.local/
+
+# Dependencies and package-manager caches.
+node_modules/
+.pnpm-store/
+.npm/
+.uv-cache/
+.venv/
+venv/
+ENV/
+.tox/
+.nox/
+
+# Generated frontend outputs and caches.
+.next/
+.turbo/
+.cache/
+.output/
+.vercel/
+.netlify/
+dist/
+dist-ssr/
+out/
+/build/
+*.tsbuildinfo
+
+# Python bytecode, build metadata and analysis/test outputs.
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.coverage
+.coverage.*
+coverage/
+coverage.xml
+htmlcov/
+test-results/
+playwright-report/
+blob-report/
+.playwright-cli/
+
+# Runtime data, temporary assets, logs and backups.
+*.log
+*.log.*
+*.pid
+*.pid.lock
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite3-journal
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3-shm
+*.sqlite3-wal
+*.dump
+*.sql.gz
+/run/
+/tmp/
+/temp/
+/data/
+/artifacts/
+/backups/
+/aojuai-main/backend/data/
+/aojuai-main/backend/uploads/
+/aojuai-main/backend/storage/
+/aojuai-main/backend/tmp/
+/aojuai-main/backend/backups/
+.cms-preview/
+.autubuild/
+
+# Local editor/assistant settings and OS files.
+.idea/
+.vscode/
+**/.claude/settings.local.json
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Intentionally tracked: lockfiles, migrations, docs, original input archives,
+# and aojuai-main/frontend/build/ source helpers (if present).

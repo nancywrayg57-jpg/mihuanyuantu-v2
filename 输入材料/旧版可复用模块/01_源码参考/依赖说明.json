@@ -1,0 +1,12 @@
+{
+  "legacy_declared_versions": {
+    "sharp": "^0.34.5",
+    "piexifjs": "^1.0.6",
+    "exiftool-vendored": "^35.16.0",
+    "xlsx": "^0.18.5",
+    "vitest": "^2.1.4"
+  },
+  "lockfile_sha256": "1F2B4893EF003CCC03DFFA3944D23F554CDE84C2AF05E2B3A438D0DED7AF5578",
+  "status": "REFERENCE_ONLY_NOT_INSTALL_INSTRUCTIONS",
+  "note": "源码快照没有复制数据库适配、API Key、模型账号及底座；不可直接启动。Python 迁移不自动继承 Node 依赖。"
+}

@@ -1,0 +1,97 @@
+// ==================== Parameters ====================
+
+export async function getParameters(opts?: {
+  category?: string;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+  // 高级搜索字段
+  cameraMake?: string;
+  cameraModel?: string;
+  isoMin?: number;
+  isoMax?: number;
+  apertureMin?: number;
+  apertureMax?: number;
+  focalLengthMin?: number;
+  focalLengthMax?: number;
+  // 多租户隔离
+  userId?: number;    // 当前用户ID，管理员不传
+  isAdmin?: boolean;  // 管理员可看到所有
+  // 排序
+  sortBy?: 'default' | 'usage_count' | 'updated_at';
+}) {
+  const pool = getRdsPool();
+  // 公共预设(is_public=1) + 当前用户私有预设(is_public=0 AND user_id=?)
+  // 管理员可看到所有预设
+  let where = "WHERE deleted_at IS NULL";
+  const params: any[] = [];
+  if (!opts?.isAdmin && opts?.userId !== undefined) {
+    where += " AND (is_public = 1 OR (is_public = 0 AND user_id = ?))";
+    params.push(opts.userId);
+  }
+
+  if (opts?.category && opts.category !== "all") {
+    where += " AND category = ?";
+    params.push(opts.category);
+  }
+  if (opts?.search) {
+    where += " AND (name LIKE ? OR description LIKE ? OR camera_model LIKE ? OR camera_make LIKE ? OR lens_model LIKE ?)";
+    params.push(`%${opts.search}%`, `%${opts.search}%`, `%${opts.search}%`, `%${opts.search}%`, `%${opts.search}%`);
+  }
+  // 高级搜索条件
+  if (opts?.cameraMake) {
+    where += " AND camera_make LIKE ?";
+    params.push(`%${opts.cameraMake}%`);
+  }
+  if (opts?.cameraModel) {
+    where += " AND camera_model LIKE ?";
+    params.push(`%${opts.cameraModel}%`);
+  }
+  if (opts?.isoMin !== undefined) {
+    where += " AND iso >= ?";
+    params.push(opts.isoMin);
+  }
+  if (opts?.isoMax !== undefined) {
+    where += " AND iso <= ?";
+    params.push(opts.isoMax);
+  }
+  if (opts?.apertureMin !== undefined) {
+    where += " AND aperture >= ?";
+    params.push(opts.apertureMin);
+  }
+  if (opts?.apertureMax !== undefined) {
+    where += " AND aperture <= ?";
+    params.push(opts.apertureMax);
+  }
+  if (opts?.focalLengthMin !== undefined) {
+    where += " AND focal_length >= ?";
+    params.push(opts.focalLengthMin);
+  }
+  if (opts?.focalLengthMax !== undefined) {
+    where += " AND focal_length <= ?";
+    params.push(opts.focalLengthMax);
+  }
+
+  const page = opts?.page ?? 1;
+  const pageSize = opts?.pageSize ?? 20;
+  const offset = (page - 1) * pageSize;
+
+  const [countRows] = await pool.query<mysql.RowDataPacket[]>(
+    `SELECT COUNT(*) as total FROM parameters ${where}`,
+    params
+  );
+  const total = (countRows as any)[0].total as number;
+
+  // 根据 sortBy 选择排序方式
+  let orderBy = 'is_default DESC, camera_make ASC, created_at DESC';
+  if (opts?.sortBy === 'usage_count') {
+    orderBy = 'usage_count DESC, is_default DESC, created_at DESC';
+  } else if (opts?.sortBy === 'updated_at') {
+    orderBy = 'updated_at DESC, is_default DESC';
+  }
+
+  const [rows] = await pool.query<mysql.RowDataPacket[]>(
+    `SELECT * FROM parameters ${where} ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
+    [...params, pageSize, offset]
+  );
+  return { items: rows, total };

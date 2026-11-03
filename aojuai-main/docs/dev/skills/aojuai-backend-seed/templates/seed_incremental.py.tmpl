@@ -1,0 +1,36 @@
+"""
+AOJUAI Backend - Seed for __MODULE__
+
+This is a template file intended for humans (and AI) to copy/adjust.
+Prefer using: docs/dev/skills/aojuai-backend-seed/scripts/scaffold_seed_incremental.py
+"""
+from __future__ import annotations
+
+import asyncio
+import json
+import sys
+from pathlib import Path
+
+from sqlalchemy import text
+
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from app.infrastructure.database import get_db_context
+
+
+async def seed(tenant_id: int = 2) -> None:
+    async with get_db_context() as db:
+        # 1) Check exists
+        # 2) Insert only if missing
+        # 3) Use cast(:param as jsonb) for JSONB in raw SQL (asyncpg)
+        await db.execute(
+            text("SELECT 1"),
+        )
+        await db.flush()
+
+
+if __name__ == "__main__":
+    asyncio.run(seed())
+

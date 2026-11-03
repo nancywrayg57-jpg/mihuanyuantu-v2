@@ -1,0 +1,28 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="32"
+  height="32"
+  viewBox="0 0 32 32"
+  role="img"
+  aria-label="AOJUAI"
+>
+  <defs>
+    <linearGradient id="aojuaiGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4F46E5" />
+      <stop offset="1" stop-color="#06B6D4" />
+    </linearGradient>
+    <filter id="aojuaiShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#aojuaiGradient)" />
+
+  <path
+    d="M16 7.2L7.2 25.2H11.3L12.9 21.3H19.1L20.7 25.2H24.8L16 7.2ZM16 11.8L14.2 16.4H17.8L16 11.8Z"
+    fill="#fff"
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    filter="url(#aojuaiShadow)"
+  />
+</svg>

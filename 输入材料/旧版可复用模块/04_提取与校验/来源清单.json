@@ -1,0 +1,188 @@
+{
+  "captured_on": "2026-10-23",
+  "local_head_observed": "4a3f2ade0532cab1cd69f01b0b00cdce5c78c5e7",
+  "sources": [
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\imagePhysicalizer.ts",
+      "sha256": "978A7F85D0F1A77803E31A701BB75F03A23EA1B52B3F767CABAFD8C0438D5FF2",
+      "output": "01_源码参考/原样快照/server/imagePhysicalizer.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\frequencyProcessor.ts",
+      "sha256": "2D8066912F235DA23E9457679ED1CB090CB0C146E635B322030A2E3C594A7406",
+      "output": "01_源码参考/原样快照/server/frequencyProcessor.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\fingerprintDestroyer.ts",
+      "sha256": "9A2652182E1FFF22CACECDCC05167F0403A6FB5453A231C3B96A4F1FACA860D4",
+      "output": "01_源码参考/原样快照/server/fingerprintDestroyer.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\exifToolWriter.ts",
+      "sha256": "C2DDC01919EE32680E22AC3F66F142791426D30D2DFE7E7E3C7C22FE6FCB5F45",
+      "output": "01_源码参考/原样快照/server/exifToolWriter.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\exifVerifier.ts",
+      "sha256": "60AF1298139B56DE44DE5666F78FE91EFAC68A1731D425A434243D9AC8D4A487",
+      "output": "01_源码参考/原样快照/server/exifVerifier.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\uploadSimulator.ts",
+      "sha256": "0B264D822FFA46E77ABAD2D4C74C3972C54E31B493BC94CD7C771555F860F039",
+      "output": "01_源码参考/原样快照/server/uploadSimulator.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\sizeOptimizer.ts",
+      "sha256": "3EAE4A15A2BA15D4DE8D704E3856034012F2047D442C6753553CCF36BE88E118",
+      "output": "01_源码参考/原样快照/server/sizeOptimizer.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\presetSerializer.ts",
+      "sha256": "151EB1F9E0D6EC2CAEC106A2121486409B135204DB32FE730D97C3D32DF1A130",
+      "output": "01_源码参考/原样快照/server/presetSerializer.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\exifWriter.ts",
+      "sha256": "4C0270455BAA226C9EEFFD81013343E908C700BFBCB26E6A1EEE3BBF1D7ED77E",
+      "output": "01_源码参考/原样快照/server/exifWriter.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\client\\src\\lib\\presetEchoFields.ts",
+      "sha256": "6D9016C97F741482D4FDF4F08D92510ABCEC237E7FEE5358C86DECD26199527C",
+      "output": "01_源码参考/原样快照/client/src/lib/presetEchoFields.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\shared\\domain-dictionaries.ts",
+      "sha256": "AD43AC4592E02D7D7762859A97904B0F79069C4ACF4F081C50CDCB55E9C109BD",
+      "output": "01_源码参考/原样快照/shared/domain-dictionaries.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\presetSerializer.test.ts",
+      "sha256": "30CD136EB0EADEA176CDD4DF99770471749868EB9D9A31A5BF330F9B3D4DA258",
+      "output": "01_源码参考/原样快照/server/presetSerializer.test.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\client\\src\\lib\\presetEchoFields.test.ts",
+      "sha256": "E4AB430A9A6E2D416E9966F13D10CB8FF2AC467C81C06ACD9B26F396243FD36F",
+      "output": "01_源码参考/原样快照/client/src/lib/presetEchoFields.test.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\fingerprintDestroyer.test.ts",
+      "sha256": "2BDA927D1696103A75E77406158BC46F330AFF603A4706FE64AE5F495F585FEC",
+      "output": "01_源码参考/原样快照/server/fingerprintDestroyer.test.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\exifWriter.test.ts",
+      "sha256": "4A25A683438B07F2EEB806D777AD7E6DE589C8EEAFD6F842490D70AE53516EC8",
+      "output": "01_源码参考/原样快照/server/exifWriter.test.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\exifVerifier.test.ts",
+      "sha256": "11EFB8065DEA70EEC74D7CA8D650B03DE7BBAB5810F5B64EA49B0E7DF54DCAF0",
+      "output": "01_源码参考/原样快照/server/exifVerifier.test.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\exifVerifier.keyType.test.ts",
+      "sha256": "DDF67C24FCE016C05A1FB29675D9732F62B4259613F788D0176E10DACC2E1B42",
+      "output": "01_源码参考/原样快照/server/exifVerifier.keyType.test.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\normalizeParams.test.ts",
+      "sha256": "ED73C66879D0293895D205A4F5E7DD9F10C0BF052CC23542C63DFD01765C1655",
+      "output": "01_源码参考/原样快照/server/normalizeParams.test.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\sizeOptimizer.test.ts",
+      "sha256": "BD553D845F453F4E3DDF95A14992ACFE8112F40A5E6B4618506DD61BAA284949",
+      "output": "01_源码参考/原样快照/server/sizeOptimizer.test.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\uploadSimulator.test.ts",
+      "sha256": "755210A8D1CDCA3520986AF8C79636CC88463627387EC1AB5F9C365248EE037F",
+      "output": "01_源码参考/原样快照/server/uploadSimulator.test.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\categoryAndImport.test.ts",
+      "sha256": "6953CB39DF55FA6BFE8603BB1FDF644964A7C133FBB4C736FC9B09BDD3B15E78",
+      "output": "01_源码参考/原样快照/server/categoryAndImport.test.ts",
+      "byte_exact": true
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\drizzle\\schema.ts",
+      "sha256": "43FF1862715BF52C68C9815C1DC2D290322DA8C1AD65A03D2C3D92F59CCACFDB",
+      "output": "01_源码参考/边界片段/parameters_schema.ts.txt",
+      "line_start": 54,
+      "line_end": 209,
+      "byte_exact": false
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\client\\src\\pages\\ParameterConfig.tsx",
+      "sha256": "B20D6D9C1C207F7B0D60FF11F59FE91BFBF8DEC485FB0298C7F5AB257B0C9B11",
+      "output": "01_源码参考/边界片段/import_template.tsx.txt",
+      "line_start": 774,
+      "line_end": 1000,
+      "byte_exact": false
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\routers.ts",
+      "sha256": "234F86FA110431707723AFC408EB0C16733352C42A7B8072F83E9C6B790E8198",
+      "output": "01_源码参考/边界片段/parameters_list_route.ts.txt",
+      "line_start": 1741,
+      "line_end": 1771,
+      "byte_exact": false
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\server\\rds.ts",
+      "sha256": "CAD706D12B17EC47BF1D12AC60B6CB61380C3594CE9A05D64E561362EFF71F5E",
+      "output": "01_源码参考/边界片段/parameters_list_query.ts.txt",
+      "line_start": 272,
+      "line_end": 368,
+      "byte_exact": false
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\client\\src\\App.tsx",
+      "sha256": "139D988AB4E3166B22FC8B2B8C4AE86FCF0AF93F7AE166247BD4D058B6F0D2A7",
+      "output": "01_源码参考/边界片段/parameters_route.tsx.txt",
+      "line_start": 94,
+      "line_end": 99,
+      "byte_exact": false
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\package.json",
+      "sha256": "47E733D95BF9AFCDEB5EFD8350DE19C30B24815CACD1BF67C428DE94BC3903DE",
+      "output": null,
+      "purpose": "literal extraction or dependency provenance"
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\pnpm-lock.yaml",
+      "sha256": "1F2B4893EF003CCC03DFFA3944D23F554CDE84C2AF05E2B3A438D0DED7AF5578",
+      "output": null,
+      "purpose": "literal extraction or dependency provenance"
+    }
+  ],
+  "online_capture_sha256": "71ED074FA302022F9F005B3EB82DD459AF04DEB8F03E6837908FD516CE8ED620",
+  "online_read_only": true,
+  "legacy_execution": "NOT_RUN",
+  "production_mutations": "NONE"
+}

@@ -1,0 +1,307 @@
+{
+  "captured_on": "2026-10-23",
+  "algorithm": "SHA-256",
+  "artifacts": [
+    {
+      "path": "01_源码参考/依赖说明.json",
+      "bytes": 483,
+      "sha256": "296DE6265658CD8610878CFD54AAFF90E5694B81DF7F2405F4A918FDD3F2BF63"
+    },
+    {
+      "path": "01_源码参考/原样快照/client/src/lib/presetEchoFields.test.ts",
+      "bytes": 5649,
+      "sha256": "E4AB430A9A6E2D416E9966F13D10CB8FF2AC467C81C06ACD9B26F396243FD36F"
+    },
+    {
+      "path": "01_源码参考/原样快照/client/src/lib/presetEchoFields.ts",
+      "bytes": 4792,
+      "sha256": "6D9016C97F741482D4FDF4F08D92510ABCEC237E7FEE5358C86DECD26199527C"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/categoryAndImport.test.ts",
+      "bytes": 5281,
+      "sha256": "6953CB39DF55FA6BFE8603BB1FDF644964A7C133FBB4C736FC9B09BDD3B15E78"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/exifToolWriter.ts",
+      "bytes": 26756,
+      "sha256": "C2DDC01919EE32680E22AC3F66F142791426D30D2DFE7E7E3C7C22FE6FCB5F45"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/exifVerifier.keyType.test.ts",
+      "bytes": 3506,
+      "sha256": "DDF67C24FCE016C05A1FB29675D9732F62B4259613F788D0176E10DACC2E1B42"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/exifVerifier.test.ts",
+      "bytes": 4101,
+      "sha256": "11EFB8065DEA70EEC74D7CA8D650B03DE7BBAB5810F5B64EA49B0E7DF54DCAF0"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/exifVerifier.ts",
+      "bytes": 18343,
+      "sha256": "60AF1298139B56DE44DE5666F78FE91EFAC68A1731D425A434243D9AC8D4A487"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/exifWriter.test.ts",
+      "bytes": 7521,
+      "sha256": "4A25A683438B07F2EEB806D777AD7E6DE589C8EEAFD6F842490D70AE53516EC8"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/exifWriter.ts",
+      "bytes": 52581,
+      "sha256": "4C0270455BAA226C9EEFFD81013343E908C700BFBCB26E6A1EEE3BBF1D7ED77E"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/fingerprintDestroyer.test.ts",
+      "bytes": 7974,
+      "sha256": "2BDA927D1696103A75E77406158BC46F330AFF603A4706FE64AE5F495F585FEC"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/fingerprintDestroyer.ts",
+      "bytes": 16355,
+      "sha256": "9A2652182E1FFF22CACECDCC05167F0403A6FB5453A231C3B96A4F1FACA860D4"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/frequencyProcessor.ts",
+      "bytes": 11143,
+      "sha256": "2D8066912F235DA23E9457679ED1CB090CB0C146E635B322030A2E3C594A7406"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/imagePhysicalizer.ts",
+      "bytes": 15815,
+      "sha256": "978A7F85D0F1A77803E31A701BB75F03A23EA1B52B3F767CABAFD8C0438D5FF2"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/normalizeParams.test.ts",
+      "bytes": 5423,
+      "sha256": "ED73C66879D0293895D205A4F5E7DD9F10C0BF052CC23542C63DFD01765C1655"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/presetSerializer.test.ts",
+      "bytes": 3628,
+      "sha256": "30CD136EB0EADEA176CDD4DF99770471749868EB9D9A31A5BF330F9B3D4DA258"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/presetSerializer.ts",
+      "bytes": 3778,
+      "sha256": "151EB1F9E0D6EC2CAEC106A2121486409B135204DB32FE730D97C3D32DF1A130"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/sizeOptimizer.test.ts",
+      "bytes": 10727,
+      "sha256": "BD553D845F453F4E3DDF95A14992ACFE8112F40A5E6B4618506DD61BAA284949"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/sizeOptimizer.ts",
+      "bytes": 7815,
+      "sha256": "3EAE4A15A2BA15D4DE8D704E3856034012F2047D442C6753553CCF36BE88E118"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/uploadSimulator.test.ts",
+      "bytes": 6354,
+      "sha256": "755210A8D1CDCA3520986AF8C79636CC88463627387EC1AB5F9C365248EE037F"
+    },
+    {
+      "path": "01_源码参考/原样快照/server/uploadSimulator.ts",
+      "bytes": 13528,
+      "sha256": "0B264D822FFA46E77ABAD2D4C74C3972C54E31B493BC94CD7C771555F860F039"
+    },
+    {
+      "path": "01_源码参考/原样快照/shared/domain-dictionaries.ts",
+      "bytes": 3967,
+      "sha256": "AD43AC4592E02D7D7762859A97904B0F79069C4ACF4F081C50CDCB55E9C109BD"
+    },
+    {
+      "path": "01_源码参考/边界片段/import_template.tsx.txt",
+      "bytes": 14746,
+      "sha256": "4E9B4AD34E54E76A77700D349D18CC02ED41DB83F1069D62403DD50D02F52923"
+    },
+    {
+      "path": "01_源码参考/边界片段/parameters_list_query.ts.txt",
+      "bytes": 3215,
+      "sha256": "344F5DFAA27662CA94D18933C4B4D87E8D83335D2C5FA67D6A581B4897C1CC2C"
+    },
+    {
+      "path": "01_源码参考/边界片段/parameters_list_route.ts.txt",
+      "bytes": 1521,
+      "sha256": "99FED6AFD0ECE3F321F116C2A24F329E1030ACF68F0722E9A593F5B3F751BBC8"
+    },
+    {
+      "path": "01_源码参考/边界片段/parameters_route.tsx.txt",
+      "bytes": 231,
+      "sha256": "19C1EE2AFEBE58F72D935E491D505309AF3DCD87FD84C66364C8D42FCEB1DCF1"
+    },
+    {
+      "path": "01_源码参考/边界片段/parameters_schema.ts.txt",
+      "bytes": 8081,
+      "sha256": "F16B4FAE79E312807DE16DC39AB6D26E05339B42282E293D659DC9F15D65490A"
+    },
+    {
+      "path": "02_设备参数/EXIF标签映射.json",
+      "bytes": 10270,
+      "sha256": "7959CDAF7A4B0F5F7B68D6FF32874EBE42BAFD02DC19F6E4AF949887B85D09AD"
+    },
+    {
+      "path": "02_设备参数/参数字段与映射.json",
+      "bytes": 28280,
+      "sha256": "06237628A9D1F812163A81FA212849E73DA4168F930D56CD5016F508237CC985"
+    },
+    {
+      "path": "02_设备参数/字段层级差异.json",
+      "bytes": 2022,
+      "sha256": "401ECFA5A562278AD6A5D5FD59BFF939FD474B34507F1F7AF1E795B14E80FA02"
+    },
+    {
+      "path": "02_设备参数/导入模板与四条示例.json",
+      "bytes": 23099,
+      "sha256": "0181CBAE04F1E219BAB62B2913C3912071C27E49001DCE26942A5BD2C57E234D"
+    },
+    {
+      "path": "02_设备参数/按建议设备形态/action_camera.json",
+      "bytes": 173532,
+      "sha256": "19FF93D024E31D799D8A1170293793150ED3D23121EAECD4DE826E88BBAACFBC"
+    },
+    {
+      "path": "02_设备参数/按建议设备形态/fixed_lens_candidate.json",
+      "bytes": 18544,
+      "sha256": "4A6939C49E0D700BCE13D6577722B37B28E85007ED044461F675189438494440"
+    },
+    {
+      "path": "02_设备参数/按建议设备形态/gimbal_camera_candidate.json",
+      "bytes": 15742,
+      "sha256": "EF2DAB9E113FEEF1228D420D4B7E4019EC5DB76947F722B1115CD341BBD19364"
+    },
+    {
+      "path": "02_设备参数/按建议设备形态/legacy_dslr_pending_review.json",
+      "bytes": 463805,
+      "sha256": "399C653258A93AA2C5C03F56318B946A8F15C96325B4CC8E61FCCF445A4675D0"
+    },
+    {
+      "path": "02_设备参数/按建议设备形态/legacy_mirrorless_pending_review.json",
+      "bytes": 327154,
+      "sha256": "DE4B00953AC79490832EF6DA102CB96553D1AC3D526400D33D5301AE0F475B55"
+    },
+    {
+      "path": "02_设备参数/按建议设备形态/medium_format_candidate.json",
+      "bytes": 37454,
+      "sha256": "1B8973EE30C49257D072D0A63DF27F91EC29C2EF6694DAA24EB875183C813EE6"
+    },
+    {
+      "path": "02_设备参数/按建议设备形态/panoramic_360_candidate.json",
+      "bytes": 47915,
+      "sha256": "C81D32A4B5922DC7A5557C020F8BA4B6994800FFB71B8A2F1A69DDF8EA5D2B77"
+    },
+    {
+      "path": "02_设备参数/按建议设备形态/phone.json",
+      "bytes": 496459,
+      "sha256": "20CF01DD3C28D364EA00734E82A2329C1B868B4C49030D537C1F41E1F90F0940"
+    },
+    {
+      "path": "02_设备参数/按建议设备形态/rangefinder_candidate.json",
+      "bytes": 36154,
+      "sha256": "7552DFE61BA5E711CD4F9032355C5EDA0FF563E9E22470BA87C76539D50FCABB"
+    },
+    {
+      "path": "02_设备参数/按旧分类/action.json",
+      "bytes": 236833,
+      "sha256": "6054356CAA0EC9FCFE0EDEBC5F9C9BD6697F5B3CB61BB355B117B64943E17F35"
+    },
+    {
+      "path": "02_设备参数/按旧分类/dslr.json",
+      "bytes": 488995,
+      "sha256": "50BB587C1A1264E71AC4A276C05156DDEF730807335A1225255AEE69E6FFAFFA"
+    },
+    {
+      "path": "02_设备参数/按旧分类/mirrorless.json",
+      "bytes": 393521,
+      "sha256": "B59CE6D6B92EFCDBB495C790865BFEDEB29041AD7A214724CFB383337357DF6A"
+    },
+    {
+      "path": "02_设备参数/按旧分类/phone.json",
+      "bytes": 496394,
+      "sha256": "FD5DE924442B253BB2835455D4F3A971FB3F92D2187027B8DB7858B586497480"
+    },
+    {
+      "path": "02_设备参数/提取统计.json",
+      "bytes": 1225,
+      "sha256": "25E80419139F01D8F4C976728F1C19C8FFF21E2C00DDD8B7DE08685E09A50800"
+    },
+    {
+      "path": "02_设备参数/旧版字段值字典.json",
+      "bytes": 1784,
+      "sha256": "B62F16608EF6934C9A50D73F595A3F6FA77FA8108B9E8BEC55B9C18180DE468F"
+    },
+    {
+      "path": "02_设备参数/旧编码配置参考.json",
+      "bytes": 2505,
+      "sha256": "0B805690EB1DE1094803B66F24D69AD7EF3F47B5C59A0DA97D745229AD97D3F6"
+    },
+    {
+      "path": "02_设备参数/源码机型规格.json",
+      "bytes": 71418,
+      "sha256": "81FA69FD057FB98760D1B2164A192482101B137485929D9C7A11A432CBCF7AED"
+    },
+    {
+      "path": "02_设备参数/界面候选值.json",
+      "bytes": 35535,
+      "sha256": "360BF696E55849C660C62E326B55A1BA629B8B14EF9B5F8BE881968DE42E1EE1"
+    },
+    {
+      "path": "02_设备参数/线上字段覆盖核对.json",
+      "bytes": 4903,
+      "sha256": "96A5E4B5D913DE58F13B4DA603F99BB25A649F445385910378E93D4D8CF1B5FD"
+    },
+    {
+      "path": "02_设备参数/线上预设_脱敏原始.json",
+      "bytes": 1043278,
+      "sha256": "71ED074FA302022F9F005B3EB82DD459AF04DEB8F03E6837908FD516CE8ED620"
+    },
+    {
+      "path": "02_设备参数/设备来源总目录.json",
+      "bytes": 156033,
+      "sha256": "996A9140E51B2755F7788FCFB0BCBEA7F98FD28AA0EA059930254AA0C908A4D4"
+    },
+    {
+      "path": "02_设备参数/设备模板候选_完整.json",
+      "bytes": 1615632,
+      "sha256": "AB18E05C0EE42A87CAF9BBAF5B27A09985FD17A71B6A8CEE0859CAAF3951B512"
+    },
+    {
+      "path": "03_复用评估/模块复用评估.md",
+      "bytes": 8217,
+      "sha256": "DC8B11BCAE16ACEB71FF8BCA49E886B408DC05690E42EEA24934761838773EF6"
+    },
+    {
+      "path": "03_复用评估/设备参数分类与复用说明.md",
+      "bytes": 6838,
+      "sha256": "6558E6BE51CEF6F406A4F3B5E068B1DD381F6C9A19E22345A262DB4CB6FC423D"
+    },
+    {
+      "path": "04_提取与校验/extract_legacy.py",
+      "bytes": 26078,
+      "sha256": "E0797F74818AC565B18AA9C5E7D860694D8D3DB1288020235ED4E2183F9BA3DD"
+    },
+    {
+      "path": "04_提取与校验/verify_extraction.py",
+      "bytes": 16201,
+      "sha256": "49AE385CB5CC10E8244C669A74ACA18EDA8441E4943432D20686247893FBF324"
+    },
+    {
+      "path": "04_提取与校验/来源清单.json",
+      "bytes": 8414,
+      "sha256": "3972F028EAFA5B777FDE853CA7BC34A21F131B843E0941F5C4007E266E28D526"
+    },
+    {
+      "path": "README.md",
+      "bytes": 8681,
+      "sha256": "882F5C000B1414566B65FE1944C490509829C0E77870DBCBCA7DD03CF9464F39"
+    }
+  ],
+  "excluded_self_referential_records": [
+    "文件指纹清单.json",
+    "校验结果.json"
+  ],
+  "additional_handoff_path": "docs/architecture_decisions/蜜獾原图-v2-旧版复用材料提取交接-2026-10-23.md",
+  "additional_handoff_sha256": "7A839B1A05B05D1A90246AF41F967A845F16937A7DBF56C26857F14F43221185"
+}

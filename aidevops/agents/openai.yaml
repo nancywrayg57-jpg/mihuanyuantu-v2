@@ -1,0 +1,4 @@
+interface:
+  display_name: "AidevOps Hub"
+  short_description: "AI development skill collection for beginner-friendly vibe coding and governed MVP delivery"
+  default_prompt: "Use $aidevops to turn an idea, rough PRD, or vibe-coding request into one visible MVP slice at a time with PRD, design, architecture, delivery, review, wiki, and release gates."

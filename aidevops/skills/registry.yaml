@@ -1,0 +1,181 @@
+skills_root: aidevops/skills
+policy:
+  snapshot_style: "Upstream skills are copied as original snapshots. Keep original filenames such as SKILL.md."
+  edit_rule: "Do not edit upstream child skills unless there is a concrete conflict. Put AidevOps-specific routing in aidevops/SKILL.md and this registry."
+  user_language: "Use Chinese in AidevOps guidance and phase files; keep upstream skills in their original language."
+  local_only: "These skills are bundled inside this repo and are not installed into the Codex system skill directory."
+
+upstream_snapshots:
+  bmad:
+    - skill: bmad-prd
+      path: bmad-prd/SKILL.md
+      source: research/repos/BMAD-METHOD/src/bmm-skills/2-plan-workflows/bmad-prd
+    - skill: bmad-ux
+      path: bmad-ux/SKILL.md
+      source: research/repos/BMAD-METHOD/src/bmm-skills/2-plan-workflows/bmad-ux
+    - skill: ux-coach
+      path: ux-coach/SKILL.md
+      source: research/repos/BMAD-METHOD/web-bundles/ux-coach
+    - skill: bmad-forge-idea
+      path: bmad-forge-idea/SKILL.md
+      source: research/repos/BMAD-METHOD/src/core-skills/bmad-forge-idea
+    - skill: bmad-spec
+      path: bmad-spec/SKILL.md
+      source: research/repos/BMAD-METHOD/src/core-skills/bmad-spec
+    - skill: bmad-agent-architect
+      path: bmad-agent-architect/SKILL.md
+      source: research/repos/BMAD-METHOD/src/bmm-skills/3-solutioning/bmad-agent-architect
+    - skill: bmad-check-implementation-readiness
+      path: bmad-check-implementation-readiness/SKILL.md
+      source: research/repos/BMAD-METHOD/src/bmm-skills/3-solutioning/bmad-check-implementation-readiness
+    - skill: bmad-code-review
+      path: bmad-code-review/SKILL.md
+      source: research/repos/BMAD-METHOD/src/bmm-skills/4-implementation/bmad-code-review
+  maestro:
+    - skill: team-lifecycle-v4
+      path: team-lifecycle-v4/SKILL.md
+      source: research/repos/maestro-flow/.codex/skills/team-lifecycle-v4
+    - skill: maestro-plan
+      path: maestro-plan/SKILL.md
+      source: research/repos/maestro-flow/.codex/skills/maestro-plan
+    - skill: quality-review
+      path: quality-review/SKILL.md
+      source: research/repos/maestro-flow/.codex/skills/quality-review
+    - skill: team-uidesign
+      path: team-uidesign/SKILL.md
+      source: research/repos/maestro-flow/.claude/skills/team-uidesign
+    - skill: team-ui-polish
+      path: team-ui-polish/SKILL.md
+      source: research/repos/maestro-flow/.claude/skills/team-ui-polish
+    - skill: team-ux-improve
+      path: team-ux-improve/SKILL.md
+      source: research/repos/maestro-flow/.claude/skills/team-ux-improve
+    - skill: team-visual-a11y
+      path: team-visual-a11y/SKILL.md
+      source: research/repos/maestro-flow/.claude/skills/team-visual-a11y
+  codex:
+    - skill: code-review
+      path: code-review/SKILL.md
+      source: research/repos/openai-codex/.codex/skills/code-review
+    - skill: code-review-testing
+      path: code-review-testing/SKILL.md
+      source: research/repos/openai-codex/.codex/skills/code-review-testing
+  openai_system:
+    - skill: imagegen
+      path: imagegen/SKILL.md
+      source: /root/.codex/skills/.system/imagegen
+    - skill: openai-docs
+      path: openai-docs/SKILL.md
+      source: /root/.codex/skills/.system/openai-docs
+    - skill: skill-creator
+      path: skill-creator/SKILL.md
+      source: /root/.codex/skills/.system/skill-creator
+  other:
+    - skill: frontend-design
+      path: frontend-design/SKILL.md
+      source: research/repos/external-skills/anthropic-frontend-design-SKILL.md
+    - skill: ui-ux-pro-max
+      path: ui-ux-pro-max/SKILL.md
+      source: research/repos/external-skills/ui-ux-pro-max-SKILL.md
+
+capability_routes:
+  intake:
+    primary:
+      - bmad-prd/SKILL.md
+      - bmad-spec/SKILL.md
+    aidevops_output:
+      - progress.yaml
+      - 00-discovery.yaml
+  idea-forge:
+    primary:
+      - bmad-forge-idea/SKILL.md
+    aidevops_output:
+      - 00-discovery.yaml
+  prd:
+    primary:
+      - bmad-prd/SKILL.md
+      - bmad-spec/SKILL.md
+    aidevops_output:
+      - 00-discovery.yaml
+  mvp-slicing:
+    primary:
+      - bmad-prd/SKILL.md
+      - bmad-spec/SKILL.md
+      - team-lifecycle-v4/SKILL.md
+    aidevops_output:
+      - 00-discovery.yaml
+      - 02-delivery.yaml
+  governance:
+    primary:
+      - team-lifecycle-v4/SKILL.md
+      - bmad-check-implementation-readiness/SKILL.md
+    aidevops_output:
+      - progress.yaml
+      - 00-discovery.yaml
+      - 02-delivery.yaml
+      - 03-acceptance.yaml
+  designer:
+    primary:
+      - bmad-ux/SKILL.md
+      - ux-coach/SKILL.md
+      - frontend-design/SKILL.md
+      - team-uidesign/SKILL.md
+    quality:
+      - team-ui-polish/SKILL.md
+      - team-ux-improve/SKILL.md
+      - team-visual-a11y/SKILL.md
+      - ui-ux-pro-max/SKILL.md
+    aidevops_output:
+      - 01-design.yaml
+      - prototypes/DESIGN.md
+      - prototypes/EXPERIENCE.md
+      - prototypes/visual-system.html
+  prototype-image-request:
+    primary:
+      - imagegen/SKILL.md
+      - openai-docs/SKILL.md
+      - frontend-design/SKILL.md
+      - bmad-ux/SKILL.md
+    relay_notes:
+      - "Relay/account compatibility is documented in references/prototyping.md; do not register relay implementations as child skills."
+    aidevops_output:
+      - 01-design.yaml
+      - prototypes/*.png
+      - prototypes/*-report.json
+  architect:
+    primary:
+      - bmad-agent-architect/SKILL.md
+      - maestro-plan/SKILL.md
+    readiness:
+      - bmad-check-implementation-readiness/SKILL.md
+    aidevops_output:
+      - 01-design.yaml
+      - 02-delivery.yaml
+  delivery-planner:
+    primary:
+      - maestro-plan/SKILL.md
+      - team-lifecycle-v4/SKILL.md
+    testing:
+      - code-review-testing/SKILL.md
+    aidevops_output:
+      - 02-delivery.yaml
+  reviewer:
+    primary:
+      - quality-review/SKILL.md
+      - bmad-code-review/SKILL.md
+      - code-review/SKILL.md
+      - code-review-testing/SKILL.md
+    aidevops_output:
+      - 03-acceptance.yaml
+  retro-knowledge:
+    primary:
+      - team-lifecycle-v4/SKILL.md
+      - quality-review/SKILL.md
+    aidevops_output:
+      - 03-acceptance.yaml
+      - progress.yaml
+
+aidevops_only_rules:
+  - "Before production-intended code, guide the user to install Git if missing and use version control."
+  - "Ask for user confirmation on stack, auth, deployment, data policy, and AI/model boundaries."
+  - "Write outputs into docs/<feature>/ phase files instead of upstream default workspaces unless the user explicitly wants the original workflow workspace."

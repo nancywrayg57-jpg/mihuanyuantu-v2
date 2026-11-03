@@ -1,0 +1,213 @@
+/**
+ * 全局响应式布局样式
+ * 统一 .main 和 .main-content 的边距设置
+ * PC端一致，手机端自适应缩小
+ */
+
+/* CSS 变量定义 */
+:root {
+  /* PC端边距 */
+  --pure-main-margin: 24px;
+  --pure-main-margin-top: 24px;
+  --pure-main-margin-bottom: 0;
+
+  /* 移动端边距 */
+  --pure-main-margin-mobile: 12px;
+  --pure-main-margin-mobile-top: 12px;
+}
+
+/* ==================== 主内容区域边距 ==================== */
+
+/* 统一 .main 样式 - PC端 */
+.main {
+  margin: var(--pure-main-margin);
+  margin-top: var(--pure-main-margin-top);
+  margin-bottom: var(--pure-main-margin-bottom);
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100% - var(--pure-main-margin) - var(--pure-main-margin-top));
+}
+
+/* 统一 .main-content 样式 - PC端 */
+.main-content {
+  margin: var(--pure-main-margin);
+  margin-top: var(--pure-main-margin-top);
+  margin-bottom: var(--pure-main-margin-bottom);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==================== 移动端响应式 ==================== */
+
+/* 平板端 (768px - 1024px) */
+@media screen and (max-width: 1024px) {
+  :root {
+    --pure-main-margin: 16px;
+    --pure-main-margin-top: 16px;
+  }
+}
+
+/* 手机端 (小于 768px) */
+@media screen and (max-width: 768px) {
+  :root {
+    --pure-main-margin: var(--pure-main-margin-mobile);
+    --pure-main-margin-top: var(--pure-main-margin-mobile-top);
+  }
+
+  .main,
+  .main-content {
+    margin: var(--pure-main-margin-mobile);
+    margin-top: var(--pure-main-margin-mobile-top);
+    margin-bottom: 0;
+  }
+}
+
+/* 小屏手机 (小于 480px) */
+@media screen and (max-width: 480px) {
+  :root {
+    --pure-main-margin-mobile: 8px;
+    --pure-main-margin-mobile-top: 8px;
+  }
+
+  .main,
+  .main-content {
+    margin: 8px;
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+}
+
+/* ==================== 搜索表单响应式布局 ==================== */
+
+/* 搜索表单基础样式 */
+.search-form {
+  :deep(.el-form-item) {
+    margin-bottom: 12px;
+  }
+}
+
+/* 平板端表单布局 */
+@media screen and (max-width: 1024px) {
+  .search-form {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+
+    :deep(.el-form-item) {
+      margin-right: 12px;
+    }
+
+    :deep(.el-input),
+    :deep(.el-select) {
+      width: 160px !important;
+    }
+  }
+}
+
+/* 手机端表单布局 - 两列布局 */
+@media screen and (max-width: 768px) {
+  .search-form {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-top: 12px !important;
+
+    :deep(.el-form-item) {
+      flex: 0 0 calc(50% - 8px);
+      margin-right: 8px;
+      margin-bottom: 8px;
+
+      .el-form-item__label {
+        font-size: 13px;
+        padding-right: 8px;
+      }
+
+      .el-form-item__content {
+        flex: 1;
+      }
+    }
+
+    :deep(.el-input),
+    :deep(.el-select) {
+      width: 100% !important;
+    }
+
+    /* 按钮组占满一行 */
+    :deep(.el-form-item:last-child) {
+      flex: 0 0 100%;
+      margin-right: 0;
+      justify-content: flex-start;
+
+      .el-form-item__content {
+        justify-content: flex-start;
+      }
+    }
+  }
+}
+
+/* 小屏手机 - 单列布局 */
+@media screen and (max-width: 480px) {
+  .search-form {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+
+    :deep(.el-form-item) {
+      flex: 0 0 100%;
+      margin-right: 0;
+
+      .el-form-item__label {
+        font-size: 12px;
+        width: auto !important;
+        min-width: 60px;
+      }
+    }
+
+    :deep(.el-button) {
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+  }
+}
+
+/* ==================== 表格工具栏响应式 ==================== */
+
+@media screen and (max-width: 768px) {
+  /* 表格工具栏按钮 */
+  .pure-table-bar {
+    :deep(.el-button) {
+      padding: 6px 10px;
+      font-size: 12px;
+
+      span {
+        display: none;
+      }
+
+      .el-icon {
+        margin-right: 0;
+      }
+    }
+
+    /* 保留主要按钮文字 */
+    :deep(.el-button--primary span) {
+      display: inline;
+    }
+  }
+}
+
+/* ==================== 移动端特殊处理 ==================== */
+
+/* 移动端类名下的样式调整 */
+.mobile {
+  .main,
+  .main-content {
+    margin: var(--pure-main-margin-mobile);
+    margin-top: var(--pure-main-margin-mobile-top);
+    margin-bottom: 0;
+  }
+
+  .search-form {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}

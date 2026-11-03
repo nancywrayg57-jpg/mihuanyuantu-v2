@@ -1,0 +1,39 @@
+# AOJUAI Backend - Runtime dependencies
+#
+# Notes:
+# - Do not pin exact versions here (use minimum versions only when required).
+# - Python requirement: >= 3.11 (see `backend/pyproject.toml`).
+#
+# If you prefer a single source of truth for dependency constraints, use:
+#   pip install -e .
+#
+fastapi
+uvicorn[standard]
+python-multipart
+
+sqlalchemy[asyncio]
+asyncpg
+aiosqlite>=0.22
+alembic
+greenlet
+psycopg2-binary
+
+redis
+
+pydantic
+pydantic-settings
+email-validator
+
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+
+httpx
+orjson
+python-dateutil
+structlog
+tenacity
+edge-tts
+google-genai
+
+apscheduler
