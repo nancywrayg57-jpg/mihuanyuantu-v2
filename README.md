@@ -50,7 +50,7 @@
 
 ## 本地 Git
 
-仓库根目录为 `D:\workspace\蜜獾原图v2`，本地分支使用 `main`。`origin` 指向 [mihuanyuantu-v2](https://github.com/nancywrayg57-jpg/mihuanyuantu-v2.git)。本次仅做本地整理，未读取远程分支、未拉取、未推送。
+仓库根目录为 `D:\workspace\蜜獾原图v2`，本地分支使用 `main`。`origin` 指向 [mihuanyuantu-v2](https://github.com/nancywrayg57-jpg/mihuanyuantu-v2.git)。
 
 提交前可在项目根目录检查：
 
