@@ -1,0 +1,75 @@
+phase: acceptance
+status: pending
+
+phase_confirmation:
+  status: draft
+  mode: ask-user
+  user_questions: []
+  auto_filled_for_test: []
+  confirmed_decisions: []
+  accepted_risks: []
+  blockers:
+    - "尚无实现可验收"
+  confirmed_by: ""
+  confirmed_at: ""
+  change_log:
+    - date: "2026-11-04"
+      change: "预置第一刀验收映射骨架"
+      reason: "grilling 完成后占位"
+
+knowledge_assets:
+  wiki: wiki.md
+  phase_summary: "验收未开始。"
+  outcomes: []
+  lessons: []
+  reusable_rules:
+    - "原型证据 ≠ 后端验收证据"
+    - "夹具通过 ≠ ND-011 通过"
+  prompts_or_commands: []
+  evidence_links: []
+  update_wiki: []
+
+verification_plan:
+  knife_1:
+    - AC-K1-001
+    - AC-K1-002
+    - AC-K1-003
+    - AC-K1-004
+    - expires_download_denied
+    - soft_delete_blocked_when_running
+    - fixture_inject_fail_and_tech_error
+    - order_support_confirm_topup
+    - dual_account_concurrent_reserve_smoke
+  production_gates:
+    - ND-011
+    - ND-020
+    - ND-021
+
+verification:
+  status: not_started
+  evidence: []
+  maps_to: [AC-K1-001, AC-K1-002, AC-K1-003, AC-K1-004]
+
+review:
+  status: not_started
+  findings: []
+
+quality_gates:
+  gate_discovery: passed_confirmed
+  gate_design: passed_architecture_delta
+  gate_delivery: blocked_awaiting_coding_auth
+  gate_release: not_applicable
+
+retro:
+  status: not_started
+  lessons: []
+  next_sprint: ["算法证据切片", "检测门禁切片"]
+
+release_decision:
+  status: not_applicable
+  note: "第一刀仅开发机；生产放行另议"
+
+gate:
+  ready: false
+  blockers:
+    - "无 CODE_COMPLETE 证据"
