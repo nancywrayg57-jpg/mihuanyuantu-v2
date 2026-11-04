@@ -13,6 +13,9 @@
 | [生产物料清单](蜜獾原图-v2-生产物料清单-v1.0.md) | 开发机 VM、生产拓扑与上线阻塞项 |
 | [AidevOps 工作区](mihuanyuantu-v2/progress.yaml) | grill-me 确认后的第一刀切片与阶段账本 |
 | [Agent 开发指令](mihuanyuantu-v2/DEV_INSTRUCTIONS.md) | 切片编排与依据路径；给编码 Agent 用 |
+| [移交 handoff](mihuanyuantu-v2/handoff.md) | 新会话一分钟接手 |
+| [约束锚点 anchor](mihuanyuantu-v2/anchor.md) | 现行业务/实现边界条目 |
+| [检查点 checkpoint](mihuanyuantu-v2/checkpoint.md) | 可核实状态；非发布说明 |
 | [HTML 原型](../prototype/README.md) | 离线交互原型；不等于后端已实现 |
 
 ## 现行裁决

@@ -108,6 +108,9 @@ evidence_pointers:
   acceptance: 03-acceptance.yaml
   wiki: wiki.md
   agent_dev_instructions: DEV_INSTRUCTIONS.md
+  handoff: handoff.md
+  anchor: anchor.md
+  checkpoint: checkpoint.md
   baseline_prd: ../蜜獾原图-v2-PRD-v2.0.md
   baseline_architecture: ../蜜獾原图-v2-项目架构-v1.0.md
   materials: ../蜜獾原图-v2-生产物料清单-v1.0.md

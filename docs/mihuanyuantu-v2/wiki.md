@@ -48,7 +48,9 @@
 - Next sprint knowledge: 算法证据切片 → 检测门禁切片 → 混合批次。
 
 ## Reusable Prompts and Commands
-- Agent entry: `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md`
+- Agent entry: `docs/mihuanyuantu-v2/handoff.md` → `DEV_INSTRUCTIONS.md`
+- Constraints: `docs/mihuanyuantu-v2/anchor.md`
+- Status: `docs/mihuanyuantu-v2/checkpoint.md`
 - Command: `python3 aidevops/scripts/validate_workspace.py docs/mihuanyuantu-v2`
 - Command: `node prototype/sync-inline.js`（改原型后）
 
