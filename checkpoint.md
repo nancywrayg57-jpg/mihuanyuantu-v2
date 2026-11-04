@@ -6,9 +6,9 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-04 17:25 CST |
+| updated | 2026-11-04 17:24 CST |
 | branch | `cursor/grill-logic-architecture-9973` |
-| HEAD | （提交后由下一 commit 刷新短 SHA） |
+| HEAD | `1397d7e`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
 | 文档态 | `DEV_INSTRUCTIONS` §10.1/10.2 已挂 S0/S1 三件套；`02-delivery` 仅状态镜像；gate ready |
 | 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付） |
 | 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
