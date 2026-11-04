@@ -1,11 +1,13 @@
 workflow: aidevops
 status: active
 run_mode: delivery
-current_phase: design
-active_capability: architect
+current_phase: delivery
+active_capability: delivery-planner
 feature_slug: mihuanyuantu-v2
 source_prd: ../蜜獾原图-v2-PRD-v2.0.md
 grill_session: confirmed_2026-11-04
+autonomous_slices: "S0-S6"
+s7_requires_admin_confirm: true
 
 clarification_policy:
   mode: ask-user
@@ -27,12 +29,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "第一刀：单张上传→处理状态机→假五层→检测夹具→整数账本→LocalDisk 下载"
+    goal: "S0→S1：基础 + 第一刀单张闭环"
     user_value: "商家能完成可审计的单张处理与按张扣费闭环（开发机）"
     visible_output: "可登录、可上传、可提交单张、可下载 JPG、积分流水正确"
     verify: "双商家账号共用积分 + 第二租户隔离 + 过期拒绝下载 + worker 关页后续跑"
-    status: pending_implementation
-  next_user_action: "确认是否授权开始第一刀编码（当前仅完成研究与合同对齐）"
+    status: ready_for_autonomous_implementation
+  next_user_action: "Agent 按 DEV_INSTRUCTIONS 自主推进；S7 前须管理员确认"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -68,10 +70,10 @@ capability_queue:
     status: deferred_not_required_for_first_knife
   - capability: architect
     phase_file: 01-design.yaml
-    status: in_progress
+    status: done
   - capability: delivery-planner
     phase_file: 02-delivery.yaml
-    status: pending
+    status: in_progress
   - capability: reviewer
     phase_file: 03-acceptance.yaml
     status: pending
@@ -94,8 +96,12 @@ phase_gates:
       - ../architecture_decisions/蜜獾原图-v2-grill-me逻辑架构裁决-2026-11-04.md
   delivery:
     file: 02-delivery.yaml
-    status: pending_user_authorize_coding
-    evidence: []
+    status: ready_autonomous_s0_s1
+    evidence:
+      - DEV_INSTRUCTIONS.md
+      - ../../handoff.md
+      - ../../anchor.md
+      - ../../checkpoint.md
   acceptance:
     file: 03-acceptance.yaml
     status: pending
@@ -122,6 +128,6 @@ evidence_pointers:
   commits_or_prs: []
 
 next_action:
-  owner: user
-  action: "审阅 DEV_INSTRUCTIONS.md；授权后按该指令 S0/S1 开工编码"
-  blocker: "用户尚未授权业务实现编码"
+  owner: agent
+  action: "按 DEV_INSTRUCTIONS 自主推进 S0，完成后进入 S1；同步更新 checkpoint §0 与本文件"
+  blocker: ""

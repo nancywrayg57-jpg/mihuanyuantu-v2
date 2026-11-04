@@ -1,30 +1,35 @@
 phase: delivery
-status: pending_user_authorize_coding
+status: ready_autonomous_s0_s6
 
 phase_confirmation:
-  status: needs_user
+  status: confirmed
   mode: ask-user
-  user_questions:
-    - "是否授权开始第一刀业务编码与 02-delivery 详细任务拆解？"
+  user_questions: []
   auto_filled_for_test: []
-  confirmed_decisions: []
-  accepted_risks: []
-  blockers:
-    - "用户确认 grilling 结束并完成合同修订，但尚未授权实现编码"
-  confirmed_by: ""
-  confirmed_at: ""
+  confirmed_decisions:
+    - "S0–S6 由编码 Agent 按 DEV_INSTRUCTIONS 自主推进"
+    - "S7 生产部署须管理员确认"
+    - "续作以 progress.yaml next_action 为准"
+  accepted_risks:
+    - "自主推进仍受 PRD/架构/生产门禁约束"
+  blockers: []
+  confirmed_by: user
+  confirmed_at: "2026-11-04T17:08:00+08:00"
   change_log:
     - date: "2026-11-04"
       change: "建立交付骨架与第一刀候选任务列表（未开工）"
-      reason: "AidevOps 文档优先；等待编码授权"
+      reason: "AidevOps 文档优先"
+    - date: "2026-11-04"
+      change: "取消编码人工阻塞；改为 S0–S6 自主、S7 确认"
+      reason: "grill-me 文件审计 Q4/Q7/Q8/Q11/Q14"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "交付阶段等待编码授权。"
+  phase_summary: "交付阶段可按指令自主推进 S0–S6。"
   outcomes: []
   lessons: []
   reusable_rules:
-    - "未授权不写业务实现"
+    - "S7 与密钥索取除外，不因缺少「开始编码」口令停工"
     - "feature 分支命名遵循 cloud agent 约定"
   prompts_or_commands: []
   evidence_links: []

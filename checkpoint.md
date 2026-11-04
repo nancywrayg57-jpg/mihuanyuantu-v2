@@ -1,6 +1,19 @@
 # 蜜獾原图 v2 · 检查点
 
-时区标注：Asia/Shanghai。本文件只记录**当前可核实状态**；不是发布说明，也不等同生产验收。
+时区：Asia/Shanghai。本文件只记录**当前可核实状态**；不是发布说明，也不等同生产验收。
+
+## 0. 每次会话必填（最小集）
+
+| 字段 | 当前值 |
+| --- | --- |
+| updated | 2026-11-04 17:08 CST |
+| branch | `cursor/grill-logic-architecture-9973` |
+| HEAD | `8f63b3c`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
+| 文档态 | 职责文件与 `DEV_INSTRUCTIONS` 经 grill 审计修订中/已修订 |
+| 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付） |
+| 验证态 | 工作区 `validate_workspace` 可通过；开发机连通与真模型 **未在本检查点实测** |
+| 当前切片 | S0/S1 **待自主推进**（以 `progress.yaml` 为准） |
+| 下一步 | 按 `DEV_INSTRUCTIONS` 自主推进 S0→S1；S7 须管理员确认 |
 
 ## 1. 仓库与文档基线
 
@@ -11,10 +24,10 @@
 | 现行 PRD | `docs/蜜獾原图-v2-PRD-v2.0.md`（document_version 以文件头为准） |
 | 项目架构 | `docs/蜜獾原图-v2-项目架构-v1.0.md`（`implementation_status: NOT_IMPLEMENTED`） |
 | Gemini 方案 | `docs/蜜獾原图-v2-Gemini-Vision检测与自动重做方案-v1.0.md` |
-| 生产物料清单 | `docs/蜜獾原图-v2-生产物料清单-v1.0.md`（清单头：`production_readiness: NOT_READY`；`development_readiness: READY_FOR_R0_DOC_AND_BASE_CODING`） |
+| 生产物料清单 | `docs/蜜獾原图-v2-生产物料清单-v1.0.md`（`production_readiness: NOT_READY`；`development_readiness: READY_FOR_R0_DOC_AND_BASE_CODING`） |
 | Agent 开发指令 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
 | 根目录职责文件 | `AGENTS.md`、`handoff.md`、`anchor.md`、`checkpoint.md` |
-| AidevOps 校验 | `python3 aidevops/scripts/validate_workspace.py docs/mihuanyuantu-v2` → 曾报 `ok`（以最新运行为准） |
+| AidevOps 校验 | `python3 aidevops/scripts/validate_workspace.py docs/mihuanyuantu-v2`（更新本文件时应重跑；结果写入验证态） |
 
 ## 2. 底座与原型（静态事实）
 
@@ -23,9 +36,10 @@
 | 底座目录 | `aojuai-main/` |
 | 上游钉扎（文件登记） | `aojuai-main/UPSTREAM_PIN.txt`：`sha add4ddb28916a8745f1be200e15e5a504fb4b4b3` |
 | 业务实现包 | 架构目标为 `realphotos`；**当前不等同已交付业务闭环** |
-| HTML 原型入口 | `prototype/index.html`（离线交互；mock，不接真实 OSS/模型/支付） |
+| HTML 原型入口 | `prototype/index.html`（离线交互；mock） |
 | 设备预设源 | `输入材料/旧版可复用模块/02_设备参数/线上预设_脱敏原始.json`（`total` / `items` = 405） |
-| 仓库内 `生产物料/` | **不存在**；密钥须向管理员索取后仅存本机 |
+| 后端 env 模板（仓库内） | `aojuai-main/backend/.env.lite.template`、`aojuai-main/backend/.env.production.template` |
+| 仓库内 `生产物料/` | **不存在**；密钥向管理员索取后仅存本机 |
 
 ## 3. 环境登记（摘自物料清单，非本机实测）
 
@@ -37,18 +51,16 @@
 | 图片盘约定 | 开发/生产 `www/mhyt/` 分子目录（物料） |
 | 首版存储策略 | 不开 OSS，LocalDisk（物料 + 架构现行口径） |
 
-> 上表为文档登记；Cloud Agent 环境未代替开发机做连通性验收。
-
-## 4. 切片状态（编排）
+## 4. 切片状态（编排；细节以 progress 为准）
 
 | 切片 | 状态 |
 | --- | --- |
-| S0 基础 | 未开工（编码未授权或未开始） |
-| S1 第一刀闭环 | 未开工 |
-| S2–S7 | 未开工 |
-| 生产部署 | 阻塞：`production_readiness: NOT_READY` + 门禁证据未齐 |
+| S0 基础 | 未开工 → 自主推进队列 |
+| S1 第一刀闭环 | 未开工 → 自主推进队列 |
+| S2–S6 | 未开工；S1 后可按依赖有限并行自主推进 |
+| S7 生产部署 | **须管理员确认**；且 `production_readiness: NOT_READY` + 门禁证据 |
 
-过程账本：`docs/mihuanyuantu-v2/progress.yaml`（以该文件 `next_action` / `phase_gates` 为准）。
+过程账本：`docs/mihuanyuantu-v2/progress.yaml`。
 
 ## 5. 验证分层（当前）
 
@@ -57,14 +69,14 @@
 | 文档工作区结构 | AidevOps `validate_workspace` 可通过 |
 | 原型交互演示 | 可本地打开；**不等于**后端验收 |
 | 业务 API / worker / 整数账本 | **未实现为可验收产品** |
-| 真五层 / 真 Gemini 小样 | **未作为本检查点通过项** |
+| 真五层 / 真 Gemini 小样 | **未通过** |
 | 生产收费服务 | **未就绪** |
 
-## 6. 本次跳过（信息不足，不编造）
+## 6. 允许标「未测」但不可省略 §0
 
-- 开发机/生产机实时进程、磁盘占用、证书到期实探（需在目标主机执行）。
-- 具体模型 Key 是否可用、调用延迟与费用。
-- 业务迁移版本号 / Alembic head（业务包尚未落地时无可报 heads）。
-- 端到端浏览器走查录像（无已授权实现可测）。
+- 开发机/生产机实时进程、磁盘、证书实探。
+- 模型 Key 可用性与费用。
+- 业务 Alembic head（业务包未落地前可写「无」）。
+- E2E 浏览器证据（无实现前可写「无」）。
 
-有新的可核实提交或验收证据时，更新本节与第 4 节，并同步仓库根 `handoff.md`。
+有新的可核实提交或验收证据时，更新 §0 与 §4，并同步 `handoff.md` 摘要与 `progress.yaml`。

@@ -48,10 +48,11 @@
 - Next sprint knowledge: 算法证据切片 → 检测门禁切片 → 混合批次。
 
 ## Reusable Prompts and Commands
-- Agent entry: 仓库根 `handoff.md` → `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md`
+- Agent entry: `DEV_INSTRUCTIONS.md`（必读根目录四职责文件）
+- Autonomous: S0–S6；S7 须管理员确认；next_action 以 `progress.yaml` 为准
 - Root pack: `AGENTS.md` · `handoff.md` · `anchor.md` · `checkpoint.md`
-- Constraints: `anchor.md`
-- Status: `checkpoint.md`
+- Constraints: `anchor.md`（节级适用范围；冲突听 PRD）
+- Status: `checkpoint.md` §0 最小集
 - Command: `python3 aidevops/scripts/validate_workspace.py docs/mihuanyuantu-v2`
 - Command: `node prototype/sync-inline.js`（改原型后）
 

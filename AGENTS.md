@@ -15,10 +15,10 @@ For unrelated small coding questions, answer normally without forcing the full A
 
 ## 1. 工作范围
 
-1. 以管理员当前明确任务为范围；未授权不扩展到未点名切片、未点名环境或未点名系统改造。
-2. 「先看」「给建议」「先审计」「整理文档」不等于授权改业务代码或部署生产；明确要求实现/修改/部署后才做对应动作。
-3. 切片编排与依据路径以 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` 为准；产品行为以现行 PRD 为准；落地结构以项目架构为准。三者冲突时停止并提问，禁止发明新需求。
-4. 未经要求不新增外部发布、客户 API、OSS 必选、ZIP 交付、独立 GPS 页、生图自动硬件化等 PRD 已禁止或未纳入当前切片的能力。
+1. 以管理员当前明确任务为范围；未授权不扩展到未点名的其他公司项目或未点名系统。
+2. 「先看」「给建议」「先审计」「整理文档」不等于授权改无关系统或清空业务数据；实现与部署按编码指令推进。
+3. 产品行为以现行 PRD 为准；落地结构以项目架构为准；切片编排与依据路径以 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` 为准。三者冲突时停止并提问，禁止发明新需求。
+4. 未经要求不新增外部发布、客户 API、OSS 必选、ZIP 交付、独立 GPS 页、生图自动硬件化等 PRD 已禁止的能力。
 
 ## 2. 证据纪律
 
@@ -42,12 +42,8 @@ For unrelated small coding questions, answer normally without forcing the full A
 
 ## 5. 实现与验证
 
-1. 开工前核对分支、工作树与目标切片（S0–S7），功能分支使用 `cursor/<功能简述>-9973`。
-2. 业务落在 aojuai `realphotos`（或架构指定等价包）；旧版材料只读参考，不整包迁入伪队列/用户/Key。
-3. 主验证以物料清单登记的开发机为准；Cloud 环境可改代码，不能替代的项须在开发机补验。
-4. 生产部署仅在开发指令门禁满足后协助执行；缺 SSH/密钥则询问管理员。
-5. 每完成切片更新 AidevOps：`docs/mihuanyuantu-v2/progress.yaml`、阶段文件、`wiki.md`。
+切片编排、验证环境、Git 分支、落点与生产门禁以 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` 为准；完成后更新 AidevOps 账本（`docs/mihuanyuantu-v2/progress.yaml`、阶段文件、`wiki.md`）及该指令要求维护的根目录状态文件。
 
 ## 6. 范围外
 
-只有明确获准时才开展范围外审计、重设计或生产发布。
+只有明确获准时才开展与当前切片无关的审计重设计或跳过生产门禁的发布。

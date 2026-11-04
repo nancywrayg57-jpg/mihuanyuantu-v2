@@ -2,19 +2,14 @@
 
 ## 1. 一分钟接手
 
-项目：蜜獾原图 v2（多租户图片资源 + 硬件化处理 + 积分）。  
-仓库根职责文件与编码指令：
+项目：蜜獾原图 v2（多租户图片资源 + 硬件化处理 + 积分）。
 
-1. `handoff.md`（本文件，仓库根）
-2. `anchor.md`（现行约束，仓库根）
-3. `checkpoint.md`（可核实状态，仓库根）
-4. `AGENTS.md`（协作宪法，仓库根）
-5. `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md`（编码工具切片编排与依据路径）
-6. `docs/mihuanyuantu-v2/progress.yaml`（当前阶段与下一步）
+**开工入口（编码工具）**：`docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md`  
+必读根目录职责文件：`AGENTS.md`、`handoff.md`（本文件）、`anchor.md`、`checkpoint.md`。  
+过程续作权威：`docs/mihuanyuantu-v2/progress.yaml` 的 `next_action` / 切片状态（本文件与 `checkpoint.md` 只作同步摘要）。
 
 再按需打开现行 PRD、项目架构、生产物料清单、Gemini 方案、`prototype/`。  
-**不要**把离线 HTML 原型或文档齐全误当成后端已上线。  
-**不要**在未明确授权时改业务代码或部署生产。
+不要把离线 HTML 原型或文档齐全误当成后端已上线。
 
 ## 2. 权威顺序
 
@@ -28,15 +23,15 @@
 
 | 项 | 路径 / 说明 |
 | --- | --- |
-| 仓库根 | 含 `AGENTS.md`、`handoff.md`、`anchor.md`、`checkpoint.md`、`aojuai-main/`、`docs/`、`prototype/`、`输入材料/`、`aidevops/` |
+| 仓库根 | `AGENTS.md`、`handoff.md`、`anchor.md`、`checkpoint.md`、`aojuai-main/`、`docs/`、`prototype/`、`输入材料/`、`aidevops/` |
 | 特征工作区 | `docs/mihuanyuantu-v2/` |
 | 编码指令 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
 | 底座 | `aojuai-main/`（钉扎见 `aojuai-main/UPSTREAM_PIN.txt`） |
 | 原型 | `prototype/index.html`；改 `prototype.js` 后跑 `node prototype/sync-inline.js` |
-| 分支约定 | `cursor/<功能简述>-9973` → PR → `main` |
+| 分支约定 | 见 `DEV_INSTRUCTIONS.md` |
 | 密钥 | 仓库无 `生产物料/`；需要时在聊天向管理员索取，仅写本机环境 |
 
-当前实现状态摘要见 `checkpoint.md`（架构仍为未实现业务闭环；生产未就绪）。
+当前实现状态摘要见 `checkpoint.md`。
 
 ## 4. 关键导航
 
@@ -46,21 +41,20 @@
 | 约束条目 | `anchor.md` |
 | 就绪/未就绪事实表 | `checkpoint.md` |
 | 协作纪律 | `AGENTS.md` |
-| AidevOps 阶段 | `docs/mihuanyuantu-v2/00-discovery.yaml` … `03-acceptance.yaml`、`progress.yaml`、`wiki.md` |
+| AidevOps 阶段 | `docs/mihuanyuantu-v2/` 下 `progress.yaml` 与阶段 yaml、`wiki.md` |
 | 交互合同 | `prototype/README.md` |
 | 旧算法/405 预设只读 | `输入材料/旧版可复用模块/` |
 | 开发/生产主机与目录登记 | `docs/蜜獾原图-v2-生产物料清单-v1.0.md` |
 
-## 5. 下一步应等待的指令
+## 5. 下一步（摘要；以 progress 为准）
 
-- 默认阻塞：用户**明确授权**按 `DEV_INSTRUCTIONS.md` 从 **S0/S1** 开始编码。
-- 授权后：在功能分支实现；主验证跟物料开发机；更新 `progress.yaml` 与本检查点/移交。
-- 生产部署：仅在开发指令生产门禁满足后协助；缺 SSH/密钥先问管理员。
-- 未授权：可继续文档澄清；不部署、不宣称检测/收费已通。
+- 编码工具按 `DEV_INSTRUCTIONS.md` **自主推进 S0–S6**（遵守切片依赖与有限并行）。
+- **S7 生产部署**须管理员确认后再执行；缺密钥/SSH 时在聊天索取。
+- 已在基线写明的技术栈/存储/账本/检测器等受保护决策，实现时不必反复索权；合同冲突或路径不存在时停止并提问。
 
-## 6. 风险提醒（接手必知）
+## 6. 风险提醒
 
 - 原型夹具 ≠ Gemini 真验收。
 - 租户共用积分是现行产品选择；账号隔离 ≠ 余额隔离。
 - 首版 LocalDisk；不要按「必须先买 OSS」开工。
-- `docs/architecture_decisions/`、`docs/archive/`、待决策清单正文**不作为**开发指令依据路径（见 `DEV_INSTRUCTIONS.md`）。
+- `docs/architecture_decisions/`、`docs/archive/`、待决策清单正文不作为开发指令依据路径（见 `DEV_INSTRUCTIONS.md`）。
