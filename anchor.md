@@ -1,6 +1,6 @@
 # 蜜獾原图 v2 · 约束锚点
 
-本文件记录**现行业务与实现边界**，供 Agent 快速对齐。不等于每条已在后端实现。实现状态见 `checkpoint.md`；切片与路径见 `DEV_INSTRUCTIONS.md`。细则以现行 PRD、项目架构、Gemini 方案正文为准。
+本文件记录**现行业务与实现边界**，供 Agent 快速对齐。不等于每条已在后端实现。实现状态见仓库根 `checkpoint.md`；切片与路径见 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md`。细则以现行 PRD、项目架构、Gemini 方案正文为准。
 
 ## A. 产品边界
 
@@ -63,7 +63,7 @@
 
 | ID | 约束 |
 | --- | --- |
-| F01 | 开发按 S0→S7 编排；基础与第一刀串行；其后允许有限并行（见 `DEV_INSTRUCTIONS.md`） |
+| F01 | 开发按 S0→S7 编排；基础与第一刀串行；其后允许有限并行（见 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md`） |
 | F02 | S1（第一刀）：单张；预审桩；假五层但仍交 JPG+快照字段；检测夹具；真实账本与 worker |
 | F03 | UI 合同：`prototype/`；改 `prototype.js` 后执行 `node prototype/sync-inline.js` |
 | F04 | 旧版模块只读参考于 `输入材料/旧版可复用模块/`；新代码写入 aojuai 业务包 |
