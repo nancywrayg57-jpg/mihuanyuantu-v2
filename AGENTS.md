@@ -17,21 +17,21 @@ For unrelated small coding questions, answer normally without forcing the full A
 
 1. 以管理员当前明确任务为范围；未授权不扩展到未点名的其他公司项目或未点名系统。
 2. 「先看」「给建议」「先审计」「整理文档」不等于授权改无关系统或清空业务数据；实现与部署按编码指令推进。
-3. 产品行为以现行 PRD 为准；落地结构以项目架构为准；切片编排与依据路径以 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` 为准。三者冲突时停止并提问，禁止发明新需求。
-4. 未经要求不新增外部发布、客户 API、OSS 必选、ZIP 交付、独立 GPS 页、生图自动硬件化等 PRD 已禁止的能力。
+3. 产品行为以现行 PRD 为准；落地结构以项目架构为准；阶段划分与依据路径以 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` 为准。三者冲突时停止并提问，禁止发明新需求。
+4. 未经要求不新增外部发布、客户 API、OSS 必选、ZIP 交付、独立 GPS 页、生图成功后自动进入相机参数处理等 PRD 已禁止的能力。
 
 ## 2. 证据纪律
 
 - 区分：用户要求、现行合同正文、代码事实、测试事实、待验证推断。
 - 编号、积分、角色、权限、状态机必须以 PRD/架构/可运行证据为来源；原型演示常量不是生产政策。
-- 文档完成、代码完成、验证通过分别陈述；单元/夹具通过不等于端到端或生产验收。
+- 文档完成、代码完成、验证通过分别陈述；单元测试或检测替身通过，不等于端到端或生产验收。
 - 不编造密钥已配置、模型已实测、生产已就绪、检测已通过等未证实结论。
 
 ## 3. 数据与密钥
 
 - 不提交真实 `.env`、API Key、口令、私钥；仓库内当前无 `生产物料/` 时，缺密钥在聊天中向管理员索取。
 - 不清空用户或租户业务数据来「修好」演示；不把源码内种子数据包装成真实客户数据。
-- 积分账本、冻结、消费、释放分路径处理；禁止用单一模糊状态替代。
+- 积分流水的冻结、消费、释放分路径处理；禁止用单一模糊状态替代。
 - 图片经受控网关访问；不暴露 LocalDisk 裸路径。
 
 ## 4. UI 规则
@@ -42,8 +42,8 @@ For unrelated small coding questions, answer normally without forcing the full A
 
 ## 5. 实现与验证
 
-切片编排、验证环境、Git 分支、落点与生产门禁以 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` 为准；完成后更新 AidevOps 账本（`docs/mihuanyuantu-v2/progress.yaml`、阶段文件、`wiki.md`）及该指令要求维护的根目录状态文件。
+阶段划分、验证环境、Git 分支、代码落点与上线门槛以 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` 为准；完成后更新 AidevOps 进度文件（`docs/mihuanyuantu-v2/progress.yaml`、阶段文件、`wiki.md`）及该指令要求维护的根目录状态文件。
 
 ## 6. 范围外
 
-只有明确获准时才开展与当前切片无关的审计重设计或跳过生产门禁的发布。
+只有明确获准时才开展与当前阶段无关的审计重设计，或跳过上线门槛的发布。
