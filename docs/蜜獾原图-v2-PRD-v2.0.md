@@ -1,100 +1,18 @@
 ---
 title: 蜜獾原图 v2 产品需求文档
 product_version: v2
-document_version: "2.6"
+document_version: "2.7"
 status: requirements_baseline_aligned_to_prototype_pending_design_and_verification
 created: 2026-10-29
-updated: 2026-11-02
-timezone: Asia/Shanghai
+updated: 2026-11-04
 language: zh-CN
-stakes: launch
-author: 依据现行 HTML 原型、验收记录与 PRD v1.0 已确认检测合同重新整理
-primary_output: D:/workspace/蜜獾原图v2/docs/蜜獾原图-v2-PRD-v2.0.md
-supersedes: D:/workspace/蜜獾原图v2/docs/archive/蜜獾原图-v2-PRD-v1.0.md
-pending_decisions: D:/workspace/蜜獾原图v2/docs/蜜獾原图-v2-待决策清单-v1.0.md
-confirmed_production_modules:
-  - Gemini Vision 最终检测（PRD v1.0 / FR-018，2026-11-02 确认为生产检测器）
-  - 自动重做（PRD v1.0 / FR-026，2026-11-02 与 Gemini 检测一并确认）
-inputs:
-  - D:/workspace/蜜獾原图v2/prototype/（现行交互原型，产品行为主证据）
-  - D:/workspace/蜜獾原图v2/docs/archive/蜜獾原图-v2-HTML原型验收记录-2026-10-25.md
-  - D:/workspace/蜜獾原图v2/docs/archive/2026-10-28-prototype-*.md
-  - D:/workspace/蜜獾原图v2/docs/archive/2026-10-29-prototype-history-isolation-support-user-admin.md
-  - D:/workspace/蜜獾原图v2/docs/archive/蜜獾原图-v2-PRD-v1.0.md（被替代基线；Gemini/自动重做条文来源，2026-11-02 确认为生产合同）
-  - D:/workspace/蜜獾原图v2/docs/蜜獾原图-v2-Gemini-Vision检测与自动重做方案-v1.0.md
-  - D:/workspace/蜜獾原图v2/docs/architecture_decisions/蜜獾原图-v2-继续使用Gemini-Vision最终检测-2026-11-02.md
-  - D:/workspace/蜜獾原图v2/输入材料/蜜獾原图项目架构.md
-  - D:/workspace/蜜獾原图v2/输入材料/蜜獾原图技术原理.md
-  - https://github.com/suwubee/aojuai（官方仓库，开发启动时固定最新稳定 Release）
+supersedes: docs/archive/蜜獾原图-v2-PRD-v1.0.md
+pending_decisions: docs/蜜獾原图-v2-待决策清单-v1.0.md
 ---
 
 # 蜜獾原图 v2 产品需求文档（v2.0）
 
-> 本文定义面向真实电商商家上线的第一版本产品边界、用户行为、业务规则、数据合同和上线验收条件。文档描述已确认需求与实现约束，不证明任何功能已经实现、测试通过、部署或上线。
->
-> **相对 v1.0：** 业务主线、信息架构与交互合同已按现行 HTML 原型重排。**Gemini Vision 最终检测**与**自动重做**于 2026-11-02 确认为生产合同（条文沿用 v1.0 FR-018 / FR-026，计费单位按 v2.1 按张）。Check_Aimage、Synthbuster 等替代研究不写入本文正式需求，亦不视为已替代 Gemini。
-
-## 0. 文档说明与证据基线
-
-### 0.1 读者与使用方式
-
-本 PRD 面向产品负责人、实现团队、测试与验收人员、客服运营和上线负责人。功能需求采用稳定编号 `FR-NNN`，非功能需求采用 `NFR-NNN`，用户旅程采用 `UJ-NNN`，状态机采用 `SM-NNN`，验收标准采用 `AC-NNN`，待决策采用 `ND-NNN`，拒绝路径采用 `RP-NNN`。
-
-`蜜獾原图-v2-待决策清单-v1.0.md` 仍为独立待决文件；其中与本版冲突的项以本版已确认行为为准，清单本身需后续同步修订。
-
-原审计整改与 v1.0 历史变更归档仍可追溯：
-
-- [审计整改裁决与交接](architecture_decisions/蜜獾原图-v2-审计整改裁决-2026-10-23.md)
-- [历史变更记录归档（截至 v1.25）](archive/蜜獾原图-v2-PRD-历史变更记录-截至v1.25-2026-10-23.md)
-
-### 0.2 输入材料与证据等级
-
-| 来源 ID | 材料 | SHA-256（当前读取值） | 用途 | 权威边界 |
-|---|---|---|---|---|
-| S-P01 | `prototype/README.md` | `B3969FD538806F7594928183297D82ED6ABDB972E9FCCE26F033F374EDE470BA` | 现行原型产品口径与走查顺序 | 交互与信息架构主证据；不等于后端已实现 |
-| S-P02 | `docs/archive/蜜獾原图-v2-HTML原型验收记录-2026-10-25.md` | `339E653DB6178A8F729135C0627DE24B578D058D40988DF66CD35CE96C5923F1` | 原型验收批次与边界 | 仅证明离线 HTML mock；部分早期表格已被后续 ADR 覆盖 |
-| S-P03 | `docs/archive/2026-10-28-prototype-image-resources.md` 等原型 ADR | 按文件各自归档 | 资源库、历史、消息、用户管理等增量决策 | 优先于验收记录中已被覆盖的旧描述 |
-| S-01 | `输入材料/蜜獾原图项目架构.md` | （见 v1.0） | 现网只读事实与风险 | 不等于 v2 目标实现 |
-| S-02 | `输入材料/蜜獾原图技术原理.md` | （见 v1.0） | 算法与参数模板 | 可复用提取第二优先 |
-| S-V1 | `docs/archive/蜜獾原图-v2-PRD-v1.0.md` | `D8F9083EC7EE077D12197BFC6E37B6539FE9C62D1DC7BD3044359431931E6EC7` | 被替代基线；Gemini/自动重做条文来源 | 除已确认沿用的检测/自动重做合同外，与本版冲突时本版优先 |
-| S-05 | aojuai 官方仓库 | 开发启动时记录 | 多租户底座候选 | 以启动时稳定 Release、SHA、许可证与锁文件为准 |
-| S-06 | 管理员关于 aojuai 的声明 | 聊天声明 | 底座使用权限 | `PROJECT_DECLARED`，非独立版权鉴定 |
-
-证据等级：`CONFIRMED`（本版已对齐原型或仍沿用 v1.0 已确认）、`PROTOTYPE_CONFIRMED`（原型与 ADR 一致，待后端设计固化）、`PROJECT_DECLARED`、`CURRENT_FACT`、`PROPOSED`、`[ASSUMPTION A-NNN]`、`DECISION_PENDING`、`CONFLICT_BLOCKED`、`CONFIRMED_PRODUCTION`（2026-11-02 确认的 Gemini 最终检测与自动重做合同）。
-
-**验收记录内已知过时描述（写需求时以现行原型与 PRD 为准）：** 早期批次中的「AI 生图一级菜单」「继续 EXIF 整批回流批量原图」已被归档原型 ADR 与现行原型取代。
-
-### 0.3 当前版本一句话范围
-
-第一版本是面向中国大陆电商商家的多租户 Web SaaS：客户通过统一「图片资源」获取图片（文生图、图生图、本地上传、URL 导入），获取成功只入库；再从资源库选择最多 10 张进入「批量原图」执行预审、五层技术处理与 Gemini Vision 最终检测，完成后在站内预览并以单图/目录批量方式下载 sRGB JPEG。平台维护设备参数预设（含 GPS 写入策略）；处理提交时继承所选预设的 GPS 快照，客户不再单独选择 GPS。积分按**每张成功图片 10 积分**计费：生图任务按成功生成入库张数计费，图片处理（EXIF/五层+最终检测）按成功处理并通过最终检测的张数计费；同一张图的自动重做不叠加收费；提示词优化成功 1 积分/次；Gemini 最终检测失败不收费规则沿用 v1.0。平台暂不向外部目标平台发布。
-
-### 0.4 相对 v1.0 的主线变更摘要
-
-| 主题 | v1.0 | 本版（对齐原型） |
-|---|---|---|
-| 入口结构 | 上传/导入、文生图、图生图分页 | 「图片资源」统一四入口；「批量原图」只处理已有资源 |
-| 生图与处理 | 文生图/图生图自动继续五层与最终检测 | 生图仅生成并入库；处理由客户另行提交 |
-| GPS | 客户在处理时选择地点 | GPS 仅在设备预设中配置；处理继承快照 |
-| 下载 | ZIP 批量包 | 不生成 ZIP；勾选后目录写入或浏览器降级逐文件下载 |
-| 原图保留 | 与结果同按 7 天 | 资源库原图长期保留、可重复处理；处理结果仍按 7 天 |
-| 历史 | 单列表四来源 | 一级菜单名「任务详情」；默认「图片处理任务」标签，其次「生图任务」；按提交接收账号隔离 |
-| 管理 | 无独立用户管理页 | 用户管理 + 系统日志；技术客服与管理员可见 |
-| 提示词模板 | 无独立页 | 一级菜单「AI 提示词模板」；平台/租户模板；生图表单可选用 |
-| 资源列表 | 上传列表 | 表格（非卡片网格）；文件名按 name/seller/sku/asn/price/website/url 拼接 |
-| URL 导入 | 与上传同批 10 张 | 本地上传单次最多 20；URL/JSON 导入单次最多 100 |
-| Gemini / 自动重做 | FR-018 / FR-026 | **CONFIRMED_PRODUCTION（2026-11-02，条文沿用 v1.0）** |
-
-### 0.5 可复用模块状态
-
-| 模块 | v2 处理 | 状态 |
-|---|---|---|
-| aojuai 多租户、身份与底座 | 以官方最新稳定 Release 为基线后再适配 | `GAP_APPROVED` |
-| 设备参数预设（含 405 条旧版脱敏来源） | 提取完整模板；平台启停与版本快照；仅启用项可选 | `EXTRACT_REUSE` |
-| 像素/频域/指纹/EXIF/编码五层 | 经校验后复用；静默失败与色差桩不得迁入 | `GAP_APPROVED` |
-| 图片预审渠道 | 默认阿里千问，可配置更换 | `GAP_APPROVED` |
-| Gemini 最终检测合同 | **沿用 v1.0 五维、总分 ≥75 且 `passed=true`；2026-11-02 确认为生产检测器** | `CONFIRMED_PRODUCTION` |
-| 自动重做 | **沿用 v1.0 FR-026；与 Gemini 检测一并确认** | `CONFIRMED_PRODUCTION` |
-| 旧版伪队列、裸路由、外部发布 | 不迁入 | `CONFLICT_BLOCKED` |
+> 本文定义面向真实电商商家上线的第一版本产品边界、用户行为、业务规则、数据合同和上线验收条件。文档描述已确认需求与实现约束，不证明任何功能已经实现、测试通过、部署或上线。功能需求 `FR-NNN`、非功能 `NFR-NNN`、用户旅程 `UJ-NNN`、状态机 `SM-NNN`、验收 `AC-NNN`、待决策 `ND-NNN`、拒绝路径 `RP-NNN`。独立待决见 [待决策清单](蜜獾原图-v2-待决策清单-v1.0.md)；与本版冲突时以本版已确认行为为准。
 
 ## 1. 产品愿景与定位
 
@@ -775,7 +693,3 @@ CP-001—CP-006 同 v1.0（aojuai 声明、第三方模型告知、大陆运营�
 | URL 导入无供应商证据 | 高 | ND-012：未配置前不真呼 |
 | 账号隔离与租户隔离混淆 | 高 | AC-010；管理员亦不可默认看他人历史 |
 | 旧算法静默失败 | 高 | P0 回读；禁止静默回退 |
-
----
-
-**文档状态：** `requirements_baseline_aligned_to_prototype_pending_design_and_verification`（document_version 2.6）  

@@ -18,6 +18,7 @@ runtime_verification: NOT_RUN
 
 | 目的 | 文件 |
 |---|---|
+| **Gemini 五维检测合同（旧版）** | [exifVerifier.ts](01_源码参考/原样快照/server/exifVerifier.ts)（RM-009）；键 `noise` / `depthOfField` / `lighting` / `colorRealism` / `overallRealism`，提示词内 `score >= 75` 且 `passed=true`。与 `D:\workspace\蜜獾原图\server\exifVerifier.ts` 字节一致（SHA-256 `60AF1298139B56DE44DE5666F78FE91EFAC68A1731D425A434243D9AC8D4A487`）。只复用合同语义，不照搬旧 Key 轮询与异常零分回退 |
 | 确认每个模块能复用什么、必须改什么 | [模块复用评估](03_复用评估/模块复用评估.md) |
 | 查看设备类型、参数差异及数据复核点 | [设备参数分类与复用说明](03_复用评估/设备参数分类与复用说明.md) |
 | 读取全部线上原始参数值，已过滤运行数据 | [线上预设 JSON](02_设备参数/线上预设_脱敏原始.json) |

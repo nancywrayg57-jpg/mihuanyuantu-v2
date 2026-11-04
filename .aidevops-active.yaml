@@ -1,0 +1,18 @@
+active: true
+skill_path: aidevops/SKILL.md
+version: v20260701-persistent-activation
+activation_scope:
+  - PRD
+  - user stories
+  - design
+  - visual prototype
+  - gpt-image-2 prototype image
+  - architecture
+  - sprint
+  - implementation loop
+  - review
+  - acceptance
+  - deployment
+  - rollback
+  - vibe coding
+rule: "For relevant product/software delivery work, read aidevops/SKILL.md before acting even when the user does not repeat the skill name."

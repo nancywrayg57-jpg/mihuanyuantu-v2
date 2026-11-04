@@ -1,0 +1,4 @@
+upstream: https://github.com/suwubee/aojuai
+ref: refs/heads/main
+sha: add4ddb28916a8745f1be200e15e5a504fb4b4b3
+synced_at: 2026-11-03T21:29:02.7860204+08:00

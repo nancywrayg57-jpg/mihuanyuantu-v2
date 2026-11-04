@@ -24,6 +24,7 @@ related_adr: docs/architecture_decisions/蜜獾原图-v2-继续使用Gemini-Visi
 | 检测器 | Gemini Vision（平台「最终检测」渠道，默认识别名 `gemini-2.5-pro`，以模型 API 实际配置为准） |
 | 报告 | 五个维度（噪点颗粒、景深、光线曝光、色彩真实度、整体真实感；键名 `noise` / `depthOfField` / `lighting` / `colorRealism` / `overallRealism`）、总分、`passed`、未通过原因 |
 | 通过标准 | `total_score >= 75` 且 `passed=true` |
+| 旧版合同来源 | [`输入材料/旧版可复用模块/01_源码参考/原样快照/server/exifVerifier.ts`](../输入材料/旧版可复用模块/01_源码参考/原样快照/server/exifVerifier.ts)（与旧仓 `server/exifVerifier.ts` 同哈希；见该包 README / RM-009）。v2 将旧字段 `score` 映射为 `total_score`；不复制旧版供应商轮询、异常时伪造零分报告或旧路由里 `score>=70` 写库判定 |
 | 语义边界 | 报告只表示 Gemini Vision 本次判定，不保证任何第三方平台审核通过 |
 | 无效响应 | 缺失、HTML、超时、无法解析、分数非有限值：视为技术异常，不得伪造通过或未通过报告 |
 
