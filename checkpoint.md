@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-04 22:52 CST |
 | branch | `cursor/duty-docs-plain-wording-9973` |
-| HEAD | `6c80c94`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
+| HEAD | `a438cf3`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
 | 文档态 | 四份职责文档已改为更通用措辞；`DEV_INSTRUCTIONS` §10.1/10.2 仍为 S0/S1 任务·退出证据·禁止项权威 |
 | 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付） |
 | 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
