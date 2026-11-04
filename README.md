@@ -6,10 +6,14 @@
 
 完整目录见 [docs/README.md](docs/README.md)。被替代材料在 [docs/archive/](docs/archive/README.md)。
 
-- [现行 PRD v2.0](docs/蜜獾原图-v2-PRD-v2.0.md)
+- [现行 PRD v2.0（2.8）](docs/蜜獾原图-v2-PRD-v2.0.md)
+- [AidevOps 第一刀工作区](docs/mihuanyuantu-v2/progress.yaml)
+- [Agent 开发指令](docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md)
+- [移交 / 锚点 / 检查点](docs/mihuanyuantu-v2/handoff.md)
+- [grill-me 逻辑架构裁决](docs/architecture_decisions/蜜獾原图-v2-grill-me逻辑架构裁决-2026-11-04.md)
 - [Gemini Vision 检测与自动重做](docs/蜜獾原图-v2-Gemini-Vision检测与自动重做方案-v1.0.md)
 - [决策清单](docs/蜜獾原图-v2-待决策清单-v1.0.md)
-- [项目架构](docs/蜜獾原图-v2-项目架构-v1.0.md)
+- [项目架构（1.4）](docs/蜜獾原图-v2-项目架构-v1.0.md)
 - [生产物料清单](docs/蜜獾原图-v2-生产物料清单-v1.0.md)
 - [HTML 原型](prototype/README.md)
 - [架构设计裁决与交接](docs/architecture_decisions/蜜獾原图-v2-架构设计裁决与交接-2026-10-23.md)

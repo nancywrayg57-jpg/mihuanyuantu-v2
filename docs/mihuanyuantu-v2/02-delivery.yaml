@@ -1,0 +1,139 @@
+phase: delivery
+status: pending_user_authorize_coding
+
+phase_confirmation:
+  status: needs_user
+  mode: ask-user
+  user_questions:
+    - "是否授权开始第一刀业务编码与 02-delivery 详细任务拆解？"
+  auto_filled_for_test: []
+  confirmed_decisions: []
+  accepted_risks: []
+  blockers:
+    - "用户确认 grilling 结束并完成合同修订，但尚未授权实现编码"
+  confirmed_by: ""
+  confirmed_at: ""
+  change_log:
+    - date: "2026-11-04"
+      change: "建立交付骨架与第一刀候选任务列表（未开工）"
+      reason: "AidevOps 文档优先；等待编码授权"
+
+knowledge_assets:
+  wiki: wiki.md
+  phase_summary: "交付阶段等待编码授权。"
+  outcomes: []
+  lessons: []
+  reusable_rules:
+    - "未授权不写业务实现"
+    - "feature 分支命名遵循 cloud agent 约定"
+  prompts_or_commands: []
+  evidence_links: []
+  update_wiki: []
+
+mvp_sprint:
+  name: "knife-1-single-image-loop"
+  goal: "开发机可验收单张处理与按张账本闭环"
+  exit_criteria:
+    - "AC-K1-001..004 有证据"
+    - "双账号共用积分 + 并发冒烟"
+    - "第二租户隔离"
+    - "过期下载拒绝"
+    - "worker 关页后续跑"
+    - "订单客服可确认种子充值订单"
+  non_goals: "见 00-discovery mvp_scope.deferred"
+
+candidate_tasks_not_started:
+  - id: T-001
+    title: "RBAC 种子：merchant×2、order_support、admin、第二租户"
+  - id: T-002
+    title: "rp_credit_* 整数账本与旧 Decimal 入口隔离"
+  - id: T-003
+    title: "LocalDisk StorageAdapter + 访问网关"
+  - id: T-004
+    title: "上传硬校验与资源表"
+  - id: T-005
+    title: "处理任务表 + PG 队列 worker"
+  - id: T-006
+    title: "StubFiveLayer + FixtureDetector + 管理员注入"
+  - id: T-007
+    title: "单张冻结/结算/释放与站内消息 outbox"
+  - id: T-008
+    title: "订单客服最小确认/拒单"
+  - id: T-009
+    title: "过期拒绝下载 + 资源软删"
+  - id: T-010
+    title: "第一刀退出证据清单走查"
+
+tasks:
+  - id: T-001
+    status: blocked_waiting_authorization
+    artifact: "aojuai-main/backend RBAC seeds"
+    verify: "三角色可登录；跨租户拒绝"
+  - id: T-002
+    status: blocked_waiting_authorization
+    artifact: "rp_credit_* models/migrations"
+    verify: "整数余额；旧 Decimal 入口对 realphotos 不可用"
+  - id: T-003
+    status: blocked_waiting_authorization
+    artifact: "LocalDisk adapter + gateway"
+    verify: "无裸路径；鉴权可读"
+  - id: T-004
+    status: blocked_waiting_authorization
+    artifact: "upload API + resource table"
+    verify: "AC-K1-001"
+  - id: T-005
+    status: blocked_waiting_authorization
+    artifact: "processing task + worker"
+    verify: "AC-K1-002"
+  - id: T-006
+    status: blocked_waiting_authorization
+    artifact: "stub layers + fixture detector"
+    verify: "JPG + 五维键；管理员注入"
+  - id: T-007
+    status: blocked_waiting_authorization
+    artifact: "ledger + messages"
+    verify: "AC-K1-003；双账号并发冒烟"
+  - id: T-008
+    status: blocked_waiting_authorization
+    artifact: "order support confirm UI/API"
+    verify: "确认到账；拒单记原因"
+  - id: T-009
+    status: blocked_waiting_authorization
+    artifact: "expiry + soft delete"
+    verify: "过期拒绝；运行中禁删"
+  - id: T-010
+    status: blocked_waiting_authorization
+    artifact: "/opt/cursor/artifacts 走查证据"
+    verify: "第一刀退出清单全勾"
+
+governance_controls:
+  scope_tolerance: "禁止把 Q25 冻结项塞进第一刀"
+  quality_tolerance: "夹具允许；生产收费不允许无 ND 证据"
+  risk_log:
+    - "共用积分店内误花"
+    - "假五层换真字段漂移"
+  change_control: "改第一刀退出条件须更新 00-discovery + grill ADR"
+
+git:
+  branch_policy: "cursor/<name>-9973 for cloud agent; feature/* acceptable later"
+  protected: "不提交 生产物料/、.env、密钥"
+  version_control_required_before_code: true
+
+deployment:
+  first_knife_target: "development host only"
+  production: "NOT_READY per materials; blocked by Q5"
+
+rollback:
+  first_knife: "开发库迁移可反向或重建；无生产回滚义务直到上线门禁"
+
+verification:
+  commands_or_manual:
+    - "手工：双账号消费与隔离"
+    - "手工：关页后续跑"
+    - "手工：过期下载拒绝"
+  status: not_run
+
+gate:
+  ready: false
+  blockers:
+    - "等待用户授权编码"
