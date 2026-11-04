@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-04 17:10 CST |
+| updated | 2026-11-04 17:25 CST |
 | branch | `cursor/grill-logic-architecture-9973` |
-| HEAD | `75d6cc0`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
-| 文档态 | 职责文件与 `DEV_INSTRUCTIONS` 已按 grill 审计修订 |
+| HEAD | （提交后由下一 commit 刷新短 SHA） |
+| 文档态 | `DEV_INSTRUCTIONS` §10.1/10.2 已挂 S0/S1 三件套；`02-delivery` 仅状态镜像；gate ready |
 | 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付） |
-| 验证态 | 工作区 `validate_workspace` 可通过；开发机连通与真模型 **未在本检查点实测** |
-| 当前切片 | S0/S1 **待自主推进**（以 `progress.yaml` 为准） |
-| 下一步 | 按 `DEV_INSTRUCTIONS` 自主推进 S0→S1；S7 须管理员确认 |
+| 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
+| 当前切片 | S0 **待自主推进**（三件套已齐；以 `progress.yaml` 为准） |
+| 下一步 | 按 `DEV_INSTRUCTIONS` §10.1 推进 S0；S2+ 开工前补该切片三件套；S7 须管理员确认 |
 
 ## 1. 仓库与文档基线
 
@@ -55,8 +55,8 @@
 
 | 切片 | 状态 |
 | --- | --- |
-| S0 基础 | 未开工 → 自主推进队列 |
-| S1 第一刀闭环 | 未开工 → 自主推进队列 |
+| S0 基础 | 未开工；§10.1 三件套已齐 → 自主推进 |
+| S1 第一刀闭环 | 未开工；§10.2 三件套已齐；依赖 S0 退出 |
 | S2–S6 | 未开工；S1 后可按依赖有限并行自主推进 |
 | S7 生产部署 | **须管理员确认**；且 `production_readiness: NOT_READY` + 门禁证据 |
 

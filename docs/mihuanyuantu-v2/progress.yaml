@@ -32,9 +32,9 @@ vibe_coding:
     goal: "S0→S1：基础 + 第一刀单张闭环"
     user_value: "商家能完成可审计的单张处理与按张扣费闭环（开发机）"
     visible_output: "可登录、可上传、可提交单张、可下载 JPG、积分流水正确"
-    verify: "双商家账号共用积分 + 第二租户隔离 + 过期拒绝下载 + worker 关页后续跑"
+    verify: "DEV_INSTRUCTIONS §10.1/10.2 exit_evidence（含 AC-K1-001..004）"
     status: ready_for_autonomous_implementation
-  next_user_action: "Agent 按 DEV_INSTRUCTIONS 自主推进；S7 前须管理员确认"
+  next_user_action: "Agent 按 DEV_INSTRUCTIONS §10.1 自主推进 S0；S7 前须管理员确认"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -99,6 +99,8 @@ phase_gates:
     status: ready_autonomous_s0_s1
     evidence:
       - DEV_INSTRUCTIONS.md
+      - DEV_INSTRUCTIONS.md#§10.1-S0
+      - DEV_INSTRUCTIONS.md#§10.2-S1
       - ../../handoff.md
       - ../../anchor.md
       - ../../checkpoint.md
@@ -114,6 +116,7 @@ evidence_pointers:
   acceptance: 03-acceptance.yaml
   wiki: wiki.md
   agent_dev_instructions: DEV_INSTRUCTIONS.md
+  slice_triad_authority: DEV_INSTRUCTIONS.md
   handoff: ../../handoff.md
   anchor: ../../anchor.md
   checkpoint: ../../checkpoint.md
@@ -129,5 +132,5 @@ evidence_pointers:
 
 next_action:
   owner: agent
-  action: "按 DEV_INSTRUCTIONS 自主推进 S0，完成后进入 S1；同步更新 checkpoint §0 与本文件"
+  action: "按 DEV_INSTRUCTIONS §10.1 执行 S0 tasks（T-S0-001、T-001..T-003、T-S0-002），勾满 exit_evidence 后再开 §10.2 S1；S2+ 开工前须先补该切片三件套；同步 checkpoint §0 与本文件"
   blocker: ""
