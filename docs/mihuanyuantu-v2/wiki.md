@@ -48,10 +48,13 @@
 - Next sprint knowledge: 算法证据切片 → 检测门禁切片 → 混合批次。
 
 ## Reusable Prompts and Commands
-- Agent entry: 仓库根 `handoff.md` → `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md`
+- Agent entry: `DEV_INSTRUCTIONS.md`（必读根目录四职责文件）
+- Autonomous: S0–S6；S7 须管理员确认；next_action 以 `progress.yaml` 为准
+- Slice triad: 每切片 `tasks` / `exit_evidence` / `forbidden` 正文在 `DEV_INSTRUCTIONS` §10；`02-delivery.yaml` 只镜像 status
+- Hard rule: 开 S2+ 前须先在指令补齐该切片三件套
 - Root pack: `AGENTS.md` · `handoff.md` · `anchor.md` · `checkpoint.md`
-- Constraints: `anchor.md`
-- Status: `checkpoint.md`
+- Constraints: `anchor.md`（节级适用范围；冲突听 PRD）
+- Status: `checkpoint.md` §0 最小集
 - Command: `python3 aidevops/scripts/validate_workspace.py docs/mihuanyuantu-v2`
 - Command: `node prototype/sync-inline.js`（改原型后）
 
@@ -59,14 +62,15 @@
 | Loop | Visible Output | Verify | Result | Next |
 | --- | --- | --- | --- | --- |
 | 0-grill | 共享理解草案 | 用户确认 A | done | 合同修订 |
-| 1-first-knife | 单张闭环 UI+API | Q16–Q30 退出清单 | pending | 用户授权编码 |
+| 1-s0-s1-triad | DEV_INSTRUCTIONS §10.1/10.2 三件套 | 用户「按此修改并推送」 | done | 自主实现 S0 |
+| 2-first-knife | 单张闭环 UI+API | §10.2 exit_evidence / AC-K1 | pending | 按 §10.1 开工 S0 |
 
 ## Risks and Watchpoints
 - Risk: 文档自称 RESOLVED 掩盖 PENDING 证据 → 上线误放行。
 - Mitigation: Q5 + 物料 NOT_READY + 本 wiki 红线。
 - Risk: 实现范围回潮塞进第一刀。
-- Mitigation: Q25 冻结列表；改列表须改 progress/ADR。
+- Mitigation: §10.2 forbidden + `anchor.md` 节 G；改列表须改 DEV_INSTRUCTIONS + progress。
 
 ## Backlog Knowledge
-- Next: 用户授权后 02-delivery 拆任务并开第一刀编码。
-- Deferred: 见 00-discovery mvp_scope.deferred。
+- Next: 按 DEV_INSTRUCTIONS §10.1 自主推进 S0；勾满 exit_evidence 后开 S1。
+- Deferred: 见 00-discovery mvp_scope.deferred 与 §10.2 forbidden。

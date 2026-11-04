@@ -1,38 +1,49 @@
 phase: delivery
-status: pending_user_authorize_coding
+status: ready_autonomous_s0_s6
 
 phase_confirmation:
-  status: needs_user
+  status: confirmed
   mode: ask-user
-  user_questions:
-    - "是否授权开始第一刀业务编码与 02-delivery 详细任务拆解？"
+  user_questions: []
   auto_filled_for_test: []
-  confirmed_decisions: []
-  accepted_risks: []
-  blockers:
-    - "用户确认 grilling 结束并完成合同修订，但尚未授权实现编码"
-  confirmed_by: ""
-  confirmed_at: ""
+  confirmed_decisions:
+    - "S0–S6 由编码 Agent 按 DEV_INSTRUCTIONS 自主推进"
+    - "S7 生产部署须管理员确认"
+    - "续作以 progress.yaml next_action 为准"
+  accepted_risks:
+    - "自主推进仍受 PRD/架构/生产门禁约束"
+  blockers: []
+  confirmed_by: user
+  confirmed_at: "2026-11-04T17:08:00+08:00"
   change_log:
     - date: "2026-11-04"
       change: "建立交付骨架与第一刀候选任务列表（未开工）"
-      reason: "AidevOps 文档优先；等待编码授权"
+      reason: "AidevOps 文档优先"
+    - date: "2026-11-04"
+      change: "取消编码人工阻塞；改为 S0–S6 自主、S7 确认"
+      reason: "grill-me 文件审计 Q4/Q7/Q8/Q11/Q14"
+    - date: "2026-11-04"
+      change: "S0/S1 tasks·exit_evidence·forbidden 正文迁入 DEV_INSTRUCTIONS；本文件仅状态镜像；gate ready"
+      reason: "用户确认三件套显式挂指令并推送"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "交付阶段等待编码授权。"
+  phase_summary: "交付阶段可按指令自主推进 S0–S6；切片清单权威在 DEV_INSTRUCTIONS §10。"
   outcomes: []
   lessons: []
   reusable_rules:
-    - "未授权不写业务实现"
+    - "S7 与密钥索取除外，不因缺少「开始编码」口令停工"
     - "feature 分支命名遵循 cloud agent 约定"
+    - "切片 tasks/exit_evidence/forbidden 以 DEV_INSTRUCTIONS 为准；本文件只镜像 status"
   prompts_or_commands: []
-  evidence_links: []
+  evidence_links:
+    - "DEV_INSTRUCTIONS.md §10.1 S0 / §10.2 S1"
   update_wiki: []
 
 mvp_sprint:
   name: "knife-1-single-image-loop"
   goal: "开发机可验收单张处理与按张账本闭环"
+  exit_criteria_authority: "DEV_INSTRUCTIONS.md §10.2 exit_evidence（对齐 AC-K1-001..004）"
   exit_criteria:
     - "AC-K1-001..004 有证据"
     - "双账号共用积分 + 并发冒烟"
@@ -40,69 +51,105 @@ mvp_sprint:
     - "过期下载拒绝"
     - "worker 关页后续跑"
     - "订单客服可确认种子充值订单"
-  non_goals: "见 00-discovery mvp_scope.deferred"
+  non_goals: "见 DEV_INSTRUCTIONS §10.2 forbidden 与 00-discovery mvp_scope.deferred"
 
 candidate_tasks_not_started:
+  - id: T-S0-001
+    title: "真会话登录 + 租户/账号模型"
+    slice: S0
   - id: T-001
     title: "RBAC 种子：merchant×2、order_support、admin、第二租户"
+    slice: S0
   - id: T-002
     title: "rp_credit_* 整数账本与旧 Decimal 入口隔离"
+    slice: S0
   - id: T-003
     title: "LocalDisk StorageAdapter + 访问网关"
+    slice: S0
+  - id: T-S0-002
+    title: "PG 持久队列 + 同机 worker 骨架"
+    slice: S0
   - id: T-004
     title: "上传硬校验与资源表"
+    slice: S1
   - id: T-005
     title: "处理任务表 + PG 队列 worker"
+    slice: S1
   - id: T-006
     title: "StubFiveLayer + FixtureDetector + 管理员注入"
+    slice: S1
   - id: T-007
     title: "单张冻结/结算/释放与站内消息 outbox"
+    slice: S1
   - id: T-008
     title: "订单客服最小确认/拒单"
+    slice: S1
   - id: T-009
     title: "过期拒绝下载 + 资源软删"
+    slice: S1
   - id: T-010
     title: "第一刀退出证据清单走查"
+    slice: S1
 
 tasks:
+  - id: T-S0-001
+    slice: S0
+    status: pending
+    artifact: "session auth + tenant/account models"
+    verify: "合法会话可进；无会话拒绝"
   - id: T-001
-    status: blocked_waiting_authorization
+    slice: S0
+    status: pending
     artifact: "aojuai-main/backend RBAC seeds"
     verify: "三角色可登录；跨租户拒绝"
   - id: T-002
-    status: blocked_waiting_authorization
+    slice: S0
+    status: pending
     artifact: "rp_credit_* models/migrations"
     verify: "整数余额；旧 Decimal 入口对 realphotos 不可用"
   - id: T-003
-    status: blocked_waiting_authorization
+    slice: S0
+    status: pending
     artifact: "LocalDisk adapter + gateway"
     verify: "无裸路径；鉴权可读"
+  - id: T-S0-002
+    slice: S0
+    status: pending
+    artifact: "PG queue + same-host worker skeleton"
+    verify: "入队后 worker 可达终态"
   - id: T-004
-    status: blocked_waiting_authorization
+    slice: S1
+    status: pending
     artifact: "upload API + resource table"
     verify: "AC-K1-001"
   - id: T-005
-    status: blocked_waiting_authorization
+    slice: S1
+    status: pending
     artifact: "processing task + worker"
     verify: "AC-K1-002"
   - id: T-006
-    status: blocked_waiting_authorization
+    slice: S1
+    status: pending
     artifact: "stub layers + fixture detector"
     verify: "JPG + 五维键；管理员注入"
   - id: T-007
-    status: blocked_waiting_authorization
+    slice: S1
+    status: pending
     artifact: "ledger + messages"
     verify: "AC-K1-003；双账号并发冒烟"
   - id: T-008
-    status: blocked_waiting_authorization
+    slice: S1
+    status: pending
     artifact: "order support confirm UI/API"
     verify: "确认到账；拒单记原因"
   - id: T-009
-    status: blocked_waiting_authorization
+    slice: S1
+    status: pending
     artifact: "expiry + soft delete"
     verify: "过期拒绝；运行中禁删"
   - id: T-010
-    status: blocked_waiting_authorization
+    slice: S1
+    status: pending
     artifact: "/opt/cursor/artifacts 走查证据"
     verify: "第一刀退出清单全勾"
 
@@ -134,6 +181,5 @@ verification:
   status: not_run
 
 gate:
-  ready: false
-  blockers:
-    - "等待用户授权编码"
+  ready: true
+  blockers: []
