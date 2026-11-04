@@ -12,6 +12,7 @@
 | [项目架构](蜜獾原图-v2-项目架构-v1.0.md) | 目标实现设计 **1.4**（LocalDisk 默认）；尚未证明已上线 |
 | [生产物料清单](蜜獾原图-v2-生产物料清单-v1.0.md) | 开发机 VM、生产拓扑与上线阻塞项 |
 | [AidevOps 工作区](mihuanyuantu-v2/progress.yaml) | grill-me 确认后的第一刀切片与阶段账本 |
+| [Agent 开发指令](mihuanyuantu-v2/DEV_INSTRUCTIONS.md) | 切片编排与依据路径；给编码 Agent 用 |
 | [HTML 原型](../prototype/README.md) | 离线交互原型；不等于后端已实现 |
 
 ## 现行裁决

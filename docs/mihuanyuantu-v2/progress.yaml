@@ -107,6 +107,7 @@ evidence_pointers:
   delivery: 02-delivery.yaml
   acceptance: 03-acceptance.yaml
   wiki: wiki.md
+  agent_dev_instructions: DEV_INSTRUCTIONS.md
   baseline_prd: ../蜜獾原图-v2-PRD-v2.0.md
   baseline_architecture: ../蜜獾原图-v2-项目架构-v1.0.md
   materials: ../蜜獾原图-v2-生产物料清单-v1.0.md
@@ -118,5 +119,5 @@ evidence_pointers:
 
 next_action:
   owner: user
-  action: "授权后进入 02-delivery 任务拆解并开始第一刀编码；或先审阅 PRD 2.8 / 架构 1.4 合同修订"
+  action: "审阅 DEV_INSTRUCTIONS.md；授权后按该指令 S0/S1 开工编码"
   blocker: "用户尚未授权业务实现编码"
