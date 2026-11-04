@@ -8,8 +8,8 @@
 | --- | --- |
 | updated | 2026-11-04 17:10 CST |
 | branch | `cursor/grill-logic-architecture-9973` |
-| HEAD | `58d8569`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
-| 文档态 | 职责文件与 `DEV_INSTRUCTIONS` 经 grill 审计修订中/已修订 |
+| HEAD | `75d6cc0`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
+| 文档态 | 职责文件与 `DEV_INSTRUCTIONS` 已按 grill 审计修订 |
 | 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付） |
 | 验证态 | 工作区 `validate_workspace` 可通过；开发机连通与真模型 **未在本检查点实测** |
 | 当前切片 | S0/S1 **待自主推进**（以 `progress.yaml` 为准） |
