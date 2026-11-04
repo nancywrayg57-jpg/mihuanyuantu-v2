@@ -3,13 +3,14 @@
 ## 1. 一分钟接手
 
 项目：蜜獾原图 v2（多租户图片资源 + 硬件化处理 + 积分）。  
-先读本目录：
+仓库根职责文件与编码指令：
 
-1. `handoff.md`（本文件）
-2. `anchor.md`（现行约束）
-3. `checkpoint.md`（可核实状态）
-4. `DEV_INSTRUCTIONS.md`（切片编排与依据路径）
-5. `progress.yaml`（当前阶段与下一步）
+1. `handoff.md`（本文件，仓库根）
+2. `anchor.md`（现行约束，仓库根）
+3. `checkpoint.md`（可核实状态，仓库根）
+4. `AGENTS.md`（协作宪法，仓库根）
+5. `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md`（编码工具切片编排与依据路径）
+6. `docs/mihuanyuantu-v2/progress.yaml`（当前阶段与下一步）
 
 再按需打开现行 PRD、项目架构、生产物料清单、Gemini 方案、`prototype/`。  
 **不要**把离线 HTML 原型或文档齐全误当成后端已上线。  
@@ -21,14 +22,15 @@
 2. 落地结构 → `docs/蜜獾原图-v2-项目架构-v1.0.md`
 3. 切片与路径 → `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md`
 
-冲突则停并提问。协作宪法见仓库根 `AGENTS.md`；过程技能见 `aidevops/SKILL.md`。
+冲突则停并提问。过程技能见 `aidevops/SKILL.md`。
 
 ## 3. 位置与版本
 
 | 项 | 路径 / 说明 |
 | --- | --- |
-| 仓库根 | 含 `aojuai-main/`、`docs/`、`prototype/`、`输入材料/`、`aidevops/` |
+| 仓库根 | 含 `AGENTS.md`、`handoff.md`、`anchor.md`、`checkpoint.md`、`aojuai-main/`、`docs/`、`prototype/`、`输入材料/`、`aidevops/` |
 | 特征工作区 | `docs/mihuanyuantu-v2/` |
+| 编码指令 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
 | 底座 | `aojuai-main/`（钉扎见 `aojuai-main/UPSTREAM_PIN.txt`） |
 | 原型 | `prototype/index.html`；改 `prototype.js` 后跑 `node prototype/sync-inline.js` |
 | 分支约定 | `cursor/<功能简述>-9973` → PR → `main` |
@@ -40,10 +42,11 @@
 
 | 范围 | 打开 |
 | --- | --- |
-| 切片 S0–S7、门禁、验证环境 | `DEV_INSTRUCTIONS.md` |
+| 切片 S0–S7、门禁、验证环境 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
 | 约束条目 | `anchor.md` |
 | 就绪/未就绪事实表 | `checkpoint.md` |
-| AidevOps 阶段 | `00-discovery.yaml` … `03-acceptance.yaml`、`progress.yaml`、`wiki.md` |
+| 协作纪律 | `AGENTS.md` |
+| AidevOps 阶段 | `docs/mihuanyuantu-v2/00-discovery.yaml` … `03-acceptance.yaml`、`progress.yaml`、`wiki.md` |
 | 交互合同 | `prototype/README.md` |
 | 旧算法/405 预设只读 | `输入材料/旧版可复用模块/` |
 | 开发/生产主机与目录登记 | `docs/蜜獾原图-v2-生产物料清单-v1.0.md` |

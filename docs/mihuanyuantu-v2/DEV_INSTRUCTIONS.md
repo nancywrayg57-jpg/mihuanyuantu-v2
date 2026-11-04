@@ -13,14 +13,19 @@
 ## 2. 执行身份与过程账本
 
 - 主执行者：编码 Agent。
-- 必须同时遵循：`aidevops/SKILL.md`、仓库根 `AGENTS.md`。
-- 新会话先读：`docs/mihuanyuantu-v2/handoff.md`，并核对 `anchor.md`、`checkpoint.md`。
-- 每完成一切片或关键闸口，更新本工作区：
+- 必须同时遵循：`aidevops/SKILL.md`。
+- 仓库根职责文件（与本指令配合，须阅读并在变更后维护）：
+  - `AGENTS.md` — 协作宪法与工作纪律
+  - `handoff.md` — 新会话一分钟接手
+  - `anchor.md` — 现行约束锚点
+  - `checkpoint.md` — 可核实状态检查点
+- 新会话顺序：`handoff.md` → `anchor.md` → `checkpoint.md` → 本文件 → `docs/mihuanyuantu-v2/progress.yaml`。
+- 每完成一切片或关键闸口，更新：
   - `docs/mihuanyuantu-v2/progress.yaml`
   - 对应阶段文件：`00-discovery.yaml` / `01-design.yaml` / `02-delivery.yaml` / `03-acceptance.yaml`
   - `docs/mihuanyuantu-v2/wiki.md`（只记可复用规则、命令、风险与交接，不写流水账叙事）
-  - 视需要刷新 `checkpoint.md`、`handoff.md`
-- 仓库级路由：`AGENTS.md`、`.aidevops-active.yaml`。
+  - 仓库根 `checkpoint.md`、`handoff.md`（状态与下一步）；约束变更时同步 `anchor.md`
+- 仓库级路由：`.aidevops-active.yaml`；协作纪律见 `AGENTS.md`。
 
 ## 3. 硬性禁止
 
@@ -65,9 +70,10 @@
 | 旧版可复用只读参考（算法/预设等） | `输入材料/旧版可复用模块/` |
 | 设备预设源数据（405） | `输入材料/旧版可复用模块/02_设备参数/线上预设_脱敏原始.json` |
 | AidevOps 本特征工作区 | `docs/mihuanyuantu-v2/` |
-| 新会话移交 | `docs/mihuanyuantu-v2/handoff.md` |
-| 约束锚点 | `docs/mihuanyuantu-v2/anchor.md` |
-| 状态检查点 | `docs/mihuanyuantu-v2/checkpoint.md` |
+| 协作宪法 | `AGENTS.md`（仓库根） |
+| 新会话移交 | `handoff.md`（仓库根） |
+| 约束锚点 | `anchor.md`（仓库根） |
+| 状态检查点 | `checkpoint.md`（仓库根） |
 | 本指令 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
 
 ### 4.4 代码落点（实现时）
@@ -166,13 +172,13 @@ Agent 可在门禁通过后协助执行部署；缺密钥或 SSH 时在聊天中
 
 ## 13. 开工检查清单（每次会话）
 
-1. 阅读 `handoff.md`、`anchor.md`、`checkpoint.md`、本文件与 `aidevops/SKILL.md`、`AGENTS.md`。  
+1. 阅读仓库根 `handoff.md`、`anchor.md`、`checkpoint.md`、`AGENTS.md`，再读本文件与 `aidevops/SKILL.md`。  
 2. 阅读现行 PRD、架构、物料清单、Gemini 方案中与本切片相关的章节。  
 3. 需要 UI 时对照 `prototype/`。  
 4. 查看 `docs/mihuanyuantu-v2/progress.yaml` 当前切片与阻塞。  
 5. 在 `cursor/<功能简述>-9973` 分支工作。  
 6. 缺密钥则先问管理员，再写本机配置。  
-7. 实现后跑本切片验证，并更新 AidevOps 账本与检查点/移交。  
+7. 实现后跑本切片验证，并更新 AidevOps 账本与根目录 `checkpoint.md` / `handoff.md`（必要时 `anchor.md`）。  
 
 ## 14. 语言与标识
 

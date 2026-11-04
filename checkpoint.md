@@ -13,6 +13,7 @@
 | Gemini 方案 | `docs/蜜獾原图-v2-Gemini-Vision检测与自动重做方案-v1.0.md` |
 | 生产物料清单 | `docs/蜜獾原图-v2-生产物料清单-v1.0.md`（清单头：`production_readiness: NOT_READY`；`development_readiness: READY_FOR_R0_DOC_AND_BASE_CODING`） |
 | Agent 开发指令 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
+| 根目录职责文件 | `AGENTS.md`、`handoff.md`、`anchor.md`、`checkpoint.md` |
 | AidevOps 校验 | `python3 aidevops/scripts/validate_workspace.py docs/mihuanyuantu-v2` → 曾报 `ok`（以最新运行为准） |
 
 ## 2. 底座与原型（静态事实）
@@ -66,4 +67,4 @@
 - 业务迁移版本号 / Alembic head（业务包尚未落地时无可报 heads）。
 - 端到端浏览器走查录像（无已授权实现可测）。
 
-有新的可核实提交或验收证据时，更新本节与第 4 节，并同步 `handoff.md`。
+有新的可核实提交或验收证据时，更新本节与第 4 节，并同步仓库根 `handoff.md`。
