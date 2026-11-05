@@ -195,10 +195,7 @@ async def get_role_list(
     service = RoleService(db)
 
     status: int | None
-    if query.is_active is not None:
-        status = 1 if query.is_active else 0
-    else:
-        status = query.status
+    status = (1 if query.is_active else 0) if query.is_active is not None else query.status
 
     # 根据数据权限过滤团队
     read_team_ids = None if data_scope.has_all_read_access else data_scope.read_team_ids

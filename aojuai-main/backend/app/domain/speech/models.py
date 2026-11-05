@@ -9,10 +9,10 @@ from __future__ import annotations
 from typing import Any
 
 from sqlalchemy import Boolean, Index, String, text
-from app.infrastructure.database.types import PortableJSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import TenantBaseModel
+from app.infrastructure.database.types import PortableJSON
 
 
 class SpeechTenantConfig(TenantBaseModel):

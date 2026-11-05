@@ -120,9 +120,8 @@ def test_migration_chain_is_independent_from_core() -> None:
 
 def test_pack_tables_are_invisible_to_core_autogenerate() -> None:
     """`cap_` 前缀是硬约定：换个前缀，核心链第一次 autogenerate 就会 DROP 掉这两张表。"""
-    from app.core import module_manifest
-
     from app.capabilities.support.models import SupportTicket, SupportTicketMessage
+    from app.core import module_manifest
 
     for model in (SupportTicket, SupportTicketMessage):
         assert model.__tablename__.startswith(module_manifest.CAPABILITY_TABLE_PREFIX)

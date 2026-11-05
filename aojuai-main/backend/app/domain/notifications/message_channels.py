@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import re
-
 import hashlib
+import re
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -17,9 +16,9 @@ from app.core.logger import get_logger
 from app.domain.notifications.gateway_models import MessageChannelBindGuard
 from app.domain.notifications.models import UserMessageChannel
 from app.domain.notifications.schemas import UserMessageChannelItem
-from app.infrastructure.repository import RepositoryBase
 from app.infrastructure.database.portable_sql import dialect_insert, escalate_to_write_lock
 from app.infrastructure.database.types import json_array_contains, json_merge_patch
+from app.infrastructure.repository import RepositoryBase
 
 logger = get_logger(__name__)
 

@@ -8,10 +8,10 @@ Example: 集团 -> 分公司 -> 团队 -> 小组
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
-from app.infrastructure.database.types import PortableJSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.base import AssociationBaseModel, TenantBaseModel
+from app.infrastructure.database.types import PortableJSON
 
 if TYPE_CHECKING:
     from app.domain.users.models import User

@@ -6,10 +6,12 @@ from app.core.feature_switches import (
     MODULE_CATALOG,
     MODULE_SWITCH_EXPANSIONS,
     canonicalize_module_code,
-    clear_module_install_caches as clear_feature_switch_module_caches,
     get_installed_module_codes,
     is_module_installed,
     resolve_module_from_route_path,
+)
+from app.core.feature_switches import (
+    clear_module_install_caches as clear_feature_switch_module_caches,
 )
 
 

@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from copy import deepcopy
 from datetime import date, datetime, timedelta
-from typing import Any, Awaitable, Callable
+from typing import Any
 from zoneinfo import ZoneInfo
 
 from app.domain.assistant.adapters.base import ActionResult
@@ -108,10 +109,7 @@ def _resolve_month_range(current: date, *, offset_months: int = 0) -> tuple[date
         year -= 1
         month += 12
     start = date(year, month, 1)
-    if month == 12:
-        next_month = date(year + 1, 1, 1)
-    else:
-        next_month = date(year, month + 1, 1)
+    next_month = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
     end = next_month - timedelta(days=1)
     return start, end
 

@@ -137,9 +137,11 @@ evidence_pointers:
     - /opt/cursor/artifacts/s0-e2e-service.log
     - /opt/cursor/artifacts/s0-ruff.txt
     - /opt/cursor/artifacts/s0-secret-scan.txt
+    - /opt/cursor/artifacts/s0-pytest-full-file.txt
+    - /opt/cursor/artifacts/s0-ruff-clean.txt
   commits_or_prs:
     - "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/18"
-    - "cursor/s0-foundation-6c0b@dfa48ad"
+    - "cursor/s0-foundation-6c0b"
 
 known_conflicts:
   - id: BRANCH_SUFFIX

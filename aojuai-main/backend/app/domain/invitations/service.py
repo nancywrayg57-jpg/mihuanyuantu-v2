@@ -4,9 +4,9 @@ AOJU Backend - Invitation Service
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from decimal import Decimal
 import secrets
+from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from typing import Any
 from urllib.parse import quote
 
@@ -21,9 +21,9 @@ from app.domain.credits.service import CreditService
 from app.domain.invitations.models import InviteCode, InviteCodeStatus, InviteRegistration, InviteRewardStatus
 from app.domain.invitations.schemas import InvitationConfig, InvitationRelation, get_invitation_config
 from app.domain.users.models import User, UserStatus
-from app.infrastructure.repository import RepositoryBase
 from app.infrastructure.database.portable_sql import escalate_to_write_lock
 from app.infrastructure.database.types import greatest_of
+from app.infrastructure.repository import RepositoryBase
 
 logger = get_logger(__name__)
 
@@ -72,7 +72,7 @@ class InvitationService:
         if invite_code.status == InviteCodeStatus.DISABLED.value:
             return invite_code
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         next_status = invite_code.status
         if invite_code.expires_at and invite_code.expires_at <= now:
             next_status = InviteCodeStatus.EXPIRED.value
@@ -153,7 +153,7 @@ class InvitationService:
         return int(result.scalar() or 0)
 
     async def count_active_reserved_uses(self, *, tenant_id: int, inviter_user_id: int) -> int:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         remaining_uses_expr = greatest_of(InviteCode.max_uses - InviteCode.used_count, 0)
         stmt = select(func.coalesce(func.sum(remaining_uses_expr), 0)).where(
             InviteCode.tenant_id == tenant_id,
@@ -431,7 +431,7 @@ class InvitationService:
             )
             purchase_tx_id = int(tx.id)
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         code = await self.code_repo.create(
             {
                 "tenant_id": tenant.id,
@@ -499,7 +499,7 @@ class InvitationService:
         refund_tx_id: int | None = None
         purchase_tx_id = extra.get("purchaseTxId")
         cost_credits = int(extra.get("costCredits") or 0)
-        recycled_at = datetime.now(timezone.utc)
+        recycled_at = datetime.now(UTC)
 
         if purchase_tx_id and cost_credits > 0:
             credit_service = CreditService(self.db)
@@ -581,7 +581,7 @@ class InvitationService:
             await self.db.flush()
             raise BusinessError(message="邀请码已达使用上限")
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         available_at = now + timedelta(days=int(config.reward_delay_days or 0))
 
         record = await self.registration_repo.create(
@@ -641,7 +641,7 @@ class InvitationService:
             .where(
                 InviteRegistration.tenant_id == tenant_id,
                 InviteRegistration.deleted_at.is_(None),
-                InviteRegistration.available_at <= datetime.now(timezone.utc),
+                InviteRegistration.available_at <= datetime.now(UTC),
                 or_(
                     InviteRegistration.inviter_reward_status == InviteRewardStatus.PENDING.value,
                     InviteRegistration.invitee_reward_status == InviteRewardStatus.PENDING.value,
@@ -714,7 +714,7 @@ class InvitationService:
                         },
                     )
                     record.inviter_reward_status = InviteRewardStatus.ISSUED.value
-                    record.inviter_reward_issued_at = datetime.now(timezone.utc)
+                    record.inviter_reward_issued_at = datetime.now(UTC)
                     record.inviter_credit_tx_id = tx.id
                     changed += 1
                 except Exception as exc:
@@ -754,7 +754,7 @@ class InvitationService:
                         },
                     )
                     record.invitee_reward_status = InviteRewardStatus.ISSUED.value
-                    record.invitee_reward_issued_at = datetime.now(timezone.utc)
+                    record.invitee_reward_issued_at = datetime.now(UTC)
                     record.invitee_credit_tx_id = tx.id
                     changed += 1
                 except Exception as exc:

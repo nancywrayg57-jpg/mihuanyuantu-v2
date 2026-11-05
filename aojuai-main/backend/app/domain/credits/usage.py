@@ -274,7 +274,7 @@ class UsageCollector:
 
     def to_items(self) -> list[dict[str, Any]]:
         """流水明细：超过 MAX_EVENTS 的部分按 (kind, model, stage) 聚合成一条，避免 extra 撑爆。"""
-        events = [e for e in self.events]
+        events = list(self.events)
         if len(events) <= self.MAX_EVENTS:
             return [event.to_dict() for event in events]
         head = [event.to_dict() for event in events[: self.MAX_EVENTS]]

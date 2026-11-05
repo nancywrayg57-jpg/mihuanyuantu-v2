@@ -71,11 +71,18 @@ async def release_engine_connections_between_loops() -> AsyncIterator[None]:
 
     真实库测试跑完后，池里留着绑定在**上一个循环**上的 asyncpg 连接；下一个真实库测试
     在新循环里取到它就会报 "Task attached to a different loop"（并发扣费测试在全量跑时
-    稳定失败、单跑全绿）。每个测试结束后清空连接池即可，PG/SQLite 都适用。
+    稳定失败、单跑全绿）。每个测试结束后清空连接池即可。
+
+    SQLite `:memory:` 不能 dispose：StaticPool 一 dispose 内存库就空了，而
+    session 级 bootstrap 只 seed 一次。aiosqlite StaticPool 跨 loop 复用可接受；
+    本守卫的目标故障是 asyncpg 连接绑旧 loop。
     """
     yield
+    from app.core.config import settings
     from app.infrastructure.database.session import engine
 
+    if settings.IS_SQLITE and settings.SQLITE_PATH.strip() == ":memory:":
+        return
     try:
         await engine.dispose()
     except Exception:  # noqa: BLE001 - 上一个循环的连接关闭失败不该让测试变红

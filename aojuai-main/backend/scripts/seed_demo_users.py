@@ -29,12 +29,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.database.session import async_session_factory
-from app.domain.teams.models import Team
-from app.domain.users.models import User, UserTeam, UserRole
-from app.domain.roles.models import Role
 from app.core.security import hash_password
-
+from app.domain.roles.models import Role
+from app.domain.teams.models import Team
+from app.domain.users.models import User, UserRole, UserTeam
+from app.infrastructure.database.session import async_session_factory
 
 # Demo 团队结构
 DEMO_TEAMS = [

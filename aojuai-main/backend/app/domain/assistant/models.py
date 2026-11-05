@@ -3,15 +3,14 @@ AOJU Backend - AI Assistant Models
 
 AI 全局助手数据模型
 """
-from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import BigInteger, ForeignKey, String, Text
-from app.infrastructure.database.types import PortableJSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.base import TenantBaseModel
+from app.infrastructure.database.types import PortableJSON
 
 if TYPE_CHECKING:
     from app.domain.users.models import User

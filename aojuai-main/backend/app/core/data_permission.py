@@ -311,7 +311,6 @@ async def get_user_data_scope(
         DataScope: 数据权限范围对象，包含可读取、编辑、删除的团队ID列表
     """
     from app.domain.users.models import User
-    from app.domain.roles.models import Role
 
     # 超级管理员拥有全部权限
     if user.is_superuser:
@@ -377,7 +376,7 @@ async def get_user_data_scope(
 
             # 获取所有子团队ID
             all_team_ids = await get_team_children_ids(db, user_team_ids, user.tenant_id)
-            
+
             # 记录拥有"本团队及以下"权限的所有团队ID（包括子团队）
             # 用户可以在这些团队下创建子团队
             # 只有当角色包含编辑权限时，才记录为可创建子团队的团队

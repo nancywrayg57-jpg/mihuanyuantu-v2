@@ -6,6 +6,7 @@ import './ai-redaction'
 import './cms'
 import './credits-pricing'
 import './personal-channels'
+import './realphotos'
 import './sample-items'
 import './support'
 import './system'
@@ -16,6 +17,7 @@ export const REGISTERED_LOCALE_MODULES = [
   'cms',
   'credits-pricing',
   'personal-channels',
+  'realphotos',
   'sample-items',
   'support',
   'system',

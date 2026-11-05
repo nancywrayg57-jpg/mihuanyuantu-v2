@@ -13,10 +13,12 @@ from sqlalchemy.pool import StaticPool
 
 @pytest.fixture
 def storage_tmpdir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    from app.core.config import settings
+
     root = tmp_path / "realphotos-disk"
     root.mkdir(parents=True, exist_ok=True)
-    monkeypatch.setenv("REALPHOTOS_STORAGE_ROOT", str(root))
-    monkeypatch.setenv("REALPHOTOS_ALLOW_DEV_CAPTCHA", "true")
+    monkeypatch.setattr(settings, "REALPHOTOS_STORAGE_ROOT", str(root))
+    monkeypatch.setattr(settings, "REALPHOTOS_ALLOW_DEV_CAPTCHA", "true")
     return root
 
 

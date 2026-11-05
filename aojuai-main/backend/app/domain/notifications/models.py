@@ -14,10 +14,10 @@ from enum import StrEnum
 from typing import Any
 
 from sqlalchemy import BigInteger, Boolean, Index, String, Text, text
-from app.infrastructure.database.types import PortableDateTime, PortableJSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import BaseModel, TenantBaseModel
+from app.infrastructure.database.types import PortableDateTime, PortableJSON
 
 
 class NotificationCategory(StrEnum):

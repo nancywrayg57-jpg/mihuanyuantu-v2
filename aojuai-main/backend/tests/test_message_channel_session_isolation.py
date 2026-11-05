@@ -26,8 +26,7 @@ from app.domain.notifications.gateway_service import (
     _wechat_pending_waits_for_bind_code,
     _WechatTypingRuntime,
 )
-from app.domain.notifications.ilink_client import _raise_for_ilink_error
-from app.domain.notifications.ilink_client import _is_retryable_sendmessage_context_error
+from app.domain.notifications.ilink_client import _is_retryable_sendmessage_context_error, _raise_for_ilink_error
 from app.domain.notifications.message_channels import select_unambiguous_inbound_channel
 from app.domain.notifications.schemas import (
     UserMessageChannelBindStartRequest,
@@ -441,7 +440,7 @@ async def test_ilink_get_updates_timeout_is_clamped_below_poll_interval(monkeypa
         def __init__(self, *, timeout: float) -> None:
             captured.append(float(timeout))
 
-        async def __aenter__(self) -> "FakeClient":
+        async def __aenter__(self) -> FakeClient:
             return self
 
         async def __aexit__(self, *_args: object) -> None:

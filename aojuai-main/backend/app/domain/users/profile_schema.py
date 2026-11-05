@@ -4,8 +4,8 @@ AOJU Backend - Tenant configurable user profile fields.
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
 import re
+from datetime import UTC, date, datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -78,7 +78,7 @@ class UserProfileFieldDefinition(BaseModel):
         return normalized or None
 
     @model_validator(mode="after")
-    def validate_options(self) -> "UserProfileFieldDefinition":
+    def validate_options(self) -> UserProfileFieldDefinition:
         if self.type in {"select", "multi_select"}:
             if not self.options:
                 raise ValueError(f"字段 {self.label} 需要至少一个选项")
@@ -308,7 +308,7 @@ def build_user_profile_completion_state(
     meta = safe_tenant_config_dict(existing_meta)
     last_completed_at = meta.get("lastCompletedAt")
     if completed and not last_completed_at:
-        last_completed_at = datetime.now(timezone.utc).isoformat()
+        last_completed_at = datetime.now(UTC).isoformat()
 
     return UserProfileCompletionState(
         enabled=config.enabled,

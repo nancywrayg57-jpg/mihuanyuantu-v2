@@ -18,8 +18,8 @@ from app.domain.assistant.capability_registry import (
 )
 from app.domain.assistant.execution_planner import AssistantExecutionPlanner
 from app.domain.assistant.models import MessageRole
-from app.domain.assistant.router_service import AssistantRouteDecision, AssistantRouterService, routing_state_key
 from app.domain.assistant.route_directory_service import AssistantScopeDirectoryService
+from app.domain.assistant.router_service import AssistantRouteDecision, AssistantRouterService, routing_state_key
 from app.domain.assistant.service import AssistantService
 from app.domain.assistant.tool_schema import assistant_tool, assistant_tool_execution_binding
 from app.domain.assistant.toolset_registry import AssistantModuleToolsetSpec, register_assistant_module_toolset
@@ -466,17 +466,6 @@ async def test_chat_reply_preserves_preplanned_tool_action_after_model_text(
                 message="你的当前积分余额为 42。",
             )
 
-    action = {
-        "toolId": "credits.my_account.get",
-        "toolLabel": "查询我的积分",
-        "mode": "ready",
-        "summary": "准备查询当前登录用户自己的积分余额。",
-        "confirmationRequired": False,
-        "canExecute": True,
-        "autoExecute": True,
-        "collectedParams": {},
-        "missingFields": [],
-    }
     action_context = {
         "toolCatalog": [
             {
@@ -661,17 +650,6 @@ async def test_chat_stream_preserves_preplanned_tool_action_after_model_text(
                 message="你的当前积分余额为 42。",
             )
 
-    action = {
-        "toolId": "credits.my_account.get",
-        "toolLabel": "查询我的积分",
-        "mode": "ready",
-        "summary": "准备查询当前登录用户自己的积分余额。",
-        "confirmationRequired": False,
-        "canExecute": True,
-        "autoExecute": True,
-        "collectedParams": {},
-        "missingFields": [],
-    }
     action_context = {
         "toolCatalog": [
             {

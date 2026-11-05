@@ -1,7 +1,6 @@
 """
 AOJU Backend - Tenant Service
 """
-from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import and_, not_, select
@@ -23,14 +22,13 @@ from app.core.tenant_config_namespaces import (
 from app.domain.auth.config_security import sanitize_tenant_config
 from app.domain.auth.models import Tenant
 from app.domain.auth.schemas import (
-    InitialAdminCreate,
     RegistrationConfigUpdate,
     TenantCreate,
     TenantCreateWithAdmin,
     TenantUpdate,
 )
-from app.infrastructure.cache import bump_tenant_permissions_cache_version
 from app.domain.users.models import RegisterSource
+from app.infrastructure.cache import bump_tenant_permissions_cache_version
 from app.infrastructure.repository.base import RepositoryBase
 
 
@@ -211,10 +209,10 @@ class TenantService(RepositoryBase[Tenant]):
         data: TenantCreateWithAdmin,
     ) -> tuple[Tenant, Any]:
         """Create tenant with initial admin user"""
+        from app.core.capability_runtime import provision_installed_capabilities
+        from app.core.system_menus import SYSTEM_MENU_DECLARATION, SYSTEM_ROLE_DEFAULTS
         from app.domain.cms.access import CMS_MENU_DECLARATION
         from app.domain.menus.reconciler import reconcile_menu_declaration
-        from app.core.system_menus import SYSTEM_MENU_DECLARATION, SYSTEM_ROLE_DEFAULTS
-        from app.core.capability_runtime import provision_installed_capabilities
         from app.domain.roles.models import Role
         from app.domain.teams.service import TeamService
         from app.domain.users.models import User, UserRole, UserStatus, UserTeam

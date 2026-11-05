@@ -169,11 +169,7 @@ def needs_renewal_reminder(
 
     extra = channel.extra if isinstance(channel.extra, dict) else {}
     last_reminded = _parse_time(extra.get(EXTRA_LAST_REMINDED_KEY))
-    if last_reminded is not None and moment - last_reminded < timedelta(
-        hours=MIN_REMIND_INTERVAL_HOURS
-    ):
-        return False
-    return True
+    return not (last_reminded is not None and moment - last_reminded < timedelta(hours=MIN_REMIND_INTERVAL_HOURS))
 
 
 def build_reminder_text(channel: UserMessageChannel) -> tuple[str, str]:

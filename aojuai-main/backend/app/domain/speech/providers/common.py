@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import base64
-from dataclasses import dataclass
 import io
 import json
-from typing import Any, AsyncIterator
 import wave
+from collections.abc import AsyncIterator
+from dataclasses import dataclass
+from typing import Any
 
 import httpx
 

@@ -14,7 +14,12 @@ from app.core.exceptions import BusinessError
 from app.core.response import SuccessResponse
 from app.core.schemas import PageResponse, ResponseBase
 from app.domain.auth.service import TenantService
-from app.domain.invitations.schemas import InviteCodeIssueResponse, InvitationRecordItem, InvitationRelation, InvitationSummaryResponse
+from app.domain.invitations.schemas import (
+    InvitationRecordItem,
+    InvitationRelation,
+    InvitationSummaryResponse,
+    InviteCodeIssueResponse,
+)
 from app.domain.invitations.service import InvitationService
 
 router = APIRouter()

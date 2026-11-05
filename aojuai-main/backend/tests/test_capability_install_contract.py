@@ -18,8 +18,8 @@ import pytest
 from fastapi import FastAPI
 
 from app.api import v1
-from app.core.capability_registry import discover_capabilities
 from app.core import feature_switches
+from app.core.capability_registry import discover_capabilities
 
 SAMPLE_CODE = "sample_items"
 SAMPLE_API_MODULE = "app.capabilities.sample_items.api"

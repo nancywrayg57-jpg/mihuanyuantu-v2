@@ -2,7 +2,6 @@
 AOJU Backend - User Group Schemas
 """
 from datetime import datetime
-from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 

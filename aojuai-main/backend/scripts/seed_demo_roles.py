@@ -32,10 +32,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.database.session import async_session_factory
-from app.domain.roles.models import Role, RoleMenu
 from app.domain.menus.models import Menu
-
+from app.domain.roles.models import Role, RoleMenu
+from app.infrastructure.database.session import async_session_factory
 
 # Demo 角色定义
 DEMO_ROLES = [
@@ -178,7 +177,7 @@ async def seed_demo_roles(db: AsyncSession, tenant_id: int = 1):
 
     await db.commit()
 
-    print(f"\n=== 完成 ===")
+    print("\n=== 完成 ===")
     print(f"  创建: {created_count} 个角色")
     print(f"  更新: {updated_count} 个角色")
 

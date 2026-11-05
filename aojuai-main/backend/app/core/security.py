@@ -3,7 +3,7 @@ AOJU Backend - Security Utilities
 """
 import hashlib
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import bcrypt
@@ -61,9 +61,9 @@ def create_access_token(
 ) -> str:
     """Create JWT access token"""
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
         )
 
@@ -89,9 +89,9 @@ def create_refresh_token(
 ) -> str:
     """Create JWT refresh token"""
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS
         )
 
@@ -126,14 +126,13 @@ def get_token_expiry(token: str) -> datetime:
     payload = decode_token(token)
     exp = payload.get("exp")
     if exp:
-        return datetime.fromtimestamp(exp, tz=timezone.utc)
+        return datetime.fromtimestamp(exp, tz=UTC)
     raise UnauthorizedError(message="Token has no expiry")
 
 
 # ==================== 邀请码加密/解密 ====================
 
 import base64
-import hashlib
 import hmac
 import json
 
@@ -143,7 +142,7 @@ def create_invite_code(tenant_code: str, expires_days: int = 30) -> str:
     创建加密邀请码
     格式: base64(json({tenant_code, exp, sig}))
     """
-    expire = datetime.now(timezone.utc) + timedelta(days=expires_days)
+    expire = datetime.now(UTC) + timedelta(days=expires_days)
 
     # 创建签名
     payload = {
@@ -204,7 +203,7 @@ def decode_invite_code(invite_code: str) -> str | None:
             return None
 
         # 检查过期
-        if datetime.now(timezone.utc).timestamp() > exp:
+        if datetime.now(UTC).timestamp() > exp:
             return None
 
         return tenant_code

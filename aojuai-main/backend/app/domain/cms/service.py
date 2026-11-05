@@ -7,7 +7,7 @@ submissions. All queries are filtered by tenant_id (never trust the UI alone).
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,7 +27,7 @@ from app.infrastructure.repository import RepositoryBase
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class CmsLanguageService(RepositoryBase[CmsLanguage]):

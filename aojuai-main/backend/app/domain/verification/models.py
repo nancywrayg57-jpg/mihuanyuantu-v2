@@ -10,9 +10,9 @@ from datetime import datetime
 
 from sqlalchemy import BigInteger, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
-from app.infrastructure.database.types import PortableDateTime
 
 from app.infrastructure.database.base import TenantBaseModel
+from app.infrastructure.database.types import PortableDateTime
 
 
 class VerificationCode(TenantBaseModel):

@@ -12,7 +12,7 @@ from app.api.v1.endpoints import assistant as assistant_endpoints
 from app.core.provider_secrets import decrypt_provider_secret, encrypt_provider_secret
 from app.domain.assistant.config_models import AssistantTenantConfig
 from app.domain.assistant.config_schemas import AssistantConfigUpsertRequest, AssistantConfigView
-from app.domain.assistant.config_service import AssistantConfigService, DEFAULT_ASSISTANT_PROMPTS
+from app.domain.assistant.config_service import DEFAULT_ASSISTANT_PROMPTS, AssistantConfigService
 
 
 class _DummyResult:

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 _PROMPT_SCALAR_TYPES = (str, int, float, bool)
 _DEFAULT_POLICY_KEYS: tuple[str, ...] = (
     "auth",
@@ -21,7 +20,7 @@ def compact_prompt_value(value: Any, *, max_items: int = 8) -> Any:
         return value
     if isinstance(value, list):
         if all(item is None or isinstance(item, _PROMPT_SCALAR_TYPES) for item in value):
-            return [item for item in value[:max_items]]
+            return list(value[:max_items])
         return None
     if isinstance(value, dict):
         compacted: dict[str, Any] = {}

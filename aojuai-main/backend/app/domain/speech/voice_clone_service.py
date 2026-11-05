@@ -2,19 +2,21 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime, timezone
 import hashlib
-from pathlib import Path
 import re
+import wave
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
-import wave
 
 try:
     from mutagen import File as MutagenFile
 except Exception:  # pragma: no cover - optional dependency
     MutagenFile = None
+import contextlib
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import BusinessError, NotFoundError
@@ -108,7 +110,7 @@ class SpeechVoiceCloneService:
 
     @staticmethod
     def _utcnow() -> datetime:
-        return datetime.now(timezone.utc)
+        return datetime.now(UTC)
 
     @staticmethod
     def _normalize_audio_language(language_type: str | None) -> str | None:
@@ -576,15 +578,13 @@ class SpeechVoiceCloneService:
             )
         except Exception:
             if remote_voice_id and provider.clone_mode == "remote_voice":
-                try:
+                with contextlib.suppress(Exception):
                     await aliyun_qwen_delete_voice_clone(
                         api_key=provider.api_key,
                         voice=remote_voice_id,
                         base_url=provider.base_url,
                         timeout_seconds=provider.timeout_seconds,
                     )
-                except Exception:
-                    pass
             if storage_path.exists():
                 storage_path.unlink(missing_ok=True)
             raise

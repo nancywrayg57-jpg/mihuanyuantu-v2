@@ -4,9 +4,9 @@ from types import SimpleNamespace
 
 import pytest
 
+from app.core import verification
 from app.core.exceptions import BusinessError
 from app.core.provider_secrets import encrypt_provider_secret
-from app.core import verification
 from app.infrastructure.messaging import smtp_config as smtp_config_module
 from app.infrastructure.messaging.smtp_config import (
     SmtpConfig,

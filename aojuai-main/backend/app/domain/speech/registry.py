@@ -15,16 +15,16 @@ from functools import lru_cache
 from typing import Any
 
 from app.domain.speech.providers.aliyun_qwen_tts import (
-    build_aliyun_qwen_tts_provider_descriptor,
     build_aliyun_qwen_tts_prompt_context,
+    build_aliyun_qwen_tts_provider_descriptor,
 )
 from app.domain.speech.providers.aliyun_qwen_tts_realtime_sdk import (
-    build_aliyun_qwen_tts_realtime_sdk_provider_descriptor,
     build_aliyun_qwen_tts_realtime_sdk_prompt_context,
+    build_aliyun_qwen_tts_realtime_sdk_provider_descriptor,
 )
 from app.domain.speech.providers.xiaomi_mimo import (
-    build_xiaomi_mimo_provider_descriptor,
     build_xiaomi_mimo_prompt_context,
+    build_xiaomi_mimo_provider_descriptor,
 )
 from app.domain.speech.schemas import (
     SpeechFieldOption,

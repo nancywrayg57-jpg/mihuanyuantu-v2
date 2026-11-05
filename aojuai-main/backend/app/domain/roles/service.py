@@ -4,7 +4,6 @@ AOJU Backend - Role Service
 Role management service with multi-tenant support.
 Follows itrainer design for data permissions.
 """
-from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import select
@@ -148,10 +147,10 @@ class RoleService(RepositoryBase[Role]):
 
         if menu_ids:
             await self._assign_menus(role, menu_ids, tenant_id)
-        
+
         if team_permissions:
             await self._assign_team_permissions(role, team_permissions, tenant_id)
-        
+
         if menu_ids or team_permissions:
             await self.db.refresh(role)
 

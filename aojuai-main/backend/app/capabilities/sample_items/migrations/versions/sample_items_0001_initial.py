@@ -6,8 +6,9 @@ Revises: None
 
 from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 revision: str = "sample_items_0001"
 down_revision: str | None = None

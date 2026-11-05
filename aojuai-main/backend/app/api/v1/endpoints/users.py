@@ -19,7 +19,7 @@ from app.api.deps import (
     PermissionChecker,
     TenantCtx,
 )
-from app.core.exceptions import BusinessError, ForbiddenError
+from app.core.exceptions import ForbiddenError
 from app.core.logger import get_logger
 from app.core.response import ErrorResponse, SuccessResponse
 from app.core.schemas import PageResponse, ResponseBase
@@ -456,7 +456,6 @@ async def delete_user(
     超级管理员可以通过 X-Tenant-Id 或 tenant_id 参数指定目标租户
     """
     service = UserService(db)
-    profile_config = await service.get_tenant_profile_config(tenant_ctx.tenant_id)
 
     # 检查数据权限：用户是否属于有删除权限的团队
     await data_scope.check_delete_permission(user_id, db)
@@ -496,6 +495,7 @@ async def audit_user(
     await data_scope.check_edit_permission(user_id, db)
 
     service = UserService(db)
+    profile_config = await service.get_tenant_profile_config(tenant_ctx.tenant_id)
 
     user = await service.audit_user(
         user_id=user_id,

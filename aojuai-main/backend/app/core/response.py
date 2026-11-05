@@ -9,7 +9,8 @@ import orjson
 from fastapi import status as http_status
 from starlette.responses import JSONResponse
 
-from app.core.schemas import ResponseBase, ErrorResponse as ErrorSchema
+from app.core.schemas import ErrorResponse as ErrorSchema
+from app.core.schemas import ResponseBase
 
 
 class AppORJSONResponse(JSONResponse):
@@ -55,13 +56,13 @@ class SuccessResponse(AppORJSONResponse):
             message=message,
             code=code,
         )
-        
+
         # 转换为字典
         content = response_model.model_dump(exclude_none=False, by_alias=True)
-        
+
         # 支持额外的字段，如 count
         content.update(kwargs)
-        
+
         super().__init__(content=content, status_code=status)
 
 
@@ -95,11 +96,11 @@ class ErrorResponse(AppORJSONResponse):
             message=message,
             details=details,
         )
-        
+
         # 转换为字典
         content = response_model.model_dump(exclude_none=False, by_alias=True)
-        
+
         # 支持额外的字段
         content.update(kwargs)
-        
+
         super().__init__(content=content, status_code=status)

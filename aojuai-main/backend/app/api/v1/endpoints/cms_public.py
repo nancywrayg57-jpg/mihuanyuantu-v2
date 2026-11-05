@@ -22,8 +22,8 @@ from app.core.response import SuccessResponse
 from app.domain.cms.models import NavLocation
 from app.domain.cms.schemas import PublicPage, PublicPost
 from app.domain.cms.service import (  # noqa: F401
-    CmsLanguageService,
     CmsContactService,
+    CmsLanguageService,
     CmsNavigationService,
     CmsPageService,
     CmsPostService,

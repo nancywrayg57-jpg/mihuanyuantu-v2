@@ -8,12 +8,12 @@ from .alembic_checks import scan_single_alembic_head, scan_updated_at_nullabilit
 from .common import ScanResult
 from .doc_references import scan_doc_references
 from .frontend_conventions import scan_frontend_conventions
-from .locale_index import scan_locale_index
 from .kernel_purity import scan_kernel_purity
+from .locale_index import scan_locale_index
 from .menu_routes import scan_menu_routes
 from .menu_title_i18n import scan_menu_title_i18n
-from .page_guard_coverage import scan_page_guard_coverage
 from .module_manifest_check import scan_module_manifests
+from .page_guard_coverage import scan_page_guard_coverage
 from .runtime_env import scan_runtime_env_access
 from .soft_delete_uniqueness import scan_soft_delete_uniqueness
 

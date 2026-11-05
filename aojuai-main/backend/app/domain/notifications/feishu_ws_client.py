@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import time
 from dataclasses import dataclass
@@ -201,7 +202,7 @@ class _FeishuWsRunner:
             data = response.json()
         if data.get("code") != 0:
             raise RuntimeError(f"Feishu WS endpoint error: {data}")
-        ws_url = str(((data.get("data") or {}).get("URL") or "")).strip()
+        ws_url = str((data.get("data") or {}).get("URL") or "").strip()
         if not ws_url:
             raise RuntimeError(f"Feishu WS endpoint URL missing: {data}")
         client_config = (data.get("data") or {}).get("ClientConfig") or {}
@@ -334,10 +335,8 @@ async def stop_feishu_gateway_ws_account(account_id: int) -> None:
     _WS_SIGNATURES.pop(account_id, None)
     if task and not task.done():
         task.cancel()
-        try:
+        with contextlib.suppress(asyncio.CancelledError):
             await task
-        except asyncio.CancelledError:
-            pass
 
 
 async def ensure_feishu_gateway_ws() -> None:

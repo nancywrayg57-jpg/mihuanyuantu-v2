@@ -19,16 +19,16 @@ from app.core.module_manifest import import_present_model_modules
 from app.domain.ai_redaction.models import TenantRedactionPolicy
 from app.domain.auth.api_key_models import ApiKey
 from app.domain.auth.models import Tenant
-from app.domain.organizations.models import Organization
-from app.domain.users.models import User, UserRole
-from app.domain.roles.models import Role, RoleMenu, RoleTeam
-from app.domain.menus.models import Menu
-from app.domain.user_groups.models import UserGroup, UserGroupMember
-from app.domain.teams.models import Team
 from app.domain.credits.models import CreditAccount, CreditPriceItem, CreditRule, CreditTransaction
 from app.domain.invitations.models import InviteCode, InviteRegistration
-from app.domain.operation_logs.models import OperationLog
+from app.domain.menus.models import Menu
 from app.domain.notifications.models import Notification
+from app.domain.operation_logs.models import OperationLog
+from app.domain.organizations.models import Organization
+from app.domain.roles.models import Role, RoleMenu, RoleTeam
+from app.domain.teams.models import Team
+from app.domain.user_groups.models import UserGroup, UserGroupMember
+from app.domain.users.models import User, UserRole
 from app.domain.verification.models import VerificationCode
 
 # 可硬卸载的内置能力：清单在 app/core/module_manifest.py，删目录即卸载。

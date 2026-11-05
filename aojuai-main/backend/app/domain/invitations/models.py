@@ -6,18 +6,18 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from sqlalchemy import BigInteger, ForeignKey, Index, Integer, String, text
-from app.infrastructure.database.types import PortableJSON, PortableDateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import Numeric
 
 from app.infrastructure.database.base import TenantBaseModel
+from app.infrastructure.database.types import PortableDateTime, PortableJSON
 
 
-class InviteCodeStatus(str, Enum):
+class InviteCodeStatus(StrEnum):
     """Invitation code lifecycle status."""
 
     ACTIVE = "active"
@@ -26,7 +26,7 @@ class InviteCodeStatus(str, Enum):
     DISABLED = "disabled"
 
 
-class InviteRewardStatus(str, Enum):
+class InviteRewardStatus(StrEnum):
     """Per-side reward issuing status."""
 
     PENDING = "pending"

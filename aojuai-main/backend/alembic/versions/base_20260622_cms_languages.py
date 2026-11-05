@@ -12,13 +12,12 @@ genuine language code; there is no magic 'default' value.
 
 from __future__ import annotations
 
-from typing import Union
-
 import sqlalchemy as sa
+
 from alembic import op
 
 revision: str = "base_20260622_cms_languages"
-down_revision: Union[str, None] = "base_20260622_cms_ai_config"
+down_revision: str | None = "base_20260622_cms_ai_config"
 branch_labels = None
 depends_on = None
 

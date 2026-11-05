@@ -17,7 +17,6 @@ from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from app.api.deps import CurrentSuperuser, CurrentTenantAdmin, CurrentUser, DBSession, PermissionChecker, TenantCtx
 from app.core.exceptions import BusinessError, NotFoundError
 from app.core.logger import get_logger
-from app.domain.notifications.send import send_notification as send_notification_helper
 from app.core.response import SuccessResponse
 from app.core.schemas import PageResponse, ResponseBase
 from app.domain.notifications.schemas import (
@@ -30,6 +29,7 @@ from app.domain.notifications.schemas import (
     NotificationSendRequest,
     NotificationUnreadCountResponse,
 )
+from app.domain.notifications.send import send_notification as send_notification_helper
 from app.domain.notifications.service import NotificationService
 from app.domain.teams.service import TeamService
 from app.domain.users.service import UserService
@@ -269,7 +269,7 @@ async def send_notification_bulk(
     _: None = Depends(PermissionChecker(["notifications:send"])),
 ) -> dict[str, Any]:
     """Send notifications to multiple users/teams (tenant-scoped)."""
-    requested_user_ids: set[int] = set(int(uid) for uid in (data.user_ids or []))
+    requested_user_ids: set[int] = {int(uid) for uid in (data.user_ids or [])}
 
     if data.team_ids:
         team_ids = [int(tid) for tid in data.team_ids]

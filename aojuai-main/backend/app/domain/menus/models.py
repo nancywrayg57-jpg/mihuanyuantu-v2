@@ -6,11 +6,11 @@ Compatible with vue-pure-admin frontend and itrainer design.
 """
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
-from app.infrastructure.database.types import PortableJSON
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.base import TenantBaseModel
+from app.infrastructure.database.types import PortableJSON
 
 if TYPE_CHECKING:
     from app.domain.roles.models import Role
@@ -253,7 +253,7 @@ class Menu(TenantBaseModel):
             meta["showLink"] = False
             meta["hidden"] = True
             meta["canTo"] = True
-        
+
         result: dict[str, Any] = {
             "path": path,
             "name": generated_name,

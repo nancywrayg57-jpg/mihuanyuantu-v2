@@ -67,10 +67,7 @@ def build_default_assistant_prompts() -> dict[str, Any]:
 def build_default_assistant_capabilities() -> dict[str, Any]:
     payload = normalize_assistant_stored_config({})
     capabilities = payload.get("capabilities")
-    if isinstance(capabilities, dict):
-        merged = deepcopy(capabilities)
-    else:
-        merged = {}
+    merged = deepcopy(capabilities) if isinstance(capabilities, dict) else {}
     merged["moduleSkillGovernance"] = merge_module_skill_governance(
         build_default_module_skill_governance(),
         merged.get("moduleSkillGovernance"),

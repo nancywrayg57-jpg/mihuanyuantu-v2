@@ -18,8 +18,8 @@ from sqlalchemy.pool import StaticPool
 
 @pytest_asyncio.fixture
 async def db() -> AsyncIterator[AsyncSession]:
-    import app.domain  # noqa: F401  # 注册内核模型（users / menus / roles / notifications …）
     import app.capabilities.support.models  # noqa: F401
+    import app.domain  # noqa: F401  # 注册内核模型（users / menus / roles / notifications …）
     from app.infrastructure.database.session import Base
 
     engine = create_async_engine(

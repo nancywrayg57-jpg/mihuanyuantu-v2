@@ -66,6 +66,25 @@
       ]
     },
     {
+      "code": "realphotos",
+      "label": "蜜獾原图",
+      "description": "电商商家图片资源、相机参数处理与整数积分流水",
+      "labelKey": "system.moduleCatalog.realphotos.label",
+      "descriptionKey": "system.moduleCatalog.realphotos.description",
+      "layer": "pack",
+      "defaultEnabled": false,
+      "aliases": [],
+      "routePrefixes": [
+        "/realphotos"
+      ],
+      "apiPrefixes": [
+        "/api/v1/realphotos"
+      ],
+      "permissionPrefixes": [
+        "realphotos"
+      ]
+    },
+    {
       "code": "sample_items",
       "label": "样例条目",
       "description": "官方可选模块样例：独立迁移、租户 CRUD、权限、菜单与前端页面",
@@ -122,5 +141,5 @@
       "defaultEnabled": true
     }
   ],
-  "catalogDigest": "4b79efa5c6bbc8ef4a2f16b87d72f8e64028d9e37fbea64854ba941f98479102"
+  "catalogDigest": "dd48c859889d1db81f00c8f359f12afc00e32ffdf6994c78945c22ca8daaeaa2"
 }

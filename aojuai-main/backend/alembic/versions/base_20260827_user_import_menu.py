@@ -9,15 +9,17 @@ Revises: base_20260827_personal_channels_menu
 
 from __future__ import annotations
 
-from typing import Any, Sequence, Union
+from collections.abc import Sequence
+from typing import Any
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision: str = "base_20260827_user_import_menu"
-down_revision: Union[str, None] = "base_20260827_personal_channels_menu"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "base_20260827_personal_channels_menu"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 PAGE = {
     "title": "批量导入用户",

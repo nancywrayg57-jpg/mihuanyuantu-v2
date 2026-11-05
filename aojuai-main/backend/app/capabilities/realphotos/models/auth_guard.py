@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Index, Integer, String, Text
+from sqlalchemy import BigInteger, Index, Integer, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import BaseModel
@@ -16,13 +16,18 @@ class RealphotosAuthChallenge(BaseModel):
 
     __tablename__ = "cap_realphotos_auth_challenges"
     __table_args__ = (
+        Index(
+            "ix_cap_realphotos_auth_challenges_challenge_public_id",
+            "challenge_public_id",
+            unique=True,
+            postgresql_where=text("deleted_at IS NULL"),
+            sqlite_where=text("deleted_at IS NULL"),
+        ),
         Index("ix_cap_realphotos_auth_challenges_expires_at", "expires_at"),
         {"comment": "realphotos login captcha challenges"},
     )
 
-    challenge_public_id: Mapped[str] = mapped_column(
-        String(64), nullable=False, unique=True, index=True
-    )
+    challenge_public_id: Mapped[str] = mapped_column(String(64), nullable=False)
     code_hash: Mapped[str] = mapped_column(String(128), nullable=False)
     client_key: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
     expires_at: Mapped[datetime] = mapped_column(PortableDateTime(), nullable=False)
@@ -38,6 +43,8 @@ class RealphotosAuthGuard(BaseModel):
             "uq_cap_realphotos_auth_guards_username",
             "username_normalized",
             unique=True,
+            postgresql_where=text("deleted_at IS NULL"),
+            sqlite_where=text("deleted_at IS NULL"),
         ),
         {"comment": "realphotos login failure guards"},
     )

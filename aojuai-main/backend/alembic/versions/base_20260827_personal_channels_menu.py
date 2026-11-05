@@ -8,16 +8,17 @@ Create Date: 2026-05-05
 from __future__ import annotations
 
 import json
-from typing import Any, Sequence, Union
+from collections.abc import Sequence
+from typing import Any
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 revision: str = "base_20260827_personal_channels_menu"
-down_revision: Union[str, None] = "base_20260827_api_keys"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "base_20260827_api_keys"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def _sql(statement: str) -> str:

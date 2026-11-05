@@ -154,4 +154,14 @@ export const esES: Record<string, string> = {
   'menu.提交工单': 'Crear ticket',
   'menu.工单管理': 'Gestión de tickets',
   'menu.处理工单': 'Gestionar ticket',
+  // realphotos S0
+  'menu.蜜獾原图': 'Fotos Honey Badger',
+  'menu.工作台': 'Espacio de trabajo',
+  'menu.积分钱包': 'Cartera de créditos',
+  'menu.人工加减分': 'Ajuste manual de créditos',
+  'menu.资源网关': 'Puerta de recursos',
+  'menu.执行队列': 'Cola de trabajos',
+  'menu.入队': 'Encolar',
+  'menu.订单客服': 'Soporte de pedidos',
+  'menu.管理': 'Administración',
 }

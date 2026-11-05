@@ -3,21 +3,20 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-import time
-
 
 from app.core.logger import get_logger
+from app.core.task_queue import scheduler_job_lock
 from app.domain.notifications.gateway_service import (
     MessageGatewayAccountService,
     poll_pending_feishu_registrations,
     poll_pending_wechat_logins,
     poll_wechat_gateway_account_isolated,
 )
-from app.infrastructure.database.session import engine, get_db_context
-from app.core.task_queue import scheduler_job_lock
 from app.infrastructure.database.portable_sql import table_exists
+from app.infrastructure.database.session import get_db_context
 
 logger = get_logger(__name__)
 _MESSAGE_GATEWAY_POLL_LOCK_KEY = 480281904

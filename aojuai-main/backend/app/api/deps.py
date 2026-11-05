@@ -108,7 +108,7 @@ class TenantContext:
     tenant_id: int
     is_superuser: bool
     user_tenant_id: int  # 用户原始租户ID
-    
+
     @property
     def is_cross_tenant(self) -> bool:
         """是否跨租户操作"""

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -50,9 +50,9 @@ def resolve_tenant_timezone_from_config(config: dict[str, Any] | None, default: 
 
 def tenant_now(timezone_name: str, now_utc: datetime | None = None) -> datetime:
     tz_name = normalize_tenant_timezone(timezone_name)
-    current = now_utc or datetime.now(timezone.utc)
+    current = now_utc or datetime.now(UTC)
     if current.tzinfo is None:
-        current = current.replace(tzinfo=timezone.utc)
+        current = current.replace(tzinfo=UTC)
     return current.astimezone(ZoneInfo(tz_name))
 
 

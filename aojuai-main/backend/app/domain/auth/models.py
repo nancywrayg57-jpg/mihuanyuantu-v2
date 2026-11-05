@@ -8,14 +8,13 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import Boolean, Index, String, Text, text
-from app.infrastructure.database.types import PortableJSON, PortableDateTime
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import BaseModel
+from app.infrastructure.database.types import PortableDateTime, PortableJSON
 
 if TYPE_CHECKING:
-    from app.domain.organizations.models import Organization
-    from app.domain.users.models import User
+    pass
 
 
 class Tenant(BaseModel):

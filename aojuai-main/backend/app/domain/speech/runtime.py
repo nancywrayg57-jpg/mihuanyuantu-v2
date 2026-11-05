@@ -10,16 +10,16 @@ AOJU Backend - Speech Runtime Helpers
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import base64
 import html
 import io
 import json
 import re
-from typing import AsyncIterator
 import uuid
-from urllib.parse import quote
 import wave
+from collections.abc import AsyncIterator
+from dataclasses import dataclass
+from urllib.parse import quote
 
 import httpx
 

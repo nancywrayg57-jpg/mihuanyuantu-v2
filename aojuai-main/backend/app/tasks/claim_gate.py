@@ -7,7 +7,6 @@ from collections.abc import Awaitable, Callable
 from contextlib import suppress
 from typing import Generic, TypeVar
 
-
 ClaimedT = TypeVar("ClaimedT")
 
 

@@ -325,6 +325,10 @@ class Settings(BaseSettings):
     # Installed optional modules (comma-separated, e.g. "speech" / "none")
     AOJ_ENABLED_MODULES: str = ""
 
+    # realphotos capability knobs (optional; empty = package defaults)
+    REALPHOTOS_ALLOW_DEV_CAPTCHA: str = ""
+    REALPHOTOS_STORAGE_ROOT: str = ""
+
     # 各 worker 的并发度，形如 "code:2,other_code:4"。
     # 用**一个**通用字段而不是每个 worker 一个字段：Settings 是 pydantic 模型、
     # 拒绝未声明字段，如果每个 worker 都要往这里加一行，就等于"加模块必须改中央文件"，

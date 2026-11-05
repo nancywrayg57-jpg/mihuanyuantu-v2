@@ -18,14 +18,13 @@ import json
 import sys
 from pathlib import Path
 
-
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from app.infrastructure.database.portable_sql import ptext
 from app.core.security import hash_password
 from app.infrastructure.database import get_db_context
+from app.infrastructure.database.portable_sql import ptext
 from scripts.seed_cms import seed_cms_for_tenant
 
 
@@ -336,7 +335,7 @@ async def seed_initial_data():
 
         # ============== Create Complete Menu Structure ==============
         menu_ids = {}
-        
+
         # Level 1: Top-level directories
         # 系统管理
         existing_system_root_id = await _find_top_level_menu_id(db, tenant_id=tenant_id, path="/system")
@@ -915,7 +914,7 @@ async def seed_initial_data():
         print("="*60)
         print("\n📋 Summary:")
         print(f"  • Tenant: Default Tenant (id={tenant_id})")
-        print(f"  • Roles: 3 (admin, tenant_admin, user)")
+        print("  • Roles: 3 (admin, tenant_admin, user)")
         print(f"  • Menus: {len(menu_ids)} (with hierarchical structure)")
         print(f"  • Users: admin (id={admin_user_id}), test (id={test_user_id})")
         print("\n🔐 Login Credentials:")

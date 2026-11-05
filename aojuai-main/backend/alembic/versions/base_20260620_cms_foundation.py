@@ -11,14 +11,13 @@ seeded by scripts/seed_data.py.
 
 from __future__ import annotations
 
-from typing import Union
-
 import sqlalchemy as sa
-from alembic import op
 from sqlalchemy.dialects import postgresql
 
+from alembic import op
+
 revision: str = "base_20260620_cms_foundation"
-down_revision: Union[str, None] = "base_20260426_merge_speech_and_message_heads"
+down_revision: str | None = "base_20260426_merge_speech_and_message_heads"
 branch_labels = None
 depends_on = None
 

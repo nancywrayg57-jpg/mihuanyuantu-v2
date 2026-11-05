@@ -63,7 +63,7 @@ async def test_assistant_chat_reply_uses_user_message_id_for_credit_idempotency_
 
         def add(self, item: object) -> None:
             if getattr(item, "id", None) is None:
-                setattr(item, "id", self._next_id)
+                item.id = self._next_id
                 self._next_id += 1
             self.items.append(item)
 

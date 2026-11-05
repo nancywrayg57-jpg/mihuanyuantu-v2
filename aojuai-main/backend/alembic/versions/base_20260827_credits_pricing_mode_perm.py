@@ -16,8 +16,9 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from alembic import op
 from sqlalchemy import bindparam, text
+
+from alembic import op
 
 revision: str = "base_20260827_credits_pricing_mode_perm"
 down_revision: str | Sequence[str] | None = "base_20260827_credit_price_items"

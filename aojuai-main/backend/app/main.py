@@ -9,23 +9,22 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+# Import all models to ensure SQLAlchemy relationships are resolved
+import app.domain  # noqa: F401
 from app.api.v1 import api_router
 from app.core.composition import install_routes, run_lifecycle_phase, translate_exception
 from app.core.config import settings
 from app.core.csrf_protection import enforce_cookie_csrf
 from app.core.exceptions import AOJUException
-from app.domain.operation_logs.middleware import OperationLogMiddleware
 from app.core.logger import get_logger, setup_logging
 from app.core.response import AppORJSONResponse
 from app.core.scheduler import start_scheduler, stop_scheduler
 from app.core.security_headers import apply_security_headers
 from app.core.trusted_proxy import enforce_trusted_proxy, resolve_requested_host
 from app.domain.credits.schema_compat import ensure_credit_transaction_idempotency_schema
-from app.infrastructure.database import close_db, get_db_context, init_db
+from app.domain.operation_logs.middleware import OperationLogMiddleware
 from app.infrastructure.cache import close_redis_cache
-
-# Import all models to ensure SQLAlchemy relationships are resolved
-import app.domain  # noqa: F401
+from app.infrastructure.database import close_db, get_db_context, init_db
 
 # Setup logging
 setup_logging()
@@ -143,7 +142,7 @@ def create_app() -> FastAPI:
                 "details": exc.details,
             },
         )
-    
+
     @app.exception_handler(Exception)
     async def global_exception_handler(request: Request, exc: Exception):
         """Handle all uncaught exceptions"""

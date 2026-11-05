@@ -7,10 +7,10 @@ System-level operation logs for auditing critical actions.
 from typing import Any
 
 from sqlalchemy import BigInteger, Integer, String, Text
-from app.infrastructure.database.types import PortableJSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import TenantBaseModel
+from app.infrastructure.database.types import PortableJSON
 
 
 class OperationLog(TenantBaseModel):

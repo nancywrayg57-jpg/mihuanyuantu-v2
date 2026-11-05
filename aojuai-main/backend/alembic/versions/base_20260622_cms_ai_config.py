@@ -11,14 +11,13 @@ key is never exposed on the public site endpoint.
 
 from __future__ import annotations
 
-from typing import Union
-
 import sqlalchemy as sa
-from alembic import op
 from sqlalchemy.dialects import postgresql
 
+from alembic import op
+
 revision: str = "base_20260622_cms_ai_config"
-down_revision: Union[str, None] = "base_20260622_cms_locale"
+down_revision: str | None = "base_20260622_cms_locale"
 branch_labels = None
 depends_on = None
 

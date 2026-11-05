@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 from app.core.config import settings
@@ -35,8 +34,8 @@ SEED_OBJECT_BYTES = b"realphotos-s0-seed-gateway-ok\n"
 
 
 def allow_dev_captcha() -> bool:
-    """开发验证码可：pytest / DEBUG / 显式环境变量。"""
-    raw = str(os.getenv("REALPHOTOS_ALLOW_DEV_CAPTCHA", "")).strip().lower()
+    """开发验证码可：pytest / DEBUG / 显式 Settings 开关。"""
+    raw = str(settings.REALPHOTOS_ALLOW_DEV_CAPTCHA or "").strip().lower()
     if raw in {"1", "true", "yes", "on"}:
         return True
     if raw in {"0", "false", "no", "off"}:
@@ -46,7 +45,7 @@ def allow_dev_captcha() -> bool:
 
 def storage_root() -> Path:
     """LocalDisk 根目录；不暴露给 API 响应。"""
-    override = str(os.getenv("REALPHOTOS_STORAGE_ROOT", "")).strip()
+    override = str(settings.REALPHOTOS_STORAGE_ROOT or "").strip()
     if override:
         return Path(override).expanduser().resolve()
     return (Path(settings.UPLOAD_DIR).resolve().parent / "realphotos").resolve()

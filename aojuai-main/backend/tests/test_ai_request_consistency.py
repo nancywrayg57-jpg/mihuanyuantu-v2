@@ -1,5 +1,4 @@
 """顶层设计:所有模型请求 reasoning/tools/scope 单一来源与 golden 一致性。"""
-import json
 
 import httpx
 import pytest

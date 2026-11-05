@@ -34,11 +34,11 @@ from app.domain.credits.models import (
     CreditTransactionDirection,
     CreditTransactionType,
 )
+from app.domain.credits.usage import current_usage_collector, usage_snapshot_for_extra
 from app.domain.teams.models import Team
 from app.domain.users.models import User, UserTeam
-from app.infrastructure.repository import RepositoryBase
-from app.domain.credits.usage import current_usage_collector, usage_snapshot_for_extra
 from app.infrastructure.database.portable_sql import escalate_to_write_lock
+from app.infrastructure.repository import RepositoryBase
 
 logger = get_logger(__name__)
 

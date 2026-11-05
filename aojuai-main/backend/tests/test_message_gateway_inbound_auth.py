@@ -222,7 +222,7 @@ async def test_missing_gateway_auth_material_is_fail_closed_even_during_transiti
 ) -> None:
     """Mutation check for both legacy ``expected and incoming`` fail-open branches."""
     _install_account_service(monkeypatch)
-    values = {key: "" for key in _headers()} if missing is None else _headers(missing=missing)
+    values = dict.fromkeys(_headers(), "") if missing is None else _headers(missing=missing)
 
     with pytest.raises(UnauthorizedError):
         await authenticate_inbound_gateway_request(

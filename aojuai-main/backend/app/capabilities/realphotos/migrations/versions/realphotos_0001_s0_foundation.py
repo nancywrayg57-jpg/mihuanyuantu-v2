@@ -73,6 +73,8 @@ def upgrade() -> None:
         "cap_realphotos_auth_challenges",
         ["challenge_public_id"],
         unique=True,
+        postgresql_where=sa.text("deleted_at IS NULL"),
+        sqlite_where=sa.text("deleted_at IS NULL"),
     )
     op.create_index(
         "ix_cap_realphotos_auth_challenges_expires_at",
@@ -105,6 +107,8 @@ def upgrade() -> None:
         "cap_realphotos_auth_guards",
         ["username_normalized"],
         unique=True,
+        postgresql_where=sa.text("deleted_at IS NULL"),
+        sqlite_where=sa.text("deleted_at IS NULL"),
     )
 
     op.create_table(

@@ -25,8 +25,8 @@ from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from sqlalchemy import select
 
 from app.api.deps import CurrentUser, DBSession, PermissionChecker, TenantCtx, _get_user_tenant_id
-from app.core.exceptions import BusinessError, NotFoundError
 from app.core.dialect_features import require_postgresql
+from app.core.exceptions import BusinessError, NotFoundError
 from app.core.logger import get_logger
 from app.core.response import SuccessResponse
 from app.core.schemas import PageResponse, ResponseBase
@@ -404,7 +404,7 @@ async def bulk_recharge_credits(
 ) -> dict[str, Any]:
     """Bulk recharge credits for users or teams (tenant-scoped)."""
     current_user_id, _ = _snapshot_current_user(current_user)
-    requested_user_ids: set[int] = set(int(uid) for uid in (data.user_ids or []))
+    requested_user_ids: set[int] = {int(uid) for uid in (data.user_ids or [])}
 
     if data.team_ids:
         team_ids = [int(tid) for tid in data.team_ids]
@@ -640,10 +640,10 @@ from app.domain.credits.price_service import (  # noqa: E402
 from app.domain.credits.pricing import PRICE_ITEM_TYPES  # noqa: E402
 from app.domain.credits.pricing_mode import (  # noqa: E402
     PRICEBOOK_BASE_MARGIN_PERCENT,
-    get_tenant_price_adjustment,
-    set_tenant_price_adjustment,
     PRICING_MODES,
+    get_tenant_price_adjustment,
     get_tenant_pricing_mode,
+    set_tenant_price_adjustment,
     set_tenant_pricing_mode,
 )
 
