@@ -25,7 +25,6 @@
 | 2026-11-05 | design | 架构 1.5：复用 api_keys；§9.2.1 处理子集路由；scope 映射禁止空=不限制；澄清≠上游模型 Key | confirmed | 审计补缺口 |
 | 2026-11-05 | design | 架构 1.6：首期表裁剪、业务流转（先冻后队）、可执行 RBAC、双 Token、人工支付与图片落点 | confirmed | 用户确认补架构 |
 | 2026-11-05 | delivery | CI/CD 双账号：§7 禁自评自合；workflows A–D + **CI gate**；Tag stub；仓改 public 以便分支保护强制 | confirmed | 用户配置 + 推送 |
-| 2026-11-05 | delivery | 下一会话优先 grill-me 审计，不抢跑 S0 实现 | pending | 用户指定新会话 |
 
 ## Phase Knowledge
 ### Discovery
@@ -45,7 +44,6 @@
 - Commands: 见 DEV_INSTRUCTIONS §7/§10 与 02-delivery 任务镜像；本地密钥扫描 `bash scripts/ci/secret_scan.sh`。
 - Implementation rules: 禁止首期未过上线门槛部署到 exif-demo 收费；禁自评自合；合入须过 CI gate。
 - Deploy/rollback notes: 见生产物料；production_readiness NOT_READY；真 Secrets 仅 Owner 录入 Actions。
-- Handoff: 新会话先 grill-me，再开 S0。
 
 ### Acceptance
 - Evidence: 无实现证据。
@@ -69,10 +67,9 @@
 | Loop | Visible Output | Verify | Result | Next |
 | --- | --- | --- | --- | --- |
 | 0-grill | 共享理解草案 | 用户确认 A | done | 合同修订 |
-| 1-s0-s1-triad | DEV_INSTRUCTIONS §10.1/10.2 任务·退出证据·禁止项 | 用户「按此修改并推送」 | done | CI + 再审计 |
-| 2-cicd-public | CI workflows + 仓 public + CI gate Required | 保护规则可强制 + check 名出现 | in_progress | 新会话 grill-me |
-| 3-grill-round2 | 新一轮 grill ADR / 无阻塞结论 | 用户确认 | pending | 再开 S0 |
-| 4-s1-loop | 单张闭环 UI+API | §10.2 exit_evidence / AC-K1 | pending | grill 收口后按 §10.1 |
+| 1-s0-s1-triad | DEV_INSTRUCTIONS §10.1/10.2 任务·退出证据·禁止项 | 用户「按此修改并推送」 | done | 自主实现 S0 |
+| 2-cicd-public | CI workflows + 仓 public + CI gate Required | 保护规则可强制 + check 名出现 | in_progress | 勾选 Required |
+| 3-s1-loop | 单张闭环 UI+API | §10.2 exit_evidence / AC-K1 | pending | 按 §10.1 开工 S0 |
 
 ## Risks and Watchpoints
 - Risk: 文档自称 RESOLVED 掩盖 PENDING 证据 → 上线误放行。
@@ -81,5 +78,5 @@
 - Mitigation: §10.2 forbidden + `anchor.md` 节 G；改列表须改 DEV_INSTRUCTIONS + progress。
 
 ## Backlog Knowledge
-- Next: **新会话 grill-me 审计 + 苏格拉底反问** → 收口 → 再按 §10.1 开 S0 → 端测 → S1。
+- Next: 按 DEV_INSTRUCTIONS §10.1 自主推进 S0；勾满 exit_evidence → 端测通过 → 再开 S1。
 - Deferred: 见 00-discovery mvp_scope.deferred 与 §10.2 forbidden；FR-033 → S5/R3。
