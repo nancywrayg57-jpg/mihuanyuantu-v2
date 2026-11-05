@@ -6,10 +6,10 @@
 
 | 文档 | 用途 |
 |---|---|
-| [PRD v2.0](蜜獾原图-v2-PRD-v2.0.md) | 产品需求；document_version **2.9**（含客户业务 API FR-033） |
+| [PRD v2.0](蜜獾原图-v2-PRD-v2.0.md) | 产品需求；document_version **2.10**（FR-033；§7 含订单客服 A） |
 | [待决策清单](蜜獾原图-v2-待决策清单-v1.0.md) | ND 裁决（**1.30**）；与 PRD 冲突时以现行 PRD 为准 |
 | [Gemini Vision 检测与自动重做](蜜獾原图-v2-Gemini-Vision检测与自动重做方案-v1.0.md) | 生产检测与 FR-026 合同 |
-| [项目架构](蜜獾原图-v2-项目架构-v1.0.md) | 目标实现设计 **1.6**（LocalDisk；FR-033；首期表/流转/RBAC/双 Token）；尚未证明已上线 |
+| [项目架构](蜜獾原图-v2-项目架构-v1.0.md) | 目标实现设计 **1.7**（LocalDisk 措辞消歧；能力名 scope 映射；1.6 表/流转/RBAC/双 Token）；尚未证明已上线 |
 | [生产物料清单](蜜獾原图-v2-生产物料清单-v1.0.md) | 开发机 VM、生产拓扑与上线阻塞项 |
 | [AidevOps 工作区](mihuanyuantu-v2/progress.yaml) | grill-me 确认后的首期阶段与进度文件 |
 | [Agent 开发指令](mihuanyuantu-v2/DEV_INSTRUCTIONS.md) | 阶段划分与依据路径；引用根目录职责文件 |
@@ -23,6 +23,7 @@
 | 文档 | 用途 |
 |---|---|
 | [grill-me 逻辑架构裁决](architecture_decisions/蜜獾原图-v2-grill-me逻辑架构裁决-2026-11-04.md) | 2026-11-04 LocalDisk / 首期 / 积分与角色 |
+| [grill-me 文档基线收口](architecture_decisions/蜜獾原图-v2-grill-me文档基线收口-2026-11-05.md) | 2026-11-05 Q1–Q5：能力名 scopes、PRD §7 订单客服 A、OSS 残句、冻结 S0、禁自评自合 |
 | [继续使用 Gemini Vision](architecture_decisions/蜜獾原图-v2-继续使用Gemini-Vision最终检测-2026-11-02.md) | 2026-11-02 生产检测器确认 |
 | [自动重做与统一生成历史](architecture_decisions/蜜獾原图-v2-自动重做与统一生成历史裁决-2026-10-25.md) | FR-026 / 历史页确认 |
 | [设备预设原型导入](architecture_decisions/蜜獾原图-v2-设备预设原型导入裁决-2026-10-25.md) | 405 条预设导入口径 |
