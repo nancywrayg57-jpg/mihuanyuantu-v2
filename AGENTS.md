@@ -43,8 +43,55 @@ For unrelated small coding questions, answer normally without forcing the full A
 
 ## 5. 实现与验证
 
-阶段划分、验证环境、Git 分支、代码落点、上线门槛与里程碑端测以 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` 为准；每阶段完成后先端测并更新 AidevOps 进度文件（`docs/mihuanyuantu-v2/progress.yaml`、阶段文件、`wiki.md`）及该指令要求维护的根目录状态文件，再进入下一阶段。
+阶段划分、验证环境、代码落点、上线门槛与里程碑端测以 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` 为准；**Git / CI/CD 双账号与合入纪律以本文件第 7 节为准**。每阶段完成后先端测并更新 AidevOps 进度文件（`docs/mihuanyuantu-v2/progress.yaml`、阶段文件、`wiki.md`）及该指令要求维护的根目录状态文件，再进入下一阶段。
 
 ## 6. 范围外
 
 只有明确获准时才开展与当前阶段无关的审计重设计，或跳过上线门槛的发布。
+
+## 7. CI/CD 协作（双账号 · 全局约定）
+
+本节是仓库级协作宪法；`DEV_INSTRUCTIONS.md` 只索引阶段与路径，不重复改写本约定。
+
+### 7.1 分支与合入
+
+- 功能分支：`cursor/<功能简述>-9973`（小写）。
+- 合入目标：`main`（**仅经 Pull Request**；禁止直接 push `main`；禁止在 `main` 上直接开发）。
+- 合并方式：**仅 squash merge**。
+- 提交前确认未跟踪密钥与本地保密目录；忽略规则见 `.gitignore`；行尾约定见 `.gitattributes`。
+- `main` 分支保护期望：必须 PR；Required status checks 勾选汇总门禁 job 名 **`CI gate`**；禁止直接 push / force push。
+
+### 7.2 角色与账号
+
+| 角色 | GitHub | Cursor 会话 | 职责 |
+|------|--------|-------------|------|
+| Owner | `@nancywrayg57-jpg`（Admin） | 主会话 | 研究、拆解、派发、代码审计、合并 PR、打 `v2.M.P` Tag、触发部署、改分支保护与 Actions Secrets |
+| Collaborator | `@xtzhou247`（Write） | 子会话 | 具体开发、返修、单测、推分支、开/更新 PR |
+
+- **正式双账号开发**下 **不得自评自合**：PR 作者账号不能审批或合并自己的 PR；合并仅 Owner 主会话（或 Owner 人工）在**非本人作者**的 PR 上执行。
+- **开启时机（grill Q5/Q7）**：文档基线合入 `main` 之后、**正式开 S0 编码之前**，由 Owner 在 GitHub 打开「要求非作者审批 / 禁止作者自合」或等价规则，并在 `checkpoint.md` / `progress.yaml` 登记。开启并登记前：**不得宣称** CI/CD 双账号门禁已齐；**不得**开 S0 业务编码。
+- Collaborator **禁止**：合并 `main`、打发布 Tag、触发/执行生产部署、修改分支保护与 Actions Secrets。
+- 模型不定死：正式开发时由 Owner 主会话选定主/子会话模型及推理强度。
+- Collaborator 的 Cursor 绑定若尚未完成：仅 Owner 可起 Agent；补齐 `@xtzhou247` → Cursor 授权本仓后，再按上表双会话运行。
+
+### 7.3 PR 必过检查（首版）
+
+工作流：`.github/workflows/ci.yml`（按改动路径过滤 job；汇总门禁 job 名 **`CI gate`**，应设为 Required）。
+
+| 门 | 范围 | 内容 |
+|----|------|------|
+| A 安全/红线 | 所有 PR | 拒提交疑似密钥与明文保密文件（`scripts/ci/secret_scan.sh`） |
+| B 后端 | `aojuai-main/backend/**` 等 | `ruff check` + `pytest`（`DB_DRIVER=sqlite`） |
+| C 前端 | `aojuai-main/frontend/**` 等 | `pnpm typecheck` + `pnpm test` |
+| D 文档/流程 | `AGENTS.md`、`DEV_INSTRUCTIONS.md`、`docs/mihuanyuantu-v2/**` 等 | 关键门控文件仍存在 |
+
+- `mypy`、前端 `eslint`/`build`：**暂不阻断**；稳定后由 Owner 决定升为必过。
+- **基线注意**：`aojuai-main/backend` 全量 `ruff`/`pytest` 在初始化时点仍可能有存量失败；改动后端前须先修绿，或由 Owner 临时放宽 Required checks。勿在未修绿时把「B 后端」设为唯一合入门槛却无人修基线。
+- Cloud Agent 环境通过不等于开发机验收；端测证据规则见 `DEV_INSTRUCTIONS.md`。
+
+### 7.4 Tag 与部署
+
+- 里程碑 Tag：`v2.M.P`（例 `v2.0.1`），**仅 Owner** 在审计通过并合入 `main` 后打。
+- Tag 推送触发 `.github/workflows/deploy-stub.yml`（首版 **stub**：校验 Tag、打印部署意图，**不连生产**）。
+- **真实生产部署**仍须：`DEV_INSTRUCTIONS.md` S7、上线门槛、**管理员确认**。
+- 生产/部署 Secrets：首版可不配；真部署时由 Owner 录入 GitHub Actions Secrets；聊天附件仅可作本机临时配置，**不得入库**。

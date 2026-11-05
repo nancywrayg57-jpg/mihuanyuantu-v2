@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-05 14:30 CST |
-| branch | `cursor/grill-round2-doc-close-9633` |
-| HEAD | 以本分支 tip 为准（`git rev-parse --short HEAD`）；合入前相对 `main`=`543f104` |
-| 文档态 | PRD **2.10**；架构 **1.7**；grill 收口 ADR 2026-11-05（Q1–Q5）；DEV §7 CI/CD + §10 S0/S1 + 里程碑端测 |
+| updated | 2026-11-05 16:35 CST |
+| branch | `cursor/agents-cicd-global-9973` |
+| HEAD | 以本分支 tip 为准（`git rev-parse --short HEAD`） |
+| 文档态 | PRD **2.10**；架构 **1.7**；grill 收口 ADR；**CI/CD 全局约定权威 = `AGENTS.md` §7**；DEV 仅索引 + §10 S0/S1 + 端测 |
 | 代码态 | 业务闭环 **未实现**；已有 CI workflows + Tag stub；底座 `api_keys` 仍为路径前缀语义（FR-033 能力名映射待 S5 改造） |
-| 验证态 | `main` Required **`CI gate`** 已开；仓 public；禁自评自合 **合入后、开 S0 前由 Owner 开启（Q7）**；开发机/真模型未实测 |
-| 当前阶段 | 文档收口（Q1–Q6 确认；Q7 时机已约定）；**S0 编码冻结** |
-| 下一步 | 合入文档 → Owner 开禁自评自合并告知 → 「授权开 S0」后再按 §10.1（含 Q6 种子网关取证） |
+| 验证态 | `main` Required **`CI gate`** 已开；仓 public；禁自评自合 **开 S0 前由 Owner 开启（Q7，见 AGENTS §7.2）**；开发机/真模型未实测 |
+| 当前阶段 | 文档收口已合入；**S0 编码冻结**；本分支仅迁址 CI/CD 文档 |
+| 下一步 | Owner 开禁自评自合并登记 → 「授权开 S0」后再按 DEV §10.1（含 Q6 种子网关取证） |
 
 ## 1. 仓库与文档基线
 

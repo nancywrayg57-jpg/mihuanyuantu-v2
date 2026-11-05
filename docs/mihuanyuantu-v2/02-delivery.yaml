@@ -13,7 +13,7 @@ phase_confirmation:
     - "S7 生产部署须管理员确认"
     - "续作以 progress.yaml next_action 为准"
     - "grill Q4：未授权前禁止 S0 业务代码"
-    - "grill Q5/Q7：禁自评自合在文档合入后、开 S0 前开启；开启前不得宣称门禁齐"
+    - "grill Q5/Q7：禁自评自合在文档合入后、开 S0 前开启（权威见 AGENTS.md §7.2）；开启前不得宣称门禁齐"
     - "grill Q6：S0 网关取证可用 StorageAdapter 开发种子文件经鉴权网关读回"
   accepted_risks:
     - "自主推进仍受 PRD/架构/上线门槛约束"

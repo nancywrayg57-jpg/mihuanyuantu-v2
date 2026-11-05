@@ -62,7 +62,7 @@
 | E05 | 主验证环境：物料清单登记的开发机；生产域名/主机以物料清单为准 |
 | E06 | 无上线门槛证据前，禁止生产收费与对外「检测通过」服务 · 部署执行属 S7，须管理员确认 |
 
-## F. 阶段划分与协作 · 见 `DEV_INSTRUCTIONS.md`
+## F. 阶段划分与协作 · 阶段见 `DEV_INSTRUCTIONS.md`；CI/CD 见 `AGENTS.md` §7
 
 | ID | 约束 |
 | --- | --- |
@@ -70,7 +70,7 @@
 | F02 | S1（首期单张闭环）：单张；预审占位；五层为占位实现但仍交付 JPG+快照字段；检测用规则替身；真实积分流水与 worker · `S1-only` 实现边界 |
 | F03 | 界面约定：`prototype/`；改 `prototype.js` 后执行 `node prototype/sync-inline.js` |
 | F04 | 旧版模块只读参考于 `输入材料/旧版可复用模块/`；新代码写入 aojuai 业务包 |
-| F05 | 功能分支与 Git 纪律见 `DEV_INSTRUCTIONS.md`；禁止提交密钥 |
+| F05 | 功能分支与 CI/CD 双账号纪律见 `AGENTS.md` §7；阶段路径见 `DEV_INSTRUCTIONS.md`；禁止提交密钥 |
 | F06 | 每个里程碑完成后须端到端测试；确认无误并留证据后，才可进入下一阶段 · `always`（细则见 `DEV_INSTRUCTIONS.md`） |
 
 ## G. 明确不在首期（S1）验收范围 · `not:S1`

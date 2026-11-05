@@ -53,7 +53,7 @@
 - 授权后：按 `DEV_INSTRUCTIONS.md` §10.1 完成 S0（含 Q6 开发种子文件经网关取证），**端测通过**再进 §10.2 S1。
 - **每个里程碑完成后须端测**；未通过或无证据不得开下一阶段。
 - **开 S2+ 前**须先补齐该阶段「任务 / 退出证据 / 禁止项」；`02-delivery.yaml` 只同步 status。
-- **协作**：Owner `@nancywrayg57-jpg` / Collaborator `@xtzhou247`；合入须过 Required **`CI gate`**；禁自评自合按 Q7 时机开启后才算门禁齐。
+- **协作**：见根目录 `AGENTS.md` §7（Owner / Collaborator、Required **`CI gate`**、禁自评自合开启时机 Q7）；阶段路径仍以 `DEV_INSTRUCTIONS.md` 为准。
 - **客户业务 API**（PRD **2.10** / FR-033；架构 **1.7**）属第一版、S5/R3，**不进 S1**。
 - **S7** 须管理员确认；缺密钥/SSH 时在聊天索取。
 
