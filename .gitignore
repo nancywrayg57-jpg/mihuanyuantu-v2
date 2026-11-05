@@ -1,5 +1,7 @@
 # Local production accounts, credentials and resource details.
+# Preferred location: sibling folder ../生产物料/ (outside this repo).
 # Keep the shareable inventory in docs/ under version control.
+# Also ignore if someone mistakenly creates 生产物料/ inside the repo.
 /生产物料/
 
 # Local detector test photos (multi-GB originals, not product source).

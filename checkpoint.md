@@ -6,12 +6,12 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-05 17:05 CST |
-| branch | `cursor/drop-collab-oauth-prose-9973` |
+| updated | 2026-11-05 17:15 CST |
+| branch | `cursor/arch-paths-materials-sibling-9973` |
 | HEAD | 以本分支 tip 为准（`git rev-parse --short HEAD`） |
-| 文档态 | PRD **2.10**；架构 **1.7**；grill 收口 ADR；**CI/CD = `AGENTS.md` §7** |
+| 文档态 | PRD **2.10**；架构 **1.7**（§1.1 底座/旧版路径已改仓内；密钥=同级 `生产物料/`）；CI/CD=`AGENTS.md` §7 |
 | 代码态 | 业务闭环 **未实现**；已有 CI workflows + Tag stub；底座 `api_keys` 仍为路径前缀语义（FR-033 能力名映射待 S5 改造） |
-| 验证态 | `main` Required **`CI gate`** 已开；仓 public；开发机/真模型未实测 |
+| 验证态 | `main` Required **`CI gate`** 已开；仓 public；同级 `生产物料/蜜獾原图v2-生产物料.md` 已就位（未入库）；开发机/真模型未实测 |
 | 当前阶段 | 文档收口已合入；**S0 编码冻结** |
 | 下一步 | 明确「授权开 S0」后再按 DEV §10.1 |
 
@@ -39,7 +39,7 @@
 | 业务实现包 | 架构目标为 `realphotos`；**当前不等同已交付业务闭环** |
 | HTML 原型入口 | `prototype/index.html`（离线交互；mock） |
 | 设备预设源 | `输入材料/旧版可复用模块/02_设备参数/线上预设_脱敏原始.json` |
-| 仓库内 `生产物料/` | **不存在**；密钥向管理员索取后仅存本机 |
+| 密钥目录 | 与仓库**同级** `生产物料/`（本机已有 `蜜獾原图v2-生产物料.md`）；**禁止入库** |
 
 ## 3. 环境登记（摘自物料清单，非本机实测）
 

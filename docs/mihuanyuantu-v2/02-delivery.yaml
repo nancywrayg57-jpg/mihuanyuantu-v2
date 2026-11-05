@@ -181,7 +181,7 @@ governance_controls:
 
 git:
   branch_policy: "cursor/<name>-9973 for cloud agent; feature/* acceptable later"
-  protected: "不提交 生产物料/、.env、密钥"
+  protected: "不提交仓库同级 生产物料/、.env、密钥"
   version_control_required_before_code: true
 
 deployment:

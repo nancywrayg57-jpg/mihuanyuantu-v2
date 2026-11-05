@@ -29,7 +29,7 @@
 | 底座 | `aojuai-main/`（上游固定版本见 `aojuai-main/UPSTREAM_PIN.txt`） |
 | 原型 | `prototype/index.html`；改 `prototype.js` 后跑 `node prototype/sync-inline.js` |
 | 分支约定 | 见 `DEV_INSTRUCTIONS.md` |
-| 密钥 | 仓库无 `生产物料/`；需要时在聊天向管理员索取，仅写本机环境 |
+| 密钥 | 与仓库同级 `生产物料/`（例：`../生产物料/蜜獾原图v2-生产物料.md`）；**禁止入库**；缺文件时向管理员索取 |
 
 当前实现状态摘要见 `checkpoint.md`。
 
