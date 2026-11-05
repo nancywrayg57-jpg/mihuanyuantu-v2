@@ -8,13 +8,13 @@ phase_confirmation:
   auto_filled_for_test: []
   confirmed_decisions:
     - id: AD-007-REV
-      text: "首版 StorageAdapter 默认 LocalDisk；OSS 实现可空保留接口，不作为第一刀依赖"
+      text: "首版 StorageAdapter 默认 LocalDisk；OSS 实现可空保留接口，不作为首期（S1）依赖"
     - id: AD-004-LOCK
-      text: "rp_credit_* 整数账本为商家唯一余额真相；禁用 realphotos 租户走旧 Decimal 消费入口"
+      text: "rp_credit_* 整数积分流水为商家唯一余额真相；禁用 realphotos 租户走旧 Decimal 消费入口"
     - id: DETECTOR-FIXTURE
-      text: "第一刀 DetectorAdapter=fixture，键名对齐 Gemini 五维合同"
+      text: "首期（S1） DetectorAdapter=fixture，键名对齐 Gemini 五维合同"
     - id: LAYER-STUB
-      text: "第一刀 ProcessingPipeline=stub，必须产出 sRGB JPEG 字节与预设快照字段"
+      text: "首期（S1） ProcessingPipeline=stub，必须产出 sRGB JPEG 字节与预设快照字段"
     - id: WORKER-PG
       text: "PostgreSQL 持久队列 + 同机 worker 进程；禁止前端驱动终态"
     - id: UX-BASELINE
@@ -26,12 +26,12 @@ phase_confirmation:
   confirmed_at: "2026-11-04T01:39:00-05:00"
   change_log:
     - date: "2026-11-04"
-      change: "架构合同改为 LocalDisk；记录第一刀适配器边界"
+      change: "架构合同改为 LocalDisk；记录首期适配器边界"
       reason: "grill Q1/Q7/Q12/Q18/Q26 与物料对齐"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "设计阶段以既有原型为 UX 基线；架构增量聚焦存储与第一刀适配器。"
+  phase_summary: "设计阶段以既有原型为 UX 基线；架构增量聚焦存储与首期（S1）适配器。"
   outcomes:
     - "AD-007 修订为 LocalDisk 默认"
   lessons:
@@ -57,11 +57,11 @@ system_flow_diagram:
 product_design:
   product_model: "resource_library -> processing_task (single) -> delivery"
   terminology_decisions:
-    - "第一刀：可编码最小垂直切片"
+    - "首期：可编码最小垂直阶段"
     - "租户积分户：同租户共用整数余额"
   value_moment: "单张处理结果可下载且按张流水正确"
   non_goals:
-    - "第一刀不含生图/真五层/真 Gemini/OSS"
+    - "首期不含生图/真五层/真 Gemini/OSS"
   model: "resource_library -> processing_task (single) -> delivery"
   service_boundaries:
     - api: "FastAPI realphotos capability"
@@ -75,12 +75,12 @@ service_system_design:
     - "商家提交处理 → worker 执行 → 消息通知商家"
     - "商家提交充值订单 → 订单客服确认 → 租户户加分"
   external_systems:
-    - "第一刀无真模型外呼；夹具内建"
+    - "首期无真模型外呼；替身内建"
   manual_backoffice_steps:
     - "管理员加减分"
     - "订单客服确认/拒单"
   failure_recovery:
-    - "技术异常夹具：冻结待后续客服切片释放（第一刀可管理员释放）"
+    - "技术异常替身：冻结待后续客服阶段释放（首期可管理员释放）"
 
 interaction_design:
   flows:
@@ -120,7 +120,7 @@ design_spines:
   visual_board: prototypes/visual-system.html
   status: deferred_use_html_prototype
   notes:
-    - "第一刀不新开 DESIGN/PNG；以 ../../prototype 为 UX 基线"
+    - "首期不新开 DESIGN/PNG；以 ../../prototype 为 UX 基线"
 
 visual_system:
   style_direction:
@@ -157,16 +157,16 @@ architecture:
     gateway_auth_required: true
     no_bare_disk_urls: true
   deployment:
-    first_knife: "dev host only (materials 192.168.19.128 / equivalent)"
+    s1_phase: "dev host only (materials 192.168.19.128 / equivalent)"
     production_demo_host: "blocked until Q5 gates"
   decisions:
     - id: ADR-grill-2026-11-04
-      decision: "LocalDisk 默认；第一刀适配器边界；租户整数账本"
+      decision: "LocalDisk 默认；首期适配器边界；租户整数积分流水"
       rationale: "物料与 grilling 对齐，消除 OSS 合同分叉"
-      alternatives_rejected: ["首版强制 OSS", "第一刀真五层+真 Gemini 同刀"]
+      alternatives_rejected: ["首版强制 OSS", "首期（S1）真五层+真 Gemini 同阶段"]
       maps_to: [GD-001, GD-006, GD-007, GD-018]
   risks:
-    - "假五层换真时字段漂移"
+    - "五层占位实现换真时字段漂移"
     - "同机 LocalDisk 单点"
 
 design_review:
@@ -174,12 +174,12 @@ design_review:
     - "既有 HTML 原型可作 IA 基线；本阶段不新开 PNG 原型请求"
   approved_decisions:
     - "AD-007 LocalDisk"
-    - "Detector/Layers 适配器假实现进第一刀"
+    - "Detector/Layers 适配器假实现进首期"
   rejected_directions:
-    - "第一刀同时上真五层与真 Gemini"
+    - "首期（S1）同时上真五层与真 Gemini"
     - "用前端假进度冒充 ND-018"
   spine_checks:
-    - "prototype README 与 PRD 2.8 §13.1 对齐为第一刀范围"
+    - "prototype README 与 PRD 2.8 §13.1 对齐为首期范围"
 
 gate:
   ready: true
