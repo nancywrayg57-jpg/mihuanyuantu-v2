@@ -49,12 +49,11 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **当前**：**S0 已实现并暂停**（管理员授权开 S0 后要求「第一个里程碑后暂停」）。
-- **不得开 S1**，直至开发机补验 DEV §10.1 exit_evidence（含 PostgreSQL worker）并通过。
-- Cloud 证据：`/opt/cursor/artifacts/s0-pytest.txt`、`s0-e2e-service.log`（`S0_E2E_PASS`）。
-- **协作**：见 `AGENTS.md` §7（双账号角色、禁自评自合、Required **`CI gate`**）。
-- **客户业务 API**（PRD **2.10** / FR-033；架构 **1.7**）属第一版、S5/R3，**不进 S1**。
-- **S7** 须管理员确认；缺密钥/SSH 时在聊天索取。
+- **当前**：**S0 已实现 + CI 绿并暂停**；开发机 SSH 已登记，但 Cloud→LAN **不可达**，PG `claim_one` 端测未跑。
+- **不得开 S1**，直至开发机连通并跑通 `scripts/devhost/run_s0_pg_e2e.sh`（或等价 self-hosted worker 端测）。
+- 端测自治：每里程碑后 Agent 自行 SSH（`DEV_INSTRUCTIONS` §6.1）；口令在同级 `生产物料/`。
+- Cloud 证据：`s0-pytest.txt`、`s0-e2e-service.log`；SSH 失败：`s0-devhost-ssh-attempt.log`。
+- **协作**：见 `AGENTS.md` §7。**S7** 须管理员确认。
 
 ## 6. 风险提醒
 
