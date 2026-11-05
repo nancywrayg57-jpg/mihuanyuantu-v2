@@ -6,10 +6,10 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-05 10:37 CST |
-| branch | `cursor/prd-v1-customer-api-9973` |
-| HEAD | `53f2e01`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
-| 文档态 | PRD 2.9 FR-033/AC-024；架构 **1.5** 补 api_keys 复用与 §9.2.1；阶段文件已镜像；措辞残留已清 |
+| updated | 2026-11-05 10:50 CST |
+| branch | `cursor/arch-schema-flow-rbac-2d1c` |
+| HEAD | `751d400`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
+| 文档态 | PRD 2.9；架构 **1.6**（§5.4表裁剪/§5.5流转/§10.2–10.4 RBAC·双Token·支付图片）；01-design 已确认 |
 | 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付；底座已有通用 `api_keys` 表） |
 | 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
 | 当前阶段 | S0 **待自主推进**（以 `progress.yaml` 为准）；客户业务 API 不抢跑 |
@@ -22,7 +22,7 @@
 | 仓库 | `https://github.com/nancywrayg57-jpg/mihuanyuantu-v2.git` |
 | 文档工作区 | `docs/mihuanyuantu-v2/` |
 | 现行 PRD | `docs/蜜獾原图-v2-PRD-v2.0.md`（document_version 2.9；AC-024=客户业务 API） |
-| 项目架构 | `docs/蜜獾原图-v2-项目架构-v1.0.md`（version **1.5**；`implementation_status: NOT_IMPLEMENTED`） |
+| 项目架构 | `docs/蜜獾原图-v2-项目架构-v1.0.md`（version **1.6**；`implementation_status: NOT_IMPLEMENTED`） |
 | Gemini 方案 | `docs/蜜獾原图-v2-Gemini-Vision检测与自动重做方案-v1.0.md` |
 | 生产物料清单 | `docs/蜜獾原图-v2-生产物料清单-v1.0.md`（`production_readiness: NOT_READY`；`development_readiness: READY_FOR_R0_DOC_AND_BASE_CODING`） |
 | Agent 开发指令 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
