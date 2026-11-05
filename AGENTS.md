@@ -18,7 +18,7 @@ For unrelated small coding questions, answer normally without forcing the full A
 1. 以管理员当前明确任务为范围；未授权不扩展到未点名的其他公司项目或未点名系统。
 2. 「先看」「给建议」「先审计」「整理文档」不等于授权改无关系统或清空业务数据；实现与部署按编码指令推进。
 3. 产品行为以现行 PRD 为准；落地结构以项目架构为准；阶段划分与依据路径以 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` 为准。三者冲突时停止并提问，禁止发明新需求。
-4. 未经要求不新增外部发布、客户 API、OSS 必选、ZIP 交付、独立 GPS 页、生图成功后自动进入相机参数处理等 PRD 已禁止的能力。
+4. 未经要求不新增外部发布、客户自建上游模型 Key、OSS 必选、ZIP 交付、独立 GPS 页、生图成功后自动进入相机参数处理等 PRD 已禁止的能力。本平台业务 API（`X-API-Key` + `image_processing`）已纳入第一版（FR-033），按阶段推进，不在 S1 抢跑。
 
 ## 2. 证据纪律
 

@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-05 09:37 CST |
-| branch | `cursor/align-plain-wording-docs-9973` |
-| HEAD | `2160c9d`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
-| 文档态 | 已补充里程碑端测硬规则（完成→端测→下一阶段）；措辞对齐仍有效 |
-| 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付） |
-| 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
-| 当前阶段 | S0 **待自主推进**（任务·退出证据·禁止项已齐；以 `progress.yaml` 为准） |
-| 下一步 | 按 `DEV_INSTRUCTIONS` §10.1 推进 S0；勾满 exit_evidence 并端测通过后再开 S1 |
+| updated | 2026-11-05 11:55 CST |
+| branch | `cursor/cicd-dual-account-init-9973` |
+| HEAD | `87b9abf`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
+| 文档态 | PRD 2.9；架构 **1.6**；DEV_INSTRUCTIONS §7 CI/CD 双账号 + §10 S0/S1 清单 + 里程碑端测硬规则；01-design 已确认 |
+| 代码态 | 业务闭环 **未实现**；已加 `.github/workflows/ci.yml`（汇总 **CI gate**）与 `deploy-stub.yml`；底座有通用 `api_keys` |
+| 验证态 | `validate_workspace` ok；仓库 **public**；开发机/真模型 **未实测** |
+| 当前阶段 | S0 **待自主推进**（以 `progress.yaml` 为准）；客户业务 API 不抢跑 |
+| 下一步 | 按 `DEV_INSTRUCTIONS` §10.1 推进 S0；端测通过后再开 S1；FR-033 属 S5/R3 |
 
 ## 1. 仓库与文档基线
 
@@ -21,8 +21,8 @@
 | --- | --- |
 | 仓库 | `https://github.com/nancywrayg57-jpg/mihuanyuantu-v2.git` |
 | 文档工作区 | `docs/mihuanyuantu-v2/` |
-| 现行 PRD | `docs/蜜獾原图-v2-PRD-v2.0.md`（document_version 以文件头为准） |
-| 项目架构 | `docs/蜜獾原图-v2-项目架构-v1.0.md`（`implementation_status: NOT_IMPLEMENTED`） |
+| 现行 PRD | `docs/蜜獾原图-v2-PRD-v2.0.md`（document_version 2.9；AC-024=客户业务 API） |
+| 项目架构 | `docs/蜜獾原图-v2-项目架构-v1.0.md`（version **1.6**；`implementation_status: NOT_IMPLEMENTED`） |
 | Gemini 方案 | `docs/蜜獾原图-v2-Gemini-Vision检测与自动重做方案-v1.0.md` |
 | 生产物料清单 | `docs/蜜獾原图-v2-生产物料清单-v1.0.md`（`production_readiness: NOT_READY`；`development_readiness: READY_FOR_R0_DOC_AND_BASE_CODING`） |
 | Agent 开发指令 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |

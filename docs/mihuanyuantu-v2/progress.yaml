@@ -126,11 +126,13 @@ evidence_pointers:
   materials: ../蜜獾原图-v2-生产物料清单-v1.0.md
   prototype: ../../prototype/README.md
   grill_adr: ../architecture_decisions/蜜獾原图-v2-grill-me逻辑架构裁决-2026-11-04.md
+  customer_business_api: "PRD FR-033 / AC-024；架构 1.6 §9.2.1/§10.3；阶段 S5/R3；不进 S1"
+  architecture_design_pack: "1.6 §5.4表裁剪 §5.5流转 §10.2RBAC §10.3双Token §10.4支付/图片"
   prototypes: []
   test_reports: []
   commits_or_prs: []
 
 next_action:
   owner: agent
-  action: "按 DEV_INSTRUCTIONS §10.1 执行 S0 tasks（T-S0-001、T-001..T-003、T-S0-002），勾满 exit_evidence 并完成端到端测试确认无误后，再开 §10.2 S1；每一里程碑同此；S2+ 开工前须先补该阶段清单（任务·退出证据·禁止项）；同步 checkpoint §0 与本文件"
+  action: "按 DEV_INSTRUCTIONS §10.1 执行 S0 tasks，勾满 exit_evidence 并端测通过后再开 S1；客户业务 API（FR-033）不抢跑，待 S5 且该阶段三件套补齐后实现；同步 checkpoint §0 与本文件"
   blocker: ""

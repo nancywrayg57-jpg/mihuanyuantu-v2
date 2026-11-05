@@ -19,31 +19,49 @@ phase_confirmation:
       text: "PostgreSQL 持久队列 + 同机 worker 进程；禁止前端驱动终态"
     - id: UX-BASELINE
       text: "UI 信息架构沿用 prototype/；本阶段不新开 gpt-image-2 原型请求"
+    - id: FR-033-API
+      text: "第一版开放本平台业务 API（X-API-Key + image_processing + OpenAPI）；复用 api_keys；退出在 R3/S5；不进首期 S1"
+    - id: FLOW-FREEZE-BEFORE-QUEUE
+      text: "处理提交短事务内：核余额+冻结+建任务/execution_job；禁止先入队后冻结"
+    - id: RBAC-MATRIX-A
+      text: "可执行权限矩阵含商家/订单客服A/技术客服/管理员/API Key；订单客服确认拒单、不解冻、不看业务图"
+    - id: DUAL-TOKEN
+      text: "上游模型 credential_ref 与客户业务 api_keys 物理隔离；关闭上游 Key 自助≠关闭业务 API"
   accepted_risks:
     - "经济起步同机盘损坏风险已知；上线前手工备份规程"
+    - "原型尚无商家业务 API 凭证页；实现 S5 前须补 UI 合同"
   blockers: []
   confirmed_by: user
-  confirmed_at: "2026-11-04T01:39:00-05:00"
+  confirmed_at: "2026-11-04T21:45:00-05:00"
   change_log:
     - date: "2026-11-04"
       change: "架构合同改为 LocalDisk；记录首期适配器边界"
       reason: "grill Q1/Q7/Q12/Q18/Q26 与物料对齐"
+    - date: "2026-11-05"
+      change: "登记 FR-033；架构升至 1.5（api_keys 复用 + 处理子集路由）"
+      reason: "用户纳入客户业务 API；审计补齐设计缺口"
+    - date: "2026-11-05"
+      change: "架构升至 1.6：§5.4 首期表裁剪、§5.5 业务流转、§10.2–10.4 权限矩阵/双 Token/支付与图片落点"
+      reason: "用户确认补进表结构+流转+角色权限+支付/图片/Token 设计包"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "设计阶段以既有原型为 UX 基线；架构增量聚焦存储与首期（S1）适配器。"
+  phase_summary: "设计阶段以既有原型为 UX 基线；架构 1.6 含 LocalDisk、FR-033、首期表裁剪、业务流转（先冻后队）、可执行 RBAC 与双 Token。"
   outcomes:
     - "AD-007 修订为 LocalDisk 默认"
+    - "架构 1.6 补齐首期表/流转/权限/双 Token"
   lessons:
     - "存储/检测/五层必须适配器化，便于假→真切换"
+    - "冻结与入队同属提交事务；队列不等于先排队后扣款"
   reusable_rules:
     - "事务内不读盘写大文件到完成；先记意图再落盘"
+    - "上游模型 Key ≠ 客户业务 API Key"
   prompts_or_commands: []
   evidence_links:
     - ../蜜獾原图-v2-项目架构-v1.0.md
     - ../../prototype/README.md
   update_wiki:
-    - "更新 Design outcomes"
+    - "更新 Design outcomes（架构 1.6）"
 
 prototype_image_request:
   required: false
@@ -51,14 +69,16 @@ prototype_image_request:
 
 system_flow_diagram:
   required: true
-  note: "沿用架构文档 Mermaid；LocalDisk 替换 OSS 节点后以架构 1.4 为准"
+  note: "架构 §5.5 Mermaid：登录/API Key→入库→【冻结+入队】→处理→结算/释放→下载；充值人工确认"
   path: ../蜜獾原图-v2-项目架构-v1.0.md
+  sections: ["5.4", "5.5", "10.2", "10.3", "10.4"]
 
 product_design:
   product_model: "resource_library -> processing_task (single) -> delivery"
   terminology_decisions:
     - "首期：可编码最小垂直阶段"
     - "租户积分户：同租户共用整数余额"
+    - "提交：冻结与入队同事务"
   value_moment: "单张处理结果可下载且按张流水正确"
   non_goals:
     - "首期不含生图/真五层/真 Gemini/OSS"
@@ -70,17 +90,29 @@ product_design:
   ux_baseline: "../../prototype/"
 
 service_system_design:
-  actors: [merchant, order_support, admin]
+  actors: [merchant, order_support, admin, tech_support_deferred]
   handoffs:
-    - "商家提交处理 → worker 执行 → 消息通知商家"
-    - "商家提交充值订单 → 订单客服确认 → 租户户加分"
+    - "商家或 API Key：资源入库 → 提交（冻结+入队）→ worker 处理 → 结算/释放 → 下载"
+    - "商家提交充值订单 → 订单客服确认/拒单 → 租户户加分或取消"
+    - "管理员人工加减分（强制原因+幂等）"
   external_systems:
     - "首期无真模型外呼；替身内建"
+    - "上游模型凭据仅管理员配置位（credential_ref）；客户业务 Key 走 api_keys"
   manual_backoffice_steps:
     - "管理员加减分"
     - "订单客服确认/拒单"
   failure_recovery:
-    - "技术异常替身：冻结待后续客服阶段释放（首期可管理员释放）"
+    - "技术异常：保留冻结；客服审计释放（首期可管理员释放）"
+  payment:
+    mode: "manual_recharge_confirm"
+    not_in_v1: "扫码支付网关 / 现金退款"
+  image_management:
+    resource_library: "长期保留至删除"
+    process_result: "7x24h expires_at；网关校验"
+    delivery: "no ZIP；no bare path"
+  dual_token:
+    upstream_model: "rp_model_config_version.credential_ref"
+    customer_business_api: "core api_keys + X-API-Key + image_processing"
 
 interaction_design:
   flows:
@@ -145,6 +177,7 @@ architecture:
     db: "PostgreSQL 16 local"
     storage_default: "LocalDisk"
     storage_reserved: "OSS adapter"
+  version: "1.6"
   first_knife_adapters:
     storage: LocalDiskStorageAdapter
     detector: FixtureGeminiDetector
@@ -153,9 +186,13 @@ architecture:
   data:
     credit_account: "tenant-unique integer"
     isolation: "owner_account_id + tenant_id"
+    s0_s1_table_cut: "见架构 §5.4"
+    business_flow: "见架构 §5.5；冻结先于或原子于入队"
   security:
     gateway_auth_required: true
     no_bare_disk_urls: true
+    rbac_matrix: "见架构 §10.2"
+    dual_token: "见架构 §10.3"
   deployment:
     s1_phase: "dev host only (materials 192.168.19.128 / equivalent)"
     production_demo_host: "blocked until Q5 gates"
@@ -165,6 +202,10 @@ architecture:
       rationale: "物料与 grilling 对齐，消除 OSS 合同分叉"
       alternatives_rejected: ["首版强制 OSS", "首期（S1）真五层+真 Gemini 同阶段"]
       maps_to: [GD-001, GD-006, GD-007, GD-018]
+    - id: ADR-schema-flow-2026-11-05
+      decision: "架构 1.6 补首期表裁剪、业务流转、可执行 RBAC、双 Token、人工支付与图片落点"
+      rationale: "用户确认系统设计前置包写入架构而非另起文档"
+      alternatives_rejected: ["另开无关 PRD 重写行为", "先入队后冻结"]
   risks:
     - "五层占位实现换真时字段漂移"
     - "同机 LocalDisk 单点"
@@ -172,12 +213,15 @@ architecture:
 design_review:
   findings:
     - "既有 HTML 原型可作 IA 基线；本阶段不新开 PNG 原型请求"
+    - "冻结→队列顺序经用户确认与 PRD FR-016 一致"
   approved_decisions:
     - "AD-007 LocalDisk"
     - "Detector/Layers 适配器假实现进首期"
+    - "架构 1.6 设计前置包"
   rejected_directions:
     - "首期（S1）同时上真五层与真 Gemini"
     - "用前端假进度冒充 ND-018"
+    - "先入队再冻结积分"
   spine_checks:
     - "prototype README 与 PRD 2.8 §13.1 对齐为首期范围"
 
