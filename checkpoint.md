@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-05 09:23 CST |
 | branch | `cursor/align-plain-wording-docs-9973` |
-| HEAD | （短 SHA；以更新本文件时的 1da2c05 为准） |
+| HEAD | （短 SHA；以更新本文件时的 6a1f816 为准） |
 | 文档态 | 职责文件 + DEV_INSTRUCTIONS + AidevOps 阶段文件用词已对齐（首期/规则替身/上线门槛等）；PRD/架构正文未改 |
 | 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付） |
 | 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
