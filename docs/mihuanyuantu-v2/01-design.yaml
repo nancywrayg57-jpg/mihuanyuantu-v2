@@ -34,7 +34,7 @@ phase_confirmation:
     - id: S0-GATEWAY-SEED
       text: "S0 网关端测允许 StorageAdapter 开发种子文件（非客户数据）经鉴权网关读回"
     - id: NO-SELF-MERGE-TIMING
-      text: "禁自评自合：文档合入 main 后、正式开 S0 前由 Owner 开启并登记"
+      text: "禁自评自合：文档合入 main 后、正式开 S0 前由 Owner 开启并登记（权威 AGENTS.md §7.2）"
   accepted_risks:
     - "经济起步同机盘损坏风险已知；上线前手工备份规程"
     - "原型尚无商家业务 API 凭证页；实现 S5 前须补 UI 合同"
