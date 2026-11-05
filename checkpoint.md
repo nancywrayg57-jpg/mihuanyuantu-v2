@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-05 11:55 CST |
 | branch | `cursor/cicd-dual-account-init-9973` |
-| HEAD | `77a4098`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
+| HEAD | `87b9abf`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
 | 文档态 | PRD 2.9；架构 **1.6**；DEV_INSTRUCTIONS §7 CI/CD 双账号 + §10 S0/S1 清单 + 里程碑端测硬规则；01-design 已确认 |
 | 代码态 | 业务闭环 **未实现**；已加 `.github/workflows/ci.yml`（汇总 **CI gate**）与 `deploy-stub.yml`；底座有通用 `api_keys` |
 | 验证态 | `validate_workspace` ok；仓库 **public**；开发机/真模型 **未实测** |
