@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-05 10:37 CST |
 | branch | `cursor/prd-v1-customer-api-9973` |
-| HEAD | （提交后刷新短 SHA） |
+| HEAD | `9bbf9c0`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
 | 文档态 | PRD 2.9 FR-033/AC-024；架构 **1.5** 补 api_keys 复用与 §9.2.1；阶段文件已镜像；措辞残留已清 |
 | 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付；底座已有通用 `api_keys` 表） |
 | 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
