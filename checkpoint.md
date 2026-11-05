@@ -6,15 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-05 17:00 CST |
-| branch | `cursor/drop-s0-gate-prose-9973` |
+| updated | 2026-11-05 17:05 CST |
+| branch | `cursor/drop-collab-oauth-prose-9973` |
 | HEAD | 以本分支 tip 为准（`git rev-parse --short HEAD`） |
 | 文档态 | PRD **2.10**；架构 **1.7**；grill 收口 ADR；**CI/CD = `AGENTS.md` §7** |
-
 | 代码态 | 业务闭环 **未实现**；已有 CI workflows + Tag stub；底座 `api_keys` 仍为路径前缀语义（FR-033 能力名映射待 S5 改造） |
-| 验证态 | `main` Required **`CI gate`** 已开；仓 public；`@xtzhou247` Cursor↔GitHub **待本人连接**；开发机/真模型未实测 |
-| 当前阶段 | 文档收口已合入；双账号子会话绑定中；**S0 编码冻结** |
-| 下一步 | `@xtzhou247` 本人连 Cursor↔GitHub 并起子会话；再「授权开 S0」 |
+| 验证态 | `main` Required **`CI gate`** 已开；仓 public；开发机/真模型未实测 |
+| 当前阶段 | 文档收口已合入；**S0 编码冻结** |
+| 下一步 | 明确「授权开 S0」后再按 DEV §10.1 |
 
 ## 1. 仓库与文档基线
 

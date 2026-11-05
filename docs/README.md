@@ -23,7 +23,7 @@
 | 文档 | 用途 |
 |---|---|
 | [grill-me 逻辑架构裁决](architecture_decisions/蜜獾原图-v2-grill-me逻辑架构裁决-2026-11-04.md) | 2026-11-04 LocalDisk / 首期 / 积分与角色 |
-| [grill-me 文档基线收口](architecture_decisions/蜜獾原图-v2-grill-me文档基线收口-2026-11-05.md) | 2026-11-05：能力名 scopes、PRD §7 订单客服 A、OSS 残句、冻结 S0、Collaborator 自绑 |
+| [grill-me 文档基线收口](architecture_decisions/蜜獾原图-v2-grill-me文档基线收口-2026-11-05.md) | 2026-11-05：能力名 scopes、PRD §7 订单客服 A、OSS 残句、冻结 S0 |
 | [继续使用 Gemini Vision](architecture_decisions/蜜獾原图-v2-继续使用Gemini-Vision最终检测-2026-11-02.md) | 2026-11-02 生产检测器确认 |
 | [自动重做与统一生成历史](architecture_decisions/蜜獾原图-v2-自动重做与统一生成历史裁决-2026-10-25.md) | FR-026 / 历史页确认 |
 | [设备预设原型导入](architecture_decisions/蜜獾原图-v2-设备预设原型导入裁决-2026-10-25.md) | 405 条预设导入口径 |

@@ -38,7 +38,6 @@ phase_confirmation:
     - "原型尚无商家业务 API 凭证页；实现 S5 前须补 UI 合同"
   blockers:
     - "s0_coding_authorized=false"
-    - "collaborator_cursor_github_link=pending"
   confirmed_by: user
   confirmed_at: "2026-11-05T01:23:00-05:00"
   change_log:

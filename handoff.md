@@ -49,8 +49,7 @@
 ## 5. 下一步（摘要；以 progress 为准）
 
 - **当前冻结**：**暂不启动 S0**（`s0_coding_authorized=false`）；grill 收口 ADR 已写回。
-- **协作**：见 `AGENTS.md` §7（双账号、禁自评自合、Required **`CI gate`**）。
-- **双账号**：Owner 主会话 ≠ Collaborator 子会话。子会话 PR 作者要为 `@xtzhou247`，必须由该账号**本人**登录 Cursor、在 Dashboard → Integrations 连接 GitHub，再对本仓**新开** Cloud Agent。主会话 **无法**代其 OAuth / 切换身份。
+- **协作**：见 `AGENTS.md` §7（双账号角色、禁自评自合、Required **`CI gate`**）。
 - **每个里程碑完成后须端测**；未通过或无证据不得开下一阶段。开 S2+ 前须先补齐该阶段「任务 / 退出证据 / 禁止项」。
 - 授权开 S0 后：按 `DEV_INSTRUCTIONS.md` §10.1（含 Q6 种子网关取证），端测通过再进 S1。
 - **客户业务 API**（PRD **2.10** / FR-033；架构 **1.7**）属第一版、S5/R3，**不进 S1**。
