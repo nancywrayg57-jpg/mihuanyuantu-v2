@@ -20,6 +20,7 @@ from fastapi import FastAPI
 from app.api import v1
 from app.core import feature_switches
 from app.core.capability_registry import discover_capabilities
+from tests.routing_paths import collect_router_paths
 
 SAMPLE_CODE = "sample_items"
 SAMPLE_API_MODULE = "app.capabilities.sample_items.api"
@@ -34,7 +35,7 @@ def _mounted_paths(registered_codes: tuple[str, ...]) -> set[str]:
     app = FastAPI()
     app.include_router(v1.api_router)
     _ = registered_codes
-    return {getattr(route, "path", "") for route in app.routes}
+    return collect_router_paths(app)
 
 
 def test_sample_capability_is_discovered_but_not_installed_by_default() -> None:
@@ -61,7 +62,7 @@ def test_uninstalled_capability_router_is_not_registered(
 
     assert SAMPLE_CODE not in registered
     assert not any(
-        "/sample-items" in getattr(route, "path", "") for route in router.routes
+        "/sample-items" in path for path in collect_router_paths(router)
     ), "未安装的能力包不得出现在 route table 里"
 
 
@@ -93,7 +94,7 @@ def test_installed_capability_router_is_registered(
     registered = v1.register_discovered_capability_routers()
 
     assert SAMPLE_CODE in registered
-    paths = {getattr(route, "path", "") for route in router.routes}
+    paths = collect_router_paths(router)
     assert any(path.startswith("/sample-items") for path in paths), (
         f"安装后路由必须出现，实际有：{sorted(paths)}"
     )

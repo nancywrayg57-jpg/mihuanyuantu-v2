@@ -17,6 +17,7 @@ from app.api import v1
 from app.capabilities.support import CAPABILITY
 from app.core import feature_switches
 from app.core.capability_registry import discover_capabilities
+from tests.routing_paths import collect_router_paths
 
 CODE = "support"
 API_MODULE = "app.capabilities.support.api"
@@ -86,7 +87,7 @@ def test_installed_router_exposes_the_pack_routes(monkeypatch: pytest.MonkeyPatc
     registered = v1.register_discovered_capability_routers()
 
     assert CODE in registered
-    paths = {getattr(route, "path", "") for route in router.routes}
+    paths = collect_router_paths(router)
     assert "/support/tickets" in paths
     assert "/support/admin/tickets" in paths
     assert "/support/public/tickets" in paths
