@@ -23,17 +23,18 @@
 | 2026-11-04 | discovery | 微决策：管理员注入替身结果；双账号并发快速联通测试；开发验证码 | confirmed | user A+微决策 |
 | 2026-11-05 | prd | 第一版纳入客户业务 API：X-API-Key + image_processing + OpenAPI/Swagger（FR-033 / AC-024）；不进首期 S1 | confirmed | user 改第一版范围 |
 | 2026-11-05 | design | 架构 1.5→1.6：api_keys 复用；表裁剪；先冻后队；RBAC；双 Token | confirmed | 审计补缺口 |
-| 2026-11-05 | delivery | CI/CD：禁自评自合；**CI gate** Required 已开；Tag stub；仓 public；全局约定迁入 `AGENTS.md` §7 | confirmed | 用户配置 + #9 / 后续迁址 |
-| 2026-11-05 | design | **能力名 scopes** + 映射层；PRD §7 订单客服 A；§8.3 LocalDisk；**冻结 S0**；禁自评自合须 Owner 确认 | confirmed | grill round-2 Q1–Q5 |
-| 2026-11-05 | delivery | S0 网关可用开发种子文件取证；禁自评自合在开 S0 前开启 | confirmed | grill Q6 / Q7 |
-| 2026-11-05 | delivery | Owner 确认禁自评自合已开；S0 暂不启动；子会话须 xtzhou247 本人连 Cursor↔GitHub | confirmed | user |
+| 2026-11-05 | delivery | CI/CD：**CI gate** Required；Tag stub；仓 public；全局约定迁入 `AGENTS.md` §7 | confirmed | 用户配置 + #9 / 后续迁址 |
+| 2026-11-05 | design | **能力名 scopes** + 映射层；PRD §7 订单客服 A；§8.3 LocalDisk；**冻结 S0** | confirmed | grill round-2 Q1–Q5 |
+| 2026-11-05 | delivery | S0 网关可用开发种子文件取证 | confirmed | grill Q6 |
+| 2026-11-05 | delivery | S0 暂不启动；子会话须 xtzhou247 本人连 Cursor↔GitHub | confirmed | user |
+| 2026-11-05 | delivery | 去掉 GitHub 审批开关的文档跟踪（Owner 正式开发前自行配置） | confirmed | user |
 
 ## Phase Knowledge
 ### Discovery
 - Outcomes: OSS/共享钱包/MVP 过胖分叉已闭合；FR-033 纳入第一版但不进 S1。
 - Lessons: RESOLVED ND ≠ 上线证据；历史 ADR 头版本可能滞后，以收口 ADR 为准。
 - Reusable rules: 每轮 ≤5 前沿题；事实自查仓库；决策等用户。
-- Open questions: `@xtzhou247` 本人 Cursor↔GitHub 是否已连；开 S0 前网页非作者审批是否仍开；管理员是否「授权开 S0」。
+- Open questions: `@xtzhou247` 本人 Cursor↔GitHub 是否已连；管理员是否「授权开 S0」。
 
 ### Design
 - Outcomes: 架构 **1.7** = 1.6 包 + LocalDisk 网关措辞消歧 + scopes **能力名→路径白名单** 映射合同；PRD **2.10** §7 与矩阵对齐。
@@ -44,7 +45,7 @@
 ### Delivery
 - Outcomes: S0/S1 三件套在 DEV_INSTRUCTIONS；CI A–D + **CI gate**；S0 编码按 Q4 冻结。
 - Commands: `AGENTS.md` §7（CI/CD）+ DEV_INSTRUCTIONS §10；`bash scripts/ci/secret_scan.sh`。
-- Implementation rules: 禁自评自合见 `AGENTS.md` §7.2；合入须 CI gate；未授权不开 S0。
+- Implementation rules: 协作纪律见 `AGENTS.md` §7；合入须 CI gate；未授权不开 S0。
 - Deploy/rollback notes: production_readiness NOT_READY；真 Secrets 仅 Owner 录入。
 
 ### Acceptance
@@ -67,8 +68,8 @@
 | --- | --- | --- | --- | --- |
 | 0-grill | 共享理解草案 | 用户确认 A | done | 合同修订 |
 | 1-s0-s1-triad | DEV_INSTRUCTIONS §10.1/10.2 | 用户「按此修改并推送」 | done | 曾指向自主 S0 |
-| 2-cicd-public | CI + public + CI gate Required | 保护规则可强制 | done（CI gate） | Q7 登记 |
-| 3-grill-round2 | PRD 2.10 / 架构 1.7 / 收口 ADR / §10.1 Q6 | Q1–Q7 确认并合入 | done（#10/#11/#12） | Collaborator OAuth |
+| 2-cicd-public | CI + public + CI gate Required | 保护规则可强制 | done（CI gate） | — |
+| 3-grill-round2 | PRD 2.10 / 架构 1.7 / 收口 ADR / §10.1 Q6 | 收口合入 | done（#10/#11/#12） | Collaborator OAuth |
 | 4-collab-oauth | xtzhou247 本人 Cursor↔GitHub 子会话 | 子会话可推分支/开 PR | pending | 授权开 S0 |
 | 5-s0-loop | S0 基础可登录/积分/网关/worker | §10.1 exit_evidence + 端测 | pending | 须授权 |
 
@@ -77,9 +78,7 @@
 - Mitigation: checkpoint 代码态 + progress `s0_coding_authorized`。
 - Risk: 实现时直接复用底座路径前缀 scopes。
 - Mitigation: 架构 1.7 §9.2.1 改造义务；S5 验收 AC-024。
-- Risk: 引导合入临时关审批后忘记重新打开。
-- Mitigation: 开 S0 前核对网页非作者审批；`AGENTS.md` §7.2。
 
 ## Backlog Knowledge
-- Next: Collaborator 自绑 → 确认审批规则 → 授权开 S0 → §10.1；FR-033 → S5/R3。
+- Next: Collaborator 自绑 → 授权开 S0 → §10.1；FR-033 → S5/R3。
 - Deferred: CI Python/pnpm 版本与架构推荐对齐（非 S0 阻塞）。

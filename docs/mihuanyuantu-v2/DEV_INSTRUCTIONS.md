@@ -106,7 +106,7 @@
 
 ## 7. Git / CI/CD（索引）
 
-**全局协作约定**（双账号角色、分支与合入、禁自评自合及开启时机、Required **`CI gate`**、Tag/stub 部署、Secrets）以根目录 **`AGENTS.md` 第 7 节**为准；本文件不另立第二套规则。
+**全局协作约定**（双账号角色、分支与合入、禁自评自合、Required **`CI gate`**、Tag/stub 部署、Secrets）以根目录 **`AGENTS.md` 第 7 节**为准；本文件不另立第二套规则。
 
 实现时只需记住：
 

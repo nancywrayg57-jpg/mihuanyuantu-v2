@@ -34,9 +34,9 @@ vibe_coding:
     goal: "双账号子会话就绪 + S0 授权前冻结"
     user_value: "Collaborator 身份可用后再开可验收的基础切片"
     visible_output: "xtzhou247 本人 Cursor↔GitHub 子会话；用户明确「授权开 S0」"
-    verify: "Q7 已登记 user_confirmed_2026-11-05；collaborator_cursor_github_link 仍 pending；s0_coding_authorized=false"
+    verify: "collaborator_cursor_github_link 仍 pending；s0_coding_authorized=false"
     status: awaiting_collaborator_oauth_and_s0_auth
-  next_user_action: "Collaborator @xtzhou247 本人用 Cursor 连接 GitHub 并起子会话 → 开 S0 前确认网页非作者审批已开 → 明确「授权开 S0」后再实现"
+  next_user_action: "Collaborator @xtzhou247 本人用 Cursor 连接 GitHub 并起子会话 → 明确「授权开 S0」后再实现"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -141,5 +141,4 @@ next_action:
   action: "保持 S0 冻结；由 @xtzhou247 本人在 Cursor 连接 GitHub 并启动 Collaborator 子会话；明确「授权开 S0」前禁止业务编码"
   blocker: "s0_coding_authorized=false；collaborator_cursor_github_link=pending（须 xtzhou247 本人 OAuth，主会话无法代连）"
   notes:
-    owner_confirm_no_self_merge: "user_confirmed_2026-11-05"
     s0_start: deferred_by_user

@@ -68,8 +68,7 @@ For unrelated small coding questions, answer normally without forcing the full A
 | Owner | `@nancywrayg57-jpg`（Admin） | 主会话 | 研究、拆解、派发、代码审计、合并 PR、打 `v2.M.P` Tag、触发部署、改分支保护与 Actions Secrets |
 | Collaborator | `@xtzhou247`（Write） | 子会话 | 具体开发、返修、单测、推分支、开/更新 PR |
 
-- **正式双账号开发**下 **不得自评自合**：PR 作者账号不能审批或合并自己的 PR；合并仅 Owner 主会话（或 Owner 人工）在**非本人作者**的 PR 上执行。
-- **开启时机（grill Q5/Q7）**：文档基线合入 `main` 之后、**正式开 S0 编码之前**，由 Owner 在 GitHub 打开「要求非作者审批 / 禁止作者自合」或等价规则，并在 `checkpoint.md` / `progress.yaml` 登记。开启并登记前：**不得宣称** CI/CD 双账号门禁已齐；**不得**开 S0 业务编码。**登记**：`owner_confirm_no_self_merge=user_confirmed_2026-11-05`（网页开关以 Owner 最新设置为准；引导合入时可临时关闭）。
+- **不得自评自合**：PR 作者账号不能审批或合并自己的 PR；合并仅 Owner 主会话（或 Owner 人工）在**非本人作者**的 PR 上执行。
 - Collaborator **禁止**：合并 `main`、打发布 Tag、触发/执行生产部署、修改分支保护与 Actions Secrets。
 - 模型不定死：正式开发时由 Owner 主会话选定主/子会话模型及推理强度。
 - **Collaborator 绑定（硬约束）**：`@xtzhou247` 必须**本人**登录 Cursor → Dashboard → Integrations → Connect GitHub（OAuth 到该 GitHub 用户）→ 对本仓**新开** Cloud Agent 作为子会话。Owner 主会话**不能**代其完成 OAuth，也不能把本会话 GitHub 身份切换成 Collaborator。绑定完成前仅 Owner 可起 Agent。

@@ -13,7 +13,6 @@ phase_confirmation:
     - "S7 生产部署须管理员确认"
     - "续作以 progress.yaml next_action 为准"
     - "grill Q4：未授权前禁止 S0 业务代码"
-    - "grill Q5/Q7：禁自评自合已由 Owner 确认开启（2026-11-05；权威见 AGENTS.md §7.2）"
     - "grill Q6：S0 网关取证可用 StorageAdapter 开发种子文件经鉴权网关读回"
     - "双账号：Collaborator 子会话须 xtzhou247 本人 Cursor↔GitHub；Owner 主会话无法代连"
   accepted_risks:
