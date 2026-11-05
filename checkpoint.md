@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-05 14:30 CST |
 | branch | `cursor/grill-round2-doc-close-9633` |
-| HEAD | （以更新本文件时的 `git rev-parse --short HEAD` 为准；合入前相对 `main`=`543f104`） |
+| HEAD | 以本分支 tip 为准（`git rev-parse --short HEAD`）；合入前相对 `main`=`543f104` |
 | 文档态 | PRD **2.10**；架构 **1.7**；grill 收口 ADR 2026-11-05（Q1–Q5）；DEV §7 CI/CD + §10 S0/S1 + 里程碑端测 |
 | 代码态 | 业务闭环 **未实现**；已有 CI workflows + Tag stub；底座 `api_keys` 仍为路径前缀语义（FR-033 能力名映射待 S5 改造） |
 | 验证态 | `main` Required **`CI gate`** 已开；仓 public；禁自评自合 **待 Owner 网页确认**；开发机/真模型未实测 |
