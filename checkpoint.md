@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-05 10:24 CST |
+| updated | 2026-11-05 10:26 CST |
 | branch | `cursor/prd-v1-customer-api-9973` |
 | HEAD | （提交后刷新短 SHA） |
-| 文档态 | PRD 2.9 纳入客户业务 API（FR-033：X-API-Key + image_processing）；ND-017/anchor/DEV/S5 已同步；不进 S1 |
+| 文档态 | 措辞对齐 + 里程碑端测已在 main；本分支 PRD 2.9 纳入客户业务 API（FR-033：X-API-Key + image_processing）；不进 S1 |
 | 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付） |
 | 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
-| 当前切片 | S0 **待自主推进**（三件套已齐；以 `progress.yaml` 为准） |
-| 下一步 | 按 `DEV_INSTRUCTIONS` §10.1 推进 S0；客户 API 属 S5/R3 |
+| 当前阶段 | S0 **待自主推进**（任务·退出证据·禁止项已齐；以 `progress.yaml` 为准） |
+| 下一步 | 按 `DEV_INSTRUCTIONS` §10.1 推进 S0；端测通过后再开 S1；客户 API 属 S5/R3 |
 
 ## 1. 仓库与文档基线
 
@@ -34,7 +34,7 @@
 | 项目 | 值 |
 | --- | --- |
 | 底座目录 | `aojuai-main/` |
-| 上游钉扎（文件登记） | `aojuai-main/UPSTREAM_PIN.txt`：`sha add4ddb28916a8745f1be200e15e5a504fb4b4b3` |
+| 上游固定版本（文件登记） | `aojuai-main/UPSTREAM_PIN.txt`：`sha add4ddb28916a8745f1be200e15e5a504fb4b4b3` |
 | 业务实现包 | 架构目标为 `realphotos`；**当前不等同已交付业务闭环** |
 | HTML 原型入口 | `prototype/index.html`（离线交互；mock） |
 | 设备预设源 | `输入材料/旧版可复用模块/02_设备参数/线上预设_脱敏原始.json`（`total` / `items` = 405） |
@@ -51,16 +51,16 @@
 | 图片盘约定 | 开发/生产 `www/mhyt/` 分子目录（物料） |
 | 首版存储策略 | 不开 OSS，LocalDisk（物料 + 架构现行口径） |
 
-## 4. 切片状态（编排；细节以 progress 为准）
+## 4. 阶段状态（编排；细节以 progress 为准）
 
-| 切片 | 状态 |
+| 阶段 | 状态 |
 | --- | --- |
-| S0 基础 | 未开工；§10.1 三件套已齐 → 自主推进 |
-| S1 第一刀闭环 | 未开工；§10.2 三件套已齐；依赖 S0 退出 |
+| S0 基础 | 未开工；§10.1 清单已齐；完成后须端测通过才可开 S1 |
+| S1 首期单张闭环 | 未开工；§10.2 清单已齐；依赖 S0 退出 + S0 端测通过 |
 | S2–S6 | 未开工；S1 后可按依赖有限并行自主推进 |
-| S7 生产部署 | **须管理员确认**；且 `production_readiness: NOT_READY` + 门禁证据 |
+| S7 生产部署 | **须管理员确认**；且 `production_readiness: NOT_READY` + 上线门槛证据 |
 
-过程账本：`docs/mihuanyuantu-v2/progress.yaml`。
+过程进度：`docs/mihuanyuantu-v2/progress.yaml`。
 
 ## 5. 验证分层（当前）
 
@@ -68,8 +68,8 @@
 | --- | --- |
 | 文档工作区结构 | AidevOps `validate_workspace` 可通过 |
 | 原型交互演示 | 可本地打开；**不等于**后端验收 |
-| 业务 API / worker / 整数账本 | **未实现为可验收产品** |
-| 真五层 / 真 Gemini 小样 | **未通过** |
+| 业务 API / worker / 整数积分流水 | **未实现为可验收产品** |
+| 真实五层处理 / 真 Gemini 小样 | **未通过** |
 | 生产收费服务 | **未就绪** |
 
 ## 6. 允许标「未测」但不可省略 §0

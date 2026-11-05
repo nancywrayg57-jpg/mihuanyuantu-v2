@@ -12,45 +12,45 @@ phase_confirmation:
     - id: GD-002
       text: 积分按租户共用；PRD 删除「无共享钱包产品化」误导措辞，改为无席位订阅但同租户共用积分户
     - id: GD-003
-      text: 第一刀 = 上传入库→单张处理→检测夹具→按张账本→下载；生图与运营后置
+      text: 首期（S1）= 上传入库→单张处理→检测替身→按张积分流水→下载；生图与运营后置
     - id: GD-004
       text: 正式开发前补订单客服 A 档（RBAC+最小确认/拒单）；完整运营壳后置
     - id: GD-005
       text: ND-011 或真五层 ND-020/021 无归档证据则禁止生产收费与对外检测承诺
     - id: GD-006
-      text: 第一刀五层用假桩；真五层在独立算法证据切片（A）
+      text: 首期五层用占位实现；真五层在独立算法证据阶段（A）
     - id: GD-007
-      text: 第一刀 Gemini = GeminiRedoPolicy 同规则确定性夹具
+      text: 首期 Gemini = GeminiRedoPolicy 同规则确定性规则替身
     - id: GD-008
-      text: 第一刀 ≤3 套启用预设；405 运营不进退出条件
+      text: 首期 ≤3 套启用预设；405 运营不进退出条件
     - id: GD-009
       text: 订单客服能确认/拒单与看凭证；不能解冻、看图、改权限、碰模型/预设/系统
     - id: GD-010
-      text: 第一刀入账 = 管理员人工加减分 + 订单客服确认充值（无跳转支付）
+      text: 首期入账 = 管理员人工加减分 + 订单客服确认充值（无跳转支付）
     - id: GD-011
-      text: 第一刀只验收单张；不做自动重做/主动重处理
+      text: 首期只验收单张；不做自动重做/主动重处理
     - id: GD-012
       text: 任务落库 + 同机后台消费者；禁止纯前端假进度
     - id: GD-013
       text: 同租户 2 商家账号证明共用积分与账号隔离；另需第二租户证明跨租户拒绝
     - id: GD-014
-      text: 第一刀必验角色含商家×2、订单客服、管理员；技术客服延后
+      text: 首期必验角色含商家×2、订单客服、管理员；技术客服延后
     - id: GD-015
-      text: 真会话登录（验证码可开发简化）；假五层仍须 sRGB JPG+快照+五维报告结构
+      text: 真会话登录（验证码可开发简化）；五层占位实现仍须 sRGB JPG+快照+五维报告结构
     - id: GD-016
       text: 处理完成/未通过/技术异常写站内消息（账号隔离）
     - id: GD-017
-      text: Q25 冻结列表不作为第一刀退出条件
+      text: Q25 冻结列表不作为首期退出条件
     - id: GD-018
-      text: rp_credit_* 整数账本唯一真相；写入 expires_at 并拒绝过期下载；可软删空闲资源
+      text: rp_credit_* 整数积分流水唯一真相；写入 expires_at 并拒绝过期下载；可软删空闲资源
     - id: GD-019
-      text: 预审桩默认通过，管理员可强制拒绝；完整冻号计数不验收
+      text: 预审占位默认通过，管理员可强制拒绝；完整冻号计数不验收
     - id: GD-020
-      text: 第一刀仅开发机验收；微决策（夹具注入、双账号并发冒烟、开发验证码）已认可
+      text: 首期仅开发机验收；微决策（替身结果注入、双账号并发快速联通测试、开发验证码）已认可
   accepted_risks:
     - 租户共用积分导致店内误花/盗用是产品选择
     - ND-016 跳过版权声明，法务风险仍在
-    - 假五层换真时仍可能有字段漂移残余风险
+    - 五层占位实现换真时仍可能有字段漂移残余风险
   blockers: []
   confirmed_by: user
   confirmed_at: "2026-11-04T01:39:00-05:00"
@@ -61,7 +61,7 @@ phase_confirmation:
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "需求基线已通过审计与 grilling 收敛为可编码的第一刀与后置切片地图。"
+  phase_summary: "需求基线已通过审计与 grilling 收敛为可编码的首期与后置阶段地图。"
   outcomes:
     - 根级合同分叉（OSS vs LocalDisk、共享钱包措辞、MVP 过胖）已裁决
   lessons:
@@ -69,14 +69,14 @@ knowledge_assets:
     - 物料与架构冲突必须用 ADR 显式收口
   reusable_rules:
     - 每轮最多 5 个互不依赖前沿问题
-    - 第一刀退出条件变更必须改本文件与 grill ADR
+    - 首期退出条件变更必须改本文件与 grill ADR
   prompts_or_commands: []
   evidence_links:
     - ../architecture_decisions/蜜獾原图-v2-grill-me逻辑架构裁决-2026-11-04.md
     - ../蜜獾原图-v2-PRD-v2.0.md
     - ../蜜獾原图-v2-生产物料清单-v1.0.md
   update_wiki:
-    - 同步 Decision Ledger 与第一刀定义
+    - 同步 Decision Ledger 与首期（S1）定义
 
 clarification:
   policy: ask-user
@@ -85,10 +85,10 @@ clarification:
   pending_user_decisions: []
 
 idea_forge:
-  idea: "蜜獾原图 v2：资源入库与硬件化处理分拆的多租户 Web SaaS"
+  idea: "蜜獾原图 v2：资源入库与相机参数处理分拆的多租户 Web SaaS"
   assumptions:
     - 商家愿意为「处理通过」按张付积分
-    - 开发机可完成第一刀验收而不依赖生产 OSS
+    - 开发机可完成首期验收而不依赖生产 OSS
   cracks:
     - 真模型中国大陆可用性与成本（ND-011 PENDING）
     - 真五层保真与字节下限未小样验证
@@ -105,7 +105,7 @@ idea_forge:
 
 business_case:
   problem: "电商商家需要可追溯的设备参数化图片处理与积分结算，旧版不可恢复队列与合同分叉不可直接上线"
-  target_outcome: "开发机可演示并验收第一刀单张闭环；生产仅在门禁证据齐全后开放"
+  target_outcome: "开发机可演示并验收首期单张闭环；生产仅在上线门槛证据齐全后开放"
   expected_value: "可审计处理链 + 按张计费，支撑人工充值商业化"
   current_alternative: "旧版系统 / 纯手工改图（不在本仓库实现范围内）"
   constraints:
@@ -113,7 +113,7 @@ business_case:
     timeline: "仅相对里程碑；无日历承诺（ND-030）"
     budget_or_effort: "经济起步；不开 OSS/Redis/LB"
     integrations:
-      - 人工微信/支付宝转账确认（第一刀极简）
+      - 人工微信/支付宝转账确认（首期极简）
       - 模型渠道后置真调用
     data_security:
       - 图片经应用网关鉴权读盘
@@ -127,10 +127,10 @@ governance:
     design_owner: "UX / 原型（现行 prototype）"
     reviewer: "验收负责人"
   tolerances:
-    scope: "第一刀不得吞并 Q25 冻结项"
+    scope: "首期不得吞并 Q25 冻结项"
     schedule: "无固定上线日"
     effort_cost: "经济起步单机"
-    quality: "第一刀允许夹具；生产不允许无证据宣称"
+    quality: "首期允许规则替身；生产不允许无证据宣称"
     risk: "接受共用积分与 ND-016 范围外版权风险"
     privacy_security: "租户+账号隔离为 P0"
   decision_log:
@@ -139,10 +139,10 @@ governance:
 
 prd:
   product_name: "蜜獾原图 v2"
-  promise: "先入库再硬件化处理；按张积分；检测报告可审计；不承诺第三方平台审核结果"
+  promise: "先入库再相机参数处理；按张积分；检测报告可审计；不承诺第三方平台审核结果"
   glossary:
-    - term: 第一刀
-      definition: "本工作区定义的最小可验收实现切片"
+    - term: 首期（S1）
+      definition: "本工作区定义的最小可验收实现阶段"
     - term: 图片资源
       definition: "租户资源库原图；处理另提交"
     - term: 租户积分户
@@ -155,8 +155,8 @@ target_users:
     - 订单客服（A 档）
     - 平台管理员
   excluded_for_mvp:
-    - 技术客服（第一刀不验收）
-    - 需要生成即硬件化交付的旧路径客户
+    - 技术客服（首期不验收）
+    - 需要「生成后自动进入相机参数处理并直接交付」旧路径的客户
 
 roles:
   - id: merchant
@@ -180,9 +180,9 @@ journeys:
       - 本地上传入库（硬校验）
       - 选择启用预设（≤3）
       - 提交单张处理
-      - 预审桩通过
-      - 假五层产出 JPG
-      - 检测夹具出报告
+      - 预审占位通过
+      - 五层占位实现产出 JPG
+      - 检测替身出报告
       - 通过则扣 10；未通过释放
       - 站内消息 + 下载
     value_moment: "获得可下载处理结果与按张流水"
@@ -224,16 +224,16 @@ requirements:
       statement: "图片只经鉴权网关读 LocalDisk；不暴露裸路径"
     - id: NFR-K1-002
       category: reliability
-      statement: "第一刀不承诺跨机备份/RPO；生产收费前须有手工备份规程说明"
+      statement: "首期（S1）不承诺跨机备份/RPO；生产收费前须有手工备份规程说明"
 
 mvp_scope:
   in:
     - 真会话登录（开发验证码可）
     - 本地上传 + 硬校验
     - ≤3 预设
-    - 单张处理状态机 + 假五层交付合同
-    - Gemini 规则夹具（管理员可注入）
-    - rp_credit 整数账本
+    - 单张处理状态机 + 五层占位实现交付合同
+    - Gemini 规则替身（管理员可注入）
+    - rp_credit 整数积分流水
     - 订单客服最小确认充值 + 管理员加减分
     - 站内消息（完成/失败/技术异常）
     - LocalDisk 网关下载与过期拒绝
@@ -245,8 +245,8 @@ mvp_scope:
     - URL 真导入
     - 405 预设运营
     - 真预审/冻号/技术客服台
-    - 真五层（算法证据切片）
-    - 真 Gemini（检测门禁切片）
+    - 真五层（算法证据阶段）
+    - 真 Gemini（检测上线门槛阶段）
     - 自动重做/主动重处理
     - 混合批次 2–10
     - ZIP/OSS/扫码支付/运营大盘
@@ -254,12 +254,12 @@ mvp_scope:
 
 success_metrics:
   - id: SM-K1-001
-    metric: "第一刀退出清单项全部有可重复手工/自动证据"
+    metric: "首期退出清单项全部有可重复手工/自动证据"
     target: "开发机 100% 清单覆盖"
     counter_metric: "不得用原型 localStorage 冒充后端证据"
   - id: SM-K1-002
-    metric: "生产环境未在门禁前开放收费"
-    target: "exif-demo 无未门禁收费流量"
+    metric: "生产环境未在上线门槛前开放收费"
+    target: "exif-demo 无未过上线门槛收费流量"
     counter_metric: "UI 完成率"
 
 assumptions:
