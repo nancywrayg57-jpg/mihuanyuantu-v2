@@ -131,10 +131,18 @@
     {
       "source": "D:\\workspace\\蜜獾原图\\drizzle\\schema.ts",
       "sha256": "43FF1862715BF52C68C9815C1DC2D290322DA8C1AD65A03D2C3D92F59CCACFDB",
+      "output": "01_源码参考/原样快照/drizzle/schema.ts",
+      "byte_exact": true,
+      "note": "2026-11-05 补全整文件快照；与来源 SHA-256 一致"
+    },
+    {
+      "source": "D:\\workspace\\蜜獾原图\\drizzle\\schema.ts",
+      "sha256": "43FF1862715BF52C68C9815C1DC2D290322DA8C1AD65A03D2C3D92F59CCACFDB",
       "output": "01_源码参考/边界片段/parameters_schema.ts.txt",
       "line_start": 54,
       "line_end": 209,
-      "byte_exact": false
+      "byte_exact": false,
+      "note": "参数表相关行段摘录；完整文件见原样快照/drizzle/schema.ts"
     },
     {
       "source": "D:\\workspace\\蜜獾原图\\client\\src\\pages\\ParameterConfig.tsx",
