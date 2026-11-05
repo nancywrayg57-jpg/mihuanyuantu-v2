@@ -23,22 +23,17 @@
 ## 目录
 
 ```text
-.
-├── aojuai-main/                 # 指定底座源码，作为本仓库的普通子目录
-│   ├── backend/                 # FastAPI / SQLAlchemy
-│   ├── frontend/                # Next.js / React
-│   ├── docs/                    # 底座文档
-│   └── LICENSE                  # 底座原许可证，保留原文
-├── aidevops/                    # AidevOps 快速开发部署包（技能与脚本）
-├── skills/                      # 第三方技能快照（含 grill-me）
-├── docs/                        # 本项目需求、架构和共享资源清单
-│   ├── architecture_decisions/  # 现行裁决
-│   └── archive/                 # 被替代的 PRD、原型交接与增量 ADR
-├── prototype/                   # 离线 HTML 交互原型
-├── 输入材料/                    # 原始资料、旧版复用材料及原始压缩包
-├── 测试用/                      # 本地检测样图语料，Git 忽略
-├── output/                      # 生成的原型校验与浏览器核对产物，Git 忽略
-└── 生产物料/                    # 仅本地保存的生产账号、密钥及资源配置，Git 忽略
+父目录/
+├── mihuanyuantu-v2/             # 本仓库
+│   ├── aojuai-main/             # 底座源码（普通子目录）
+│   ├── aidevops/                # AidevOps 技能与脚本
+│   ├── skills/                  # 第三方技能快照（含 grill-me）
+│   ├── docs/                    # 需求、架构与公开物料清单（无密钥）
+│   ├── prototype/               # 离线 HTML 交互原型
+│   ├── 输入材料/                # 原始资料、旧版复用材料
+│   ├── 测试用/                  # 本地检测样图语料，Git 忽略
+│   └── output/                  # 本地生成物，Git 忽略
+└── 生产物料/                    # 与仓库同级；账号/密钥/SSH 等；禁止入库
 ```
 
 本次整理保留现有目录与源码，未将底座改成子模块。前后端命令请在各自目录执行，参见 [底座说明](aojuai-main/README.md)、[后端说明](aojuai-main/backend/README.md) 和 [前端说明](aojuai-main/frontend/README.md)。本地仓库初始化不代表项目已经实现、通过运行验收或部署。
@@ -46,7 +41,7 @@
 ## 版本控制约定
 
 - 追踪源码、`pnpm-lock.yaml`、`uv.lock`、增量迁移、需求与决策文档、原始输入资料和已脱敏的环境模板。
-- 忽略 `生产物料/`、`测试用/`、`output/`、实际 `.env` 配置、私钥、依赖目录、构建与测试产物、日志、本地数据库和备份。原型同步脚本在 `prototype/sync-inline.js`。
+- 忽略仓库内误放的 `生产物料/`、`测试用/`、`output/`、实际 `.env`、私钥、依赖与构建产物等。真实密钥目录为**与仓库同级**的 `生产物料/`（例：`../生产物料/`），**禁止入库**。原型同步脚本在 `prototype/sync-inline.js`。
 - 环境模板采用 `.env.example`、`.env.sample`、`.env.template` 或 `.env.<用途>.template` 等命名，只填写占位值。
 - 原始资料压缩包需要保留，不使用全局 `*.zip` 忽略规则；新增压缩包须检查内部是否含本地配置或凭据。
 - `.gitattributes` 统一代码文本行尾为 LF，Windows `.bat` / `.cmd` 使用 CRLF；`docs/`、`输入材料/` 及二进制保持现有字节内容，避免已有审计指纹失效。
@@ -62,9 +57,10 @@
 git status --short
 git diff --cached --stat
 git diff --cached --check -- .gitignore .gitattributes README.md
-git check-ignore -v -- "生产物料/蜜獾原图v2-生产物料.md" "aojuai-main/backend/.env"
+git check-ignore -v -- "aojuai-main/backend/.env"
+# 密钥应在仓库外：../生产物料/蜜獾原图v2-生产物料.md（同级目录，不在 Git 工作树内）
 ```
 
-忽略规则不会阻止显式的 `git add -f`；生产配置应继续仅保存在本地或专用凭据管理系统中。
+忽略规则不会阻止显式的 `git add -f`；生产配置应继续仅保存在与仓库同级的 `生产物料/` 或专用凭据系统中。
 
 首次入库保留底座及原始资料的既有空白格式，全量 `git diff --cached --check` 可能报告历史空白告警；本次只对新增仓库文件执行通过性检查，详细结果见本地仓库整理记录。
