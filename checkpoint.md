@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-05 10:26 CST |
 | branch | `cursor/prd-v1-customer-api-9973` |
-| HEAD | （提交后刷新短 SHA） |
+| HEAD | `6b946a1`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
 | 文档态 | 措辞对齐 + 里程碑端测已在 main；本分支 PRD 2.9 纳入客户业务 API（FR-033：X-API-Key + image_processing）；不进 S1 |
 | 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付） |
 | 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
