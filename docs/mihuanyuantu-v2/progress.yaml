@@ -149,16 +149,21 @@ known_conflicts:
     detail: "AGENTS.md §7.1 / DEV_INSTRUCTIONS 约定 cursor/<name>-9973；本 Cloud Agent 会话硬性要求 -6c0b。本分支使用 cursor/s0-foundation-6c0b。"
   - id: S0_E2E_ENV
     status: open
-    detail: "Cloud Agent 服务层端测（SQLite claim 路径）已通过；架构主验证环境为开发机 + PostgreSQL claim_one。未在开发机补验前不得标 S0 完成、不得开 S1。"
+    detail: "开发机 worker 已连接（hbs-VMware-Virtual-Platform / workerId da08abf5-…）。本 Cloud 会话无 CreateAgent、无法 SSH LAN，不能把子任务派到 worker。需在 cursor.com/agents 选 My Machines 启端测，或提供 API Key 走 POST /v1/agents env.type=machine。提示词：/opt/cursor/artifacts/s0-devhost-my-machine-prompt.md"
   - id: JWT_REFRESH_DAYS
     status: mitigated_in_pack
     detail: "底座 JWT_REFRESH_TOKEN_EXPIRE_DAYS 默认 7；realphotos /auth/login 路径单独签发 30 天 refresh（架构 §10.1）。核心 /api/v1/auth/login 未改。"
+  - id: DEVHOST_SSH_AUTONOMY
+    status: recorded
+    detail: "管理员授权：每里程碑后 Agent 自行 SSH 开发机端测，无需人工代跑。口令在同级 生产物料/；清单与 DEV_INSTRUCTIONS §6.1 / AGENTS.md §5 已写。"
 
 next_action:
   owner: user
-  action: "S0 代码已实现并暂停；请在开发机补验 §10.1 exit_evidence（含 PG worker），确认后再授权开 S1。当前禁止进入 S1。"
-  blocker: "dev_host_e2e_pending; user_requested_pause_after_s0"
+  action: "开通 Cloud→开发机可达路径（推荐在 192.168.19.128 上 agent worker start），以便 Agent 自治跑 S0 PG claim_one；连通前禁止开 S1。"
+  blocker: "dev_host_lan_unreachable_from_cloud; s0_pg_claim_one_pending"
   notes:
     s0_start: authorized_by_user_2026-11-05
     s0_pause: requested_after_first_milestone
     branch: cursor/s0-foundation-6c0b
+    ssh_materials: sibling_生产物料/蜜獾原图v2-生产物料.md
+    ssh_attempt_log: /opt/cursor/artifacts/s0-devhost-ssh-attempt.log

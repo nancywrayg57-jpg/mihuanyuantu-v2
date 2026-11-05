@@ -45,6 +45,8 @@ For unrelated small coding questions, answer normally without forcing the full A
 
 阶段划分、验证环境、代码落点、上线门槛与里程碑端测以 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` 为准；**Git / CI/CD 双账号与合入纪律以本文件第 7 节为准**。每阶段完成后先端测并更新 AidevOps 进度文件（`docs/mihuanyuantu-v2/progress.yaml`、阶段文件、`wiki.md`）及该指令要求维护的根目录状态文件，再进入下一阶段。
 
+**开发机端测自治（管理员已授权）：** 每完成一个里程碑，Agent 须自行按物料 SSH 连接开发机（`hbs@192.168.19.128`；口令在同级 `生产物料/`）执行该阶段端测（含 PostgreSQL `claim_one` 等 Cloud 不可替代项），**无需等待人工代跑**。Cloud 若无法路由 LAN，改走开发机 self-hosted worker 或 VPN/跳板；未连通前不得标阶段完成、不得开下一阶段。细则见 `DEV_INSTRUCTIONS.md` §6.1。
+
 ## 6. 范围外
 
 只有明确获准时才开展与当前阶段无关的审计重设计，或跳过上线门槛的发布。
