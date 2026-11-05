@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-05 10:50 CST |
-| branch | `cursor/arch-schema-flow-rbac-2d1c` |
-| HEAD | `61ca1de`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
-| 文档态 | PRD 2.9；架构 **1.6**（§5.4表裁剪/§5.5流转/§10.2–10.4 RBAC·双Token·支付图片）；01-design 已确认 |
-| 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付；底座已有通用 `api_keys` 表） |
-| 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
-| 当前阶段 | S0 **待自主推进**（以 `progress.yaml` 为准）；客户业务 API 不抢跑 |
-| 下一步 | 按 `DEV_INSTRUCTIONS` §10.1 推进 S0；端测通过后再开 S1；FR-033 属 S5/R3 |
+| updated | 2026-11-05 11:50 CST |
+| branch | `cursor/cicd-dual-account-init-9973` |
+| HEAD | `7879fa8`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准；进度整理提交后再刷） |
+| 文档态 | PRD 2.9；架构 **1.6**；DEV_INSTRUCTIONS §7 CI/CD 双账号 + §10 S0/S1 清单 + 里程碑端测硬规则；01-design 已确认 |
+| 代码态 | 业务闭环 **未实现**；已加 `.github/workflows/ci.yml`（汇总 **CI gate**）与 `deploy-stub.yml`；底座有通用 `api_keys` |
+| 验证态 | `validate_workspace` ok；仓库已改 **public** 以便分支保护可强制；开发机/真模型 **未实测** |
+| 当前阶段 | delivery 文档已齐；**下一会话先做 grill-me 审计 + 苏格拉底式反问**，通过后再开 S0 |
+| 下一步 | 新会话：grill-me 审计现行 PRD/架构/职责文档/CI 约定；收口后再按 §10.1 开 S0 |
 
 ## 1. 仓库与文档基线
 

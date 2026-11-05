@@ -29,12 +29,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "S0→S1：基础 + 首期单张闭环"
-    user_value: "商家能完成可审计的单张处理与按张扣费闭环（开发机）"
-    visible_output: "可登录、可上传、可提交单张、可下载 JPG、积分流水正确"
-    verify: "DEV_INSTRUCTIONS §10.1/10.2 exit_evidence + 里程碑端到端测试（含 AC-K1-001..004）"
-    status: ready_for_autonomous_implementation
-  next_user_action: "Agent 按 DEV_INSTRUCTIONS §10.1 自主推进 S0；端测通过后再开 S1；S7 前须管理员确认"
+    goal: "文档基线收口：grill-me 审计 + 苏格拉底反问后再开 S0"
+    user_value: "下一会话先压实 PRD/架构/CI/协作合同，再进入可验收实现"
+    visible_output: "新一轮 grill ADR 或明确「无阻塞、可开 S0」结论"
+    verify: "用户确认审计结论；冲突项写入待决策或回写 PRD/架构"
+    status: awaiting_next_session_grill
+  next_user_action: "新会话启动 grill-me：审计现行基线并苏格拉底式反问；收口后再授权开 S0"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -134,5 +134,5 @@ evidence_pointers:
 
 next_action:
   owner: agent
-  action: "按 DEV_INSTRUCTIONS §10.1 执行 S0 tasks，勾满 exit_evidence 并端测通过后再开 S1；客户业务 API（FR-033）不抢跑，待 S5 且该阶段三件套补齐后实现；同步 checkpoint §0 与本文件"
-  blocker: ""
+  action: "新会话执行 grill-me 审计 + 苏格拉底式反问（覆盖 PRD 2.9、架构 1.6、DEV_INSTRUCTIONS §7/§10、FR-033、四职责文件、CI gate 协作）；收口并回写 ADR/progress 后，再按 §10.1 开 S0；FR-033 仍不抢跑（S5/R3）"
+  blocker: "等待新会话 grill-me；未收口前禁止开业务实现"
