@@ -29,7 +29,7 @@ phase_confirmation:
       change: "新增里程碑端测硬规则：每阶段 exit_evidence + 端到端测试通过后才可开下一阶段"
       reason: "用户要求每个里程碑完成后端测确认无误再进入下一阶段"
     - date: "2026-11-05"
-      change: "登记 FR-033 客户业务 API 不进 S1；实现归 S5/R3；架构 1.5 已补表/路由"
+      change: "登记 FR-033 客户业务 API 不进 S1；实现归 S5/R3；架构 1.6 已补表/流转/RBAC/双 Token"
       reason: "审计补齐交付镜像与设计缺口"
 
 knowledge_assets:

@@ -126,7 +126,8 @@ evidence_pointers:
   materials: ../蜜獾原图-v2-生产物料清单-v1.0.md
   prototype: ../../prototype/README.md
   grill_adr: ../architecture_decisions/蜜獾原图-v2-grill-me逻辑架构裁决-2026-11-04.md
-  customer_business_api: "PRD FR-033 / AC-024；架构 §9.2.1；阶段 S5/R3；不进 S1"
+  customer_business_api: "PRD FR-033 / AC-024；架构 1.6 §9.2.1/§10.3；阶段 S5/R3；不进 S1"
+  architecture_design_pack: "1.6 §5.4表裁剪 §5.5流转 §10.2RBAC §10.3双Token §10.4支付/图片"
   prototypes: []
   test_reports: []
   commits_or_prs: []

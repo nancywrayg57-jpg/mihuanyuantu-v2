@@ -13,7 +13,7 @@
 - [grill-me 逻辑架构裁决](docs/architecture_decisions/蜜獾原图-v2-grill-me逻辑架构裁决-2026-11-04.md)
 - [Gemini Vision 检测与自动重做](docs/蜜獾原图-v2-Gemini-Vision检测与自动重做方案-v1.0.md)
 - [决策清单](docs/蜜獾原图-v2-待决策清单-v1.0.md)
-- [项目架构（1.5）](docs/蜜獾原图-v2-项目架构-v1.0.md)
+- [项目架构（1.6）](docs/蜜獾原图-v2-项目架构-v1.0.md)
 - [生产物料清单](docs/蜜獾原图-v2-生产物料清单-v1.0.md)
 - [HTML 原型](prototype/README.md)
 - [架构设计裁决与交接](docs/architecture_decisions/蜜獾原图-v2-架构设计裁决与交接-2026-10-23.md)
