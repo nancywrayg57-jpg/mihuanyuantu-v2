@@ -104,12 +104,56 @@
 - **Cloud Agent 环境**：可改代码与文档；不能等价替代开发机的验收项，须在开发机补验并留下证据说明。
 - **生产服务器**：S7 且上线门槛通过、管理员确认后部署。
 
-## 7. Git 约定
+## 7. Git 约定（CI/CD 双账号）
+
+### 7.1 分支与合入
 
 - 功能分支：`cursor/<功能简述>-9973`（小写）。
-- 合入目标：`main`（经 Pull Request）。
+- 合入目标：`main`（**仅经 Pull Request**；禁止直接 push `main`）。
+- 合并方式：**仅 squash merge**。
 - 提交前确认未跟踪密钥与本地保密目录。
 - 忽略规则见 `.gitignore`；行尾约定见 `.gitattributes`。
+
+### 7.2 角色与账号（禁止自评自合）
+
+| 角色 | GitHub | Cursor 会话 | 职责 |
+|------|--------|-------------|------|
+| Owner | `@nancywrayg57-jpg`（Admin） | 主会话 | 研究、拆解、派发、代码审计、合并 PR、打 `v2.M.P` Tag、触发部署 |
+| Collaborator | `@xtzhou247`（Write） | 子会话 | 具体开发、返修、单测、推分支、开/更新 PR |
+
+- CI/CD 模式下 **不得自评自合**：PR 作者账号不能合并自己的 PR；合并仅 Owner 主会话（或 Owner 人工）执行。
+- Collaborator **禁止**：合并 `main`、打发布 Tag、触发/执行生产部署、修改分支保护与 Actions Secrets。
+- 模型不定死：正式开发时由 **Owner 主会话**自行选定主会话与子会话所用模型及推理强度。
+- Collaborator 的 Cursor 绑定若尚未完成：仅 Owner 可起 Agent；补齐 `@xtzhou247` → Cursor 授权本仓后，再按上表双会话运行。
+
+### 7.3 PR 必过检查（首版）
+
+工作流见 `.github/workflows/ci.yml`（按改动路径过滤 job；汇总门禁 job 名建议设为 Required）：
+
+| 门 | 范围 | 内容 |
+|----|------|------|
+| A 安全/红线 | 所有 PR | 拒提交疑似密钥与明文保密文件 |
+| B 后端 | `aojuai-main/backend/**` 等 | `ruff check` + `pytest`（`DB_DRIVER=sqlite`） |
+| C 前端 | `aojuai-main/frontend/**` 等 | `pnpm typecheck` + `pnpm test` |
+| D 文档/流程 | `AGENTS.md`、本文件、`docs/mihuanyuantu-v2/**` 等 | 关键门控文件仍存在 |
+
+- `mypy`、前端 `eslint`/`build`：**暂不阻断**；稳定后由 Owner 决定升为必过。
+- **基线注意**：`aojuai-main/backend` 全量 `ruff`/`pytest` 在初始化时点仍有存量失败；改动后端前须先修绿，或由 Owner 临时放宽 Required checks。勿在未修绿时把「B 后端」设为唯一合入门槛却无人修基线。
+- Cloud Agent 环境通过不等于开发机验收；端测证据规则不变。
+
+### 7.4 Tag 与部署
+
+- 里程碑 Tag：`v2.M.P`（例 `v2.0.1`），**仅 Owner** 在审计通过并合入 `main` 后打。
+- Tag 推送触发 `.github/workflows/deploy-stub.yml`（首版 **stub**：校验 Tag、打印部署意图，**不连生产**）。
+- **真实生产部署**仍须：本文件 S7、第 11 节上线门槛、**管理员确认**。
+- 生产/部署 Secrets：首版可不配；真部署时由 Owner 录入 GitHub Actions Secrets；聊天附件仅可作本机临时配置，**不得入库**。
+
+### 7.5 Owner 须在 GitHub 网页完成的设置（Agent 无法代开时）
+
+1. `main` 分支保护：必须 PR；Required checks 勾选 CI 汇总门禁；禁止直接 push。
+2. 禁止自评自合（或要求非作者审批）。
+3. 确认 Collaborator 为 Write、Owner 为 Admin。
+4. 将 `@xtzhou247` 接入 Cursor 并授权本仓后，再启双会话范式。
 
 ## 8. 界面约定（原型）
 
