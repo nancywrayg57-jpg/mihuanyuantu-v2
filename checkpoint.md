@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-05 08:06 EST（America/New_York）/ 21:06 CST |
 | branch | `cursor/s0-foundation-6c0b` |
-| HEAD | 以本分支 tip 为准（`git rev-parse --short HEAD`） |
+| HEAD | `dfa48ad` |
 | 文档态 | PRD **2.10**；架构 **1.7**；grill 收口 ADR；**CI/CD = `AGENTS.md` §7**；`s0_coding_authorized=true` |
 | 代码态 | **S0 realphotos 能力包已实现**（会话/RBAC/整数积分/LocalDisk 网关/队列 worker）；S1+ 未实现；底座 `api_keys` 仍为路径前缀语义（FR-033 待 S5） |
 | 验证态 | Cloud：`pytest tests/capabilities/realphotos` **8 passed**；`s0-e2e-service.log`=`S0_E2E_PASS`；**开发机 PostgreSQL 端测未跑**（不得标 S0 完成） |
