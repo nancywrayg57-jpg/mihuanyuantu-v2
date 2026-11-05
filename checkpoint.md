@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-05 16:35 CST |
-| branch | `cursor/agents-cicd-global-9973` |
+| updated | 2026-11-05 16:46 CST |
+| branch | `cursor/fix-pr11-doc-sync-9973` |
 | HEAD | 以本分支 tip 为准（`git rev-parse --short HEAD`） |
-| 文档态 | PRD **2.10**；架构 **1.7**；grill 收口 ADR；**CI/CD 全局约定权威 = `AGENTS.md` §7**；DEV 仅索引 + §10 S0/S1 + 端测 |
+| 文档态 | PRD **2.10**；架构 **1.7**；grill 收口 ADR；**CI/CD = `AGENTS.md` §7**；Q7 登记已同步（修 PR #11 后镜像滞后） |
 | 代码态 | 业务闭环 **未实现**；已有 CI workflows + Tag stub；底座 `api_keys` 仍为路径前缀语义（FR-033 能力名映射待 S5 改造） |
-| 验证态 | `main` Required **`CI gate`** 已开；仓 public；禁自评自合 **Owner 已登记开启（Q7）**（网页规则以 Owner 最新设置为准）；`@xtzhou247` Cursor↔GitHub **待本人连接**；开发机/真模型未实测 |
-| 当前阶段 | 文档收口；双账号子会话绑定中；**S0 编码冻结**（用户暂不启动） |
-| 下一步 | `@xtzhou247` 登录 Cursor → Integrations 连接 GitHub → 对本仓起 Collaborator 子会话；**勿**在本 Owner 会话代 OAuth；S0 仍待「授权开 S0」 |
+| 验证态 | `main` Required **`CI gate`** 已开；仓 public；禁自评自合 **已登记（Q7）**（网页开关以 Owner 最新设置为准）；`@xtzhou247` Cursor↔GitHub **待本人连接**；开发机/真模型未实测 |
+| 当前阶段 | 文档收口已合入；双账号子会话绑定中；**S0 编码冻结** |
+| 下一步 | `@xtzhou247` 本人连 Cursor↔GitHub 并起子会话；开 S0 前确认网页非作者审批；再「授权开 S0」 |
 
 ## 1. 仓库与文档基线
 

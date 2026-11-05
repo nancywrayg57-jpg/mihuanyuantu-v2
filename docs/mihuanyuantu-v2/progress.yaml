@@ -31,12 +31,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "grill 文档基线收口（PRD 2.10 / 架构 1.7；Q1–Q7）；S0 编码冻结至管理员授权"
-    user_value: "合同无分叉后再开可验收的基础切片"
-    visible_output: "ADR + PRD §7 + 架构 1.7 + §10.1 种子网关取证 + 冻结的 next_action"
-    verify: "用户确认 Q1–Q6；Q7 计划=合入后开 S0 前开启禁自评自合；仍无业务实现宣称"
-    status: docs_close_ready_for_merge
-  next_user_action: "合入文档 PR（若未合）→ Collaborator @xtzhou247 本人用 Cursor 连接 GitHub 并起子会话 → 明确「授权开 S0」后再实现"
+    goal: "双账号子会话就绪 + S0 授权前冻结"
+    user_value: "Collaborator 身份可用后再开可验收的基础切片"
+    visible_output: "xtzhou247 本人 Cursor↔GitHub 子会话；用户明确「授权开 S0」"
+    verify: "Q7 已登记 user_confirmed_2026-11-05；collaborator_cursor_github_link 仍 pending；s0_coding_authorized=false"
+    status: awaiting_collaborator_oauth_and_s0_auth
+  next_user_action: "Collaborator @xtzhou247 本人用 Cursor 连接 GitHub 并起子会话 → 开 S0 前确认网页非作者审批已开 → 明确「授权开 S0」后再实现"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
