@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-05 09:37 CST |
 | branch | `cursor/align-plain-wording-docs-9973` |
-| HEAD | （提交后刷新短 SHA） |
+| HEAD | `57bb4d6`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
 | 文档态 | 已补充里程碑端测硬规则（完成→端测→下一阶段）；措辞对齐仍有效 |
 | 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付） |
 | 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
