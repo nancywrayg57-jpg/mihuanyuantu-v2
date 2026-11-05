@@ -29,7 +29,7 @@
 | 底座 | `aojuai-main/`（上游固定版本见 `aojuai-main/UPSTREAM_PIN.txt`） |
 | S0 业务包 | `aojuai-main/backend/app/capabilities/realphotos/` |
 | 原型 | `prototype/index.html`；改 `prototype.js` 后跑 `node prototype/sync-inline.js` |
-| 分支约定 | 见 `DEV_INSTRUCTIONS.md` / `AGENTS.md` §7；本会话分支 `cursor/s0-foundation-6c0b`（与 `-9973` 后缀冲突已记录） |
+| 分支约定 | 见 `DEV_INSTRUCTIONS.md` / `AGENTS.md` §7；收口分支 `cursor/s0-devhost-e2e-closeout-6c0b`（与 `-9973` 后缀冲突已记录） |
 | 密钥 | 仓库无 `生产物料/`；需要时在聊天向管理员索取，仅写本机环境 |
 
 当前实现状态摘要见 `checkpoint.md`。
@@ -49,16 +49,16 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **当前**：**S0 已实现 + CI 绿并暂停**；开发机 SSH 已登记，但 Cloud→LAN **不可达**，PG `claim_one` 端测未跑。
-- **不得开 S1**，直至开发机连通并跑通 `scripts/devhost/run_s0_pg_e2e.sh`（或等价 self-hosted worker 端测）。
-- 端测自治：每里程碑后 Agent 自行 SSH（`DEV_INSTRUCTIONS` §6.1）；口令在同级 `生产物料/`。
-- Cloud 证据：`s0-pytest.txt`、`s0-e2e-service.log`；SSH 失败：`s0-devhost-ssh-attempt.log`。
+- **当前**：**S0 开发机端测已通过并暂停**。开发机本机 `pg_isready` 通过；`scripts.s0_pg_claim_one_smoke` 日志 `/tmp/s0-pg-claim-one-smoke.log` 含 `S0_PG_CLAIM_ONE_PASS`。
+- **不得开 S1**，直到管理员授权。
+- 端测自治：每里程碑后 Agent 自行在开发机补验（`DEV_INSTRUCTIONS` §6.1）；口令只在同级 `生产物料/` 或本机 `.env`，禁止入库。
+- Cloud 证据：`s0-pytest.txt`、`s0-e2e-service.log`。开发机证据：`/tmp/s0-pg-claim-one-smoke.log`。
 - **协作**：见 `AGENTS.md` §7。**S7** 须管理员确认。
 
 ## 6. 风险提醒
 
 - 原型里的检测替身 ≠ Gemini 真验收；文档齐全 ≠ 后端已交付。
-- Cloud 服务端测 ≠ 开发机 PostgreSQL 验收；未补验不得标 S0 完成。
+- Cloud 服务端测 ≠ 开发机 PostgreSQL 验收；本机 `claim_one` 已通过，仍须管理员授权后才开 S1。
 - 租户共用积分是现行产品选择；账号隔离 ≠ 余额隔离。
 - 首版 LocalDisk；不要按「必须先买 OSS」开工。
 - 客户业务 API ≠ 上游模型 Key 自助 ≠ 外部平台代发；能力名 scope 外接口必须拒绝。

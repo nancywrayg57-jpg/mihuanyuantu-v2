@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-05 22:20 CST（Asia/Shanghai） |
-| branch | `cursor/s0-foundation-6c0b` |
-| HEAD | （推送后以远端为准；文档自治提交在途） |
+| updated | 2026-11-05 22:49 CST（Asia/Shanghai） |
+| branch | `cursor/s0-devhost-e2e-closeout-6c0b` |
+| HEAD | 本收口提交（推送后以远端 SHA 为准） |
 | 文档态 | PRD **2.10**；架构 **1.7**；物料清单 **1.32**（已登记 SSH）；端测自治写进 `DEV_INSTRUCTIONS` §6.1 / `AGENTS.md` §5 |
-| 代码态 | **S0 realphotos 已实现**；CI 全绿；`scripts/devhost/run_s0_pg_e2e.sh` + `s0_pg_claim_one_smoke.py` 已备 |
-| 验证态 | Cloud 服务端测通过；**开发机 SSH 探测超时**（LAN 不可达）；PG `claim_one` **未跑** → 不得标 S0 完成 |
-| 当前阶段 | S0 暂停；待 Cloud↔开发机连通后自治补验 |
-| 下一步 | 管理员在开发机启 self-hosted worker（或 VPN/跳板）；Agent 再跑 `run_s0_pg_e2e.sh` |
+| 代码态 | **S0 realphotos 已实现**（PR #18、#19 在 `main`）；本分支只回写开发机端测证据 |
+| 验证态 | Cloud 服务端测通过；**开发机 PostgreSQL `claim_one` 已通过**（`S0_PG_CLAIM_ONE_PASS`，日志 `/tmp/s0-pg-claim-one-smoke.log`） |
+| 当前阶段 | S0 开发机端测已通过；**暂停，不开 S1** |
+| 下一步 | 等待管理员授权开 S1 |
 
 ## 1. 仓库与文档基线
 
@@ -56,7 +56,7 @@
 | 阶段 | 状态 |
 | --- | --- |
 | 文档收口 | 已合入 |
-| S0 基础 | **代码已实现 + CI 绿**；Cloud 服务端测通过；**开发机 LAN 不可达，PG 端测待办**；**暂停不开 S1** |
+| S0 基础 | **代码已实现 + CI 绿**；Cloud 服务端测通过；**开发机 PG `claim_one` 已通过**；**暂停，等待管理员授权再开 S1** |
 | S1 首期单张闭环 | 未开工；依赖 S0 退出 + 端测（含开发机） |
 | S2–S6 | 未开工 |
 | S7 生产部署 | **须管理员确认** |
@@ -69,7 +69,7 @@
 | --- | --- |
 | 文档工作区结构 | AidevOps 工作区存在 |
 | 原型交互演示 | 可本地打开；**不等于**后端验收 |
-| S0 业务基础（登录/积分/网关/worker） | Cloud 服务层证据已有；开发机 PG 未补验 |
+| S0 业务基础（登录/积分/网关/worker） | Cloud 服务层证据已有；开发机 PG `claim_one` 已通过 |
 | 真实五层处理 / 真 Gemini 小样 | **未通过** |
 | 生产收费服务 | **未就绪** |
 | CI Required | **`CI gate`** 已在 `main` 开启 |
@@ -80,6 +80,14 @@
 - `/opt/cursor/artifacts/s0-e2e-service.log` — `S0_E2E_PASS`
 - `/opt/cursor/artifacts/s0-ruff.txt` — All checks passed
 - `/opt/cursor/artifacts/s0-secret-scan.txt` — passed
+
+### 开发机证据（2026-11-05 22:49 CST）
+
+- 主机：`hbs-VMware-Virtual-Platform`（本机）
+- `pg_isready -h 127.0.0.1 -p 5432`：accepting connections（客户端在 `/usr/local/pgsql-16/bin`）
+- 命令：`DB_DRIVER=postgresql AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m scripts.s0_pg_claim_one_smoke`
+- 日志：`/tmp/s0-pg-claim-one-smoke.log` 含 `S0_PG_CLAIM_ONE_PASS job_id=1 status=succeeded dialect=postgresql`
+- 库：`realphotos_dev` @ `127.0.0.1:5432`（口令未入库）
 
 ## 6. 允许标「未测」但不可省略 §0
 

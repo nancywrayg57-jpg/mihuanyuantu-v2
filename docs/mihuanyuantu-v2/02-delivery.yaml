@@ -1,11 +1,11 @@
 phase: delivery
-status: s0_implemented_paused_pending_dev_host_e2e
+status: s0_devhost_e2e_passed_waiting_s1_authorization
 
 phase_confirmation:
   status: needs_user
   mode: ask-user
   user_questions:
-    - "开发机补验 S0 端测通过后，是否授权开 S1？"
+    - "是否授权开 S1？"
   auto_filled_for_test: []
   confirmed_decisions:
     - "S0–S6 在获授权后由编码 Agent 按 DEV_INSTRUCTIONS 自主推进"
@@ -19,7 +19,6 @@ phase_confirmation:
     - "Cloud Agent 提交作者可能仍为 Cursor Agent；禁自评自合以 PR 作者账号为准"
     - "Cloud SQLite 端测 ≠ 开发机 PostgreSQL 验收"
   blockers:
-    - "dev_host_e2e_pending"
     - "user_requested_pause_after_s0"
   confirmed_by: user
   confirmed_at: "2026-11-05T07:55:00-05:00"
@@ -45,14 +44,18 @@ phase_confirmation:
     - date: "2026-11-05"
       change: "授权开 S0；实现 realphotos 能力包；Cloud 服务端测通过；按用户要求暂停、不开 S1"
       reason: "用户「启动S0」+「先实现第一个里程碑后暂停」"
+    - date: "2026-11-05"
+      change: "开发机 PostgreSQL claim_one 通过；关闭 S0_E2E_ENV；仍等待授权开 S1"
+      reason: "日志 /tmp/s0-pg-claim-one-smoke.log 含 S0_PG_CLAIM_ONE_PASS"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "S0 已在分支实现并 Cloud 取证；暂停待开发机补验；不得开 S1。阶段清单权威在 DEV_INSTRUCTIONS §10。"
+  phase_summary: "S0 开发机 PG claim_one 已通过；暂停等待管理员授权开 S1。阶段清单权威在 DEV_INSTRUCTIONS §10。"
   outcomes:
     - "aojuai-main/backend/app/capabilities/realphotos/ S0 包落地"
     - "pytest tests/capabilities/realphotos 8 passed"
     - "Cloud e2e 服务脚本 /opt/cursor/artifacts/s0-e2e-service.log = S0_E2E_PASS"
+    - "开发机 /tmp/s0-pg-claim-one-smoke.log = S0_PG_CLAIM_ONE_PASS"
   lessons:
     - "分支后缀：本会话 Cloud 硬性 -6c0b 与仓库 AGENTS -9973 冲突，已记录不调和"
     - "claim_one 在 PostgreSQL；SQLite 走条件更新认领以保 CI"
@@ -66,11 +69,13 @@ knowledge_assets:
     - "cd aojuai-main/backend && AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m pytest tests/capabilities/realphotos -q"
     - "AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m scripts.seed_realphotos_s0"
     - "AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m scripts.run_worker --worker realphotos_heartbeat --once"
+    - "DB_DRIVER=postgresql AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m scripts.s0_pg_claim_one_smoke"
   evidence_links:
     - "DEV_INSTRUCTIONS.md §10.1 S0 / §10.2 S1"
     - "../蜜獾原图-v2-项目架构-v1.0.md §5.4 / §9.2 / §10"
     - "/opt/cursor/artifacts/s0-pytest.txt"
     - "/opt/cursor/artifacts/s0-e2e-service.log"
+    - "/tmp/s0-pg-claim-one-smoke.log"
   update_wiki:
     - "S0 授权与暂停"
     - "realphotos 包路径与验证命令"
@@ -135,9 +140,9 @@ tasks:
     verify: "无裸路径；种子经适配器读回"
   - id: T-S0-002
     slice: S0
-    status: implemented_cloud_evidence
+    status: devhost_pg_claim_one_passed
     artifact: "execution_jobs + realphotos_heartbeat worker"
-    verify: "入队后认领达 succeeded；关 API 后行仍在库"
+    verify: "开发机 claim_one → succeeded；日志 /tmp/s0-pg-claim-one-smoke.log"
   - id: T-004
     slice: S1
     status: pending
@@ -180,14 +185,14 @@ governance_controls:
   risk_log:
     - "共用积分店内误花"
     - "五层占位实现换真字段漂移"
-    - "Cloud 端测未覆盖 PostgreSQL SKIP LOCKED 真路径"
+    - "Cloud 端测未覆盖 PostgreSQL SKIP LOCKED 真路径（已由开发机 claim_one 补上）"
   change_control: "改首期退出条件须更新 00-discovery + grill ADR"
 
 git:
   branch_policy: "本会话 Cloud 硬性 cursor/<name>-6c0b；仓库 AGENTS 仍写 -9973（冲突已记录）"
   protected: "不提交 生产物料/、.env、密钥"
   version_control_required_before_code: true
-  working_branch: "cursor/s0-foundation-6c0b"
+  working_branch: "cursor/s0-devhost-e2e-closeout-6c0b"
 
 deployment:
   s1_target: "development host only"
@@ -200,10 +205,11 @@ verification:
   commands_or_manual:
     - "pytest tests/capabilities/realphotos"
     - "Cloud e2e service script → S0_E2E_PASS"
-    - "待：开发机 PostgreSQL + worker --once"
-  status: cloud_passed_dev_host_pending
+    - "开发机 DB_DRIVER=postgresql .venv/bin/python -m scripts.s0_pg_claim_one_smoke → S0_PG_CLAIM_ONE_PASS"
+  status: devhost_pg_claim_one_passed_waiting_s1_authorization
   cloud_artifacts:
     - "/opt/cursor/artifacts/s0-pytest.txt"
     - "/opt/cursor/artifacts/s0-e2e-service.log"
     - "/opt/cursor/artifacts/s0-ruff.txt"
     - "/opt/cursor/artifacts/s0-secret-scan.txt"
+    - "/tmp/s0-pg-claim-one-smoke.log"

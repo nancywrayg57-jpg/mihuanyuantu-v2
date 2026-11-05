@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "S0 基础切片已实现并暂停"
+    goal: "S0 开发机 PostgreSQL claim_one 已通过并暂停"
     user_value: "可审查的登录/RBAC/整数积分/LocalDisk网关/队列worker"
-    visible_output: "realphotos 能力包 + Cloud 服务端测证据；不开 S1"
-    verify: "pytest tests/capabilities/realphotos + /opt/cursor/artifacts/s0-e2e-service.log"
-    status: paused_after_s0_implementation
-  next_user_action: "开发机补验 S0 端测（含 PostgreSQL claim_one 路径）后确认；勿开 S1"
+    visible_output: "realphotos 能力包 + 开发机 S0_PG_CLAIM_ONE_PASS；不开 S1"
+    verify: "/tmp/s0-pg-claim-one-smoke.log 含 S0_PG_CLAIM_ONE_PASS"
+    status: paused_after_s0_devhost_e2e
+    next_user_action: "等待管理员授权开 S1"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -100,12 +100,13 @@ phase_gates:
       - ../architecture_decisions/蜜獾原图-v2-grill-me文档基线收口-2026-11-05.md
   delivery:
     file: 02-delivery.yaml
-    status: s0_implemented_paused_pending_dev_host_e2e
+    status: s0_devhost_e2e_passed_waiting_s1_authorization
     evidence:
       - DEV_INSTRUCTIONS.md#§10.1-S0
       - ../../aojuai-main/backend/app/capabilities/realphotos/
       - /opt/cursor/artifacts/s0-pytest.txt
       - /opt/cursor/artifacts/s0-e2e-service.log
+      - /tmp/s0-pg-claim-one-smoke.log
   acceptance:
     file: 03-acceptance.yaml
     status: pending
@@ -139,17 +140,19 @@ evidence_pointers:
     - /opt/cursor/artifacts/s0-secret-scan.txt
     - /opt/cursor/artifacts/s0-pytest-full-file.txt
     - /opt/cursor/artifacts/s0-ruff-clean.txt
+    - /tmp/s0-pg-claim-one-smoke.log
   commits_or_prs:
     - "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/18"
-    - "cursor/s0-foundation-6c0b"
+    - "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/19"
+    - "cursor/s0-devhost-e2e-closeout-6c0b"
 
 known_conflicts:
   - id: BRANCH_SUFFIX
     status: recorded_not_harmonized
     detail: "AGENTS.md §7.1 / DEV_INSTRUCTIONS 约定 cursor/<name>-9973；本 Cloud Agent 会话硬性要求 -6c0b。本分支使用 cursor/s0-foundation-6c0b。"
   - id: S0_E2E_ENV
-    status: open
-    detail: "开发机 worker 已连接（hbs-VMware-Virtual-Platform / workerId da08abf5-…）。本 Cloud 会话无 CreateAgent、无法 SSH LAN，不能把子任务派到 worker。需在 cursor.com/agents 选 My Machines 启端测，或提供 API Key 走 POST /v1/agents env.type=machine。提示词：/opt/cursor/artifacts/s0-devhost-my-machine-prompt.md"
+    status: closed
+    detail: "2026-11-05 22:49 CST 开发机本机 pg_isready 127.0.0.1:5432 accepting。DB_DRIVER=postgresql AOJ_ENABLED_MODULES=realphotos 执行 scripts.s0_pg_claim_one_smoke，日志 /tmp/s0-pg-claim-one-smoke.log 含 S0_PG_CLAIM_ONE_PASS（job_id=1 status=succeeded dialect=postgresql）。不开 S1。"
   - id: JWT_REFRESH_DAYS
     status: mitigated_in_pack
     detail: "底座 JWT_REFRESH_TOKEN_EXPIRE_DAYS 默认 7；realphotos /auth/login 路径单独签发 30 天 refresh（架构 §10.1）。核心 /api/v1/auth/login 未改。"
@@ -159,11 +162,10 @@ known_conflicts:
 
 next_action:
   owner: user
-  action: "开通 Cloud→开发机可达路径（推荐在 192.168.19.128 上 agent worker start），以便 Agent 自治跑 S0 PG claim_one；连通前禁止开 S1。"
-  blocker: "dev_host_lan_unreachable_from_cloud; s0_pg_claim_one_pending"
+  action: "等待管理员授权开 S1"
   notes:
     s0_start: authorized_by_user_2026-11-05
     s0_pause: requested_after_first_milestone
-    branch: cursor/s0-foundation-6c0b
-    ssh_materials: sibling_生产物料/蜜獾原图v2-生产物料.md
-    ssh_attempt_log: /opt/cursor/artifacts/s0-devhost-ssh-attempt.log
+    s0_devhost_e2e: passed_2026-11-05
+    branch: cursor/s0-devhost-e2e-closeout-6c0b
+    evidence_log: /tmp/s0-pg-claim-one-smoke.log
