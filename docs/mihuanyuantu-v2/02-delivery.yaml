@@ -11,45 +11,45 @@ phase_confirmation:
     - "S7 生产部署须管理员确认"
     - "续作以 progress.yaml next_action 为准"
   accepted_risks:
-    - "自主推进仍受 PRD/架构/生产门禁约束"
+    - "自主推进仍受 PRD/架构/上线门槛约束"
   blockers: []
   confirmed_by: user
   confirmed_at: "2026-11-04T17:08:00+08:00"
   change_log:
     - date: "2026-11-04"
-      change: "建立交付骨架与第一刀候选任务列表（未开工）"
+      change: "建立交付骨架与首期（S1）候选任务列表（未开工）"
       reason: "AidevOps 文档优先"
     - date: "2026-11-04"
       change: "取消编码人工阻塞；改为 S0–S6 自主、S7 确认"
       reason: "grill-me 文件审计 Q4/Q7/Q8/Q11/Q14"
     - date: "2026-11-04"
       change: "S0/S1 tasks·exit_evidence·forbidden 正文迁入 DEV_INSTRUCTIONS；本文件仅状态镜像；gate ready"
-      reason: "用户确认三件套显式挂指令并推送"
+      reason: "用户确认任务·退出证据·禁止项显式挂指令并推送"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "交付阶段可按指令自主推进 S0–S6；切片清单权威在 DEV_INSTRUCTIONS §10。"
+  phase_summary: "交付阶段可按指令自主推进 S0–S6；阶段清单权威在 DEV_INSTRUCTIONS §10。"
   outcomes: []
   lessons: []
   reusable_rules:
-    - "S7 与密钥索取除外，不因缺少「开始编码」口令停工"
+    - "S7 与密钥索取除外，不因缺少「开始编码」确认停工"
     - "feature 分支命名遵循 cloud agent 约定"
-    - "切片 tasks/exit_evidence/forbidden 以 DEV_INSTRUCTIONS 为准；本文件只镜像 status"
+    - "阶段 tasks/exit_evidence/forbidden 以 DEV_INSTRUCTIONS 为准；本文件只镜像 status"
   prompts_or_commands: []
   evidence_links:
     - "DEV_INSTRUCTIONS.md §10.1 S0 / §10.2 S1"
   update_wiki: []
 
 mvp_sprint:
-  name: "knife-1-single-image-loop"
-  goal: "开发机可验收单张处理与按张账本闭环"
+  name: "s1-single-image-loop"
+  goal: "开发机可验收单张处理与按张积分流水闭环"
   exit_criteria_authority: "DEV_INSTRUCTIONS.md §10.2 exit_evidence（对齐 AC-K1-001..004）"
   exit_criteria:
     - "AC-K1-001..004 有证据"
-    - "双账号共用积分 + 并发冒烟"
+    - "双账号共用积分 + 并发快速联通测试"
     - "第二租户隔离"
     - "过期下载拒绝"
-    - "worker 关页后续跑"
+    - "worker 关闭页面后继续执行"
     - "订单客服可确认种子充值订单"
   non_goals: "见 DEV_INSTRUCTIONS §10.2 forbidden 与 00-discovery mvp_scope.deferred"
 
@@ -61,7 +61,7 @@ candidate_tasks_not_started:
     title: "RBAC 种子：merchant×2、order_support、admin、第二租户"
     slice: S0
   - id: T-002
-    title: "rp_credit_* 整数账本与旧 Decimal 入口隔离"
+    title: "rp_credit_* 整数积分流水与旧 Decimal 入口隔离"
     slice: S0
   - id: T-003
     title: "LocalDisk StorageAdapter + 访问网关"
@@ -88,7 +88,7 @@ candidate_tasks_not_started:
     title: "过期拒绝下载 + 资源软删"
     slice: S1
   - id: T-010
-    title: "第一刀退出证据清单走查"
+    title: "首期退出证据清单核对"
     slice: S1
 
 tasks:
@@ -135,8 +135,8 @@ tasks:
   - id: T-007
     slice: S1
     status: pending
-    artifact: "ledger + messages"
-    verify: "AC-K1-003；双账号并发冒烟"
+    artifact: "credit ledger + messages"
+    verify: "AC-K1-003；双账号并发快速联通测试"
   - id: T-008
     slice: S1
     status: pending
@@ -150,16 +150,16 @@ tasks:
   - id: T-010
     slice: S1
     status: pending
-    artifact: "/opt/cursor/artifacts 走查证据"
-    verify: "第一刀退出清单全勾"
+    artifact: "/opt/cursor/artifacts 核对证据"
+    verify: "首期退出清单全勾"
 
 governance_controls:
-  scope_tolerance: "禁止把 Q25 冻结项塞进第一刀"
-  quality_tolerance: "夹具允许；生产收费不允许无 ND 证据"
+  scope_tolerance: "禁止把 Q25 冻结项塞进首期（S1）"
+  quality_tolerance: "规则替身允许；生产收费不允许无 ND 证据"
   risk_log:
     - "共用积分店内误花"
-    - "假五层换真字段漂移"
-  change_control: "改第一刀退出条件须更新 00-discovery + grill ADR"
+    - "五层占位实现换真字段漂移"
+  change_control: "改首期退出条件须更新 00-discovery + grill ADR"
 
 git:
   branch_policy: "cursor/<name>-9973 for cloud agent; feature/* acceptable later"
@@ -167,16 +167,16 @@ git:
   version_control_required_before_code: true
 
 deployment:
-  first_knife_target: "development host only"
+  s1_target: "development host only"
   production: "NOT_READY per materials; blocked by Q5"
 
 rollback:
-  first_knife: "开发库迁移可反向或重建；无生产回滚义务直到上线门禁"
+  s1_phase: "开发库迁移可反向或重建；无生产回滚义务直到上线门槛"
 
 verification:
   commands_or_manual:
     - "手工：双账号消费与隔离"
-    - "手工：关页后续跑"
+    - "手工：关闭页面后继续执行"
     - "手工：过期下载拒绝"
   status: not_run
 

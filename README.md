@@ -7,7 +7,7 @@
 完整目录见 [docs/README.md](docs/README.md)。被替代材料在 [docs/archive/](docs/archive/README.md)。
 
 - [现行 PRD v2.0（2.8）](docs/蜜獾原图-v2-PRD-v2.0.md)
-- [AidevOps 第一刀工作区](docs/mihuanyuantu-v2/progress.yaml)
+- [AidevOps 工作区](docs/mihuanyuantu-v2/progress.yaml)
 - [Agent 开发指令](docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md)
 - [移交 handoff](handoff.md) · [锚点 anchor](anchor.md) · [检查点 checkpoint](checkpoint.md)（与 `AGENTS.md` 同级）
 - [grill-me 逻辑架构裁决](docs/architecture_decisions/蜜獾原图-v2-grill-me逻辑架构裁决-2026-11-04.md)
@@ -37,7 +37,7 @@
 ├── prototype/                   # 离线 HTML 交互原型
 ├── 输入材料/                    # 原始资料、旧版复用材料及原始压缩包
 ├── 测试用/                      # 本地检测样图语料，Git 忽略
-├── output/                      # 生成的原型校验与浏览器走查产物，Git 忽略
+├── output/                      # 生成的原型校验与浏览器核对产物，Git 忽略
 └── 生产物料/                    # 仅本地保存的生产账号、密钥及资源配置，Git 忽略
 ```
 
