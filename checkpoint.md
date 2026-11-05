@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-05 10:50 CST |
 | branch | `cursor/arch-schema-flow-rbac-2d1c` |
-| HEAD | `751d400`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
+| HEAD | `61ca1de`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
 | 文档态 | PRD 2.9；架构 **1.6**（§5.4表裁剪/§5.5流转/§10.2–10.4 RBAC·双Token·支付图片）；01-design 已确认 |
 | 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付；底座已有通用 `api_keys` 表） |
 | 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
