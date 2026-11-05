@@ -125,6 +125,7 @@
 - Collaborator **禁止**：合并 `main`、打发布 Tag、触发/执行生产部署、修改分支保护与 Actions Secrets。
 - 模型不定死：正式开发时由 **Owner 主会话**自行选定主会话与子会话所用模型及推理强度。
 - Collaborator 的 Cursor 绑定若尚未完成：仅 Owner 可起 Agent；补齐 `@xtzhou247` → Cursor 授权本仓后，再按上表双会话运行。
+- **绑定方式（硬约束）**：`@xtzhou247` 必须**本人**登录 Cursor → Dashboard → Integrations → Connect GitHub（OAuth 到该 GitHub 用户）→ 对本仓**新开** Cloud Agent 作为子会话。Owner 主会话**不能**代其完成 OAuth，也不能把本会话 GitHub 身份切换成 Collaborator。
 
 ### 7.3 PR 必过检查（首版）
 
