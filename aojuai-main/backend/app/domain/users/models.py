@@ -4,18 +4,17 @@ AOJU Backend - User Models
 User model with role associations.
 Compatible with vue-pure-admin frontend.
 """
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
-from app.infrastructure.database.types import PortableJSON, PortableDateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.base import AssociationBaseModel, TenantBaseModel
+from app.infrastructure.database.types import PortableDateTime, PortableJSON
 
 if TYPE_CHECKING:
-    from app.domain.auth.models import Tenant
     from app.domain.organizations.models import Organization
     from app.domain.roles.models import Role
     from app.domain.teams.models import Team
@@ -219,9 +218,7 @@ class User(TenantBaseModel):
         """Check if user is active and not locked"""
         if self.status != UserStatus.ENABLED:
             return False
-        if self.locked_until and self.locked_until > datetime.now(timezone.utc):
-            return False
-        return True
+        return not (self.locked_until and self.locked_until > datetime.now(UTC))
 
     @property
     def is_pending(self) -> bool:

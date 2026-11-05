@@ -15,7 +15,6 @@ from app.domain.teams.models import Team, TeamStatus
 from app.domain.teams.schemas import TeamCreate, TeamUpdate
 from app.infrastructure.repository import RepositoryBase
 
-
 DEFAULT_TEAM_CODE = "__default__"
 DEFAULT_TEAM_NAME = "默认团队"
 DEFAULT_TEAM_DESCRIPTION = "系统默认团队（未分组用户）"
@@ -28,12 +27,12 @@ class TeamService(RepositoryBase[Team]):
     继承 RepositoryBase 获得通用的 CRUD 方法，
     同时提供团队相关的业务逻辑处理。
     """
-    
+
     def __init__(self, db: AsyncSession):
         super().__init__(db, Team)
-    
+
     # ==================== 查询方法 ====================
-    
+
     async def get_team_by_id(
         self,
         team_id: int,
@@ -46,7 +45,7 @@ class TeamService(RepositoryBase[Team]):
                 Team.tenant_id == tenant_id
             ]
         )
-    
+
     async def get_by_code(
         self,
         code: str,
@@ -114,7 +113,7 @@ class TeamService(RepositoryBase[Team]):
         await self.db.flush()
         await self.db.refresh(team)
         return team
-    
+
     async def list_teams(
         self,
         tenant_id: int,
@@ -137,7 +136,7 @@ class TeamService(RepositoryBase[Team]):
         """
         where = [Team.tenant_id == tenant_id]
         filters = {}
-        
+
         if name:
             filters["name"] = ("like", name)
         if code:
@@ -146,11 +145,11 @@ class TeamService(RepositoryBase[Team]):
             filters["status"] = status
         if parent_id is not None:
             filters["parent_id"] = parent_id
-        
+
         # 数据权限过滤：直接过滤团队ID本身（团队管理与用户管理不同）
         if team_ids is not None and len(team_ids) > 0:
             where.append(Team.id.in_(team_ids))
-        
+
         teams = await self.get_list(
             page_size=0,  # 不分页
             where=where,
@@ -158,9 +157,9 @@ class TeamService(RepositoryBase[Team]):
             order_desc=False,
             **filters
         )
-        
+
         return teams
-    
+
     async def get_tree_list(
         self,
         tenant_id: int,
@@ -179,21 +178,21 @@ class TeamService(RepositoryBase[Team]):
         where = [Team.tenant_id == tenant_id]
         if status is not None:
             where.append(Team.status == status)
-        
+
         # 数据权限过滤：直接过滤团队ID本身
         if team_ids is not None and len(team_ids) > 0:
             where.append(Team.id.in_(team_ids))
-        
+
         teams = await self.get_list(
             page_size=0,
             where=where,
             order_by="sort_order",
             order_desc=False
         )
-        
+
         # 构建树形结构
         return self._build_tree(teams)
-    
+
     async def get_children_ids(
         self,
         team_id: int,
@@ -202,15 +201,15 @@ class TeamService(RepositoryBase[Team]):
     ) -> list[int]:
         """获取团队及其所有子团队的ID列表"""
         result = [team_id] if include_self else []
-        
+
         # 获取所有团队
         all_teams = await self.list_teams(tenant_id=tenant_id)
-        
+
         # 递归获取子团队
         await self._get_children_recursive(team_id, all_teams, result)
-        
+
         return result
-    
+
     async def _get_children_recursive(
         self,
         parent_id: int,
@@ -222,9 +221,9 @@ class TeamService(RepositoryBase[Team]):
         for child in children:
             result.append(child.id)
             await self._get_children_recursive(child.id, all_teams, result)
-    
+
     # ==================== 创建方法 ====================
-    
+
     async def create_team(
         self,
         data: TeamCreate,
@@ -243,17 +242,17 @@ class TeamService(RepositoryBase[Team]):
         existing = await self.get_by_code(data.code, tenant_id)
         if existing:
             raise ConflictError(message=f"团队编码 '{data.code}' 已存在")
-        
+
         # 验证父团队存在性
         if data.parent_id:
             parent = await self.get_team_by_id(data.parent_id, tenant_id)
             if not parent:
                 raise NotFoundError(message="上级团队不存在")
-            
+
             # 检查父团队是否被禁用
             if parent.status == TeamStatus.DISABLED:
                 raise BusinessError(message="上级团队已被禁用，无法在其下创建子团队")
-        
+
         # 创建团队
         team = await self.create({
             "tenant_id": tenant_id,
@@ -268,14 +267,14 @@ class TeamService(RepositoryBase[Team]):
             "parent_id": data.parent_id,
             "created_by": created_by,
         })
-        
+
         await self.db.flush()
         await self.db.refresh(team)
-        
+
         return team
-    
+
     # ==================== 更新方法 ====================
-    
+
     async def update_team(
         self,
         team_id: int,
@@ -293,57 +292,57 @@ class TeamService(RepositoryBase[Team]):
         team = await self.get_team_by_id(team_id, tenant_id)
         if not team:
             raise NotFoundError(message="团队不存在")
-        
+
         # 验证团队编码唯一性（如果修改了编码）
         if data.code and data.code != team.code:
             existing = await self.get_by_code(data.code, tenant_id)
             if existing:
                 raise ConflictError(message=f"团队编码 '{data.code}' 已存在")
-        
+
         # 处理父团队更新
         # 只有当用户明确传了 parent_id 字段时才处理
         if "parent_id" in data.model_fields_set:
             new_parent_id = data.parent_id
-            
+
             # parent_id = 0 表示设为顶级团队
             if new_parent_id == 0:
                 new_parent_id = None
-            
+
             # 验证父团队
             if new_parent_id is not None:
                 # 不能将团队设置为自己的子团队
                 if new_parent_id == team_id:
                     raise BusinessError(message="不能将团队设置为自己的上级团队")
-                
+
                 # 验证父团队存在
                 parent = await self.get_team_by_id(new_parent_id, tenant_id)
                 if not parent:
                     raise NotFoundError(message="上级团队不存在")
-                
+
                 # 检查是否会形成循环引用
                 children_ids = await self.get_children_ids(team_id, tenant_id)
                 if new_parent_id in children_ids:
                     raise BusinessError(message="不能将团队移动到其子团队下")
-            
+
             # 更新 parent_id（可能是 None 或正整数）
             data.parent_id = new_parent_id
-        
+
         # 更新团队（exclude_unset=True 确保只更新用户明确传的字段）
         update_data = data.model_dump(exclude_unset=True)
-        
+
         # 如果 parent_id 在 update_data 中但值是 0，需要转换为 None
         if "parent_id" in update_data and update_data["parent_id"] == 0:
             update_data["parent_id"] = None
-        
+
         await self.update(team, update_data)
-        
+
         await self.db.flush()
         await self.db.refresh(team)
-        
+
         return team
-    
+
     # ==================== 删除方法 ====================
-    
+
     async def delete_team(
         self,
         team_id: int,
@@ -353,7 +352,7 @@ class TeamService(RepositoryBase[Team]):
         team = await self.get_team_by_id(team_id, tenant_id)
         if not team:
             raise NotFoundError(message="团队不存在")
-        
+
         # 检查是否有子团队
         children = await self.list_teams(
             tenant_id=tenant_id,
@@ -361,13 +360,13 @@ class TeamService(RepositoryBase[Team]):
         )
         if children:
             raise BusinessError(message="该团队下存在子团队，无法删除")
-        
+
         # TODO: 检查是否有用户关联
         # 这需要在用户模块实现后添加
-        
+
         # 软删除
         await self.delete(team)
-    
+
     async def delete_teams_batch(
         self,
         team_ids: list[int],
@@ -376,9 +375,9 @@ class TeamService(RepositoryBase[Team]):
         """批量删除团队"""
         for team_id in team_ids:
             await self.delete_team(team_id, tenant_id)
-    
+
     # ==================== 辅助方法 ====================
-    
+
     def _build_tree(
         self,
         teams: list[Team],
@@ -392,7 +391,7 @@ class TeamService(RepositoryBase[Team]):
         """
         tree = []
         team_ids = {team.id for team in teams}
-        
+
         for team in teams:
             # 如果是顶级团队，或者父团队不在当前列表中，作为根节点
             if team.parent_id == parent_id or (
@@ -403,9 +402,9 @@ class TeamService(RepositoryBase[Team]):
                 if children:
                     node["children"] = children
                 tree.append(node)
-        
+
         return tree
-    
+
     def _build_tree_children(
         self,
         teams: list[Team],
@@ -414,7 +413,7 @@ class TeamService(RepositoryBase[Team]):
     ) -> list[dict]:
         """递归构建子节点"""
         children = []
-        
+
         for team in teams:
             if team.parent_id == parent_id:
                 node = self.to_tree_node(team)
@@ -422,9 +421,9 @@ class TeamService(RepositoryBase[Team]):
                 if sub_children:
                     node["children"] = sub_children
                 children.append(node)
-        
+
         return children
-    
+
     def _build_options_tree(
         self,
         teams: list[Team],
@@ -438,7 +437,7 @@ class TeamService(RepositoryBase[Team]):
         """
         tree = []
         team_ids = {team.id for team in teams}
-        
+
         for team in teams:
             # 如果是顶级团队，或者父团队不在当前列表中，作为根节点
             if team.parent_id == parent_id or (
@@ -453,9 +452,9 @@ class TeamService(RepositoryBase[Team]):
                 if children:
                     option["children"] = children
                 tree.append(option)
-        
+
         return tree
-    
+
     def _build_options_tree_children(
         self,
         teams: list[Team],
@@ -464,7 +463,7 @@ class TeamService(RepositoryBase[Team]):
     ) -> list[dict]:
         """递归构建子选项节点"""
         children = []
-        
+
         for team in teams:
             if team.parent_id == parent_id:
                 option = {
@@ -476,9 +475,9 @@ class TeamService(RepositoryBase[Team]):
                 if sub_children:
                     option["children"] = sub_children
                 children.append(option)
-        
+
         return children
-    
+
     async def get_tree_options(
         self,
         tenant_id: int,
@@ -496,22 +495,22 @@ class TeamService(RepositoryBase[Team]):
         where = [Team.tenant_id == tenant_id]
         if not include_disabled:
             where.append(Team.status == TeamStatus.ENABLED)
-        
+
         # 数据权限过滤：直接过滤团队ID本身
         if team_ids is not None and len(team_ids) > 0:
             where.append(Team.id.in_(team_ids))
-        
+
         teams = await self.get_list(
             page_size=0,
             where=where,
             order_by="sort_order",
             order_desc=False
         )
-        
+
         return self._build_options_tree(teams)
-    
+
     # ==================== 数据转换方法 ====================
-    
+
     @staticmethod
     def to_response(team: Team) -> dict:
         """转换为响应格式"""
@@ -530,12 +529,12 @@ class TeamService(RepositoryBase[Team]):
             "createdAt": team.created_at.isoformat() if team.created_at else None,
             "updatedAt": team.updated_at.isoformat() if team.updated_at else None,
         }
-    
+
     @staticmethod
     def to_list_item(team: Team) -> dict:
         """转换为列表项格式"""
         return TeamService.to_response(team)
-    
+
     @staticmethod
     def to_tree_node(team: Team) -> dict:
         """转换为树节点格式"""

@@ -8,11 +8,11 @@ from fastapi import APIRouter
 # 内核端点：无条件加载。内置能力（assistant / speech / cms）改为**按需 import**，
 # 见 register_builtin_capability_router——未安装时连模块都不会被 import。
 from app.api.v1.endpoints import (
+    api_keys,
     auth,
     credits,
     invitations,
     menus,
-    api_keys,
     message_channels,
     message_gateways,
     notifications,
@@ -26,8 +26,8 @@ from app.api.v1.endpoints import (
     user_groups,
     users,
 )
-from app.core.feature_switches import is_module_installed
 from app.core.capability_registry import discover_capabilities
+from app.core.feature_switches import is_module_installed
 
 api_router = APIRouter()
 

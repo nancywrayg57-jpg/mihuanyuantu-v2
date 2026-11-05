@@ -6,7 +6,7 @@ Handles sending and verifying codes for binding user phone/email.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
 from sqlalchemy import func, select
@@ -28,7 +28,6 @@ from app.domain.users.models import User
 from app.domain.users.service import UserService
 from app.domain.verification.models import VerificationCode
 from app.infrastructure.repository import RepositoryBase
-
 
 VerificationChannel = Literal["sms", "email"]
 
@@ -52,7 +51,7 @@ class VerificationService(RepositoryBase[VerificationCode]):
             cooldown_seconds=cfg.cooldown_seconds,
         )
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         code = generate_numeric_code(cfg.length)
         salt = generate_salt()
         code_hash = hash_verification_code(code, salt=salt)
@@ -98,7 +97,7 @@ class VerificationService(RepositoryBase[VerificationCode]):
             cooldown_seconds=cfg.cooldown_seconds,
         )
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         code = generate_numeric_code(cfg.length)
         salt = generate_salt()
         code_hash = hash_verification_code(code, salt=salt)
@@ -215,7 +214,7 @@ class VerificationService(RepositoryBase[VerificationCode]):
         if not last:
             return
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if (now - last.created_at).total_seconds() < cooldown_seconds:
             raise BusinessError(message="Please wait before requesting another code", code="TOO_MANY_REQUESTS")
 
@@ -251,7 +250,7 @@ class VerificationService(RepositoryBase[VerificationCode]):
         if not record:
             raise BusinessError(message="Verification code not found", code="VERIFICATION_CODE_NOT_FOUND")
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if record.used_at is not None:
             raise BusinessError(message="Verification code already used", code="VERIFICATION_CODE_USED")
         if record.expires_at < now:

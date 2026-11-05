@@ -48,8 +48,8 @@ async def test_sync_chat_reports_usage_once(monkeypatch: pytest.MonkeyPatch) -> 
 def test_speech_tts_reports_character_usage() -> None:
     from decimal import Decimal
 
-    from app.domain.speech.billing import calc_speech_text_credits  # noqa: F401 - 确保模块可导入
     from app.domain.credits.usage import record_unit_usage
+    from app.domain.speech.billing import calc_speech_text_credits  # noqa: F401 - 确保模块可导入
 
     with collect_usage() as collector:
         assert record_unit_usage(kind="tts", quantity=120, model="edge-tts", provider="edge", unit_key="zh-CN-XiaoxiaoNeural") is True
@@ -64,7 +64,7 @@ def test_root_scope_and_snapshot_once_semantics() -> None:
         with collect_usage(root=True, label="detached") as detached:
             record_llm_usage(model="d", usage={"prompt_tokens": 2, "completion_tokens": 2})
             assert detached.is_root and usage_snapshot_for_extra(root_only=True) is not None
-        with collect_usage(stage="child") as child:
+        with collect_usage(stage="child"):
             record_llm_usage(model="c", usage={"prompt_tokens": 3, "completion_tokens": 3})
             assert usage_snapshot_for_extra(root_only=True) is None  # 子阶段不得落账
         assert [e.model for e in outer.events] == ["m", "c"]  # detached 不冒泡

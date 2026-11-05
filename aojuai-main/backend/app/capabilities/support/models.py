@@ -84,7 +84,7 @@ class SupportTicket(TenantBaseModel):
         PortableJSON, nullable=False, default=dict, server_default="{}"
     )
 
-    messages: Mapped[list["SupportTicketMessage"]] = relationship(
+    messages: Mapped[list[SupportTicketMessage]] = relationship(
         "SupportTicketMessage",
         back_populates="ticket",
         lazy="selectin",

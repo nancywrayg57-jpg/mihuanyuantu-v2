@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import asyncio
 import ast
+import asyncio
+import contextlib
 import json
 import re
 import ssl
@@ -551,14 +552,10 @@ def _synthesize_single_realtime_chunk_sync(
             except BusinessError as exc:
                 attempt_errors.append(str(exc))
             finally:
-                try:
+                with contextlib.suppress(Exception):
                     synthesizer.finish()
-                except Exception:
-                    pass
-                try:
+                with contextlib.suppress(Exception):
                     synthesizer.close()
-                except Exception:
-                    pass
 
     if connect_failure is not None:
         failure_details = dict(connect_failure.details or {})

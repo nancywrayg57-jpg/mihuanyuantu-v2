@@ -8,7 +8,7 @@ import pytest
 
 from app.domain.credits.price_service import list_effective_price_items
 from app.domain.credits.pricing import UsageEvent, price_usage, resolve_price_item
-from app.domain.credits.pricing_mode import set_tenant_price_adjustment, get_tenant_price_adjustment
+from app.domain.credits.pricing_mode import get_tenant_price_adjustment, set_tenant_price_adjustment
 from app.infrastructure.database import get_db_context
 
 # 真库集成测试：断言的是真实 PostgreSQL 的行为，没有可连接的库时跳过（守卫见 tests/conftest.py）

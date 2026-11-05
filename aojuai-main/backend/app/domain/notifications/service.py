@@ -6,7 +6,7 @@ Provides tenant-scoped notification CRUD and read-state management.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import and_, or_, update
@@ -61,7 +61,7 @@ class NotificationService(RepositoryBase[Notification]):
         ]
 
         if not include_expired:
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             where.append(or_(Notification.expire_at.is_(None), Notification.expire_at > now))
 
         filters: dict[str, Any] = {}
@@ -109,7 +109,7 @@ class NotificationService(RepositoryBase[Notification]):
             where.append(Notification.category == category)
 
         if not include_expired:
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             where.append(or_(Notification.expire_at.is_(None), Notification.expire_at > now))
 
         return await self.get_count(where=where)
@@ -119,7 +119,7 @@ class NotificationService(RepositoryBase[Notification]):
         if notification.is_read:
             return notification
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         return await self.update(notification, {"is_read": True, "read_at": now})
 
     async def mark_all_as_read(
@@ -131,7 +131,7 @@ class NotificationService(RepositoryBase[Notification]):
         include_expired: bool = False,
     ) -> int:
         """Mark all unread notifications as read (bulk)."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         conditions = [
             Notification.tenant_id == tenant_id,

@@ -7,10 +7,9 @@ frontend (populate_by_name=True so both snake_case and camelCase parse).
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from typing import Any
-
-import re
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -18,7 +17,6 @@ _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 from app.domain.cms.models import (
     ContentStatus,
-    NavLocation,
     SubmissionStatus,
 )
 

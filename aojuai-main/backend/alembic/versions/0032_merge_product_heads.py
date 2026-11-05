@@ -12,17 +12,16 @@ Create Date: 2026-02-10
 
 from __future__ import annotations
 
-from typing import Sequence, Union
-
+from collections.abc import Sequence
 
 revision: str = "0032_merge_product_heads"
-down_revision: Union[str, tuple[str, str, str], None] = (
+down_revision: str | tuple[str, str, str] | None = (
     "0031_product_menu_ordering",
     "0011_tenant_settings_tab_unify",
     "0006_assistant_config_add_enabled_column",
 )
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:

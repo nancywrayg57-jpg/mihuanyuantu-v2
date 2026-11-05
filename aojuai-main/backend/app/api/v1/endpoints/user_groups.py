@@ -6,7 +6,7 @@ from typing import Any
 from fastapi import APIRouter
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
-from app.api.deps import CurrentUser, CurrentSuperuser, DBSession
+from app.api.deps import CurrentSuperuser, CurrentUser, DBSession
 from app.core.response import ErrorResponse, SuccessResponse
 from app.core.schemas import PageResponse, ResponseBase
 from app.domain.user_groups.schemas import (

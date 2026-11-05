@@ -9,15 +9,14 @@ Data migration:
 - grant the menu to roles: admin / tenant_admin
 """
 
-from typing import Sequence, Union
+from collections.abc import Sequence
 
 from alembic import op
 
-
 revision: str = "base_20260330_invitation_admin_menu"
-down_revision: Union[str, None] = "base_20260329_invitation_foundation"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "base_20260329_invitation_foundation"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:

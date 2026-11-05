@@ -9,7 +9,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import BigInteger, DateTime, Integer
@@ -31,14 +31,14 @@ class PortableDateTime(TypeDecorator[datetime]):
         if value is None or dialect.name != "sqlite":
             return value
         if isinstance(value, datetime) and value.tzinfo is not None:
-            return value.astimezone(timezone.utc).replace(tzinfo=None)
+            return value.astimezone(UTC).replace(tzinfo=None)
         return value
 
     def process_result_value(self, value: Any, dialect: Any) -> Any:
         if value is None or dialect.name != "sqlite":
             return value
         if isinstance(value, datetime) and value.tzinfo is None:
-            return value.replace(tzinfo=timezone.utc)
+            return value.replace(tzinfo=UTC)
         return value
 
 

@@ -15,8 +15,6 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from collections.abc import AsyncIterator
-
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import FileResponse, Response, StreamingResponse
 
@@ -25,6 +23,8 @@ from app.core.exceptions import BusinessError
 from app.core.logger import get_logger
 from app.core.response import SuccessResponse
 from app.core.schemas import ResponseBase
+from app.domain.credits.service import CreditService
+from app.domain.speech.billing import charge_speech_text_credits
 from app.domain.speech.providers.aliyun_qwen_tts import (
     DEFAULT_ALIYUN_QWEN_TTS_BASE_URL,
     DEFAULT_ALIYUN_QWEN_TTS_MODEL,
@@ -36,24 +36,14 @@ from app.domain.speech.providers.aliyun_qwen_tts_realtime_sdk import (
     DEFAULT_ALIYUN_QWEN_TTS_REALTIME_WS_URL,
     aliyun_qwen_tts_realtime_sdk_synthesize_stream,
 )
+from app.domain.speech.providers.common import SpeechAudioStream, bytes_to_stream
 from app.domain.speech.providers.xiaomi_mimo import (
     DEFAULT_XIAOMI_MIMO_AUDIO_FORMAT,
     DEFAULT_XIAOMI_MIMO_BASE_URL,
     DEFAULT_XIAOMI_MIMO_MODEL,
     xiaomi_mimo_tts_synthesize_stream,
 )
-from app.domain.credits.service import CreditService
-from app.domain.speech.billing import charge_speech_text_credits
-from app.domain.speech.providers.common import SpeechAudioStream, bytes_to_stream
 from app.domain.speech.registry import normalize_provider_id
-from app.domain.speech.service import SpeechConfigService
-from app.domain.speech.schemas import SpeechSttDemoResponse, SpeechTenantConfigUpsertRequest, SpeechTenantConfigView, SpeechTtsDemoRequest
-from app.domain.speech.voice_clone_schemas import (
-    SpeechVoiceClonePreviewRequest,
-    SpeechVoiceCloneWorkspaceItemView,
-    SpeechVoiceCloneWorkspacePayload,
-)
-from app.domain.speech.voice_clone_service import SpeechVoiceCloneService
 from app.domain.speech.runtime import (
     azure_stt_transcribe,
     azure_tts_synthesize_stream,
@@ -69,6 +59,19 @@ from app.domain.speech.runtime import (
     openai_tts_synthesize_stream,
     openai_whisper_transcribe,
 )
+from app.domain.speech.schemas import (
+    SpeechSttDemoResponse,
+    SpeechTenantConfigUpsertRequest,
+    SpeechTenantConfigView,
+    SpeechTtsDemoRequest,
+)
+from app.domain.speech.service import SpeechConfigService
+from app.domain.speech.voice_clone_schemas import (
+    SpeechVoiceClonePreviewRequest,
+    SpeechVoiceCloneWorkspaceItemView,
+    SpeechVoiceCloneWorkspacePayload,
+)
+from app.domain.speech.voice_clone_service import SpeechVoiceCloneService
 from app.infrastructure.cache.base_runtime_keys import (
     SPEECH_CONFIG_TTL_SECONDS,
     SPEECH_PROVIDERS_CACHE_KEY,

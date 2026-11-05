@@ -15,8 +15,8 @@ from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 from app.api.deps import CurrentTenantAdmin, CurrentUser, DBSession, TenantCtx
 from app.core.exceptions import BusinessError, NotFoundError
 from app.core.feature_switches import (
-    is_module_installed,
     build_feature_catalog_definition,
+    is_module_installed,
     merge_feature_switches,
     normalize_feature_switches,
 )
@@ -38,8 +38,6 @@ from app.core.tenant_time import (
     normalize_tenant_timezone,
     validate_tenant_timezone,
 )
-from app.domain.assistant.config_schemas import AssistantConfigUpsertRequest
-from app.domain.assistant_bridge import assistant_config_to_view, merge_assistant_config
 from app.domain.ai_redaction import (
     get_active_policy_row,
     list_policy_versions,
@@ -48,6 +46,8 @@ from app.domain.ai_redaction import (
     normalize_scope,
     save_policy,
 )
+from app.domain.assistant.config_schemas import AssistantConfigUpsertRequest
+from app.domain.assistant_bridge import assistant_config_to_view, merge_assistant_config
 from app.domain.auth.config_security import sanitize_tenant_config
 from app.domain.auth.schemas import (
     RegistrationConfigUpdate,

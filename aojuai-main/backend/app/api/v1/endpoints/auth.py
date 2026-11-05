@@ -1,11 +1,11 @@
 """
 AOJU Backend - Authentication Endpoints
 """
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from urllib.parse import urlparse
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.api.deps import CurrentUser, DBSession, OptionalCurrentUser, snapshot_current_user
@@ -23,6 +23,7 @@ from app.core.security import (
     get_token_expiry,
     verify_password,
 )
+from app.domain.auth.schemas import get_registration_basic_fields_config
 from app.domain.auth.service import TenantService
 from app.domain.invitations.schemas import InvitationConfig, get_invitation_config
 from app.domain.invitations.service import InvitationService
@@ -31,7 +32,6 @@ from app.domain.users.models import RegisterSource, UserStatus
 from app.domain.users.profile_schema import UserProfileCompletionState, UserProfileFieldsConfig, get_user_profile_config
 from app.domain.users.schemas import UserRegister
 from app.domain.users.service import UserService
-from app.domain.auth.schemas import get_registration_basic_fields_config
 from app.domain.verification.service import VerificationService
 
 router = APIRouter()
@@ -255,7 +255,7 @@ async def login(
     """
     # Get client IP
     client_ip = http_request.client.host if http_request.client else "unknown"
-    
+
     # Use UserService to find user by username (global lookup for login)
     user_service = UserService(db)
     user = await user_service.get_one(username=request.username)
@@ -332,7 +332,7 @@ async def login(
         )
 
     # Create tokens
-    expires = datetime.now(timezone.utc) + timedelta(
+    expires = datetime.now(UTC) + timedelta(
         minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
     )
     access_token = create_access_token(
@@ -403,7 +403,7 @@ async def refresh_token(
         raise UnauthorizedError(message="User not found or inactive")
 
     # Create new tokens
-    expires = datetime.now(timezone.utc) + timedelta(
+    expires = datetime.now(UTC) + timedelta(
         minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
     )
     new_access_token = create_access_token(

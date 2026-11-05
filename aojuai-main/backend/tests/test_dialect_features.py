@@ -67,7 +67,7 @@ def test_sqlite_gets_its_own_cache_namespace_by_default(monkeypatch) -> None:
     monkeypatch.setattr(settings, "DB_DRIVER", "sqlite")
     assert settings.CACHE_NAMESPACE.startswith("sqlite-")
     monkeypatch.setattr(settings, "DB_DRIVER", "postgresql")
-    assert settings.CACHE_NAMESPACE == str(settings.DB_NAME or "aoju")
+    assert str(settings.DB_NAME or "aoju") == settings.CACHE_NAMESPACE
     monkeypatch.setattr(settings, "AOJU_CACHE_NAMESPACE", "explicit-ns")
     assert settings.CACHE_NAMESPACE == "explicit-ns"
 

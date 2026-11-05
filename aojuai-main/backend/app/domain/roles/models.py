@@ -9,14 +9,14 @@ from enum import IntEnum
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
-from app.infrastructure.database.types import PortableJSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.base import AssociationBaseModel, TenantBaseModel
+from app.infrastructure.database.types import PortableJSON
 
 if TYPE_CHECKING:
-    from app.domain.teams.models import Team
     from app.domain.menus.models import Menu
+    from app.domain.teams.models import Team
     from app.domain.users.models import User
 
 
@@ -72,7 +72,7 @@ class Role(TenantBaseModel):
         nullable=False,
         comment="Role name",
     )
-    
+
     # Audit
     created_by: Mapped[int | None] = mapped_column(
         BigInteger,

@@ -300,9 +300,7 @@ def _field_selected(
     }
     if exclude_fields and normalized_candidates & set(exclude_fields):
         return False
-    if include_fields and not (normalized_candidates & set(include_fields)):
-        return False
-    return True
+    return not (include_fields and not normalized_candidates & set(include_fields))
 
 
 def _build_scalar_param_fields(

@@ -7,8 +7,8 @@ so upstream code only needs to build a `Message` and choose a provider.
 
 from __future__ import annotations
 
-import ssl
 import smtplib
+import ssl
 from dataclasses import dataclass, field
 from email.message import EmailMessage
 from email.utils import formataddr

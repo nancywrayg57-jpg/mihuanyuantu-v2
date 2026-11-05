@@ -11,13 +11,12 @@ Create Date: 2026-02-14
 
 from __future__ import annotations
 
-from typing import Sequence, Union
-
+from collections.abc import Sequence
 
 revision: str = "0011_tenant_settings_tab_unify"
-down_revision: Union[str, None] = "0001_initial_schema"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "0001_initial_schema"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:

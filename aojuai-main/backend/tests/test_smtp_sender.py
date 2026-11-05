@@ -5,8 +5,7 @@ from typing import Any
 import pytest
 
 from app.core.exceptions import BusinessError
-from app.infrastructure.messaging import Message, SmtpConfig, create_sender
-from app.infrastructure.messaging import senders
+from app.infrastructure.messaging import Message, SmtpConfig, create_sender, senders
 
 
 def _config(**overrides: Any) -> SmtpConfig:
@@ -38,7 +37,7 @@ def _install_fake_clients(
         def __init__(self, kind: str, host: str, port: int, timeout: float, **kwargs: Any):
             events.append(("connect", (kind, host, port, timeout, set(kwargs))))
 
-        def __enter__(self) -> "FakeSmtp":
+        def __enter__(self) -> FakeSmtp:
             return self
 
         def __exit__(self, *args: Any) -> None:

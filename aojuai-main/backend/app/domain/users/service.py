@@ -7,7 +7,7 @@ AOJU Backend - User Service
 
 继承 RepositoryBase 复用通用数据访问方法。
 """
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import Float, and_, cast, delete, func, select
@@ -319,10 +319,10 @@ class UserService(RepositoryBase[User]):
         """
         where = []
         filters = {}
-        
+
         if tenant_id is not None:
             where.append(User.tenant_id == tenant_id)
-        
+
         if username:
             filters["username"] = ("like", username)
         if nickname:
@@ -375,7 +375,7 @@ class UserService(RepositoryBase[User]):
         )
 
         if include_tenant_info and users:
-            tenant_ids = list(set(u.tenant_id for u in users))
+            tenant_ids = list({u.tenant_id for u in users})
             tenant_repo = RepositoryBase(self.db, Tenant)
             tenants = await tenant_repo.get_list(
                 page_size=0,
@@ -633,7 +633,7 @@ class UserService(RepositoryBase[User]):
         await self.update(user, {
             "status": UserStatus.ENABLED if audit_data.approved else UserStatus.REJECTED,
             "audit_remark": audit_data.remark,
-            "audited_at": datetime.now(timezone.utc),
+            "audited_at": datetime.now(UTC),
             "audited_by": auditor_id,
         })
 
@@ -803,13 +803,13 @@ class UserService(RepositoryBase[User]):
         from datetime import timedelta
         user.failed_login_count += 1
         if user.failed_login_count >= 5:
-            user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=30)
+            user.locked_until = datetime.now(UTC) + timedelta(minutes=30)
         await self.db.flush()
 
     async def record_login_success(self, user: User) -> None:
         """Record successful login"""
         user.failed_login_count = 0
-        user.last_login_at = datetime.now(timezone.utc)
+        user.last_login_at = datetime.now(UTC)
         await self.db.flush()
 
     # ==================== 权限管理 ====================
@@ -857,7 +857,7 @@ class UserService(RepositoryBase[User]):
         """
         from sqlalchemy import select
         from sqlalchemy.orm import selectinload
-        
+
         # Load user with roles and menus
         stmt = (
             select(User)
@@ -886,20 +886,20 @@ class UserService(RepositoryBase[User]):
 
         if not user_with_perms:
             return set()
-        
+
         # Collect all permission codes from active roles' menus
         permissions = set()
         for role in user_with_perms.roles:
             # Skip inactive roles
             if not role.is_active:
                 continue
-            
+
             # Collect permissions from this role's menus
             for menu in role.menus:
                 # Only include active menus with perms
                 if menu.is_active and menu.perms:
                     permissions.add(menu.perms)
-        
+
         return permissions
 
     # ==================== 辅助方法 ====================

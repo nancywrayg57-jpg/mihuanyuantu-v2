@@ -27,9 +27,9 @@ from app.domain.notifications.ilink_client import ILINK_DEFAULT_BASE_URL, Wechat
 from app.domain.notifications.message_channels import UserMessageChannelService, select_unambiguous_inbound_channel
 from app.domain.notifications.models import UserMessageChannel
 from app.domain.users.models import User
+from app.infrastructure.database.portable_sql import dialect_insert, escalate_to_write_lock
 from app.infrastructure.database.session import get_db_context
 from app.infrastructure.repository import RepositoryBase
-from app.infrastructure.database.portable_sql import dialect_insert, escalate_to_write_lock
 
 logger = get_logger(__name__)
 

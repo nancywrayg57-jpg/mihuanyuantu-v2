@@ -21,8 +21,8 @@ from sqlalchemy.orm import selectinload
 from app.core.exceptions import BusinessError, NotFoundError
 from app.core.logger import get_logger
 from app.domain.menus.models import Menu
-from app.domain.roles.models import Role, RoleMenu
 from app.domain.notifications.send import send_notification
+from app.domain.roles.models import Role, RoleMenu
 from app.domain.users.models import User, UserRole, UserStatus
 from app.infrastructure.repository import RepositoryBase
 

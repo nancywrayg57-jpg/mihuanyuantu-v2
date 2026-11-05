@@ -10,11 +10,11 @@ import pytest
 
 from app.domain.menus.reconciler import (
     MENU_VALUE_FIELDS,
-    ReconcileResult,
     MenuDeclaration,
     MenuNodeSpec,
     MenuRecord,
     MenuState,
+    ReconcileResult,
     RoleDefaults,
     RoleGrantSpec,
     RoleRecord,

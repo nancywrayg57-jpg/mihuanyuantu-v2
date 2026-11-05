@@ -10,9 +10,9 @@ from httpx import ASGITransport, AsyncClient
 
 from app.api import v1
 from app.api.deps import get_current_user
-from app.core.capability_runtime import provision_installed_capabilities
 from app.capabilities.sample_items import seed as sample_seed
 from app.core import feature_switches
+from app.core.capability_runtime import provision_installed_capabilities
 from app.domain.menus.reconciler import (
     MenuRecord,
     MenuState,

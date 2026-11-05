@@ -11,16 +11,15 @@ parallel. It does not change schema or data.
 
 from __future__ import annotations
 
-from typing import Sequence, Union
-
+from collections.abc import Sequence
 
 revision: str = "base_20260426_merge_speech_and_message_heads"
-down_revision: Union[str, tuple[str, str], None] = (
+down_revision: str | tuple[str, str] | None = (
     "base_20260424_speech_voice_clone_foundation",
     "base_20260425_user_message_channels",
 )
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:

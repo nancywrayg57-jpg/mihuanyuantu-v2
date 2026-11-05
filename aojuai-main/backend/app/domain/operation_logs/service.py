@@ -15,9 +15,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logger import get_logger
 from app.domain.operation_logs.models import OperationLog
 from app.domain.operation_logs.schemas import (
+    OperationLogDetail,
     OperationLogListItem,
     OperationLogStatsItem,
-    OperationLogDetail,
 )
 from app.domain.users.models import UserTeam
 from app.infrastructure.repository import RepositoryBase

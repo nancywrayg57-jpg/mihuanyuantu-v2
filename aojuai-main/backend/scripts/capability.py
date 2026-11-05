@@ -12,10 +12,12 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
-from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
-from sqlalchemy import create_engine, inspect as sa_inspect, text
+from sqlalchemy import create_engine, text
+from sqlalchemy import inspect as sa_inspect
+
+from alembic import command
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 if str(BACKEND_DIR) not in sys.path:
@@ -211,37 +213,36 @@ def upgrade_database() -> int:
     _validate_installed_dependencies(definitions)
     engine = create_engine(settings.DATABASE_URL_SYNC, pool_pre_ping=True)
     try:
-        with engine.connect() as lock_connection:
-            with _migration_lock(lock_connection):
-                core_config = _core_config()
-                _static_head(core_config, "core")
-                bootstrapped = None
-                if get_dialect().single_writer:
-                    bootstrapped = _bootstrap_core_on_sqlite(lock_connection, core_config)
-                if bootstrapped:
-                    print(f"core bootstrapped (sqlite create_all + stamp): {bootstrapped}")
-                else:
-                    command.upgrade(core_config, "head")
-                core_head = _verify_upgraded_chain(
-                    lock_connection,
-                    config=core_config,
-                    label="core",
-                    version_table="alembic_version",
-                )
-                if not bootstrapped:
-                    print(f"core upgraded: {core_head}")
+        with engine.connect() as lock_connection, _migration_lock(lock_connection):
+            core_config = _core_config()
+            _static_head(core_config, "core")
+            bootstrapped = None
+            if get_dialect().single_writer:
+                bootstrapped = _bootstrap_core_on_sqlite(lock_connection, core_config)
+            if bootstrapped:
+                print(f"core bootstrapped (sqlite create_all + stamp): {bootstrapped}")
+            else:
+                command.upgrade(core_config, "head")
+            core_head = _verify_upgraded_chain(
+                lock_connection,
+                config=core_config,
+                label="core",
+                version_table="alembic_version",
+            )
+            if not bootstrapped:
+                print(f"core upgraded: {core_head}")
 
-                for definition in definitions:
-                    config = _capability_config(definition)
-                    _static_head(config, definition.code)
-                    command.upgrade(config, "head")
-                    head = _verify_upgraded_chain(
-                        lock_connection,
-                        config=config,
-                        label=definition.code,
-                        version_table=definition.version_table,
-                    )
-                    print(f"{definition.code} upgraded: {head}")
+            for definition in definitions:
+                config = _capability_config(definition)
+                _static_head(config, definition.code)
+                command.upgrade(config, "head")
+                head = _verify_upgraded_chain(
+                    lock_connection,
+                    config=config,
+                    label=definition.code,
+                    version_table=definition.version_table,
+                )
+                print(f"{definition.code} upgraded: {head}")
     finally:
         engine.dispose()
     return 0
@@ -260,15 +261,14 @@ def purge_database(code: str, *, purge: bool) -> int:
 
     engine = create_engine(settings.DATABASE_URL_SYNC, pool_pre_ping=True)
     try:
-        with engine.connect() as lock_connection:
-            with _migration_lock(lock_connection):
-                config = _capability_config(definition)
-                _static_head(config, definition.code)
-                command.downgrade(config, "base")
-                current = _database_heads(lock_connection, definition.version_table)
-                if current:
-                    raise RuntimeError(f"{definition.code}: purge left migration revisions: {current!r}")
-                print(f"{definition.code} purged; capability tables and data were deleted")
+        with engine.connect() as lock_connection, _migration_lock(lock_connection):
+            config = _capability_config(definition)
+            _static_head(config, definition.code)
+            command.downgrade(config, "base")
+            current = _database_heads(lock_connection, definition.version_table)
+            if current:
+                raise RuntimeError(f"{definition.code}: purge left migration revisions: {current!r}")
+            print(f"{definition.code} purged; capability tables and data were deleted")
     finally:
         engine.dispose()
     return 0

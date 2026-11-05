@@ -11,8 +11,9 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 import sqlalchemy as sa
-from alembic import op
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 revision: str = "base_20260828_tenant_redaction_policies"
 down_revision: str | Sequence[str] | None = "base_20260827_user_import_menu"

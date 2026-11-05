@@ -12,16 +12,16 @@ Goals:
 
 from __future__ import annotations
 
-from typing import Sequence, Union
+from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 revision: str = "base_20260402_fix_system_root_and_tenant_admin_grants"
-down_revision: Union[str, None] = "base_20260331_assistant_foundation"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "base_20260331_assistant_foundation"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def _get_tenant_ids(conn: sa.Connection) -> list[int]:

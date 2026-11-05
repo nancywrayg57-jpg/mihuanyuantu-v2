@@ -12,15 +12,15 @@ from typing import Any
 
 from fastapi import Request
 from sqlalchemy import select
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.background import BackgroundTask, BackgroundTasks
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
 from app.core.auth_cookies import get_access_cookie
 from app.core.config import settings
 from app.core.exceptions import AOJUException
-from app.domain.operation_logs.recorder import log_operation
 from app.core.security import decode_token
+from app.domain.operation_logs.recorder import log_operation
 from app.domain.users.models import User
 from app.infrastructure.database import get_db_context
 
@@ -122,14 +122,13 @@ def _derive_action(*, method: str, parts: list[str]) -> str:
         if parts[:2] == ["credits", "accounts"] and parts[-1] == "status":
             return "account_status_update"
 
-    if module == "notifications":
-        if method_upper == "POST":
-            if len(parts) == 1:
-                return "send"
-            if parts[-1] == "bulk":
-                return "bulk_send"
-            if parts[-1] == "broadcast":
-                return "broadcast"
+    if module == "notifications" and method_upper == "POST":
+        if len(parts) == 1:
+            return "send"
+        if parts[-1] == "bulk":
+            return "bulk_send"
+        if parts[-1] == "broadcast":
+            return "broadcast"
 
     if method_upper == "POST":
         if parts[-1] == "create":

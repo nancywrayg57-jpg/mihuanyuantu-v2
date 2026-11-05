@@ -55,9 +55,7 @@ def _include_object(object_, name, type_, reflected, compare_to):
     以及被硬卸载的内置模块留下的残留表。没有这道过滤，卸载语音之后
     第一次 autogenerate 就会生成 DROP TABLE speech_*——把数据顺手删了。
     """
-    if type_ == "table" and is_unmanaged_table(name):
-        return False
-    return True
+    return not (type_ == "table" and is_unmanaged_table(name))
 
 
 def _get_existing_public_table_names(connection) -> set[str]:

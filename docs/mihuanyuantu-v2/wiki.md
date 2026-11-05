@@ -3,7 +3,7 @@
 ## Project Snapshot
 - Goal: 电商商家将商品图/生成图整理为可追溯、可下载、带设备成像参数的图片资产；积分可审计。不承诺外部平台原创/实拍认定。
 - 首期（S1）: 真会话 → 本地上传 → 单张处理 → 预审占位 → 五层占位实现（仍交 sRGB JPG）→ Gemini 规则替身 → 整数积分流水按张 10 → LocalDisk 网关下载；同租户双账号 + 跨租户隔离。
-- Current phase: delivery（**S0 编码冻结**至管理员授权；文档基线 PRD 2.10 / 架构 1.7）。
+- Current phase: delivery（**S0 已实现并暂停**；待开发机补验；不开 S1。文档基线 PRD 2.10 / 架构 1.7）。
 - Protected decisions: 栈=aojuai；认证=用户名密码+验证码；部署=经济起步；数据=LocalDisk+整数租户积分；AI=首期规则替身；FR-033 scopes=能力名映射。
 - Vibe coding mode: 开启；一次一个可见阶段。
 
@@ -26,15 +26,17 @@
 | 2026-11-05 | delivery | CI/CD：**CI gate** Required；Tag stub；仓 public；全局约定迁入 `AGENTS.md` §7 | confirmed | 用户配置 + #9 / 后续迁址 |
 | 2026-11-05 | design | **能力名 scopes** + 映射层；PRD §7 订单客服 A；§8.3 LocalDisk；**冻结 S0** | confirmed | grill round-2 Q1–Q5 |
 | 2026-11-05 | delivery | S0 网关可用开发种子文件取证 | confirmed | grill Q6 |
-| 2026-11-05 | delivery | S0 暂不启动 | confirmed | user |
+| 2026-11-05 | delivery | S0 暂不启动 | superseded | user（随后授权） |
 | 2026-11-05 | delivery | 去掉 GitHub 审批开关与 Collaborator OAuth 绑定类文档跟踪 | confirmed | user |
+| 2026-11-05 | delivery | 授权开 S0；实现 realphotos S0；第一个里程碑后暂停 | confirmed | user |
+| 2026-11-05 | delivery | 分支后缀冲突：Cloud `-6c0b` vs AGENTS `-9973` | recorded | cloud session vs AGENTS |
 
 ## Phase Knowledge
 ### Discovery
 - Outcomes: OSS/共享钱包/MVP 过胖分叉已闭合；FR-033 纳入第一版但不进 S1。
 - Lessons: RESOLVED ND ≠ 上线证据；历史 ADR 头版本可能滞后，以收口 ADR 为准。
 - Reusable rules: 每轮 ≤5 前沿题；事实自查仓库；决策等用户。
-- Open questions: 管理员是否「授权开 S0」。
+- Open questions: 开发机 S0 端测通过后是否授权开 S1。
 
 ### Design
 - Outcomes: 架构 **1.7** = 1.6 包 + LocalDisk 网关措辞消歧 + scopes **能力名→路径白名单** 映射合同；PRD **2.10** §7 与矩阵对齐。
@@ -43,24 +45,25 @@
 - Prompt notes: 原型尚无「业务 API 凭证」页；S5 前补。
 
 ### Delivery
-- Outcomes: S0/S1 三件套在 DEV_INSTRUCTIONS；CI A–D + **CI gate**；S0 编码按 Q4 冻结。
-- Commands: `AGENTS.md` §7（CI/CD）+ DEV_INSTRUCTIONS §10；`bash scripts/ci/secret_scan.sh`。
-- Implementation rules: 协作纪律见 `AGENTS.md` §7；合入须 CI gate；未授权不开 S0。
+- Outcomes: S0 realphotos 包落地；Cloud pytest 8 passed + e2e `S0_E2E_PASS`；按要求暂停不开 S1。
+- Commands: `AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m pytest tests/capabilities/realphotos -q`；`python -m scripts.seed_realphotos_s0`；`python -m scripts.run_worker --worker realphotos_heartbeat --once`；`bash scripts/ci/secret_scan.sh`。
+- Implementation rules: 整数账本禁止桥接 Decimal；网关不回裸路径；SQLite 用条件更新认领，PG 用 `claim_one`。
 - Deploy/rollback notes: production_readiness NOT_READY；真 Secrets 仅 Owner 录入。
 
 ### Acceptance
-- Evidence: 无业务实现证据。
+- Evidence: Cloud `/opt/cursor/artifacts/s0-pytest.txt`、`s0-e2e-service.log`；开发机 PG 端测待办。
 - Defects: n/a
-- Accepted risks: 租户共用积分店内误花；ND-016 无版权声明；假→真五层字段漂移残余风险。
-- Next sprint knowledge: 授权后 S0 → 端测 → S1。
+- Accepted risks: 租户共用积分店内误花；ND-016 无版权声明；Cloud≠开发机验收。
+- Next sprint knowledge: 开发机补验 S0 → 确认后 S1。
 
 ## Reusable Prompts and Commands
 - Agent entry: `DEV_INSTRUCTIONS.md`（必读根目录四职责文件）
-- Gate: `s0_coding_authorized` 在 `progress.yaml`；默认 false 直至用户授权
+- Gate: `s0_coding_authorized=true`；`s0_pause_after_milestone=true`；开发机补验前不得开 S1
 - Stage checklist: DEV_INSTRUCTIONS §10；`02-delivery.yaml` 只镜像 status
-- Hard rule: 每个里程碑完成后须端到端测试
+- Hard rule: 每个里程碑完成后须端到端测试；Cloud ≠ 开发机
 - Root pack: `AGENTS.md` · `handoff.md` · `anchor.md` · `checkpoint.md`
 - Command: `python3 aidevops/scripts/validate_workspace.py docs/mihuanyuantu-v2`
+- Command: `AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m pytest tests/capabilities/realphotos -q`
 - Command: `node prototype/sync-inline.js`（改原型后）
 
 ## Vibe Coding Loops
@@ -70,7 +73,7 @@
 | 1-s0-s1-triad | DEV_INSTRUCTIONS §10.1/10.2 | 用户「按此修改并推送」 | done | 曾指向自主 S0 |
 | 2-cicd-public | CI + public + CI gate Required | 保护规则可强制 | done（CI gate） | — |
 | 3-grill-round2 | PRD 2.10 / 架构 1.7 / 收口 ADR / §10.1 Q6 | 收口合入 | done（#10/#11/#12） | 授权开 S0 |
-| 4-s0-loop | S0 基础可登录/积分/网关/worker | §10.1 exit_evidence + 端测 | pending | 须授权 |
+| 4-s0-loop | S0 基础可登录/积分/网关/worker | §10.1 + Cloud 端测 | cloud_passed_paused | 开发机补验后 S1 |
 
 ## Risks and Watchpoints
 - Risk: 把文档齐全或 CI 绿当成后端已交付。
@@ -79,5 +82,5 @@
 - Mitigation: 架构 1.7 §9.2.1 改造义务；S5 验收 AC-024。
 
 ## Backlog Knowledge
-- Next: 授权开 S0 → §10.1；FR-033 → S5/R3。
-- Deferred: CI Python/pnpm 版本与架构推荐对齐（非 S0 阻塞）。
+- Next: 开发机补验 S0 → 授权开 S1；FR-033 → S5/R3。
+- Deferred: CI Python/pnpm 版本与架构推荐对齐（非 S0 阻塞）；前端 realphotos 菜单 i18n 键。

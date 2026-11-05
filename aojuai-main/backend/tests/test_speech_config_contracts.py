@@ -5,20 +5,18 @@ from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
-import pytest
 import orjson
-from starlette.datastructures import Headers, UploadFile
+import pytest
 from sqlalchemy.dialects import postgresql
+from starlette.datastructures import Headers, UploadFile
 
 from app.api.v1.endpoints import speech as speech_endpoints
-from app.core.exceptions import BusinessError
-from app.core.exceptions import NotFoundError
-from app.domain.speech.models import SpeechTenantConfig
+from app.core.exceptions import BusinessError, NotFoundError
 from app.domain.speech.billing import calc_speech_text_credits, count_speech_billing_characters
+from app.domain.speech.models import SpeechTenantConfig
 from app.domain.speech.providers.common import bytes_to_stream
 from app.domain.speech.schemas import SpeechTenantConfigUpsertRequest, SpeechTenantConfigView
 from app.domain.speech.service import SpeechConfigService
-from app.domain.speech.voice_clone_service import SpeechVoiceCloneService
 from app.domain.speech.voice_clone_schemas import (
     SpeechVoiceCloneAssetView,
     SpeechVoiceCloneSupportView,
@@ -26,6 +24,7 @@ from app.domain.speech.voice_clone_schemas import (
     SpeechVoiceCloneWorkspaceItemView,
     SpeechVoiceCloneWorkspacePayload,
 )
+from app.domain.speech.voice_clone_service import SpeechVoiceCloneService
 
 
 class _DummyResult:

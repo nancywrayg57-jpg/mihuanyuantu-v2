@@ -73,8 +73,13 @@ jobs:
       - name: Pytest (sqlite)
         env:
           DB_DRIVER: sqlite
-          SQLITE_PATH: ":memory:"
-        run: pytest
+          # File-backed SQLite: `:memory:` + StaticPool is wiped by per-test
+          # engine.dispose() (needed for asyncpg loop isolation), which makes
+          # session-scoped seed vanish and fails requires_database suites.
+          SQLITE_PATH: /tmp/aoju-ci-pytest.db
+        run: |
+          rm -f /tmp/aoju-ci-pytest.db
+          pytest
 
   frontend:
     name: C frontend typecheck+test

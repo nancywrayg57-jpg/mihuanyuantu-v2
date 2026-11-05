@@ -11,11 +11,13 @@ import os
 import random
 import re
 import time
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from typing import Any, AsyncGenerator
+from typing import Any
 
 import httpx
+
 from app.domain.credits.usage import record_llm_usage
 
 OPENAI_COMPAT_REQUEST_MAX_RETRIES = 8
@@ -928,36 +930,35 @@ class OpenAIClient:
             payload["reasoning"] = {"effort": self.reasoning_effort}
         if self.tools:
             payload["tools"] = list(self.tools)
-        async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
-            async with self._acquire_request_slots():
-                async with client.stream(
-                    "POST",
-                    url,
-                    headers=self._get_headers(),
-                    json=payload,
-                ) as response:
-                    if response.status_code >= 400:
-                        await response.aread()
-                        response.raise_for_status()
-                    async for line in response.aiter_lines():
-                        if not line.startswith("data:"):
-                            continue
-                        data_str = line[5:].strip()
-                        try:
-                            data = json.loads(data_str)
-                        except json.JSONDecodeError:
-                            continue
-                        if not isinstance(data, dict):
-                            continue
-                        if data.get("type") == "response.output_text.delta":
-                            delta = data.get("delta")
-                            if isinstance(delta, str) and delta:
-                                yield delta
-                        elif data.get("type") == "response.completed":
-                            # response.completed is the terminal Responses event. Some
-                            # compatible gateways keep the HTTP connection alive after it;
-                            # do not turn that transport keepalive into application latency.
-                            return
+        async with httpx.AsyncClient(timeout=self.timeout_seconds) as client, self._acquire_request_slots():
+            async with client.stream(
+                "POST",
+                url,
+                headers=self._get_headers(),
+                json=payload,
+            ) as response:
+                if response.status_code >= 400:
+                    await response.aread()
+                    response.raise_for_status()
+                async for line in response.aiter_lines():
+                    if not line.startswith("data:"):
+                        continue
+                    data_str = line[5:].strip()
+                    try:
+                        data = json.loads(data_str)
+                    except json.JSONDecodeError:
+                        continue
+                    if not isinstance(data, dict):
+                        continue
+                    if data.get("type") == "response.output_text.delta":
+                        delta = data.get("delta")
+                        if isinstance(delta, str) and delta:
+                            yield delta
+                    elif data.get("type") == "response.completed":
+                        # response.completed is the terminal Responses event. Some
+                        # compatible gateways keep the HTTP connection alive after it;
+                        # do not turn that transport keepalive into application latency.
+                        return
 
     async def responses_stream_events(
         self,
@@ -1006,7 +1007,6 @@ class OpenAIClient:
         last_error: Exception | None = None
         async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
             for attempt in range(1, attempts_limit + 1):
-                first_byte_seen = False
                 text_emitted = False
                 downstream_emitted = False
                 completed_status = ""
@@ -1022,158 +1022,156 @@ class OpenAIClient:
                     return entry
 
                 try:
-                    async with self._acquire_request_slots():
-                        async with client.stream(
-                            "POST",
-                            url,
-                            headers=self._get_headers(),
-                            json=payload,
-                        ) as response:
-                            if response.status_code >= 400:
-                                await response.aread()
-                                if _is_retryable_status(response.status_code) and attempt < attempts_limit:
-                                    raise _PreOutputRetryError(f"HTTP {response.status_code}")
-                                response.raise_for_status()
-                            async for line in response.aiter_lines():
-                                first_byte_seen = True
-                                if not line.startswith("data:"):
-                                    continue
-                                try:
-                                    data = json.loads(line[5:].strip())
-                                except json.JSONDecodeError as exc:
-                                    raise _TruncatedStreamError("responses 流式 data JSON 解析失败") from exc
-                                if not isinstance(data, dict):
-                                    continue
-                                event_type = str(data.get("type") or "")
-                                if event_type == "response.output_text.delta":
-                                    delta = data.get("delta")
-                                    if isinstance(delta, str) and delta:
-                                        text_emitted = True
+                    async with self._acquire_request_slots(), client.stream(
+                        "POST",
+                        url,
+                        headers=self._get_headers(),
+                        json=payload,
+                    ) as response:
+                        if response.status_code >= 400:
+                            await response.aread()
+                            if _is_retryable_status(response.status_code) and attempt < attempts_limit:
+                                raise _PreOutputRetryError(f"HTTP {response.status_code}")
+                            response.raise_for_status()
+                        async for line in response.aiter_lines():
+                            if not line.startswith("data:"):
+                                continue
+                            try:
+                                data = json.loads(line[5:].strip())
+                            except json.JSONDecodeError as exc:
+                                raise _TruncatedStreamError("responses 流式 data JSON 解析失败") from exc
+                            if not isinstance(data, dict):
+                                continue
+                            event_type = str(data.get("type") or "")
+                            if event_type == "response.output_text.delta":
+                                delta = data.get("delta")
+                                if isinstance(delta, str) and delta:
+                                    text_emitted = True
+                                    downstream_emitted = True
+                                    yield {"type": "text_delta", "delta": delta}
+                            elif event_type == "response.output_item.added":
+                                item = data.get("item") if isinstance(data.get("item"), dict) else {}
+                                if item.get("type") == "function_call":
+                                    key = str(item.get("id") or item.get("call_id") or len(calls_by_item))
+                                    calls_by_item[key] = {
+                                        "callId": str(item.get("call_id") or ""),
+                                        "name": str(item.get("name") or ""),
+                                        "arguments": str(item.get("arguments") or ""),
+                                        "emitted": False,
+                                    }
+                            elif event_type == "response.function_call_arguments.delta":
+                                entry = _call_entry(str(data.get("item_id") or ""))
+                                delta = data.get("delta")
+                                if entry is not None and isinstance(delta, str):
+                                    entry["arguments"] += delta
+                            elif event_type == "response.function_call_arguments.done":
+                                entry = _call_entry(str(data.get("item_id") or ""))
+                                if entry is not None:
+                                    final_args = data.get("arguments")
+                                    if isinstance(final_args, str) and final_args:
+                                        entry["arguments"] = final_args
+                                    if not entry["emitted"]:
+                                        entry["emitted"] = True
+                                        emitted_call_count += 1
                                         downstream_emitted = True
-                                        yield {"type": "text_delta", "delta": delta}
-                                elif event_type == "response.output_item.added":
-                                    item = data.get("item") if isinstance(data.get("item"), dict) else {}
-                                    if item.get("type") == "function_call":
-                                        key = str(item.get("id") or item.get("call_id") or len(calls_by_item))
-                                        calls_by_item[key] = {
+                                        yield {
+                                            "type": "function_call",
+                                            "callId": entry["callId"],
+                                            "name": entry["name"],
+                                            "arguments": entry["arguments"],
+                                        }
+                            elif event_type == "response.output_item.done":
+                                # 兜底：个别网关不发 arguments.done，完整项在此补发
+                                item = data.get("item") if isinstance(data.get("item"), dict) else {}
+                                if item.get("type") == "function_call":
+                                    key = str(item.get("id") or item.get("call_id") or "")
+                                    entry = calls_by_item.get(key)
+                                    if entry is None:
+                                        entry = {
                                             "callId": str(item.get("call_id") or ""),
                                             "name": str(item.get("name") or ""),
                                             "arguments": str(item.get("arguments") or ""),
                                             "emitted": False,
                                         }
-                                elif event_type == "response.function_call_arguments.delta":
-                                    entry = _call_entry(str(data.get("item_id") or ""))
-                                    delta = data.get("delta")
-                                    if entry is not None and isinstance(delta, str):
-                                        entry["arguments"] += delta
-                                elif event_type == "response.function_call_arguments.done":
-                                    entry = _call_entry(str(data.get("item_id") or ""))
-                                    if entry is not None:
-                                        final_args = data.get("arguments")
-                                        if isinstance(final_args, str) and final_args:
-                                            entry["arguments"] = final_args
-                                        if not entry["emitted"]:
-                                            entry["emitted"] = True
-                                            emitted_call_count += 1
+                                        calls_by_item[key or str(len(calls_by_item))] = entry
+                                    elif isinstance(item.get("arguments"), str) and item.get("arguments"):
+                                        entry["arguments"] = item["arguments"]
+                                    if not entry["emitted"]:
+                                        entry["emitted"] = True
+                                        emitted_call_count += 1
+                                        downstream_emitted = True
+                                        yield {
+                                            "type": "function_call",
+                                            "callId": entry["callId"],
+                                            "name": entry["name"],
+                                            "arguments": entry["arguments"],
+                                        }
+                                elif item.get("type") == "web_search_call":
+                                    # deepseek 系 responses 不产 url_citation 注解,
+                                    # 但 open_page 动作携带真实浏览 URL——按引用下发
+                                    action = item.get("action") if isinstance(item.get("action"), dict) else {}
+                                    if str(action.get("type") or "") == "open_page":
+                                        page_url = str(action.get("url") or "").split("#ws_call_id=")[0].strip()
+                                        if page_url:
                                             downstream_emitted = True
                                             yield {
-                                                "type": "function_call",
-                                                "callId": entry["callId"],
-                                                "name": entry["name"],
-                                                "arguments": entry["arguments"],
+                                                "type": "web_search_citation",
+                                                "url": page_url,
+                                                "title": "",
                                             }
-                                elif event_type == "response.output_item.done":
-                                    # 兜底：个别网关不发 arguments.done，完整项在此补发
-                                    item = data.get("item") if isinstance(data.get("item"), dict) else {}
-                                    if item.get("type") == "function_call":
-                                        key = str(item.get("id") or item.get("call_id") or "")
-                                        entry = calls_by_item.get(key)
-                                        if entry is None:
-                                            entry = {
-                                                "callId": str(item.get("call_id") or ""),
-                                                "name": str(item.get("name") or ""),
-                                                "arguments": str(item.get("arguments") or ""),
-                                                "emitted": False,
-                                            }
-                                            calls_by_item[key or str(len(calls_by_item))] = entry
-                                        elif isinstance(item.get("arguments"), str) and item.get("arguments"):
-                                            entry["arguments"] = item["arguments"]
-                                        if not entry["emitted"]:
-                                            entry["emitted"] = True
-                                            emitted_call_count += 1
-                                            downstream_emitted = True
-                                            yield {
-                                                "type": "function_call",
-                                                "callId": entry["callId"],
-                                                "name": entry["name"],
-                                                "arguments": entry["arguments"],
-                                            }
-                                    elif item.get("type") == "web_search_call":
-                                        # deepseek 系 responses 不产 url_citation 注解,
-                                        # 但 open_page 动作携带真实浏览 URL——按引用下发
-                                        action = item.get("action") if isinstance(item.get("action"), dict) else {}
-                                        if str(action.get("type") or "") == "open_page":
-                                            page_url = str(action.get("url") or "").split("#ws_call_id=")[0].strip()
-                                            if page_url:
+                                elif item.get("type") == "message":
+                                    # 兜底:部分网关不发 annotation.added 独立事件,
+                                    # url_citation 注解只随消息项完整体返回
+                                    for part in item.get("content") or []:
+                                        if not isinstance(part, dict):
+                                            continue
+                                        for annotation in part.get("annotations") or []:
+                                            if (
+                                                isinstance(annotation, dict)
+                                                and str(annotation.get("type") or "") == "url_citation"
+                                                and str(annotation.get("url") or "").strip()
+                                            ):
                                                 downstream_emitted = True
                                                 yield {
                                                     "type": "web_search_citation",
-                                                    "url": page_url,
-                                                    "title": "",
+                                                    "url": str(annotation.get("url") or ""),
+                                                    "title": str(annotation.get("title") or ""),
                                                 }
-                                    elif item.get("type") == "message":
-                                        # 兜底:部分网关不发 annotation.added 独立事件,
-                                        # url_citation 注解只随消息项完整体返回
-                                        for part in item.get("content") or []:
-                                            if not isinstance(part, dict):
-                                                continue
-                                            for annotation in part.get("annotations") or []:
-                                                if (
-                                                    isinstance(annotation, dict)
-                                                    and str(annotation.get("type") or "") == "url_citation"
-                                                    and str(annotation.get("url") or "").strip()
-                                                ):
-                                                    downstream_emitted = True
-                                                    yield {
-                                                        "type": "web_search_citation",
-                                                        "url": str(annotation.get("url") or ""),
-                                                        "title": str(annotation.get("title") or ""),
-                                                    }
-                                elif event_type in {
-                                    "response.web_search_call.in_progress",
-                                    "response.web_search_call.searching",
-                                }:
+                            elif event_type in {
+                                "response.web_search_call.in_progress",
+                                "response.web_search_call.searching",
+                            }:
+                                downstream_emitted = True
+                                yield {"type": "web_search", "status": "searching"}
+                            elif event_type == "response.web_search_call.completed":
+                                web_search_calls += 1
+                                downstream_emitted = True
+                                yield {"type": "web_search", "status": "completed"}
+                            elif event_type == "response.output_text.annotation.added":
+                                # url_citation 注解:联网搜索引用(供深研类调用方收集参考资料;
+                                # 不消费该事件的调用方可安全忽略)
+                                annotation = (
+                                    data.get("annotation") if isinstance(data.get("annotation"), dict) else {}
+                                )
+                                if str(annotation.get("type") or "") == "url_citation":
                                     downstream_emitted = True
-                                    yield {"type": "web_search", "status": "searching"}
-                                elif event_type == "response.web_search_call.completed":
-                                    web_search_calls += 1
-                                    downstream_emitted = True
-                                    yield {"type": "web_search", "status": "completed"}
-                                elif event_type == "response.output_text.annotation.added":
-                                    # url_citation 注解:联网搜索引用(供深研类调用方收集参考资料;
-                                    # 不消费该事件的调用方可安全忽略)
-                                    annotation = (
-                                        data.get("annotation") if isinstance(data.get("annotation"), dict) else {}
-                                    )
-                                    if str(annotation.get("type") or "") == "url_citation":
-                                        downstream_emitted = True
-                                        yield {
-                                            "type": "web_search_citation",
-                                            "url": str(annotation.get("url") or ""),
-                                            "title": str(annotation.get("title") or ""),
-                                        }
-                                elif event_type == "response.completed":
-                                    response_obj = (
-                                        data.get("response") if isinstance(data.get("response"), dict) else {}
-                                    )
-                                    completed_status = str(response_obj.get("status") or "completed")
-                                    if isinstance(response_obj.get("usage"), dict):
-                                        usage = _normalize_usage(response_obj.get("usage"))
-                                    break
-                                elif event_type in {"response.failed", "response.incomplete", "error"}:
-                                    raise _StreamFinishError(
-                                        f"responses 流式异常结束（{event_type}）：{_truncate_error_text(data)}"
-                                    )
+                                    yield {
+                                        "type": "web_search_citation",
+                                        "url": str(annotation.get("url") or ""),
+                                        "title": str(annotation.get("title") or ""),
+                                    }
+                            elif event_type == "response.completed":
+                                response_obj = (
+                                    data.get("response") if isinstance(data.get("response"), dict) else {}
+                                )
+                                completed_status = str(response_obj.get("status") or "completed")
+                                if isinstance(response_obj.get("usage"), dict):
+                                    usage = _normalize_usage(response_obj.get("usage"))
+                                break
+                            elif event_type in {"response.failed", "response.incomplete", "error"}:
+                                raise _StreamFinishError(
+                                    f"responses 流式异常结束（{event_type}）：{_truncate_error_text(data)}"
+                                )
                     if not completed_status:
                         raise _TruncatedStreamError("responses 流未收到 response.completed，视为截断")
                     if not text_emitted and emitted_call_count == 0:

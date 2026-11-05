@@ -35,10 +35,7 @@ def normalize_phone(phone: str) -> str:
         raise ValidationError(message="Phone is required")
 
     # keep digits, allow leading '+'
-    if value.startswith("+"):
-        value = "+" + re.sub(r"\D", "", value[1:])
-    else:
-        value = re.sub(r"\D", "", value)
+    value = "+" + re.sub(r"\D", "", value[1:]) if value.startswith("+") else re.sub(r"\D", "", value)
 
     if not _PHONE_RE.match(value):
         raise ValidationError(message="Invalid phone format")
@@ -74,7 +71,7 @@ def hash_verification_code(code: str, *, salt: str) -> str:
     Note: We include salt to avoid precomputed rainbow tables and to make
     identical codes hash differently per record.
     """
-    payload = f"{salt}:{code}".encode("utf-8")
+    payload = f"{salt}:{code}".encode()
     return hmac.new(
         settings.JWT_SECRET_KEY.encode("utf-8"),
         payload,
@@ -102,7 +99,7 @@ class VerificationRuntimeConfig:
     email_webhook_headers: dict[str, str] | None = None
 
     @staticmethod
-    def from_tenant_config(tenant_config: dict[str, Any]) -> "VerificationRuntimeConfig":
+    def from_tenant_config(tenant_config: dict[str, Any]) -> VerificationRuntimeConfig:
         config = safe_tenant_config_dict(tenant_config)
         verification = get_tenant_config_namespace(config, ("verification",))
         code_cfg = verification.get("code") or {}

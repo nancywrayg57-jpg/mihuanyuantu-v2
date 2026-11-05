@@ -7,8 +7,8 @@ AOJU Backend - Speech Config Service
 
 from __future__ import annotations
 
-from copy import deepcopy
 import re
+from copy import deepcopy
 from typing import Any
 
 from sqlalchemy.exc import IntegrityError
@@ -605,7 +605,7 @@ class SpeechConfigService(RepositoryBase[SpeechTenantConfig]):
             provider_id = normalize_provider_id(profile.get("providerId"))
             if not profile_id or not provider_id:
                 continue
-            secret_keys = get_provider_secret_keys(provider_id)
+            get_provider_secret_keys(provider_id)
             raw_profile_secrets = tts_profiles_secrets.get(profile_id) if isinstance(tts_profiles_secrets, dict) else {}
             profile_secrets = raw_profile_secrets if isinstance(raw_profile_secrets, dict) else {}
             if not any(str(value or "").strip() for value in profile_secrets.values()):

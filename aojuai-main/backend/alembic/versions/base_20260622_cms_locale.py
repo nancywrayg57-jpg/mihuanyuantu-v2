@@ -10,13 +10,12 @@ unique key becomes (tenant_id, slug, locale). Existing rows default to 'default'
 
 from __future__ import annotations
 
-from typing import Union
-
 import sqlalchemy as sa
+
 from alembic import op
 
 revision: str = "base_20260622_cms_locale"
-down_revision: Union[str, None] = "base_20260620_cms_foundation"
+down_revision: str | None = "base_20260620_cms_foundation"
 branch_labels = None
 depends_on = None
 

@@ -1,13 +1,12 @@
 """
 AOJU Backend - File Upload Endpoints
 """
-import os
 import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, File, Form, UploadFile
 
 from app.api.deps import CurrentUser
 from app.core.config import settings

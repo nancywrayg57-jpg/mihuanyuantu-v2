@@ -2,7 +2,7 @@
 AOJU Backend - Common Response Schemas
 """
 from datetime import datetime
-from typing import Any, Generic, List, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -34,7 +34,7 @@ class PageInfo(BaseModel):
 class PageResponse(BaseModel, Generic[T]):
     """Paginated response data"""
 
-    items: List[T] = Field(alias="list", description="List data")
+    items: list[T] = Field(alias="list", description="List data")
     total: int = Field(description="Total count")
     page_size: int = Field(alias="pageSize", description="Items per page")
     current_page: int = Field(alias="currentPage", description="Current page number")

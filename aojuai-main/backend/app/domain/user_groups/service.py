@@ -3,7 +3,6 @@ AOJU Backend - User Group Service
 
 Supports unlimited hierarchy using materialized path pattern.
 """
-from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import select
@@ -65,7 +64,7 @@ class UserGroupService(RepositoryBase[UserGroup]):
         """List all groups (for dropdown)"""
         return await self.get_list(
             page_size=0,  # No pagination
-            where=[UserGroup.tenant_id == tenant_id, UserGroup.is_active == True],
+            where=[UserGroup.tenant_id == tenant_id, UserGroup.is_active],
             order_by="sort_order",
         )
 
@@ -146,7 +145,6 @@ class UserGroupService(RepositoryBase[UserGroup]):
 
         # Check if parent is changing
         old_parent_id = group.parent_id
-        new_parent_id = data.parent_id if data.parent_id is not None else old_parent_id
 
         update_data = data.model_dump(exclude_unset=True, exclude={"parent_id"})
 
@@ -171,7 +169,7 @@ class UserGroupService(RepositoryBase[UserGroup]):
             old_path = group.path
             old_full_path = f"{old_path}{group.id}/"
             update_data["parent_id"] = data.parent_id
-            
+
             # Apply update first
             group = await self.update(group, update_data, exclude_unset=False)
             group.update_path(new_parent)

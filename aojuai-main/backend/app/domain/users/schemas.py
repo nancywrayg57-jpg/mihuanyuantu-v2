@@ -1,16 +1,14 @@
 """
 AOJU Backend - User Schemas
 """
+import re
 from datetime import datetime
 from typing import Any
-
-import re
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.config import settings
 from app.domain.users.profile_schema import UserProfileCompletionState
-
 
 PASSWORD_MAX_LENGTH = 50
 PASSWORD_MIN_LENGTH = int(getattr(settings, "PASSWORD_MIN_LENGTH", 8) or 8)

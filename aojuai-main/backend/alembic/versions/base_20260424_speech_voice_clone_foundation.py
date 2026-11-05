@@ -7,17 +7,17 @@ Create Date: 2026-04-24
 
 from __future__ import annotations
 
-from typing import Sequence, Union
+from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
+from alembic import op
 
 revision: str = "base_20260424_speech_voice_clone_foundation"
-down_revision: Union[str, Sequence[str], None] = "base_20260411_credit_transaction_idempotency"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | Sequence[str] | None = "base_20260411_credit_transaction_idempotency"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def _table_exists(table_name: str) -> bool:

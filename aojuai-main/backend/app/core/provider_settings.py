@@ -17,7 +17,6 @@ from typing import Any
 
 from app.core.provider_secrets import mask_provider_secret
 
-
 DEFAULT_OPENAI_PROVIDER_MODEL = "gpt-3.5-turbo"
 DEFAULT_OPENAI_PROVIDER_TEMPERATURE = 0.7
 DEFAULT_OPENAI_PROVIDER_MAX_TOKENS = 2048

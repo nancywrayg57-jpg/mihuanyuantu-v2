@@ -73,7 +73,7 @@ def build_ai_client(
     reasoning_effort: str | None = "auto",
     cache_scope: str | None = None,
     tools: list[dict] | None = None,
-) -> "OpenAIClient":
+) -> OpenAIClient:
     """构造统一配置的 OpenAIClient。
 
     reasoning_effort:

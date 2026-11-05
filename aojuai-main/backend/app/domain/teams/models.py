@@ -37,55 +37,55 @@ class Team(TenantBaseModel):
         index=True,
         comment="团队名称"
     )
-    
+
     code: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
         index=True,
         comment="团队编码/标识"
     )
-    
+
     status: Mapped[int] = mapped_column(
         Integer,
         default=TeamStatus.ENABLED,
         nullable=False,
         comment="状态: 0=禁用, 1=启用"
     )
-    
+
     sort_order: Mapped[int | None] = mapped_column(
         Integer,
         default=0,
         comment="显示排序"
     )
-    
+
     # 详细信息
     description: Mapped[str | None] = mapped_column(
         String(500),
         comment="团队描述"
     )
-    
+
     leader: Mapped[str | None] = mapped_column(
         String(100),
         comment="团队负责人"
     )
-    
+
     phone: Mapped[str | None] = mapped_column(
         String(50),
         comment="联系电话"
     )
-    
+
     email: Mapped[str | None] = mapped_column(
         String(100),
         comment="邮箱"
     )
-    
+
     # 树形结构
     parent_id: Mapped[int | None] = mapped_column(
         BigInteger,
         ForeignKey("teams.id", ondelete="CASCADE"),
         comment="上级团队ID"
     )
-    
+
     # 创建人（用于数据权限控制）
     created_by: Mapped[int | None] = mapped_column(
         BigInteger,

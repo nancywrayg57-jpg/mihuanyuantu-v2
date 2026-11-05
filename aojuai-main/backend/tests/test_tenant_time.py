@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -32,6 +32,6 @@ def test_resolve_tenant_timezone_from_config() -> None:
 
 
 def test_tenant_today_respects_timezone_boundary() -> None:
-    utc_now = datetime(2026, 2, 23, 1, 30, tzinfo=timezone.utc)
+    utc_now = datetime(2026, 2, 23, 1, 30, tzinfo=UTC)
     assert tenant_today("Asia/Shanghai", now_utc=utc_now).isoformat() == "2026-02-23"
     assert tenant_today("America/Los_Angeles", now_utc=utc_now).isoformat() == "2026-02-22"

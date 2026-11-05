@@ -11,7 +11,6 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-
 CreditAccountTypeLiteral = Literal["tenant", "user"]
 CreditAccountStatusLiteral = Literal["active", "frozen"]
 CreditTransactionTypeLiteral = Literal[

@@ -108,9 +108,9 @@ def _configure_settings(database: str, password: str, modules: str) -> None:
 
 
 def _alembic_upgrade_or_down(target: str, *, downgrade: bool = False) -> None:
-    from alembic import command
     from alembic.config import Config
 
+    from alembic import command
     from app.core.config import settings
 
     config = Config(str(BACKEND_DIR / "alembic.ini"))
@@ -121,8 +121,9 @@ def _alembic_upgrade_or_down(target: str, *, downgrade: bool = False) -> None:
 
 
 def _alembic_upgrade(target: str) -> None:
-    from alembic import command
     from alembic.config import Config
+
+    from alembic import command
 
     config = Config(str(BACKEND_DIR / "alembic.ini"))
     config.set_main_option("script_location", str(BACKEND_DIR / "alembic"))
@@ -279,8 +280,8 @@ async def _run_stage(stage: str, database: str, password: str, modules: str) -> 
 
     if stage == "bootstrap":
         # 复用 fresh 库，走运行时建租户链路，再抓**新租户**的终态。
-        from app.domain.auth.service import TenantService
         from app.domain.auth.schemas import TenantCreateWithAdmin
+        from app.domain.auth.service import TenantService
         from app.infrastructure.database import get_db_context
 
         async with get_db_context() as db:

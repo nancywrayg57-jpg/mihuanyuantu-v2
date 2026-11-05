@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from collections.abc import Callable
+from datetime import UTC, datetime
 from types import SimpleNamespace
-from typing import Any, Callable
+from typing import Any
 
 import pytest
 from fastapi import FastAPI
@@ -96,8 +97,8 @@ def _install_auth_service_mocks(monkeypatch: pytest.MonkeyPatch, *, user: Simple
 @pytest.mark.asyncio
 async def test_login_contract_matches_base_cookie_session(monkeypatch: pytest.MonkeyPatch) -> None:
     user = _build_user()
-    frozen_now = datetime(2026, 4, 7, 12, 0, tzinfo=timezone.utc)
-    expires = datetime(2026, 4, 7, 13, 0, tzinfo=timezone.utc)
+    frozen_now = datetime(2026, 4, 7, 12, 0, tzinfo=UTC)
+    expires = datetime(2026, 4, 7, 13, 0, tzinfo=UTC)
     _install_auth_service_mocks(monkeypatch, user=user)
     monkeypatch.setattr(auth, "verify_password", lambda raw, hashed: raw == "admin123" and hashed == user.password_hash)
     monkeypatch.setattr(auth, "create_access_token", lambda **kwargs: "access-token")
@@ -138,8 +139,8 @@ async def test_login_contract_matches_base_cookie_session(monkeypatch: pytest.Mo
 @pytest.mark.asyncio
 async def test_refresh_token_contract_matches_base_cookie_session(monkeypatch: pytest.MonkeyPatch) -> None:
     user = _build_user()
-    frozen_now = datetime(2026, 4, 7, 13, 0, tzinfo=timezone.utc)
-    expires = datetime(2026, 4, 7, 14, 0, tzinfo=timezone.utc)
+    frozen_now = datetime(2026, 4, 7, 13, 0, tzinfo=UTC)
+    expires = datetime(2026, 4, 7, 14, 0, tzinfo=UTC)
     _install_auth_service_mocks(monkeypatch, user=user)
     monkeypatch.setattr(auth, "decode_token", lambda token: {"type": "refresh", "sub": str(user.id)})
     monkeypatch.setattr(auth, "create_access_token", lambda **kwargs: "next-access-token")
@@ -185,7 +186,7 @@ async def test_refresh_token_contract_matches_base_cookie_session(monkeypatch: p
 @pytest.mark.asyncio
 async def test_session_contract_stays_cookie_backed(monkeypatch: pytest.MonkeyPatch) -> None:
     user = _build_user()
-    expires = datetime(2026, 4, 7, 14, 0, tzinfo=timezone.utc)
+    expires = datetime(2026, 4, 7, 14, 0, tzinfo=UTC)
 
     async def _fake_build_auth_session_payload(*, db: Any, user: Any, expires: datetime | None) -> dict[str, Any]:
         assert db is not None

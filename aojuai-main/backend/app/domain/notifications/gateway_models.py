@@ -6,10 +6,10 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import BigInteger, Boolean, Index, Integer, String, Text, text
-from app.infrastructure.database.types import PortableDateTime, PortableJSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import BaseModel
+from app.infrastructure.database.types import PortableDateTime, PortableJSON
 
 
 class MessageGatewayAccount(BaseModel):

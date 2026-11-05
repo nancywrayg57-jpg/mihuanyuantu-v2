@@ -15,14 +15,13 @@ import json
 import sys
 from pathlib import Path
 
-
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from app.infrastructure.database.portable_sql import ptext
-from app.core.security import hash_password, create_invite_code
+from app.core.security import create_invite_code, hash_password
 from app.infrastructure.database import get_db_context
+from app.infrastructure.database.portable_sql import ptext
 
 
 async def seed_demo_data():

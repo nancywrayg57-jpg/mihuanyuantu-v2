@@ -80,11 +80,11 @@ async def test_unified_replay_does_not_fall_back_to_legacy_charge() -> None:
             await set_tenant_pricing_mode(db, tenant_id=1, mode="unified")
             with collect_usage(label="replay"):
                 record_llm_usage(model="gpt-5.5", usage={"prompt_tokens": 1000, "completion_tokens": 1000})
-                kwargs = dict(
-                    credit_service=svc, tenant_id=1, user_id=1, legacy_points=Decimal("2"),
-                    reference_type="unit_replay", idempotency_key="unit-unified-wrapper-replay",
-                    account_id=int(account.id),
-                )
+                kwargs = {
+                    "credit_service": svc, "tenant_id": 1, "user_id": 1, "legacy_points": Decimal("2"),
+                    "reference_type": "unit_replay", "idempotency_key": "unit-unified-wrapper-replay",
+                    "account_id": int(account.id),
+                }
                 first = await charge_usage_with_pricing_mode(**kwargs)
                 replay = await charge_usage_with_pricing_mode(**kwargs)
                 assert replay.transaction_id == first.transaction_id
@@ -114,11 +114,11 @@ async def test_capped_fixed_fee_records_overrun_and_replays_after_exhaustion(mod
                 await svc.recharge(tenant_id=1, account_id=account.id, amount=Decimal("50"), operator_id=1)
             await set_tenant_pricing_mode(db, tenant_id=1, mode=mode)
             with collect_usage(root=True, label="fixed-fee-no-model"):
-                kwargs = dict(
-                    credit_service=svc, tenant_id=1, user_id=1, legacy_points=Decimal("8"),
-                    reference_type="fixed_fee", idempotency_key=f"unit-capped-fixed-{mode}",
-                    account_id=int(account.id),
-                )
+                kwargs = {
+                    "credit_service": svc, "tenant_id": 1, "user_id": 1, "legacy_points": Decimal("8"),
+                    "reference_type": "fixed_fee", "idempotency_key": f"unit-capped-fixed-{mode}",
+                    "account_id": int(account.id),
+                }
                 first = await charge_usage_with_pricing_mode(**kwargs, maximum_amount=Decimal("3"))
                 replay = await charge_usage_with_pricing_mode(**kwargs, maximum_amount=Decimal("0"))
                 assert first.amount == replay.amount == Decimal("3")

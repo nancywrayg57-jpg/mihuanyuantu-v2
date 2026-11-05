@@ -14,6 +14,7 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
 
+
 def _build_engine():
     """方言感知的引擎工厂：PostgreSQL 走连接池参数；SQLite 走单文件/内存配置。
 

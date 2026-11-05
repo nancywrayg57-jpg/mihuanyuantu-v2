@@ -25,7 +25,7 @@ from sqlalchemy.orm.attributes import flag_modified
 
 from app.core.logger import get_logger
 from app.domain.credits.models import CreditTransaction
-from app.domain.credits.pricing import PriceItem, PricedUsage, PricingContext, price_usage, quantize_points
+from app.domain.credits.pricing import PricedUsage, PriceItem, PricingContext, price_usage, quantize_points
 from app.domain.credits.pricing_mode import PricingMode
 from app.domain.credits.service import CreditService
 from app.domain.credits.usage import UsageCollector, current_usage_collector
@@ -254,7 +254,7 @@ async def complete(
     """任务完成：只退差额、不追扣；超出预留最多收预留额并记 unbilledOverrun。幂等：`{base}:complete`。"""
     col = _collector_or_current(collector)
     reserved = quantize_points(Decimal(reserve_tx.amount))
-    prior = dict(((reserve_tx.extra or {}).get("billing") or {}))
+    prior = dict((reserve_tx.extra or {}).get("billing") or {})
     if prior.get("status") == "refunded":
         # 已整笔退回（失败/取消补偿先到）：不能再结算，否则会对已退金额再记 charged
         return SettlementResult(mode=mode, charged=False, amount=Decimal(0), transaction_id=int(reserve_tx.id), refunded=Decimal(str(prior.get("refunded") or reserved)), billing=prior)

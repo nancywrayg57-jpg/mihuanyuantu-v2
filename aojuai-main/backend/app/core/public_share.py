@@ -8,8 +8,9 @@ table design up front.
 from __future__ import annotations
 
 import secrets
-from datetime import datetime, timezone
-from typing import Any, Awaitable, Callable, TypeVar
+from collections.abc import Awaitable, Callable
+from datetime import UTC, datetime
+from typing import Any, TypeVar
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,10 +26,10 @@ def normalize_public_share_datetime(value: Any) -> datetime | None:
     if value is None:
         return None
     if isinstance(value, datetime):
-        return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+        return value if value.tzinfo else value.replace(tzinfo=UTC)
     if isinstance(value, (int, float)):
         try:
-            return datetime.fromtimestamp(float(value), tz=timezone.utc)
+            return datetime.fromtimestamp(float(value), tz=UTC)
         except Exception:
             return None
     if isinstance(value, str):
@@ -39,7 +40,7 @@ def normalize_public_share_datetime(value: Any) -> datetime | None:
             raw = raw[:-1] + "+00:00"
         try:
             dt = datetime.fromisoformat(raw)
-            return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+            return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
         except Exception:
             return None
     return None
@@ -191,7 +192,7 @@ async def generate_model_public_share_token(
 ) -> str:
     async def token_exists(token: str) -> bool:
         exists = await db.scalar(
-            select(getattr(model, "id")).where(
+            select(model.id).where(
                 getattr(model, token_attr) == token,
                 getattr(model, deleted_attr).is_(None),
             )
@@ -243,7 +244,7 @@ def validate_public_share_access(
     password_attrs: tuple[str, ...] = ("password_hash",),
     settings_attr: str = "settings",
 ) -> None:
-    current_time = now or datetime.now(timezone.utc)
+    current_time = now or datetime.now(UTC)
 
     if not bool(getattr(share, active_attr, False)) or getattr(share, deleted_attr, None) is not None:
         raise ForbiddenError(message="链接已停用")

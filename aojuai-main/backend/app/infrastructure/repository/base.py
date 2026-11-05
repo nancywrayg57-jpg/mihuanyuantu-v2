@@ -8,10 +8,10 @@ AOJU Backend - Base Repository
         def __init__(self, db: AsyncSession):
             super().__init__(db, User)
 """
-from datetime import datetime, timezone
-from typing import Any, Generic, Optional, TypeVar, Union
+from datetime import UTC, datetime
+from typing import Any, Generic, TypeVar
 
-from sqlalchemy import BinaryExpression, ScalarResult, Select, delete, func, select, update
+from sqlalchemy import BinaryExpression, Select, delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm.strategy_options import _AbstractLoad
@@ -41,10 +41,10 @@ class RepositoryBase(Generic[ModelType]):
     - 所有查询方法默认过滤软删除的数据（deleted_at IS NULL）
     - 如果模型没有 deleted_at 字段，则不会添加软删除过滤
     """
-    
+
     # 排序字段
     ORDER_DESC = ["desc", "descending"]
-    
+
     def __init__(self, db: AsyncSession, model: type[ModelType]):
         """
         初始化 Repository
@@ -57,7 +57,7 @@ class RepositoryBase(Generic[ModelType]):
         self.model = model
         # 检查模型是否支持软删除
         self._has_soft_delete = hasattr(model, "deleted_at")
-    
+
     def _add_soft_delete_filter(self, stmt: Select) -> Select:
         """
         添加软删除过滤条件
@@ -71,15 +71,15 @@ class RepositoryBase(Generic[ModelType]):
         if self._has_soft_delete:
             return stmt.where(self.model.deleted_at.is_(None))
         return stmt
-    
+
     async def get_by_id(
         self,
         id: int,
         *,
-        options: Optional[list[_AbstractLoad]] = None,
+        options: list[_AbstractLoad] | None = None,
         raise_not_found: bool = True,
         include_deleted: bool = False,
-    ) -> Optional[ModelType]:
+    ) -> ModelType | None:
         """
         根据 ID 获取单条数据
         
@@ -96,30 +96,30 @@ class RepositoryBase(Generic[ModelType]):
             NotFoundError: 当 raise_not_found=True 且未找到数据时
         """
         stmt = select(self.model).where(self.model.id == id)
-        
+
         if not include_deleted:
             stmt = self._add_soft_delete_filter(stmt)
-        
+
         if options:
             stmt = stmt.options(*options)
-        
+
         result = await self.db.execute(stmt)
         data = result.scalar_one_or_none()
-        
+
         if not data and raise_not_found:
             raise NotFoundError(message=f"{self.model.__name__} not found")
-        
+
         return data
-    
+
     async def get_one(
         self,
         *,
-        where: Optional[list[BinaryExpression]] = None,
-        options: Optional[list[_AbstractLoad]] = None,
+        where: list[BinaryExpression] | None = None,
+        options: list[_AbstractLoad] | None = None,
         raise_not_found: bool = False,
         include_deleted: bool = False,
         **filters,
-    ) -> Optional[ModelType]:
+    ) -> ModelType | None:
         """
         根据条件获取单条数据
         
@@ -144,42 +144,42 @@ class RepositoryBase(Generic[ModelType]):
             )
         """
         stmt = select(self.model)
-        
+
         if not include_deleted:
             stmt = self._add_soft_delete_filter(stmt)
-        
+
         if where:
             stmt = stmt.where(*where)
-        
+
         if filters:
             conditions = self._build_filter_conditions(**filters)
             if conditions:
                 stmt = stmt.where(*conditions)
-        
+
         if options:
             stmt = stmt.options(*options)
-        
+
         result = await self.db.execute(stmt)
         data = result.scalar_one_or_none()
-        
+
         if not data and raise_not_found:
             raise NotFoundError(message=f"{self.model.__name__} not found")
-        
+
         return data
-    
+
     async def get_list(
         self,
         *,
         page: int = 1,
         page_size: int = 10,
-        where: Optional[list[BinaryExpression]] = None,
-        options: Optional[list[_AbstractLoad]] = None,
-        order_by: Optional[str] = None,
+        where: list[BinaryExpression] | None = None,
+        options: list[_AbstractLoad] | None = None,
+        order_by: str | None = None,
         order_desc: bool = False,
         return_total: bool = False,
         include_deleted: bool = False,
         **filters,
-    ) -> Union[list[ModelType], tuple[list[ModelType], int]]:
+    ) -> list[ModelType] | tuple[list[ModelType], int]:
         """
         获取数据列表（支持分页）
         
@@ -210,21 +210,21 @@ class RepositoryBase(Generic[ModelType]):
             all_users = await repo.get_list(page_size=0, status=1)
         """
         stmt = select(self.model)
-        
+
         if not include_deleted:
             stmt = self._add_soft_delete_filter(stmt)
-        
+
         if where:
             stmt = stmt.where(*where)
-        
+
         if filters:
             conditions = self._build_filter_conditions(**filters)
             if conditions:
                 stmt = stmt.where(*conditions)
-        
+
         if options:
             stmt = stmt.options(*options)
-        
+
         # 排序
         if order_by:
             order_field = getattr(self.model, order_by)
@@ -236,33 +236,30 @@ class RepositoryBase(Generic[ModelType]):
             stmt = stmt.order_by(self.model.id.desc())
         else:
             stmt = stmt.order_by(self.model.id)
-        
+
         # 获取总数
         total = 0
         if return_total:
             count_stmt = select(func.count()).select_from(stmt.alias())
             count_result = await self.db.execute(count_stmt)
             total = count_result.scalar() or 0
-        
+
         # 分页
         if page_size > 0:
             stmt = stmt.offset((page - 1) * page_size).limit(page_size)
-        
+
         result = await self.db.execute(stmt)
-        
-        if options:
-            data = list(result.scalars().unique().all())
-        else:
-            data = list(result.scalars().all())
-        
+
+        data = list(result.scalars().unique().all()) if options else list(result.scalars().all())
+
         if return_total:
             return data, total
         return data
-    
+
     async def get_count(
         self,
         *,
-        where: Optional[list[BinaryExpression]] = None,
+        where: list[BinaryExpression] | None = None,
         include_deleted: bool = False,
         **filters,
     ) -> int:
@@ -278,22 +275,22 @@ class RepositoryBase(Generic[ModelType]):
             数据总数
         """
         stmt = select(func.count(self.model.id))
-        
+
         if not include_deleted:
             stmt = self._add_soft_delete_filter(stmt)
-        
+
         if where:
             stmt = stmt.where(*where)
-        
+
         if filters:
             conditions = self._build_filter_conditions(**filters)
             if conditions:
                 stmt = stmt.where(*conditions)
-        
+
         result = await self.db.execute(stmt)
         return result.scalar() or 0
-    
-    async def create(self, data: Union[dict, Any]) -> ModelType:
+
+    async def create(self, data: dict | Any) -> ModelType:
         """
         创建单条数据
         
@@ -308,16 +305,13 @@ class RepositoryBase(Generic[ModelType]):
             # 或
             user = await repo.create(UserCreate(username="admin", email="admin@example.com"))
         """
-        if isinstance(data, dict):
-            obj = self.model(**data)
-        else:
-            obj = self.model(**data.model_dump())
-        
+        obj = self.model(**data) if isinstance(data, dict) else self.model(**data.model_dump())
+
         self.db.add(obj)
         await self.db.flush()
         await self.db.refresh(obj)
         return obj
-    
+
     async def create_batch(self, data_list: list[dict]) -> None:
         """
         批量创建数据
@@ -330,15 +324,15 @@ class RepositoryBase(Generic[ModelType]):
         """
         if not data_list:
             return
-        
+
         objs = [self.model(**data) for data in data_list]
         self.db.add_all(objs)
         await self.db.flush()
-    
+
     async def update(
         self,
         obj: ModelType,
-        data: Union[dict, Any],
+        data: dict | Any,
         *,
         exclude_unset: bool = True,
         exclude_none: bool = False,
@@ -366,15 +360,15 @@ class RepositoryBase(Generic[ModelType]):
                 exclude_unset=exclude_unset,
                 exclude_none=exclude_none,
             )
-        
+
         for field, value in update_data.items():
             if hasattr(obj, field):
                 setattr(obj, field, value)
-        
+
         await self.db.flush()
         await self.db.refresh(obj)
         return obj
-    
+
     async def delete(self, obj: ModelType) -> None:
         """
         软删除数据
@@ -386,11 +380,11 @@ class RepositoryBase(Generic[ModelType]):
             如果模型不支持软删除（没有 deleted_at 字段），则执行物理删除
         """
         if self._has_soft_delete:
-            obj.deleted_at = datetime.now(timezone.utc)
+            obj.deleted_at = datetime.now(UTC)
             await self.db.flush()
         else:
             await self.delete_permanently(obj)
-    
+
     async def delete_by_id(self, id: int) -> None:
         """
         根据 ID 软删除数据
@@ -400,7 +394,7 @@ class RepositoryBase(Generic[ModelType]):
         """
         obj = await self.get_by_id(id)
         await self.delete(obj)
-    
+
     async def delete_batch(self, ids: list[int]) -> None:
         """
         批量软删除数据
@@ -413,19 +407,19 @@ class RepositoryBase(Generic[ModelType]):
         """
         if not ids:
             return
-        
+
         if self._has_soft_delete:
             await self.db.execute(
                 update(self.model)
                 .where(self.model.id.in_(ids))
-                .values(deleted_at=datetime.now(timezone.utc))
+                .values(deleted_at=datetime.now(UTC))
             )
         else:
             await self.db.execute(
                 delete(self.model).where(self.model.id.in_(ids))
             )
         await self.db.flush()
-    
+
     async def delete_permanently(self, obj: ModelType) -> None:
         """
         永久删除数据（物理删除）
@@ -438,7 +432,7 @@ class RepositoryBase(Generic[ModelType]):
         """
         await self.db.delete(obj)
         await self.db.flush()
-    
+
     async def delete_permanently_by_id(self, id: int) -> None:
         """
         根据 ID 永久删除数据
@@ -448,7 +442,7 @@ class RepositoryBase(Generic[ModelType]):
         """
         await self.db.execute(delete(self.model).where(self.model.id == id))
         await self.db.flush()
-    
+
     def _build_filter_conditions(self, **filters) -> list[BinaryExpression]:
         """
         构建过滤条件
@@ -472,21 +466,21 @@ class RepositoryBase(Generic[ModelType]):
             条件表达式列表
         """
         conditions = []
-        
+
         for field, value in filters.items():
             if value is None or value == "":
                 continue
-            
+
             if not hasattr(self.model, field):
                 continue
-            
+
             attr = getattr(self.model, field)
-            
+
             # 元组表示复杂查询
             if isinstance(value, tuple):
                 if len(value) == 2:
                     operator, val = value
-                    
+
                     if operator == "like" and val:
                         conditions.append(attr.like(f"%{val}%"))
                     elif operator == "in" and val:
@@ -510,5 +504,5 @@ class RepositoryBase(Generic[ModelType]):
             else:
                 # 简单相等查询
                 conditions.append(attr == value)
-        
+
         return conditions

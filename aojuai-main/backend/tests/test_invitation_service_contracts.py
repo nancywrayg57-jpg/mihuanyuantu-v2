@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -37,7 +37,7 @@ async def test_invitation_service_generate_code_creates_single_use_code() -> Non
     tenant = _build_invitation_tenant(max_invites=5)
     inviter = SimpleNamespace(id=8)
     created_payload: dict[str, object] = {}
-    created_at = datetime(2026, 4, 13, 8, 0, tzinfo=timezone.utc)
+    created_at = datetime(2026, 4, 13, 8, 0, tzinfo=UTC)
 
     async def fake_create(payload: dict[str, object]) -> SimpleNamespace:
         created_payload.update(payload)
@@ -99,11 +99,11 @@ def test_invitation_service_to_code_response_includes_usage_snapshot() -> None:
         id=11,
         code="CODE123456",
         status="exhausted",
-        expires_at=datetime(2026, 4, 30, 0, 0, tzinfo=timezone.utc),
+        expires_at=datetime(2026, 4, 30, 0, 0, tzinfo=UTC),
         max_uses=1,
         used_count=1,
-        last_used_at=datetime(2026, 4, 14, 0, 0, tzinfo=timezone.utc),
-        created_at=datetime(2026, 4, 13, 0, 0, tzinfo=timezone.utc),
+        last_used_at=datetime(2026, 4, 14, 0, 0, tzinfo=UTC),
+        created_at=datetime(2026, 4, 13, 0, 0, tzinfo=UTC),
         extra={"costCredits": 2, "expiresIn": 7},
     )
 
@@ -186,7 +186,7 @@ def test_user_service_response_shapes_include_invitation_context() -> None:
         tenant_id=1,
         organization_id=None,
         remark=None,
-        created_at=datetime(2026, 4, 13, 0, 0, tzinfo=timezone.utc),
+        created_at=datetime(2026, 4, 13, 0, 0, tzinfo=UTC),
         last_login_at=None,
         organization=None,
         teams=[],

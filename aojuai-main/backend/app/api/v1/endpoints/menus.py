@@ -253,9 +253,7 @@ def _normalize_route_path(path: str | None) -> str | None:
     if not value:
         return None
 
-    if value.startswith("#/"):
-        value = value[1:].strip()
-    elif value.startswith("#"):
+    if value.startswith("#/") or value.startswith("#"):
         value = value[1:].strip()
 
     if "#/" in value:
@@ -486,7 +484,7 @@ def build_route_tree(
     def dfs(parent_id: int | None, parent_name: str = "") -> list[dict[str, Any]]:
         routes: list[dict[str, Any]] = []
         for menu in children_map.get(parent_id, []):
-            normalized_menu_path = _normalize_route_path(menu.path)
+            _normalize_route_path(menu.path)
             # Skip inactive or deleted menus
             # Note: is_visible 仅控制是否在菜单中展示（meta.showLink），隐藏路由仍应返回以支持跳转
             if not menu.is_active or menu.deleted_at is not None:

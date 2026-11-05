@@ -6,13 +6,12 @@ Organization represents teams in a tree structure.
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
-from app.infrastructure.database.types import PortableJSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.base import TenantBaseModel
+from app.infrastructure.database.types import PortableJSON
 
 if TYPE_CHECKING:
-    from app.domain.auth.models import Tenant
     from app.domain.users.models import User
 
 

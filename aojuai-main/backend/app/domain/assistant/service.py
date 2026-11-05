@@ -4,6 +4,7 @@ AOJU Backend - AI Assistant Service
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import inspect
 import json
 import re
@@ -47,7 +48,6 @@ from app.domain.assistant.module_skill_governance import (
 )
 from app.domain.assistant.prompt_context import build_generic_prompt_context, compact_prompt_value
 from app.domain.assistant.router_service import is_text_entry_route, routing_state_key
-from app.domain.credits.usage import collects_usage
 from app.domain.assistant.schemas import (
     ActionResponse,
     ChatReplyResponse,
@@ -57,6 +57,7 @@ from app.domain.assistant.schemas import (
     SessionResponse,
 )
 from app.domain.credits.service import CreditService
+from app.domain.credits.usage import collects_usage
 from app.domain.users.models import UserTeam
 
 logger = get_logger(__name__)
@@ -354,10 +355,8 @@ class AssistantService:
         for item in normalized_items:
             enabled = enabled or bool(item.get("enabled"))
             charged = charged or bool(item.get("charged"))
-            try:
+            with contextlib.suppress(InvalidOperation, TypeError, ValueError):
                 amount += Decimal(str(item.get("amount") or "0"))
-            except (InvalidOperation, TypeError, ValueError):
-                pass
             input_tokens += int(item.get("inputTokens") or 0)
             output_tokens += int(item.get("outputTokens") or 0)
             total_tokens += int(item.get("totalTokens") or 0)

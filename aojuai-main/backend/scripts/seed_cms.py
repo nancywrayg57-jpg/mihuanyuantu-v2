@@ -15,9 +15,9 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from app.infrastructure.database.portable_sql import ptext
 from app.domain.cms.access import CMS_MENU_DECLARATION
 from app.domain.menus.reconciler import reconcile_menu_declaration
+from app.infrastructure.database.portable_sql import ptext
 
 # --------------------------------------------------------------------------- #
 # Default public content (Puck document shape: {root, content, zones})

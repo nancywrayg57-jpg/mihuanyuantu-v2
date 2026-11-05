@@ -6,11 +6,11 @@ API Key 数据模型（机器凭证，供本地同步客户端等非浏览器端
 """
 from datetime import datetime
 
-from sqlalchemy import text, BigInteger, Index, String
-from app.infrastructure.database.types import PortableDateTime, PortableJSON
+from sqlalchemy import BigInteger, Index, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import TenantBaseModel
+from app.infrastructure.database.types import PortableDateTime, PortableJSON
 
 
 class ApiKey(TenantBaseModel):

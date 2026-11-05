@@ -10,7 +10,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from sqlalchemy import select
 
-from app.api.deps import CurrentTenantAdmin, CurrentUser, DBSession, DataScopeCtx, TenantCtx
+from app.api.deps import CurrentTenantAdmin, CurrentUser, DataScopeCtx, DBSession, TenantCtx
 from app.core.logger import get_logger
 from app.core.response import ErrorResponse, SuccessResponse
 from app.core.schemas import ResponseBase
@@ -97,7 +97,7 @@ def _parse_context_query(value: str | None) -> dict[str, Any]:
 
 
 def _encode_sse(payload: dict[str, Any]) -> bytes:
-    return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n".encode("utf-8")
+    return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n".encode()
 
 
 async def _get_user_team_ids(db: DBSession, *, tenant_id: int, user_id: int) -> list[int]:

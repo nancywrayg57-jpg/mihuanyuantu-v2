@@ -8,16 +8,15 @@ AOJU Backend - Speech Schemas
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Literal
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, computed_field
 
-
 SpeechProviderCategory = Literal["tts", "stt"]
 
 
-class SpeechFieldType(str, Enum):
+class SpeechFieldType(StrEnum):
     STRING = "string"
     SECRET = "secret"
     NUMBER = "number"

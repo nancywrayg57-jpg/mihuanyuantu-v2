@@ -8,31 +8,31 @@ content in PortableJSON to avoid over-normalizing the block model.
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from sqlalchemy import BigInteger, Index, String, Text, text
-from app.infrastructure.database.types import PortableJSON, PortableDateTime
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import TenantBaseModel
+from app.infrastructure.database.types import PortableDateTime, PortableJSON
 
 
-class ContentStatus(str, Enum):
+class ContentStatus(StrEnum):
     """Draft / published lifecycle for pages and posts."""
 
     DRAFT = "draft"
     PUBLISHED = "published"
 
 
-class NavLocation(str, Enum):
+class NavLocation(StrEnum):
     """Where a navigation menu is rendered on the public site."""
 
     HEADER = "header"
     FOOTER = "footer"
 
 
-class SubmissionStatus(str, Enum):
+class SubmissionStatus(StrEnum):
     """Contact / lead submission triage status."""
 
     NEW = "new"

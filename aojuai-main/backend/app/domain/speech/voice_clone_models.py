@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import Any
 
 from sqlalchemy import BigInteger, ForeignKey, Index, String, Text
-from app.infrastructure.database.types import PortableJSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import TenantBaseModel
+from app.infrastructure.database.types import PortableJSON
 
 
 class SpeechVoiceCloneAsset(TenantBaseModel):

@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 from alembic.config import Config
 
-from app.core.capability_registry import CapabilityDefinition, order_capabilities
 from app.capabilities.sample_items import CAPABILITY
+from app.core.capability_registry import CapabilityDefinition, order_capabilities
 from scripts import capability
 
 

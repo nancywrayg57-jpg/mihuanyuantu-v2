@@ -5,8 +5,8 @@ from pydantic import BaseModel, Field
 from app.domain.assistant.tool_schema import (
     assistant_tool,
     assistant_tool_field,
-    assistant_tool_from_model,
     assistant_tool_fields_from_pydantic_model,
+    assistant_tool_from_model,
     assistant_tool_option,
     assistant_tool_required_when,
     assistant_tool_scope_binding,

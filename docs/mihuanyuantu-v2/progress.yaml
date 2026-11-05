@@ -9,7 +9,8 @@ grill_session: confirmed_2026-11-04
 grill_round2: confirmed_2026-11-05
 autonomous_stages: "S0-S6"
 s7_requires_admin_confirm: true
-s0_coding_authorized: false
+s0_coding_authorized: true
+s0_pause_after_milestone: true
 
 clarification_policy:
   mode: ask-user
@@ -31,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "S0 授权前冻结"
-    user_value: "获授权后再开可验收的基础切片"
-    visible_output: "用户明确「授权开 S0」"
-    verify: "s0_coding_authorized=false"
-    status: awaiting_s0_authorization
-  next_user_action: "明确「授权开 S0」后再实现"
+    goal: "S0 基础切片已实现并暂停"
+    user_value: "可审查的登录/RBAC/整数积分/LocalDisk网关/队列worker"
+    visible_output: "realphotos 能力包 + Cloud 服务端测证据；不开 S1"
+    verify: "pytest tests/capabilities/realphotos + /opt/cursor/artifacts/s0-e2e-service.log"
+    status: paused_after_s0_implementation
+  next_user_action: "开发机补验 S0 端测（含 PostgreSQL claim_one 路径）后确认；勿开 S1"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -99,14 +100,12 @@ phase_gates:
       - ../architecture_decisions/蜜獾原图-v2-grill-me文档基线收口-2026-11-05.md
   delivery:
     file: 02-delivery.yaml
-    status: frozen_awaiting_s0_authorization
+    status: s0_implemented_paused_pending_dev_host_e2e
     evidence:
-      - DEV_INSTRUCTIONS.md
       - DEV_INSTRUCTIONS.md#§10.1-S0
-      - DEV_INSTRUCTIONS.md#§10.2-S1
-      - ../../handoff.md
-      - ../../anchor.md
-      - ../../checkpoint.md
+      - ../../aojuai-main/backend/app/capabilities/realphotos/
+      - /opt/cursor/artifacts/s0-pytest.txt
+      - /opt/cursor/artifacts/s0-e2e-service.log
   acceptance:
     file: 03-acceptance.yaml
     status: pending
@@ -133,12 +132,33 @@ evidence_pointers:
   customer_business_api: "PRD FR-033 / AC-024；架构 1.7 §9.2.1/§10.3；能力名 scopes；阶段 S5/R3；不进 S1"
   architecture_design_pack: "1.7 = 1.6 包 + LocalDisk 措辞消歧 + 能力名 scope 映射"
   prototypes: []
-  test_reports: []
-  commits_or_prs: []
+  test_reports:
+    - /opt/cursor/artifacts/s0-pytest.txt
+    - /opt/cursor/artifacts/s0-e2e-service.log
+    - /opt/cursor/artifacts/s0-ruff.txt
+    - /opt/cursor/artifacts/s0-secret-scan.txt
+    - /opt/cursor/artifacts/s0-pytest-full-file.txt
+    - /opt/cursor/artifacts/s0-ruff-clean.txt
+  commits_or_prs:
+    - "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/18"
+    - "cursor/s0-foundation-6c0b"
+
+known_conflicts:
+  - id: BRANCH_SUFFIX
+    status: recorded_not_harmonized
+    detail: "AGENTS.md §7.1 / DEV_INSTRUCTIONS 约定 cursor/<name>-9973；本 Cloud Agent 会话硬性要求 -6c0b。本分支使用 cursor/s0-foundation-6c0b。"
+  - id: S0_E2E_ENV
+    status: open
+    detail: "Cloud Agent 服务层端测（SQLite claim 路径）已通过；架构主验证环境为开发机 + PostgreSQL claim_one。未在开发机补验前不得标 S0 完成、不得开 S1。"
+  - id: JWT_REFRESH_DAYS
+    status: mitigated_in_pack
+    detail: "底座 JWT_REFRESH_TOKEN_EXPIRE_DAYS 默认 7；realphotos /auth/login 路径单独签发 30 天 refresh（架构 §10.1）。核心 /api/v1/auth/login 未改。"
 
 next_action:
   owner: user
-  action: "保持 S0 冻结；明确「授权开 S0」前禁止业务编码"
-  blocker: "s0_coding_authorized=false"
+  action: "S0 代码已实现并暂停；请在开发机补验 §10.1 exit_evidence（含 PG worker），确认后再授权开 S1。当前禁止进入 S1。"
+  blocker: "dev_host_e2e_pending; user_requested_pause_after_s0"
   notes:
-    s0_start: deferred_by_user
+    s0_start: authorized_by_user_2026-11-05
+    s0_pause: requested_after_first_milestone
+    branch: cursor/s0-foundation-6c0b

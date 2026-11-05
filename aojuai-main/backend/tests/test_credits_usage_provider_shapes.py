@@ -107,7 +107,7 @@ def test_provider_usage_shapes(name: str, usage: dict, expected: tuple[int, int,
 def test_cache_pricing_three_segments_and_reasoning_not_double_counted() -> None:
     items = [PriceItem(item_type="llm", match_key="claude-x", input_points_per_1k="1", output_points_per_1k="5", cached_points_per_1k="0.1", cache_write_points_per_1k="1.25")]
     n = normalize_usage_payload({"input_tokens": 100, "cache_creation_input_tokens": 2000, "cache_read_input_tokens": 3000, "output_tokens": 1000, "output_tokens_details": {"reasoning_tokens": 600}})
-    event = UsageEvent(kind="llm", model="claude-x", **{k: v for k, v in n.items()})
+    event = UsageEvent(kind="llm", model="claude-x", **dict(n.items()))
     priced = price_usage([event], items)
     # 未缓存 100×1 + 命中 3000×0.1 + 写入 2000×1.25 + 输出 1000×5（reasoning 600 已含其中，不再加）= 0.1 + 0.3 + 2.5 + 5
     assert priced.points == Decimal("7.90")

@@ -35,7 +35,7 @@ def setup_logging() -> None:
     # Create logs directory
     log_dir = Path("logs")
     log_dir.mkdir(exist_ok=True)
-    
+
     # Configure standard logging
     logging.basicConfig(
         format="%(message)s",
@@ -45,7 +45,7 @@ def setup_logging() -> None:
         ],
     )
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
-    
+
     # Add file handlers
     if not settings.DEBUG:
         # Info log file
@@ -58,7 +58,7 @@ def setup_logging() -> None:
         )
         info_handler.setLevel(logging.INFO)
         logging.root.addHandler(info_handler)
-        
+
         # Error log file
         error_handler = logging.handlers.TimedRotatingFileHandler(
             filename=log_dir / "error.log",
@@ -69,7 +69,7 @@ def setup_logging() -> None:
         )
         error_handler.setLevel(logging.ERROR)
         logging.root.addHandler(error_handler)
-    
+
     # Configure structlog processors
     processors: list[Processor] = [
         structlog.contextvars.merge_contextvars,
@@ -80,7 +80,7 @@ def setup_logging() -> None:
         structlog.processors.StackInfoRenderer(),
         add_app_context,
     ]
-    
+
     if settings.DEBUG:
         # Development: pretty console output
         processors.append(structlog.dev.ConsoleRenderer())
@@ -90,7 +90,7 @@ def setup_logging() -> None:
             structlog.processors.format_exc_info,
             structlog.processors.JSONRenderer(),
         ])
-    
+
     structlog.configure(
         processors=processors,
         wrapper_class=structlog.stdlib.BoundLogger,

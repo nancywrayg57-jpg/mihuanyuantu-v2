@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -54,8 +54,8 @@ def test_normalize_public_share_datetime_handles_iso_and_naive_datetime() -> Non
     normalized_iso = normalize_public_share_datetime(iso)
 
     assert normalized_naive is not None
-    assert normalized_naive.tzinfo == timezone.utc
-    assert normalized_iso == datetime(2026, 3, 21, 12, 0, tzinfo=timezone.utc)
+    assert normalized_naive.tzinfo == UTC
+    assert normalized_iso == datetime(2026, 3, 21, 12, 0, tzinfo=UTC)
 
 
 @pytest.mark.asyncio
@@ -198,7 +198,7 @@ def test_validate_public_share_access_blocks_wrong_password() -> None:
 
 
 def test_validate_public_share_access_blocks_before_active_window() -> None:
-    active_from = datetime.now(timezone.utc) + timedelta(hours=2)
+    active_from = datetime.now(UTC) + timedelta(hours=2)
     share = SimpleNamespace(
         is_active=True,
         deleted_at=None,
@@ -216,7 +216,7 @@ def test_validate_public_share_access_blocks_before_active_window() -> None:
 
 
 def test_validate_public_share_access_can_allow_expired_end_times() -> None:
-    past = datetime.now(timezone.utc) - timedelta(hours=2)
+    past = datetime.now(UTC) - timedelta(hours=2)
     share = SimpleNamespace(
         is_active=True,
         deleted_at=None,
@@ -237,10 +237,10 @@ def test_validate_public_share_access_can_allow_expired_end_times() -> None:
     ("share_overrides", "password", "error_message"),
     [
         ({"is_active": False}, "secret", "链接已停用"),
-        ({"deleted_at": datetime.now(timezone.utc)}, "secret", "链接已停用"),
+        ({"deleted_at": datetime.now(UTC)}, "secret", "链接已停用"),
         ({"password_hash": build_optional_password_hash("secret")}, "bad", "访问密码错误"),
         (
-            {"settings": {"activeFrom": (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()}},
+            {"settings": {"activeFrom": (datetime.now(UTC) + timedelta(hours=2)).isoformat()}},
             "secret",
             "未到开放时间",
         ),
@@ -254,7 +254,7 @@ def test_allow_expired_does_not_bypass_other_access_controls(
     share_values: dict[str, object] = {
         "is_active": True,
         "deleted_at": None,
-        "expires_at": datetime.now(timezone.utc) - timedelta(hours=2),
+        "expires_at": datetime.now(UTC) - timedelta(hours=2),
         "password_hash": build_optional_password_hash("secret"),
         "settings": {},
     }
@@ -273,7 +273,7 @@ def test_validate_public_share_access_supports_legacy_expire_and_password_field_
     share = SimpleNamespace(
         is_active=True,
         deleted_at=None,
-        expire_time=datetime.now(timezone.utc) + timedelta(hours=1),
+        expire_time=datetime.now(UTC) + timedelta(hours=1),
         password=build_optional_password_hash("secret"),
         settings={},
     )

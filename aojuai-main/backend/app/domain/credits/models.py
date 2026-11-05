@@ -116,7 +116,7 @@ class CreditAccount(TenantBaseModel):
         comment="Extra attributes (JSONB)",
     )
 
-    transactions: Mapped[list["CreditTransaction"]] = relationship(
+    transactions: Mapped[list[CreditTransaction]] = relationship(
         "CreditTransaction",
         back_populates="account",
         lazy="selectin",

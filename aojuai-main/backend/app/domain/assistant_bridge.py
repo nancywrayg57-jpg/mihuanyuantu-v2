@@ -16,7 +16,6 @@ from app.domain.assistant.module_skill_governance import (
     merge_module_skill_governance,
 )
 
-
 DEFAULT_ASSISTANT_PROMPTS: dict[str, Any] = {
     "assistant": {
         "system": (
