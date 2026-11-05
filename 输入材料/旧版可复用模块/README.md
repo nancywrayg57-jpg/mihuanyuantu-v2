@@ -18,6 +18,7 @@ runtime_verification: NOT_RUN
 
 | 目的 | 文件 |
 |---|---|
+| **旧版 drizzle schema 整文件** | [schema.ts](01_源码参考/原样快照/drizzle/schema.ts)；与来源 `D:\workspace\蜜獾原图\drizzle\schema.ts` SHA-256 一致（`43FF1862…CCACFDB`）。参数表行段摘录仍见 [parameters_schema.ts.txt](01_源码参考/边界片段/parameters_schema.ts.txt) |
 | **Gemini 五维检测合同（旧版）** | [exifVerifier.ts](01_源码参考/原样快照/server/exifVerifier.ts)（RM-009）；键 `noise` / `depthOfField` / `lighting` / `colorRealism` / `overallRealism`，提示词内 `score >= 75` 且 `passed=true`。与 `D:\workspace\蜜獾原图\server\exifVerifier.ts` 字节一致（SHA-256 `60AF1298139B56DE44DE5666F78FE91EFAC68A1731D425A434243D9AC8D4A487`）。只复用合同语义，不照搬旧 Key 轮询与异常零分回退 |
 | 确认每个模块能复用什么、必须改什么 | [模块复用评估](03_复用评估/模块复用评估.md) |
 | 查看设备类型、参数差异及数据复核点 | [设备参数分类与复用说明](03_复用评估/设备参数分类与复用说明.md) |
