@@ -48,12 +48,10 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **当前冻结**：grill 收口 ADR（Q1–Q7）已写回；**未「授权开 S0」前禁止 S0 业务代码**（`progress.yaml` `s0_coding_authorized=false`）。
-- **合入文档后、开 S0 前**：Owner 开启禁自评自合/非作者审批并登记（Q7）。
-- 授权后：按 `DEV_INSTRUCTIONS.md` §10.1 完成 S0（含 Q6 开发种子文件经网关取证），**端测通过**再进 §10.2 S1。
-- **每个里程碑完成后须端测**；未通过或无证据不得开下一阶段。
-- **开 S2+ 前**须先补齐该阶段「任务 / 退出证据 / 禁止项」；`02-delivery.yaml` 只同步 status。
-- **协作**：Owner `@nancywrayg57-jpg` / Collaborator `@xtzhou247`；合入须过 Required **`CI gate`**；禁自评自合按 Q7 时机开启后才算门禁齐。
+- **当前冻结**：**暂不启动 S0**（`s0_coding_authorized=false`）；grill 收口 ADR（Q1–Q7）已写回。
+- **门禁**：Owner 已确认开启禁自评自合（Q7）；合入须过 Required **`CI gate`**。
+- **双账号**：Owner 主会话 ≠ Collaborator 子会话。子会话 PR 作者要为 `@xtzhou247`，必须由该账号**本人**登录 Cursor、在 Dashboard → Integrations 连接 GitHub，再对本仓**新开** Cloud Agent。主会话 **无法**代其 OAuth / 切换身份。
+- 授权开 S0 后：按 `DEV_INSTRUCTIONS.md` §10.1（含 Q6 种子网关取证），端测通过再进 S1。
 - **客户业务 API**（PRD **2.10** / FR-033；架构 **1.7**）属第一版、S5/R3，**不进 S1**。
 - **S7** 须管理员确认；缺密钥/SSH 时在聊天索取。
 

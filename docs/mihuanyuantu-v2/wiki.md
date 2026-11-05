@@ -25,7 +25,8 @@
 | 2026-11-05 | design | 架构 1.5→1.6：api_keys 复用；表裁剪；先冻后队；RBAC；双 Token | confirmed | 审计补缺口 |
 | 2026-11-05 | delivery | CI/CD：§7 禁自评自合；**CI gate** Required 已开；Tag stub；仓 public | confirmed | 用户配置 + #9 |
 | 2026-11-05 | design | **能力名 scopes** + 映射层；PRD §7 订单客服 A；§8.3 LocalDisk；**冻结 S0**；禁自评自合须 Owner 确认 | confirmed | grill round-2 Q1–Q5 |
-| 2026-11-05 | delivery | S0 网关可用开发种子文件取证（经 StorageAdapter+网关）；禁自评自合在文档合入后、开 S0 前开启 | confirmed | grill Q6 / Q7 |
+| 2026-11-05 | delivery | S0 网关可用开发种子文件取证；禁自评自合在开 S0 前开启 | confirmed | grill Q6 / Q7 |
+| 2026-11-05 | delivery | Owner 确认禁自评自合已开；S0 暂不启动；子会话须 xtzhou247 本人连 Cursor↔GitHub | confirmed | user |
 
 ## Phase Knowledge
 ### Discovery
