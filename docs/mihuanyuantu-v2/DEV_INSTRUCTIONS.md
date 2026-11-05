@@ -150,8 +150,8 @@
 
 ### 7.5 Owner 须在 GitHub 网页完成的设置（Agent 无法代开时）
 
-1. `main` 分支保护：必须 PR；Required checks 勾选 CI 汇总门禁；禁止直接 push。
-2. 禁止自评自合（或要求非作者审批）。
+1. `main` 分支保护：必须 PR；Required checks 勾选汇总门禁 job 名 **`CI gate`**；禁止直接 push。（**已核实**：`main` 已 Required `CI gate`。）
+2. 禁止自评自合（或要求非作者审批）。（**grill 收口 Q5**：此项未由 Owner 确认开启前，不得宣称 CI/CD 双账号门禁已齐。）
 3. 确认 Collaborator 为 Write、Owner 为 Admin。
 4. 将 `@xtzhou247` 接入 Cursor 并授权本仓后，再启双会话范式。
 

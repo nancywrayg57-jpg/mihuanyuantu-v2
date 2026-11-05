@@ -24,15 +24,21 @@ phase_confirmation:
     - id: FLOW-FREEZE-BEFORE-QUEUE
       text: "处理提交短事务内：核余额+冻结+建任务/execution_job；禁止先入队后冻结"
     - id: RBAC-MATRIX-A
-      text: "可执行权限矩阵含商家/订单客服A/技术客服/管理员/API Key；订单客服确认拒单、不解冻、不看业务图"
+      text: "可执行权限矩阵含商家/订单客服A/技术客服/管理员/API Key；订单客服确认拒单、不解冻、不看业务图；已升入 PRD 2.10 §7"
     - id: DUAL-TOKEN
       text: "上游模型 credential_ref 与客户业务 api_keys 物理隔离；关闭上游 Key 自助≠关闭业务 API"
+    - id: SCOPE-CAPABILITY-NAME
+      text: "api_keys.scopes 落库=能力名（image_processing）；鉴权映射路径白名单；改造底座校验；禁止空/培训默认全集给业务 Key"
+    - id: S0-CODING-FREEZE
+      text: "未获管理员「授权开 S0」前禁止实现 S0 业务代码"
   accepted_risks:
     - "经济起步同机盘损坏风险已知；上线前手工备份规程"
     - "原型尚无商家业务 API 凭证页；实现 S5 前须补 UI 合同"
-  blockers: []
+    - "禁自评自合须 Owner 网页确认后才算 CI/CD 双账号门禁齐"
+  blockers:
+    - "s0_coding_authorized=false"
   confirmed_by: user
-  confirmed_at: "2026-11-04T21:45:00-05:00"
+  confirmed_at: "2026-11-05T01:23:00-05:00"
   change_log:
     - date: "2026-11-04"
       change: "架构合同改为 LocalDisk；记录首期适配器边界"
@@ -43,19 +49,25 @@ phase_confirmation:
     - date: "2026-11-05"
       change: "架构升至 1.6：§5.4 首期表裁剪、§5.5 业务流转、§10.2–10.4 权限矩阵/双 Token/支付与图片落点"
       reason: "用户确认补进表结构+流转+角色权限+支付/图片/Token 设计包"
+    - date: "2026-11-05"
+      change: "架构 1.7 + PRD 2.10：能力名 scopes、§7 订单客服 A、§8.3 LocalDisk 措辞、冻结 S0"
+      reason: "grill round-2 Q1–Q5 用户全接受推荐"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "设计阶段以既有原型为 UX 基线；架构 1.6 含 LocalDisk、FR-033、首期表裁剪、业务流转（先冻后队）、可执行 RBAC 与双 Token。"
+  phase_summary: "设计阶段以既有原型为 UX 基线；架构 1.7 = LocalDisk 消歧 + 能力名 scope 映射 + 1.6 表/流转/RBAC/双 Token；PRD 2.10 §7 对齐。"
   outcomes:
     - "AD-007 修订为 LocalDisk 默认"
     - "架构 1.6 补齐首期表/流转/权限/双 Token"
+    - "架构 1.7 / PRD 2.10：能力名 scopes、订单客服 A 入 PRD、OSS 残句清除"
   lessons:
     - "存储/检测/五层必须适配器化，便于假→真切换"
     - "冻结与入队同属提交事务；队列不等于先排队后扣款"
+    - "底座 api_keys 路径前缀语义与 FR-033 能力名合同冲突，须显式改造"
   reusable_rules:
     - "事务内不读盘写大文件到完成；先记意图再落盘"
     - "上游模型 Key ≠ 客户业务 API Key"
+    - "scopes 落库=能力名；匹配前先映射路径白名单"
   prompts_or_commands: []
   evidence_links:
     - ../蜜獾原图-v2-项目架构-v1.0.md
@@ -177,7 +189,7 @@ architecture:
     db: "PostgreSQL 16 local"
     storage_default: "LocalDisk"
     storage_reserved: "OSS adapter"
-  version: "1.6"
+  version: "1.7"
   first_knife_adapters:
     storage: LocalDiskStorageAdapter
     detector: FixtureGeminiDetector

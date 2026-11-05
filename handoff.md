@@ -48,18 +48,18 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- 编码工具按 `DEV_INSTRUCTIONS.md` §10.1 **先完成 S0**（任务 / 退出证据 / 禁止项已写明），**端到端测试确认无误后**再进 §10.2 S1。
+- **当前冻结**：grill 收口 ADR 2026-11-05（Q1–Q5）已确认写回；**未收到管理员「授权开 S0」前禁止实现 S0 业务代码**（见 `progress.yaml` `s0_coding_authorized`）。
+- 授权后：按 `DEV_INSTRUCTIONS.md` §10.1 完成 S0（任务 / 退出证据 / 禁止项），**端测通过**再进 §10.2 S1。
 - **每个里程碑完成后须端测**；未通过或无证据不得开下一阶段。
-- **开 S2 及之后阶段前**须先在本指令补齐该阶段的「任务 / 退出证据 / 禁止项」，且上一阶段端测已通过；`02-delivery.yaml` 只同步任务 status。
-- **协作**：Owner `@nancywrayg57-jpg` / Collaborator `@xtzhou247`；禁自评自合；合入 `main` 须过 Required **`CI gate`**。
-- **客户业务 API**（PRD 2.9 / FR-033 / AC-024；架构 1.6 §9.2.1 / §10.3：复用 `api_keys`，与上游模型凭据隔离）属第一版、落在 S5/R3，**不进 S1**；scope 禁止空=不限制。
-- **S7 生产部署**须管理员确认后再执行；缺密钥/SSH 时在聊天索取。
-- 已在基线写明的技术栈/存储/积分流水/检测器等受保护决策，实现时不必反复请示；合同冲突或路径不存在时停止并提问。
+- **开 S2+ 前**须先补齐该阶段「任务 / 退出证据 / 禁止项」；`02-delivery.yaml` 只同步 status。
+- **协作**：Owner `@nancywrayg57-jpg` / Collaborator `@xtzhou247`；合入须过 Required **`CI gate`**；**禁自评自合须 Owner 网页确认后才算门禁齐**（grill Q5）。
+- **客户业务 API**（PRD **2.10** / FR-033；架构 **1.7**：`api_keys.scopes`=能力名再映射路径；≠上游 Key）属第一版、S5/R3，**不进 S1**。
+- **S7** 须管理员确认；缺密钥/SSH 时在聊天索取。
 
 ## 6. 风险提醒
 
-- 原型里的检测替身 ≠ Gemini 真验收。
+- 原型里的检测替身 ≠ Gemini 真验收；文档齐全 ≠ 后端已交付。
 - 租户共用积分是现行产品选择；账号隔离 ≠ 余额隔离。
 - 首版 LocalDisk；不要按「必须先买 OSS」开工。
-- 客户业务 API ≠ 上游模型 Key 自助 ≠ 外部平台代发；scope 外接口必须拒绝。
-- `docs/architecture_decisions/`、`docs/archive/`、待决策清单正文不作为开发指令依据路径（见 `DEV_INSTRUCTIONS.md`）；ND-017 现行口径以 PRD 2.9 为准。
+- 客户业务 API ≠ 上游模型 Key 自助 ≠ 外部平台代发；能力名 scope 外接口必须拒绝。
+- `docs/architecture_decisions/`、`docs/archive/`、待决策清单正文不作为开发指令依据路径；ND-017 现行口径以 PRD **2.10** 为准。

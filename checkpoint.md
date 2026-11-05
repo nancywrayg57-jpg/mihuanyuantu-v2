@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-05 11:55 CST |
-| branch | `cursor/cicd-dual-account-init-9973` |
-| HEAD | `87b9abf`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
-| 文档态 | PRD 2.9；架构 **1.6**；DEV_INSTRUCTIONS §7 CI/CD 双账号 + §10 S0/S1 清单 + 里程碑端测硬规则；01-design 已确认 |
-| 代码态 | 业务闭环 **未实现**；已加 `.github/workflows/ci.yml`（汇总 **CI gate**）与 `deploy-stub.yml`；底座有通用 `api_keys` |
-| 验证态 | `validate_workspace` ok；仓库 **public**；开发机/真模型 **未实测** |
-| 当前阶段 | S0 **待自主推进**（以 `progress.yaml` 为准）；客户业务 API 不抢跑 |
-| 下一步 | 按 `DEV_INSTRUCTIONS` §10.1 推进 S0；端测通过后再开 S1；FR-033 属 S5/R3 |
+| updated | 2026-11-05 14:30 CST |
+| branch | `cursor/grill-round2-doc-close-9633` |
+| HEAD | （以更新本文件时的 `git rev-parse --short HEAD` 为准；合入前相对 `main`=`543f104`） |
+| 文档态 | PRD **2.10**；架构 **1.7**；grill 收口 ADR 2026-11-05（Q1–Q5）；DEV §7 CI/CD + §10 S0/S1 + 里程碑端测 |
+| 代码态 | 业务闭环 **未实现**；已有 CI workflows + Tag stub；底座 `api_keys` 仍为路径前缀语义（FR-033 能力名映射待 S5 改造） |
+| 验证态 | `main` Required **`CI gate`** 已开；仓 public；禁自评自合 **待 Owner 网页确认**；开发机/真模型未实测 |
+| 当前阶段 | 文档收口；**S0 编码冻结**（`s0_coding_authorized=false`） |
+| 下一步 | 用户审阅本 PR → Owner 确认禁自评自合 → 明确「授权开 S0」后再按 §10.1 实现 |
 
 ## 1. 仓库与文档基线
 
@@ -21,13 +21,14 @@
 | --- | --- |
 | 仓库 | `https://github.com/nancywrayg57-jpg/mihuanyuantu-v2.git` |
 | 文档工作区 | `docs/mihuanyuantu-v2/` |
-| 现行 PRD | `docs/蜜獾原图-v2-PRD-v2.0.md`（document_version 2.9；AC-024=客户业务 API） |
-| 项目架构 | `docs/蜜獾原图-v2-项目架构-v1.0.md`（version **1.6**；`implementation_status: NOT_IMPLEMENTED`） |
+| 现行 PRD | `docs/蜜獾原图-v2-PRD-v2.0.md`（document_version **2.10**；§7 含订单客服 A；AC-024=客户业务 API） |
+| 项目架构 | `docs/蜜獾原图-v2-项目架构-v1.0.md`（version **1.7**；`implementation_status: NOT_IMPLEMENTED`） |
+| grill 收口 ADR | `docs/architecture_decisions/蜜獾原图-v2-grill-me文档基线收口-2026-11-05.md` |
 | Gemini 方案 | `docs/蜜獾原图-v2-Gemini-Vision检测与自动重做方案-v1.0.md` |
-| 生产物料清单 | `docs/蜜獾原图-v2-生产物料清单-v1.0.md`（`production_readiness: NOT_READY`；`development_readiness: READY_FOR_R0_DOC_AND_BASE_CODING`） |
+| 生产物料清单 | `docs/蜜獾原图-v2-生产物料清单-v1.0.md`（`production_readiness: NOT_READY`） |
 | Agent 开发指令 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
 | 根目录职责文件 | `AGENTS.md`、`handoff.md`、`anchor.md`、`checkpoint.md` |
-| AidevOps 校验 | `python3 aidevops/scripts/validate_workspace.py docs/mihuanyuantu-v2`（更新本文件时应重跑；结果写入验证态） |
+| AidevOps 校验 | `python3 aidevops/scripts/validate_workspace.py docs/mihuanyuantu-v2`（缺 `prototypes/` 目录时结构校验会报错；非 S0 编码阻塞） |
 
 ## 2. 底座与原型（静态事实）
 
@@ -37,8 +38,7 @@
 | 上游固定版本（文件登记） | `aojuai-main/UPSTREAM_PIN.txt`：`sha add4ddb28916a8745f1be200e15e5a504fb4b4b3` |
 | 业务实现包 | 架构目标为 `realphotos`；**当前不等同已交付业务闭环** |
 | HTML 原型入口 | `prototype/index.html`（离线交互；mock） |
-| 设备预设源 | `输入材料/旧版可复用模块/02_设备参数/线上预设_脱敏原始.json`（`total` / `items` = 405） |
-| 后端 env 模板（仓库内） | `aojuai-main/backend/.env.lite.template`、`aojuai-main/backend/.env.production.template` |
+| 设备预设源 | `输入材料/旧版可复用模块/02_设备参数/线上预设_脱敏原始.json` |
 | 仓库内 `生产物料/` | **不存在**；密钥向管理员索取后仅存本机 |
 
 ## 3. 环境登记（摘自物料清单，非本机实测）
@@ -55,10 +55,11 @@
 
 | 阶段 | 状态 |
 | --- | --- |
-| S0 基础 | 未开工；§10.1 清单已齐；完成后须端测通过才可开 S1 |
-| S1 首期单张闭环 | 未开工；§10.2 清单已齐；依赖 S0 退出 + S0 端测通过 |
-| S2–S6 | 未开工；S1 后可按依赖有限并行自主推进 |
-| S7 生产部署 | **须管理员确认**；且 `production_readiness: NOT_READY` + 上线门槛证据 |
+| 文档收口 | Q1–Q5 已确认；待合入本分支文档 |
+| S0 基础 | **冻结**；须管理员「授权开 S0」 |
+| S1 首期单张闭环 | 未开工；依赖 S0 退出 + 端测 |
+| S2–S6 | 未开工 |
+| S7 生产部署 | **须管理员确认** |
 
 过程进度：`docs/mihuanyuantu-v2/progress.yaml`。
 
@@ -66,11 +67,12 @@
 
 | 层级 | 状态 |
 | --- | --- |
-| 文档工作区结构 | AidevOps `validate_workspace` 可通过 |
+| 文档工作区结构 | AidevOps 缺 `prototypes/` 时 validate 失败；CI D 门仅查关键文件存在 |
 | 原型交互演示 | 可本地打开；**不等于**后端验收 |
 | 业务 API / worker / 整数积分流水 | **未实现为可验收产品** |
 | 真实五层处理 / 真 Gemini 小样 | **未通过** |
 | 生产收费服务 | **未就绪** |
+| CI Required | **`CI gate`** 已在 `main` 开启；禁自评自合待 Owner 确认 |
 
 ## 6. 允许标「未测」但不可省略 §0
 

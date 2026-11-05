@@ -6,8 +6,10 @@ active_capability: delivery-planner
 feature_slug: mihuanyuantu-v2
 source_prd: ../蜜獾原图-v2-PRD-v2.0.md
 grill_session: confirmed_2026-11-04
+grill_round2: confirmed_2026-11-05
 autonomous_stages: "S0-S6"
 s7_requires_admin_confirm: true
+s0_coding_authorized: false
 
 clarification_policy:
   mode: ask-user
@@ -29,12 +31,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "S0→S1：基础 + 首期单张闭环"
-    user_value: "商家能完成可审计的单张处理与按张扣费闭环（开发机）"
-    visible_output: "可登录、可上传、可提交单张、可下载 JPG、积分流水正确"
-    verify: "DEV_INSTRUCTIONS §10.1/10.2 exit_evidence + 里程碑端到端测试（含 AC-K1-001..004）"
-    status: ready_for_autonomous_implementation
-  next_user_action: "Agent 按 DEV_INSTRUCTIONS §10.1 自主推进 S0；端测通过后再开 S1；S7 前须管理员确认"
+    goal: "grill 文档基线收口（PRD 2.10 / 架构 1.7）；S0 编码冻结至管理员授权"
+    user_value: "合同无分叉后再开可验收的基础切片"
+    visible_output: "ADR + PRD §7 + 架构 1.7 + 冻结的 next_action"
+    verify: "用户确认 Q1–Q5；文档版本与 progress 一致；仍无业务实现宣称"
+    status: docs_close_in_progress
+  next_user_action: "审阅本轮文档 PR；Owner 确认 GitHub 禁自评自合；明确「授权开 S0」后再实现"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -87,16 +89,17 @@ phase_gates:
     status: confirmed
     evidence:
       - ../architecture_decisions/蜜獾原图-v2-grill-me逻辑架构裁决-2026-11-04.md
+      - ../architecture_decisions/蜜獾原图-v2-grill-me文档基线收口-2026-11-05.md
       - wiki.md
   design:
     file: 01-design.yaml
     status: confirmed_architecture_delta
     evidence:
       - ../蜜獾原图-v2-项目架构-v1.0.md
-      - ../architecture_decisions/蜜獾原图-v2-grill-me逻辑架构裁决-2026-11-04.md
+      - ../architecture_decisions/蜜獾原图-v2-grill-me文档基线收口-2026-11-05.md
   delivery:
     file: 02-delivery.yaml
-    status: ready_autonomous_s0_s1
+    status: frozen_awaiting_s0_authorization
     evidence:
       - DEV_INSTRUCTIONS.md
       - DEV_INSTRUCTIONS.md#§10.1-S0
@@ -126,13 +129,14 @@ evidence_pointers:
   materials: ../蜜獾原图-v2-生产物料清单-v1.0.md
   prototype: ../../prototype/README.md
   grill_adr: ../architecture_decisions/蜜獾原图-v2-grill-me逻辑架构裁决-2026-11-04.md
-  customer_business_api: "PRD FR-033 / AC-024；架构 1.6 §9.2.1/§10.3；阶段 S5/R3；不进 S1"
-  architecture_design_pack: "1.6 §5.4表裁剪 §5.5流转 §10.2RBAC §10.3双Token §10.4支付/图片"
+  grill_adr_round2: ../architecture_decisions/蜜獾原图-v2-grill-me文档基线收口-2026-11-05.md
+  customer_business_api: "PRD FR-033 / AC-024；架构 1.7 §9.2.1/§10.3；能力名 scopes；阶段 S5/R3；不进 S1"
+  architecture_design_pack: "1.7 = 1.6 包 + LocalDisk 措辞消歧 + 能力名 scope 映射"
   prototypes: []
   test_reports: []
   commits_or_prs: []
 
 next_action:
-  owner: agent
-  action: "按 DEV_INSTRUCTIONS §10.1 执行 S0 tasks，勾满 exit_evidence 并端测通过后再开 S1；客户业务 API（FR-033）不抢跑，待 S5 且该阶段三件套补齐后实现；同步 checkpoint §0 与本文件"
-  blocker: ""
+  owner: user
+  action: "审阅文档收口 PR；Owner 在 GitHub 确认禁自评自合/非作者审批；明确回复「授权开 S0」前禁止实现 S0 业务代码"
+  blocker: "s0_coding_authorized=false（grill Q4）；CI/CD 双账号门禁缺 Owner 对禁自评自合的确认（grill Q5）"

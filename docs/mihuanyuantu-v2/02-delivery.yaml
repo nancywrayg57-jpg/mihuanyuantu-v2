@@ -1,20 +1,26 @@
 phase: delivery
-status: ready_autonomous_s0_s6
+status: frozen_awaiting_s0_authorization
 
 phase_confirmation:
-  status: confirmed
+  status: needs_user
   mode: ask-user
-  user_questions: []
+  user_questions:
+    - "是否授权开 S0 业务代码实现？"
+    - "Owner 是否已在 GitHub 打开禁自评自合/非作者审批？"
   auto_filled_for_test: []
   confirmed_decisions:
-    - "S0–S6 由编码 Agent 按 DEV_INSTRUCTIONS 自主推进"
+    - "S0–S6 在获授权后由编码 Agent 按 DEV_INSTRUCTIONS 自主推进"
     - "S7 生产部署须管理员确认"
     - "续作以 progress.yaml next_action 为准"
+    - "grill Q4：未授权前禁止 S0 业务代码"
+    - "grill Q5：禁自评自合未确认前不得宣称 CI/CD 双账号门禁已齐"
   accepted_risks:
     - "自主推进仍受 PRD/架构/上线门槛约束"
-  blockers: []
+  blockers:
+    - "s0_coding_authorized=false"
+    - "owner_confirm_no_self_merge=pending"
   confirmed_by: user
-  confirmed_at: "2026-11-04T17:08:00+08:00"
+  confirmed_at: "2026-11-05T01:23:00-05:00"
   change_log:
     - date: "2026-11-04"
       change: "建立交付骨架与首期（S1）候选任务列表（未开工）"
@@ -31,10 +37,13 @@ phase_confirmation:
     - date: "2026-11-05"
       change: "登记 FR-033 客户业务 API 不进 S1；实现归 S5/R3；架构 1.6 已补表/流转/RBAC/双 Token"
       reason: "审计补齐交付镜像与设计缺口"
+    - date: "2026-11-05"
+      change: "冻结自主开 S0；对齐 PRD 2.10 / 架构 1.7 收口"
+      reason: "grill round-2 Q4；Q1–Q5 全确认"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "交付阶段可按指令自主推进 S0–S6；阶段清单与里程碑端测权威在 DEV_INSTRUCTIONS §10/§12；客户业务 API 归 S5。"
+  phase_summary: "交付阶段在授权后可推进 S0–S6；当前 s0_coding_authorized=false；阶段清单与端测权威在 DEV_INSTRUCTIONS §10/§12；客户业务 API 归 S5。"
   outcomes: []
   lessons: []
   reusable_rules:
