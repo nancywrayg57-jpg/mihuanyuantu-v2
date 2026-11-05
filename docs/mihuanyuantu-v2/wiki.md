@@ -21,7 +21,8 @@
 | 2026-11-04 | design | 真登录；占位交付合同；消息；冻结范围列表 | confirmed | grill Q22–Q25 |
 | 2026-11-04 | design | 整数 rp_credit；过期拒绝；软删；预审占位；仅开发机 | confirmed | grill Q26–Q30 |
 | 2026-11-04 | discovery | 微决策：管理员注入替身结果；双账号并发快速联通测试；开发验证码 | confirmed | user A+微决策 |
-| 2026-11-05 | prd | 第一版纳入客户业务 API：X-API-Key + image_processing + OpenAPI/Swagger（FR-033）；不进首期 S1 | confirmed | user 改第一版范围 |
+| 2026-11-05 | prd | 第一版纳入客户业务 API：X-API-Key + image_processing + OpenAPI/Swagger（FR-033 / AC-024）；不进首期 S1 | confirmed | user 改第一版范围 |
+| 2026-11-05 | design | 架构 1.5：复用 api_keys；§9.2.1 处理子集路由；scope 映射禁止空=不限制；澄清≠上游模型 Key | confirmed | 审计补缺口 |
 
 ## Phase Knowledge
 ### Discovery
@@ -31,10 +32,10 @@
 - Open questions: 无根级开放项；实现按 DEV_INSTRUCTIONS 自主推进。
 
 ### Design
-- Outcomes: 架构 1.4 LocalDisk；首期适配器边界写入 01-design。
-- Lessons: 五层占位实现也必须遵守交付字段合同，否则换真时二次返工。
-- Reusable rules: 存储经 `StorageAdapter`；检测经 `DetectorAdapter`（fixture|gemini）。
-- Prompt notes: 无本轮 PNG 原型请求。
+- Outcomes: 架构 1.5 LocalDisk + FR-033 客户业务 API（复用 `api_keys`、处理子集路由）；首期适配器边界写入 01-design。
+- Lessons: 五层占位实现也必须遵守交付字段合同，否则换真时二次返工；业务 API scope 不得沿用底座空列表不限制。
+- Reusable rules: 存储经 `StorageAdapter`；检测经 `DetectorAdapter`（fixture|gemini）；客户业务 Key ≠ 上游模型 Key。
+- Prompt notes: 无本轮 PNG 原型请求；S5 前须补商家「业务 API 凭证」页（原型现仅有上游模型 Key）。
 
 ### Delivery
 - Outcomes: S0/S1 任务·退出证据·禁止项已写入 DEV_INSTRUCTIONS；gate ready。

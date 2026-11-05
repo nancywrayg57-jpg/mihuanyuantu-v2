@@ -28,10 +28,13 @@ phase_confirmation:
     - date: "2026-11-05"
       change: "新增里程碑端测硬规则：每阶段 exit_evidence + 端到端测试通过后才可开下一阶段"
       reason: "用户要求每个里程碑完成后端测确认无误再进入下一阶段"
+    - date: "2026-11-05"
+      change: "登记 FR-033 客户业务 API 不进 S1；实现归 S5/R3；架构 1.5 已补表/路由"
+      reason: "审计补齐交付镜像与设计缺口"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "交付阶段可按指令自主推进 S0–S6；阶段清单与里程碑端测权威在 DEV_INSTRUCTIONS §10/§12。"
+  phase_summary: "交付阶段可按指令自主推进 S0–S6；阶段清单与里程碑端测权威在 DEV_INSTRUCTIONS §10/§12；客户业务 API 归 S5。"
   outcomes: []
   lessons: []
   reusable_rules:
@@ -39,9 +42,11 @@ knowledge_assets:
     - "feature 分支命名遵循 cloud agent 约定"
     - "阶段 tasks/exit_evidence/forbidden 以 DEV_INSTRUCTIONS 为准；本文件只镜像 status"
     - "每个里程碑完成后须端到端测试；未通过不得开下一阶段"
+    - "客户业务 API（FR-033/AC-024）属第一版但非 S1；S5 开工前须补该阶段三件套"
   prompts_or_commands: []
   evidence_links:
     - "DEV_INSTRUCTIONS.md §10.1 S0 / §10.2 S1"
+    - "../蜜獾原图-v2-项目架构-v1.0.md §5 api_keys / §9.2.1"
   update_wiki: []
 
 mvp_sprint:
@@ -56,7 +61,7 @@ mvp_sprint:
     - "worker 关闭页面后继续执行"
     - "订单客服可确认种子充值订单"
     - "S1 端到端测试通过并留证据后才可开 S2+"
-  non_goals: "见 DEV_INSTRUCTIONS §10.2 forbidden 与 00-discovery mvp_scope.deferred"
+  non_goals: "见 DEV_INSTRUCTIONS §10.2 forbidden 与 00-discovery mvp_scope.deferred（含客户业务 API FR-033，归 R3/S5）"
 
 candidate_tasks_not_started:
   - id: T-S0-001

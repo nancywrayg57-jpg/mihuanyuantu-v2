@@ -250,7 +250,7 @@ mvp_scope:
     - 自动重做/主动重处理
     - 混合批次 2–10
     - ZIP/OSS/扫码支付/运营大盘
-    - 客户业务 API（FR-033：X-API-Key + image_processing；属第一版，退出在 R3/S5，不进第一刀）
+    - 客户业务 API（FR-033 / AC-024：X-API-Key + image_processing；属第一版，退出在 R3/S5，不进首期 S1）
 
 success_metrics:
   - id: SM-K1-001

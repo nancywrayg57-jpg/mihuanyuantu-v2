@@ -9,7 +9,7 @@
 | [PRD v2.0](蜜獾原图-v2-PRD-v2.0.md) | 产品需求；document_version **2.9**（含客户业务 API FR-033） |
 | [待决策清单](蜜獾原图-v2-待决策清单-v1.0.md) | ND 裁决（**1.30**）；与 PRD 冲突时以现行 PRD 为准 |
 | [Gemini Vision 检测与自动重做](蜜獾原图-v2-Gemini-Vision检测与自动重做方案-v1.0.md) | 生产检测与 FR-026 合同 |
-| [项目架构](蜜獾原图-v2-项目架构-v1.0.md) | 目标实现设计 **1.4**（LocalDisk 默认）；尚未证明已上线 |
+| [项目架构](蜜獾原图-v2-项目架构-v1.0.md) | 目标实现设计 **1.5**（LocalDisk 默认；含 FR-033 客户业务 API 表/路由）；尚未证明已上线 |
 | [生产物料清单](蜜獾原图-v2-生产物料清单-v1.0.md) | 开发机 VM、生产拓扑与上线阻塞项 |
 | [AidevOps 工作区](mihuanyuantu-v2/progress.yaml) | grill-me 确认后的首期阶段与进度文件 |
 | [Agent 开发指令](mihuanyuantu-v2/DEV_INSTRUCTIONS.md) | 阶段划分与依据路径；引用根目录职责文件 |

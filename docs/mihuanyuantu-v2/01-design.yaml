@@ -19,8 +19,11 @@ phase_confirmation:
       text: "PostgreSQL 持久队列 + 同机 worker 进程；禁止前端驱动终态"
     - id: UX-BASELINE
       text: "UI 信息架构沿用 prototype/；本阶段不新开 gpt-image-2 原型请求"
+    - id: FR-033-API
+      text: "第一版开放本平台业务 API（X-API-Key + image_processing + OpenAPI）；复用 api_keys；退出在 R3/S5；不进首期 S1"
   accepted_risks:
     - "经济起步同机盘损坏风险已知；上线前手工备份规程"
+    - "原型尚无商家业务 API 凭证页；实现 S5 前须补 UI 合同"
   blockers: []
   confirmed_by: user
   confirmed_at: "2026-11-04T01:39:00-05:00"
@@ -28,10 +31,13 @@ phase_confirmation:
     - date: "2026-11-04"
       change: "架构合同改为 LocalDisk；记录首期适配器边界"
       reason: "grill Q1/Q7/Q12/Q18/Q26 与物料对齐"
+    - date: "2026-11-05"
+      change: "登记 FR-033；架构升至 1.5（api_keys 复用 + 处理子集路由）"
+      reason: "用户纳入客户业务 API；审计补齐设计缺口"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "设计阶段以既有原型为 UX 基线；架构增量聚焦存储与首期（S1）适配器。"
+  phase_summary: "设计阶段以既有原型为 UX 基线；架构 1.5 含 LocalDisk 与 FR-033 客户业务 API 设计增量。"
   outcomes:
     - "AD-007 修订为 LocalDisk 默认"
   lessons:
@@ -51,7 +57,7 @@ prototype_image_request:
 
 system_flow_diagram:
   required: true
-  note: "沿用架构文档 Mermaid；LocalDisk 替换 OSS 节点后以架构 1.4 为准"
+  note: "沿用架构文档 Mermaid；LocalDisk 与 FR-033 以架构 1.5 为准"
   path: ../蜜獾原图-v2-项目架构-v1.0.md
 
 product_design:

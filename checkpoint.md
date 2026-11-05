@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-05 10:26 CST |
+| updated | 2026-11-05 10:37 CST |
 | branch | `cursor/prd-v1-customer-api-9973` |
-| HEAD | `a00829a`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
-| 文档态 | 措辞对齐 + 里程碑端测已在 main；本分支 PRD 2.9 纳入客户业务 API（FR-033：X-API-Key + image_processing）；不进 S1 |
-| 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付） |
+| HEAD | （提交后刷新短 SHA） |
+| 文档态 | PRD 2.9 FR-033/AC-024；架构 **1.5** 补 api_keys 复用与 §9.2.1；阶段文件已镜像；措辞残留已清 |
+| 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付；底座已有通用 `api_keys` 表） |
 | 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
-| 当前阶段 | S0 **待自主推进**（任务·退出证据·禁止项已齐；以 `progress.yaml` 为准） |
-| 下一步 | 按 `DEV_INSTRUCTIONS` §10.1 推进 S0；端测通过后再开 S1；客户 API 属 S5/R3 |
+| 当前阶段 | S0 **待自主推进**（以 `progress.yaml` 为准）；客户业务 API 不抢跑 |
+| 下一步 | 按 `DEV_INSTRUCTIONS` §10.1 推进 S0；端测通过后再开 S1；FR-033 属 S5/R3 |
 
 ## 1. 仓库与文档基线
 
@@ -21,8 +21,8 @@
 | --- | --- |
 | 仓库 | `https://github.com/nancywrayg57-jpg/mihuanyuantu-v2.git` |
 | 文档工作区 | `docs/mihuanyuantu-v2/` |
-| 现行 PRD | `docs/蜜獾原图-v2-PRD-v2.0.md`（document_version 2.9） |
-| 项目架构 | `docs/蜜獾原图-v2-项目架构-v1.0.md`（`implementation_status: NOT_IMPLEMENTED`） |
+| 现行 PRD | `docs/蜜獾原图-v2-PRD-v2.0.md`（document_version 2.9；AC-024=客户业务 API） |
+| 项目架构 | `docs/蜜獾原图-v2-项目架构-v1.0.md`（version **1.5**；`implementation_status: NOT_IMPLEMENTED`） |
 | Gemini 方案 | `docs/蜜獾原图-v2-Gemini-Vision检测与自动重做方案-v1.0.md` |
 | 生产物料清单 | `docs/蜜獾原图-v2-生产物料清单-v1.0.md`（`production_readiness: NOT_READY`；`development_readiness: READY_FOR_R0_DOC_AND_BASE_CODING`） |
 | Agent 开发指令 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
