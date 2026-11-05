@@ -110,7 +110,8 @@
 
 实现时只需记住：
 
-- 在 `cursor/<功能简述>-9973` 分支工作；经 PR squash 合入 `main`（细则见 `AGENTS.md`）。
+- 在 `cursor/<功能简述>-9973` 分支工作；经 PR squash 合入 `main`（细则见 `AGENTS.md` §7）。
+- Collaborator 子会话须 `@xtzhou247` **本人** Cursor↔GitHub OAuth（硬约束见 `AGENTS.md` §7.2）；Owner 主会话不能代连。
 - 工作流定义：`.github/workflows/ci.yml`、`.github/workflows/deploy-stub.yml`；本地密钥扫描：`bash scripts/ci/secret_scan.sh`。
 - Cloud Agent 通过 ≠ 开发机验收；端测证据规则见本文件第 12 节与里程碑端测硬规则。
 - **真实生产部署**仍须本文件 S7、第 11 节上线门槛、管理员确认。
