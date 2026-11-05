@@ -21,6 +21,7 @@
 | 2026-11-04 | design | 真登录；桩交付合同；消息；冻结范围列表 | confirmed | grill Q22–Q25 |
 | 2026-11-04 | design | 整数 rp_credit；过期拒绝；软删；预审桩；仅开发机 | confirmed | grill Q26–Q30 |
 | 2026-11-04 | discovery | 微决策：管理员注入夹具；双账号并发冒烟；开发验证码 | confirmed | user A+微决策 |
+| 2026-11-05 | prd | 第一版纳入客户业务 API：X-API-Key + image_processing + OpenAPI/Swagger（FR-033）；不进第一刀 | confirmed | user 改第一版范围 |
 
 ## Phase Knowledge
 ### Discovery

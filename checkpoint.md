@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-04 17:24 CST |
-| branch | `cursor/grill-logic-architecture-9973` |
-| HEAD | `e39cd6b`（短 SHA；以更新本文件时的 `git rev-parse --short HEAD` 为准） |
-| 文档态 | `DEV_INSTRUCTIONS` §10.1/10.2 已挂 S0/S1 三件套；`02-delivery` 仅状态镜像；gate ready |
+| updated | 2026-11-05 10:24 CST |
+| branch | `cursor/prd-v1-customer-api-9973` |
+| HEAD | （提交后刷新短 SHA） |
+| 文档态 | PRD 2.9 纳入客户业务 API（FR-033：X-API-Key + image_processing）；ND-017/anchor/DEV/S5 已同步；不进 S1 |
 | 代码态 | 业务闭环 **未实现**（`aojuai-main` 无 realphotos 可验收交付） |
 | 验证态 | `validate_workspace` ok；开发机连通与真模型 **未在本检查点实测** |
 | 当前切片 | S0 **待自主推进**（三件套已齐；以 `progress.yaml` 为准） |
-| 下一步 | 按 `DEV_INSTRUCTIONS` §10.1 推进 S0；S2+ 开工前补该切片三件套；S7 须管理员确认 |
+| 下一步 | 按 `DEV_INSTRUCTIONS` §10.1 推进 S0；客户 API 属 S5/R3 |
 
 ## 1. 仓库与文档基线
 
@@ -21,7 +21,7 @@
 | --- | --- |
 | 仓库 | `https://github.com/nancywrayg57-jpg/mihuanyuantu-v2.git` |
 | 文档工作区 | `docs/mihuanyuantu-v2/` |
-| 现行 PRD | `docs/蜜獾原图-v2-PRD-v2.0.md`（document_version 以文件头为准） |
+| 现行 PRD | `docs/蜜獾原图-v2-PRD-v2.0.md`（document_version 2.9） |
 | 项目架构 | `docs/蜜獾原图-v2-项目架构-v1.0.md`（`implementation_status: NOT_IMPLEMENTED`） |
 | Gemini 方案 | `docs/蜜獾原图-v2-Gemini-Vision检测与自动重做方案-v1.0.md` |
 | 生产物料清单 | `docs/蜜獾原图-v2-生产物料清单-v1.0.md`（`production_readiness: NOT_READY`；`development_readiness: READY_FOR_R0_DOC_AND_BASE_CODING`） |

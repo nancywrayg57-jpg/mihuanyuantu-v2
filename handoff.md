@@ -50,6 +50,7 @@
 
 - 编码工具按 `DEV_INSTRUCTIONS.md` §10.1 **先完成 S0**（`tasks` / `exit_evidence` / `forbidden` 已写明），再进 §10.2 S1。
 - **开 S2+ 前**须先在本指令补齐该切片三件套；`02-delivery.yaml` 只镜像任务 status。
+- **客户业务 API**（PRD 2.9 / FR-033：`X-API-Key` + `image_processing`）属第一版、落在 S5/R3，**不进 S1**。
 - **S7 生产部署**须管理员确认后再执行；缺密钥/SSH 时在聊天索取。
 - 已在基线写明的技术栈/存储/账本/检测器等受保护决策，实现时不必反复索权；合同冲突或路径不存在时停止并提问。
 
@@ -58,4 +59,5 @@
 - 原型夹具 ≠ Gemini 真验收。
 - 租户共用积分是现行产品选择；账号隔离 ≠ 余额隔离。
 - 首版 LocalDisk；不要按「必须先买 OSS」开工。
-- `docs/architecture_decisions/`、`docs/archive/`、待决策清单正文不作为开发指令依据路径（见 `DEV_INSTRUCTIONS.md`）。
+- 客户业务 API ≠ 上游模型 Key 自助 ≠ 外部平台代发；scope 外接口必须拒绝。
+- `docs/architecture_decisions/`、`docs/archive/`、待决策清单正文不作为开发指令依据路径（见 `DEV_INSTRUCTIONS.md`）；ND-017 现行口径以 PRD 2.9 为准。
