@@ -31,12 +31,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "grill 文档基线收口（PRD 2.10 / 架构 1.7）；S0 编码冻结至管理员授权"
+    goal: "grill 文档基线收口（PRD 2.10 / 架构 1.7；Q1–Q7）；S0 编码冻结至管理员授权"
     user_value: "合同无分叉后再开可验收的基础切片"
-    visible_output: "ADR + PRD §7 + 架构 1.7 + 冻结的 next_action"
-    verify: "用户确认 Q1–Q5；文档版本与 progress 一致；仍无业务实现宣称"
-    status: docs_close_in_progress
-  next_user_action: "审阅本轮文档 PR；Owner 确认 GitHub 禁自评自合；明确「授权开 S0」后再实现"
+    visible_output: "ADR + PRD §7 + 架构 1.7 + §10.1 种子网关取证 + 冻结的 next_action"
+    verify: "用户确认 Q1–Q6；Q7 计划=合入后开 S0 前开启禁自评自合；仍无业务实现宣称"
+    status: docs_close_ready_for_merge
+  next_user_action: "合入文档 PR → Owner 开启禁自评自合并告知 → 明确「授权开 S0」后再实现"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -138,5 +138,5 @@ evidence_pointers:
 
 next_action:
   owner: user
-  action: "审阅文档收口 PR；Owner 在 GitHub 确认禁自评自合/非作者审批；明确回复「授权开 S0」前禁止实现 S0 业务代码"
-  blocker: "s0_coding_authorized=false（grill Q4）；CI/CD 双账号门禁缺 Owner 对禁自评自合的确认（grill Q5）"
+  action: "合入文档收口 PR →（Q7）开启禁自评自合/非作者审批并登记 → 明确「授权开 S0」；此前禁止 S0 业务代码"
+  blocker: "s0_coding_authorized=false（grill Q4）；owner_confirm_no_self_merge=pending_until_after_merge（grill Q7）"

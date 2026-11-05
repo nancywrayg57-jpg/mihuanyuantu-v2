@@ -151,7 +151,7 @@
 ### 7.5 Owner 须在 GitHub 网页完成的设置（Agent 无法代开时）
 
 1. `main` 分支保护：必须 PR；Required checks 勾选汇总门禁 job 名 **`CI gate`**；禁止直接 push。（**已核实**：`main` 已 Required `CI gate`。）
-2. 禁止自评自合（或要求非作者审批）。（**grill 收口 Q5**：此项未由 Owner 确认开启前，不得宣称 CI/CD 双账号门禁已齐。）
+2. 禁止自评自合（或要求非作者审批）。（**grill 收口 Q5/Q7**：文档合入后、正式开 S0 前由 Owner 开启；开启并登记前不得宣称 CI/CD 双账号门禁已齐，也不得开 S0 编码。）
 3. 确认 Collaborator 为 Write、Owner 为 Admin。
 4. 将 `@xtzhou247` 接入 Cursor 并授权本仓后，再启双会话范式。
 
@@ -199,16 +199,16 @@
 | T-S0-001 | 真会话登录（开发验证码可）+ 租户/账号模型落库 | 合法会话可进；无会话拒绝 |
 | T-001 | RBAC 种子：merchant×2、order_support、admin、第二租户 | 三角色可登录；跨租户拒绝 |
 | T-002 | `rp_credit_*` 整数积分流水与旧 Decimal 入口隔离 | 整数余额；旧 Decimal 对 realphotos 不可用 |
-| T-003 | LocalDisk `StorageAdapter` + 受控访问网关 | 无裸路径；鉴权可读 |
+| T-003 | LocalDisk `StorageAdapter` + 受控访问网关 | 无裸路径；鉴权可读；可用开发种子文件取证（grill Q6） |
 | T-S0-002 | PostgreSQL 持久任务队列 + 同机 worker 骨架（可消费 no-op/心跳任务） | 入队后 worker 可取到并达终态；关 API 进程后队列仍在库 |
 
 **exit_evidence**（全部勾选且端测通过才可标 S0 完成并开 S1）
 
 - 商家 / 订单客服 A 档 / 管理员均可登录；第二租户账号无法读第一租户对象。
 - `rp_credit_*` 整数户可手工加减并出流水；旧 Decimal 入口对 realphotos 不可用。
-- LocalDisk 读写只经鉴权网关；响应中无裸磁盘路径。
+- LocalDisk 读写只经鉴权网关；响应中无裸磁盘路径。无业务 `rp_asset` 时，允许 `StorageAdapter` **开发种子文件**（非客户数据）经网关读回作为证据（grill 收口 Q6）。
 - PG 队列至少跑通一条可重复的 worker 消费证据（命令输出或开发机日志路径记入 artifacts / `checkpoint.md`）。
-- **S0 端到端测试已通过**（登录 → 角色权限可见差异 → 跨租户拒绝 → 积分加减流水 → 网关读文件 → worker 消费队列）；证据路径已登记。
+- **S0 端到端测试已通过**（登录 → 角色权限可见差异 → 跨租户拒绝 → 积分加减流水 → 网关读文件（含种子文件路径）→ worker 消费队列）；证据路径已登记。
 - 上述证据已回写 `progress.yaml` 与 `checkpoint.md` §0。
 
 **forbidden**
@@ -217,7 +217,7 @@
 - 禁止把 OSS 当首版必选；禁止提交真实 `.env` / 密钥。
 - 禁止整包迁入旧用户、旧积分、旧 Key、旧图片资产。
 - 禁止提前实现 `anchor.md` 中 `from:S2+` / `from:S5` / `from:S6` / 节 G 能力，并宣称属 S0。
-- 禁止用 HTML 原型 mock / localStorage 冒充本阶段退出证据或端测证据。
+- 禁止用 HTML 原型 mock / localStorage / 裸磁盘路径冒充本阶段退出证据或端测证据（种子文件也必须走鉴权网关）。
 
 ### 10.2 S1 · 首期单张闭环
 

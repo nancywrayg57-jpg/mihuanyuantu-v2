@@ -48,12 +48,13 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **当前冻结**：grill 收口 ADR 2026-11-05（Q1–Q5）已确认写回；**未收到管理员「授权开 S0」前禁止实现 S0 业务代码**（见 `progress.yaml` `s0_coding_authorized`）。
-- 授权后：按 `DEV_INSTRUCTIONS.md` §10.1 完成 S0（任务 / 退出证据 / 禁止项），**端测通过**再进 §10.2 S1。
+- **当前冻结**：grill 收口 ADR（Q1–Q7）已写回；**未「授权开 S0」前禁止 S0 业务代码**（`progress.yaml` `s0_coding_authorized=false`）。
+- **合入文档后、开 S0 前**：Owner 开启禁自评自合/非作者审批并登记（Q7）。
+- 授权后：按 `DEV_INSTRUCTIONS.md` §10.1 完成 S0（含 Q6 开发种子文件经网关取证），**端测通过**再进 §10.2 S1。
 - **每个里程碑完成后须端测**；未通过或无证据不得开下一阶段。
 - **开 S2+ 前**须先补齐该阶段「任务 / 退出证据 / 禁止项」；`02-delivery.yaml` 只同步 status。
-- **协作**：Owner `@nancywrayg57-jpg` / Collaborator `@xtzhou247`；合入须过 Required **`CI gate`**；**禁自评自合须 Owner 网页确认后才算门禁齐**（grill Q5）。
-- **客户业务 API**（PRD **2.10** / FR-033；架构 **1.7**：`api_keys.scopes`=能力名再映射路径；≠上游 Key）属第一版、S5/R3，**不进 S1**。
+- **协作**：Owner `@nancywrayg57-jpg` / Collaborator `@xtzhou247`；合入须过 Required **`CI gate`**；禁自评自合按 Q7 时机开启后才算门禁齐。
+- **客户业务 API**（PRD **2.10** / FR-033；架构 **1.7**）属第一版、S5/R3，**不进 S1**。
 - **S7** 须管理员确认；缺密钥/SSH 时在聊天索取。
 
 ## 6. 风险提醒

@@ -24,14 +24,15 @@
 | 2026-11-05 | prd | 第一版纳入客户业务 API：X-API-Key + image_processing + OpenAPI/Swagger（FR-033 / AC-024）；不进首期 S1 | confirmed | user 改第一版范围 |
 | 2026-11-05 | design | 架构 1.5→1.6：api_keys 复用；表裁剪；先冻后队；RBAC；双 Token | confirmed | 审计补缺口 |
 | 2026-11-05 | delivery | CI/CD：§7 禁自评自合；**CI gate** Required 已开；Tag stub；仓 public | confirmed | 用户配置 + #9 |
-| 2026-11-05 | design | **能力名 scopes** + 映射层（改底座校验）；PRD §7 升订单客服 A；§8.3 LocalDisk 措辞；**冻结 S0**；禁自评自合须 Owner 确认才算门禁齐 | confirmed | grill round-2 Q1–Q5 |
+| 2026-11-05 | design | **能力名 scopes** + 映射层；PRD §7 订单客服 A；§8.3 LocalDisk；**冻结 S0**；禁自评自合须 Owner 确认 | confirmed | grill round-2 Q1–Q5 |
+| 2026-11-05 | delivery | S0 网关可用开发种子文件取证（经 StorageAdapter+网关）；禁自评自合在文档合入后、开 S0 前开启 | confirmed | grill Q6 / Q7 |
 
 ## Phase Knowledge
 ### Discovery
 - Outcomes: OSS/共享钱包/MVP 过胖分叉已闭合；FR-033 纳入第一版但不进 S1。
 - Lessons: RESOLVED ND ≠ 上线证据；历史 ADR 头版本可能滞后，以收口 ADR 为准。
 - Reusable rules: 每轮 ≤5 前沿题；事实自查仓库；决策等用户。
-- Open questions: Owner 网页确认禁自评自合；管理员「授权开 S0」。
+- Open questions: 文档合入后 Owner 按 Q7 开启禁自评自合并登记；管理员「授权开 S0」。
 
 ### Design
 - Outcomes: 架构 **1.7** = 1.6 包 + LocalDisk 网关措辞消歧 + scopes **能力名→路径白名单** 映射合同；PRD **2.10** §7 与矩阵对齐。
@@ -66,7 +67,7 @@
 | 0-grill | 共享理解草案 | 用户确认 A | done | 合同修订 |
 | 1-s0-s1-triad | DEV_INSTRUCTIONS §10.1/10.2 | 用户「按此修改并推送」 | done | 曾指向自主 S0 |
 | 2-cicd-public | CI + public + CI gate Required | 保护规则可强制 | done（CI gate） | 禁自评自合待 Owner |
-| 3-grill-round2 | PRD 2.10 / 架构 1.7 / 收口 ADR | 用户 Q1–Q5 全接受 | docs_close | 授权开 S0 |
+| 3-grill-round2 | PRD 2.10 / 架构 1.7 / 收口 ADR / §10.1 Q6 | Q1–Q6 确认；Q7=合入后开 S0 前 | docs_close_ready_for_merge | 合入→开禁自评自合→授权 S0 |
 | 4-s0-loop | S0 基础可登录/积分/网关/worker | §10.1 exit_evidence + 端测 | pending | 须授权 |
 
 ## Risks and Watchpoints
@@ -79,4 +80,4 @@
 
 ## Backlog Knowledge
 - Next: 用户授权开 S0 后按 §10.1 实现；FR-033 → S5/R3。
-- Deferred: S0 网关无业务图时的种子文件取证；AidevOps `prototypes/` 目录；CI Python/pnpm 版本与架构推荐对齐。
+- Deferred: CI Python/pnpm 版本与架构推荐对齐（非 S0 阻塞）。

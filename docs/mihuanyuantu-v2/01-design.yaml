@@ -31,12 +31,17 @@ phase_confirmation:
       text: "api_keys.scopes 落库=能力名（image_processing）；鉴权映射路径白名单；改造底座校验；禁止空/培训默认全集给业务 Key"
     - id: S0-CODING-FREEZE
       text: "未获管理员「授权开 S0」前禁止实现 S0 业务代码"
+    - id: S0-GATEWAY-SEED
+      text: "S0 网关端测允许 StorageAdapter 开发种子文件（非客户数据）经鉴权网关读回"
+    - id: NO-SELF-MERGE-TIMING
+      text: "禁自评自合：文档合入 main 后、正式开 S0 前由 Owner 开启并登记"
   accepted_risks:
     - "经济起步同机盘损坏风险已知；上线前手工备份规程"
     - "原型尚无商家业务 API 凭证页；实现 S5 前须补 UI 合同"
-    - "禁自评自合须 Owner 网页确认后才算 CI/CD 双账号门禁齐"
+    - "禁自评自合按 Q7 时机开启前不得宣称 CI/CD 双账号门禁齐"
   blockers:
     - "s0_coding_authorized=false"
+    - "owner_confirm_no_self_merge=pending_until_after_merge"
   confirmed_by: user
   confirmed_at: "2026-11-05T01:23:00-05:00"
   change_log:
