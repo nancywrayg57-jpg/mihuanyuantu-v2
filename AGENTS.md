@@ -25,7 +25,8 @@ For unrelated small coding questions, answer normally without forcing the full A
 - 区分：用户要求、现行合同正文、代码事实、测试事实、待验证推断。
 - 编号、积分、角色、权限、状态机必须以 PRD/架构/可运行证据为来源；原型演示常量不是生产政策。
 - 文档完成、代码完成、验证通过分别陈述；单元测试或检测替身通过，不等于端到端或生产验收。
-- 不编造密钥已配置、模型已实测、生产已就绪、检测已通过等未证实结论。
+- 每个里程碑完成后必须做端到端测试；确认无误并留下证据后，才可进入下一阶段开发（细则见 `DEV_INSTRUCTIONS.md`）。
+- 不编造密钥已配置、模型已实测、生产已就绪、检测已通过、端测已通过等未证实结论。
 
 ## 3. 数据与密钥
 
@@ -42,7 +43,7 @@ For unrelated small coding questions, answer normally without forcing the full A
 
 ## 5. 实现与验证
 
-阶段划分、验证环境、Git 分支、代码落点与上线门槛以 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` 为准；完成后更新 AidevOps 进度文件（`docs/mihuanyuantu-v2/progress.yaml`、阶段文件、`wiki.md`）及该指令要求维护的根目录状态文件。
+阶段划分、验证环境、Git 分支、代码落点、上线门槛与里程碑端测以 `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` 为准；每阶段完成后先端测并更新 AidevOps 进度文件（`docs/mihuanyuantu-v2/progress.yaml`、阶段文件、`wiki.md`）及该指令要求维护的根目录状态文件，再进入下一阶段。
 
 ## 6. 范围外
 

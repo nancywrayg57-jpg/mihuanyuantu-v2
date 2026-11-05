@@ -71,6 +71,7 @@
 | F03 | 界面约定：`prototype/`；改 `prototype.js` 后执行 `node prototype/sync-inline.js` |
 | F04 | 旧版模块只读参考于 `输入材料/旧版可复用模块/`；新代码写入 aojuai 业务包 |
 | F05 | 功能分支与 Git 纪律见 `DEV_INSTRUCTIONS.md`；禁止提交密钥 |
+| F06 | 每个里程碑完成后须端到端测试；确认无误并留证据后，才可进入下一阶段 · `always`（细则见 `DEV_INSTRUCTIONS.md`） |
 
 ## G. 明确不在首期（S1）验收范围 · `not:S1`
 

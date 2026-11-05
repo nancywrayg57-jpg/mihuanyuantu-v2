@@ -52,6 +52,7 @@
 - Autonomous: S0–S6；S7 须管理员确认；next_action 以 `progress.yaml` 为准
 - Stage checklist: 每阶段 `tasks` / `exit_evidence` / `forbidden` 正文在 `DEV_INSTRUCTIONS` §10；`02-delivery.yaml` 只镜像 status
 - Hard rule: 开 S2+ 前须先在指令补齐该阶段清单（任务·退出证据·禁止项）
+- Hard rule: 每个里程碑完成后须端到端测试；确认无误并留证据后，才可进入下一阶段
 - Root pack: `AGENTS.md` · `handoff.md` · `anchor.md` · `checkpoint.md`
 - Constraints: `anchor.md`（节级适用范围；冲突听 PRD）
 - Status: `checkpoint.md` §0 最小集
@@ -72,5 +73,5 @@
 - Mitigation: §10.2 forbidden + `anchor.md` 节 G；改列表须改 DEV_INSTRUCTIONS + progress。
 
 ## Backlog Knowledge
-- Next: 按 DEV_INSTRUCTIONS §10.1 自主推进 S0；勾满 exit_evidence 后开 S1。
+- Next: 按 DEV_INSTRUCTIONS §10.1 自主推进 S0；勾满 exit_evidence → 端测通过 → 再开 S1。
 - Deferred: 见 00-discovery mvp_scope.deferred 与 §10.2 forbidden。
