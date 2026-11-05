@@ -1,11 +1,11 @@
 phase: delivery
-status: frozen_awaiting_s0_authorization
+status: s0_implemented_paused_pending_dev_host_e2e
 
 phase_confirmation:
   status: needs_user
   mode: ask-user
   user_questions:
-    - "是否授权开 S0 业务代码实现？"
+    - "开发机补验 S0 端测通过后，是否授权开 S1？"
   auto_filled_for_test: []
   confirmed_decisions:
     - "S0–S6 在获授权后由编码 Agent 按 DEV_INSTRUCTIONS 自主推进"
@@ -13,13 +13,16 @@ phase_confirmation:
     - "续作以 progress.yaml next_action 为准"
     - "grill Q4：未授权前禁止 S0 业务代码"
     - "grill Q6：S0 网关取证可用 StorageAdapter 开发种子文件经鉴权网关读回"
+    - "管理员 2026-11-05 明确「启动S0」；随后要求「先实现第一个里程碑后暂停」"
   accepted_risks:
     - "自主推进仍受 PRD/架构/上线门槛约束"
     - "Cloud Agent 提交作者可能仍为 Cursor Agent；禁自评自合以 PR 作者账号为准"
+    - "Cloud SQLite 端测 ≠ 开发机 PostgreSQL 验收"
   blockers:
-    - "s0_coding_authorized=false"
+    - "dev_host_e2e_pending"
+    - "user_requested_pause_after_s0"
   confirmed_by: user
-  confirmed_at: "2026-11-05T01:23:00-05:00"
+  confirmed_at: "2026-11-05T07:55:00-05:00"
   change_log:
     - date: "2026-11-04"
       change: "建立交付骨架与首期（S1）候选任务列表（未开工）"
@@ -39,23 +42,38 @@ phase_confirmation:
     - date: "2026-11-05"
       change: "冻结自主开 S0；对齐 PRD 2.10 / 架构 1.7 收口"
       reason: "grill round-2 Q4；Q1–Q5 全确认"
+    - date: "2026-11-05"
+      change: "授权开 S0；实现 realphotos 能力包；Cloud 服务端测通过；按用户要求暂停、不开 S1"
+      reason: "用户「启动S0」+「先实现第一个里程碑后暂停」"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "交付阶段在授权后可推进 S0–S6；当前 s0_coding_authorized=false；阶段清单与端测权威在 DEV_INSTRUCTIONS §10/§12；客户业务 API 归 S5。"
-  outcomes: []
-  lessons: []
+  phase_summary: "S0 已在分支实现并 Cloud 取证；暂停待开发机补验；不得开 S1。阶段清单权威在 DEV_INSTRUCTIONS §10。"
+  outcomes:
+    - "aojuai-main/backend/app/capabilities/realphotos/ S0 包落地"
+    - "pytest tests/capabilities/realphotos 8 passed"
+    - "Cloud e2e 服务脚本 /opt/cursor/artifacts/s0-e2e-service.log = S0_E2E_PASS"
+  lessons:
+    - "分支后缀：本会话 Cloud 硬性 -6c0b 与仓库 AGENTS -9973 冲突，已记录不调和"
+    - "claim_one 在 PostgreSQL；SQLite 走条件更新认领以保 CI"
   reusable_rules:
     - "S7 与密钥索取除外，不因缺少「开始编码」确认停工"
-    - "feature 分支命名遵循 cloud agent 约定"
     - "阶段 tasks/exit_evidence/forbidden 以 DEV_INSTRUCTIONS 为准；本文件只镜像 status"
     - "每个里程碑完成后须端到端测试；未通过不得开下一阶段"
+    - "Cloud Agent 通过 ≠ 开发机验收"
     - "客户业务 API（FR-033/AC-024）属第一版但非 S1；S5 开工前须补该阶段三件套"
-  prompts_or_commands: []
+  prompts_or_commands:
+    - "cd aojuai-main/backend && AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m pytest tests/capabilities/realphotos -q"
+    - "AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m scripts.seed_realphotos_s0"
+    - "AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m scripts.run_worker --worker realphotos_heartbeat --once"
   evidence_links:
     - "DEV_INSTRUCTIONS.md §10.1 S0 / §10.2 S1"
-    - "../蜜獾原图-v2-项目架构-v1.0.md §5 api_keys / §9.2.1"
-  update_wiki: []
+    - "../蜜獾原图-v2-项目架构-v1.0.md §5.4 / §9.2 / §10"
+    - "/opt/cursor/artifacts/s0-pytest.txt"
+    - "/opt/cursor/artifacts/s0-e2e-service.log"
+  update_wiki:
+    - "S0 授权与暂停"
+    - "realphotos 包路径与验证命令"
 
 mvp_sprint:
   name: "s1-single-image-loop"
@@ -72,21 +90,6 @@ mvp_sprint:
   non_goals: "见 DEV_INSTRUCTIONS §10.2 forbidden 与 00-discovery mvp_scope.deferred（含客户业务 API FR-033，归 R3/S5）"
 
 candidate_tasks_not_started:
-  - id: T-S0-001
-    title: "真会话登录 + 租户/账号模型"
-    slice: S0
-  - id: T-001
-    title: "RBAC 种子：merchant×2、order_support、admin、第二租户"
-    slice: S0
-  - id: T-002
-    title: "rp_credit_* 整数积分流水与旧 Decimal 入口隔离"
-    slice: S0
-  - id: T-003
-    title: "LocalDisk StorageAdapter + 访问网关"
-    slice: S0
-  - id: T-S0-002
-    title: "PG 持久队列 + 同机 worker 骨架"
-    slice: S0
   - id: T-004
     title: "上传硬校验与资源表"
     slice: S1
@@ -112,29 +115,29 @@ candidate_tasks_not_started:
 tasks:
   - id: T-S0-001
     slice: S0
-    status: pending
-    artifact: "session auth + tenant/account models"
-    verify: "合法会话可进；无会话拒绝"
+    status: implemented_cloud_evidence
+    artifact: "realphotos auth challenges/login + merchant_profile"
+    verify: "合法会话可进；无会话/错密拒绝；三角色登录"
   - id: T-001
     slice: S0
-    status: pending
-    artifact: "aojuai-main/backend RBAC seeds"
-    verify: "三角色可登录；跨租户拒绝"
+    status: implemented_cloud_evidence
+    artifact: "bootstrap roles/accounts + access grants"
+    verify: "merchant×2、order_support、admin、第二租户；跨租户拒绝"
   - id: T-002
     slice: S0
-    status: pending
-    artifact: "rp_credit_* models/migrations"
-    verify: "整数余额；旧 Decimal 入口对 realphotos 不可用"
+    status: implemented_cloud_evidence
+    artifact: "rp_credit_account + ledger + admin adjust"
+    verify: "整数余额；Decimal bridge 拒绝"
   - id: T-003
     slice: S0
-    status: pending
-    artifact: "LocalDisk adapter + gateway"
-    verify: "无裸路径；鉴权可读"
+    status: implemented_cloud_evidence
+    artifact: "LocalDisk StorageAdapter + gateway seed"
+    verify: "无裸路径；种子经适配器读回"
   - id: T-S0-002
     slice: S0
-    status: pending
-    artifact: "PG queue + same-host worker skeleton"
-    verify: "入队后 worker 可达终态"
+    status: implemented_cloud_evidence
+    artifact: "execution_jobs + realphotos_heartbeat worker"
+    verify: "入队后认领达 succeeded；关 API 后行仍在库"
   - id: T-004
     slice: S1
     status: pending
@@ -177,12 +180,14 @@ governance_controls:
   risk_log:
     - "共用积分店内误花"
     - "五层占位实现换真字段漂移"
+    - "Cloud 端测未覆盖 PostgreSQL SKIP LOCKED 真路径"
   change_control: "改首期退出条件须更新 00-discovery + grill ADR"
 
 git:
-  branch_policy: "cursor/<name>-9973 for cloud agent; feature/* acceptable later"
-  protected: "不提交仓库同级 生产物料/、.env、密钥"
+  branch_policy: "本会话 Cloud 硬性 cursor/<name>-6c0b；仓库 AGENTS 仍写 -9973（冲突已记录）"
+  protected: "不提交 生产物料/、.env、密钥"
   version_control_required_before_code: true
+  working_branch: "cursor/s0-foundation-6c0b"
 
 deployment:
   s1_target: "development host only"
@@ -193,11 +198,12 @@ rollback:
 
 verification:
   commands_or_manual:
-    - "手工：双账号消费与隔离"
-    - "手工：关闭页面后继续执行"
-    - "手工：过期下载拒绝"
-  status: not_run
-
-gate:
-  ready: true
-  blockers: []
+    - "pytest tests/capabilities/realphotos"
+    - "Cloud e2e service script → S0_E2E_PASS"
+    - "待：开发机 PostgreSQL + worker --once"
+  status: cloud_passed_dev_host_pending
+  cloud_artifacts:
+    - "/opt/cursor/artifacts/s0-pytest.txt"
+    - "/opt/cursor/artifacts/s0-e2e-service.log"
+    - "/opt/cursor/artifacts/s0-ruff.txt"
+    - "/opt/cursor/artifacts/s0-secret-scan.txt"

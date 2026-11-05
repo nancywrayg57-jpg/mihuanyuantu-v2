@@ -27,9 +27,10 @@
 | 本功能文档区 | `docs/mihuanyuantu-v2/` |
 | 编码指令 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
 | 底座 | `aojuai-main/`（上游固定版本见 `aojuai-main/UPSTREAM_PIN.txt`） |
+| S0 业务包 | `aojuai-main/backend/app/capabilities/realphotos/` |
 | 原型 | `prototype/index.html`；改 `prototype.js` 后跑 `node prototype/sync-inline.js` |
-| 分支约定 | 见 `DEV_INSTRUCTIONS.md` |
-| 密钥 | 与仓库同级 `生产物料/`（例：`../生产物料/蜜獾原图v2-生产物料.md`）；**禁止入库**；缺文件时向管理员索取 |
+| 分支约定 | 见 `DEV_INSTRUCTIONS.md` / `AGENTS.md` §7；本会话分支 `cursor/s0-foundation-6c0b`（与 `-9973` 后缀冲突已记录） |
+| 密钥 | 仓库无 `生产物料/`；需要时在聊天向管理员索取，仅写本机环境 |
 
 当前实现状态摘要见 `checkpoint.md`。
 
@@ -48,16 +49,17 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **当前冻结**：**暂不启动 S0**（`s0_coding_authorized=false`）；grill 收口 ADR 已写回。
+- **当前**：**S0 已实现并暂停**（管理员授权开 S0 后要求「第一个里程碑后暂停」）。
+- **不得开 S1**，直至开发机补验 DEV §10.1 exit_evidence（含 PostgreSQL worker）并通过。
+- Cloud 证据：`/opt/cursor/artifacts/s0-pytest.txt`、`s0-e2e-service.log`（`S0_E2E_PASS`）。
 - **协作**：见 `AGENTS.md` §7（双账号角色、禁自评自合、Required **`CI gate`**）。
-- **每个里程碑完成后须端测**；未通过或无证据不得开下一阶段。开 S2+ 前须先补齐该阶段「任务 / 退出证据 / 禁止项」。
-- 授权开 S0 后：按 `DEV_INSTRUCTIONS.md` §10.1（含 Q6 种子网关取证），端测通过再进 S1。
 - **客户业务 API**（PRD **2.10** / FR-033；架构 **1.7**）属第一版、S5/R3，**不进 S1**。
 - **S7** 须管理员确认；缺密钥/SSH 时在聊天索取。
 
 ## 6. 风险提醒
 
 - 原型里的检测替身 ≠ Gemini 真验收；文档齐全 ≠ 后端已交付。
+- Cloud 服务端测 ≠ 开发机 PostgreSQL 验收；未补验不得标 S0 完成。
 - 租户共用积分是现行产品选择；账号隔离 ≠ 余额隔离。
 - 首版 LocalDisk；不要按「必须先买 OSS」开工。
 - 客户业务 API ≠ 上游模型 Key 自助 ≠ 外部平台代发；能力名 scope 外接口必须拒绝。

@@ -1,0 +1,134 @@
+"""Menu / permission declaration for realphotos (S0)."""
+
+from app.domain.menus.reconciler import MenuDeclaration, MenuNodeSpec, RoleGrantSpec
+
+from .permissions import (
+    ADMIN_READ,
+    GATEWAY_READ,
+    JOBS_ENQUEUE,
+    JOBS_READ,
+    ORDER_SUPPORT_READ,
+    ROLE_ADMIN,
+    ROLE_MERCHANT,
+    ROLE_ORDER_SUPPORT,
+    WALLET_ADJUST,
+    WALLET_READ,
+    WORKSPACE_READ,
+)
+
+ACCESS = MenuDeclaration(
+    roots=(
+        MenuNodeSpec(
+            key="realphotos",
+            title="蜜獾原图",
+            path="/realphotos",
+            menu_type="0",
+            icon="ep:camera",
+            sort_order=40,
+            always_show=True,
+            children=(
+                MenuNodeSpec(
+                    key="realphotos-workspace",
+                    title="工作台",
+                    path="/realphotos/workspace",
+                    component="views/realphotos/workspace/index",
+                    icon="ep:home-filled",
+                    sort_order=1,
+                    menu_type="1",
+                    perms=WORKSPACE_READ,
+                ),
+                MenuNodeSpec(
+                    key="realphotos-wallet",
+                    title="积分钱包",
+                    path="/realphotos/wallet",
+                    component="views/realphotos/wallet/index",
+                    icon="ep:wallet",
+                    sort_order=2,
+                    menu_type="1",
+                    perms=WALLET_READ,
+                    children=(
+                        MenuNodeSpec(
+                            key="realphotos-wallet-adjust",
+                            title="人工加减分",
+                            menu_type="2",
+                            perms=WALLET_ADJUST,
+                            is_visible=False,
+                        ),
+                    ),
+                ),
+                MenuNodeSpec(
+                    key="realphotos-gateway",
+                    title="资源网关",
+                    path="/realphotos/gateway",
+                    component="views/realphotos/gateway/index",
+                    icon="ep:folder-opened",
+                    sort_order=3,
+                    menu_type="1",
+                    perms=GATEWAY_READ,
+                ),
+                MenuNodeSpec(
+                    key="realphotos-jobs",
+                    title="执行队列",
+                    path="/realphotos/jobs",
+                    component="views/realphotos/jobs/index",
+                    icon="ep:list",
+                    sort_order=4,
+                    menu_type="1",
+                    perms=JOBS_READ,
+                    children=(
+                        MenuNodeSpec(
+                            key="realphotos-jobs-enqueue",
+                            title="入队",
+                            menu_type="2",
+                            perms=JOBS_ENQUEUE,
+                            is_visible=False,
+                        ),
+                    ),
+                ),
+                MenuNodeSpec(
+                    key="realphotos-order-support",
+                    title="订单客服",
+                    path="/realphotos/order-support",
+                    component="views/realphotos/order-support/index",
+                    icon="ep:service",
+                    sort_order=5,
+                    menu_type="1",
+                    perms=ORDER_SUPPORT_READ,
+                ),
+                MenuNodeSpec(
+                    key="realphotos-admin",
+                    title="管理",
+                    path="/realphotos/admin",
+                    component="views/realphotos/admin/index",
+                    icon="ep:setting",
+                    sort_order=6,
+                    menu_type="1",
+                    perms=ADMIN_READ,
+                ),
+            ),
+        ),
+    ),
+    roles=(
+        RoleGrantSpec(
+            code=ROLE_MERCHANT,
+            menu_keys=(
+                "realphotos-workspace",
+                "realphotos-wallet",
+                "realphotos-gateway",
+                "realphotos-jobs",
+                "realphotos-jobs-enqueue",
+            ),
+        ),
+        RoleGrantSpec(
+            code=ROLE_ORDER_SUPPORT,
+            menu_keys=(
+                "realphotos-workspace",
+                "realphotos-order-support",
+            ),
+        ),
+        RoleGrantSpec(code=ROLE_ADMIN, grant_all=True),
+        RoleGrantSpec(code="admin", grant_all=True),
+    ),
+)
+
+__all__ = ["ACCESS"]
