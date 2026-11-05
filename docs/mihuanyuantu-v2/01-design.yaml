@@ -34,14 +34,14 @@ phase_confirmation:
     - id: S0-GATEWAY-SEED
       text: "S0 网关端测允许 StorageAdapter 开发种子文件（非客户数据）经鉴权网关读回"
     - id: NO-SELF-MERGE-TIMING
-      text: "禁自评自合：文档合入 main 后、正式开 S0 前由 Owner 开启并登记（权威 AGENTS.md §7.2）"
+      text: "禁自评自合：Owner 已登记开启（Q7，2026-11-05；权威 AGENTS.md §7.2；网页开关以最新设置为准）"
   accepted_risks:
     - "经济起步同机盘损坏风险已知；上线前手工备份规程"
     - "原型尚无商家业务 API 凭证页；实现 S5 前须补 UI 合同"
-    - "禁自评自合按 Q7 时机开启前不得宣称 CI/CD 双账号门禁齐"
+    - "引导合入时可能临时关闭审批规则；开 S0 前须再确认网页非作者审批已开"
   blockers:
     - "s0_coding_authorized=false"
-    - "owner_confirm_no_self_merge=pending_until_after_merge"
+    - "collaborator_cursor_github_link=pending"
   confirmed_by: user
   confirmed_at: "2026-11-05T01:23:00-05:00"
   change_log:
@@ -57,6 +57,9 @@ phase_confirmation:
     - date: "2026-11-05"
       change: "架构 1.7 + PRD 2.10：能力名 scopes、§7 订单客服 A、§8.3 LocalDisk 措辞、冻结 S0"
       reason: "grill round-2 Q1–Q5 用户全接受推荐"
+    - date: "2026-11-05"
+      change: "同步 Q7 已登记：owner_confirm_no_self_merge=user_confirmed_2026-11-05；移除 pending_until_after_merge"
+      reason: "PR #11 合入后审计发现 01-design 镜像滞后"
 
 knowledge_assets:
   wiki: wiki.md
