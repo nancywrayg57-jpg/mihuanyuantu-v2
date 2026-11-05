@@ -7,13 +7,18 @@ Uses the process engine (not the pack's in-memory pytest fixture).
 from __future__ import annotations
 
 import asyncio
-import os
 import sys
 
 
 async def _main() -> int:
-    os.environ.setdefault("AOJ_ENABLED_MODULES", "realphotos")
+    from app.core import feature_switches
     from app.core.config import settings
+
+    # Prefer Settings over process-env (GOV-10). Caller may still export
+    # AOJ_ENABLED_MODULES before launch; Settings already loaded it.
+    if not str(settings.AOJ_ENABLED_MODULES or "").strip():
+        settings.AOJ_ENABLED_MODULES = "realphotos"
+        feature_switches.clear_module_install_caches()
 
     if not str(settings.DB_DIALECT).startswith("postgres"):
         print(f"FAIL: expected postgresql dialect, got {settings.DB_DIALECT!r}", file=sys.stderr)
