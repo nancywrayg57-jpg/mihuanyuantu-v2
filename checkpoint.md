@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-05 08:06 EST（America/New_York）/ 21:06 CST |
+| updated | 2026-11-05 22:20 CST（Asia/Shanghai） |
 | branch | `cursor/s0-foundation-6c0b` |
-| HEAD | `dfa48ad` |
-| 文档态 | PRD **2.10**；架构 **1.7**；grill 收口 ADR；**CI/CD = `AGENTS.md` §7**；`s0_coding_authorized=true` |
-| 代码态 | **S0 realphotos 能力包已实现**（会话/RBAC/整数积分/LocalDisk 网关/队列 worker）；S1+ 未实现；底座 `api_keys` 仍为路径前缀语义（FR-033 待 S5） |
-| 验证态 | Cloud：`pytest tests/capabilities/realphotos` **8 passed**；`s0-e2e-service.log`=`S0_E2E_PASS`；**开发机 PostgreSQL 端测未跑**（不得标 S0 完成） |
-| 当前阶段 | S0 已实现并**按管理员要求暂停**；待开发机补验后才可开 S1 |
-| 下一步 | 开发机补验 DEV §10.1 exit_evidence；确认前禁止开 S1 |
+| HEAD | （推送后以远端为准；文档自治提交在途） |
+| 文档态 | PRD **2.10**；架构 **1.7**；物料清单 **1.32**（已登记 SSH）；端测自治写进 `DEV_INSTRUCTIONS` §6.1 / `AGENTS.md` §5 |
+| 代码态 | **S0 realphotos 已实现**；CI 全绿；`scripts/devhost/run_s0_pg_e2e.sh` + `s0_pg_claim_one_smoke.py` 已备 |
+| 验证态 | Cloud 服务端测通过；**开发机 SSH 探测超时**（LAN 不可达）；PG `claim_one` **未跑** → 不得标 S0 完成 |
+| 当前阶段 | S0 暂停；待 Cloud↔开发机连通后自治补验 |
+| 下一步 | 管理员在开发机启 self-hosted worker（或 VPN/跳板）；Agent 再跑 `run_s0_pg_e2e.sh` |
 
 ## 1. 仓库与文档基线
 
@@ -39,7 +39,7 @@
 | 业务实现包 | `aojuai-main/backend/app/capabilities/realphotos/`（S0 切片已落地；非整包业务闭环） |
 | HTML 原型入口 | `prototype/index.html`（离线交互；mock） |
 | 设备预设源 | `输入材料/旧版可复用模块/02_设备参数/线上预设_脱敏原始.json` |
-| 仓库内 `生产物料/` | **不存在**；密钥向管理员索取后仅存本机 |
+| 仓库内 `生产物料/` | **不入库**；同级目录已建 `../生产物料/蜜獾原图v2-生产物料.md`（含 SSH 口令） |
 
 ## 3. 环境登记（摘自物料清单，非本机实测）
 
@@ -56,7 +56,7 @@
 | 阶段 | 状态 |
 | --- | --- |
 | 文档收口 | 已合入 |
-| S0 基础 | **代码已实现**；Cloud 服务端测通过；**开发机补验待办**；**暂停不开 S1** |
+| S0 基础 | **代码已实现 + CI 绿**；Cloud 服务端测通过；**开发机 LAN 不可达，PG 端测待办**；**暂停不开 S1** |
 | S1 首期单张闭环 | 未开工；依赖 S0 退出 + 端测（含开发机） |
 | S2–S6 | 未开工 |
 | S7 生产部署 | **须管理员确认** |

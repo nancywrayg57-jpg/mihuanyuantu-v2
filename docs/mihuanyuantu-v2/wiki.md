@@ -45,16 +45,17 @@
 - Prompt notes: 原型尚无「业务 API 凭证」页；S5 前补。
 
 ### Delivery
-- Outcomes: S0 realphotos 包落地；Cloud pytest 8 passed + e2e `S0_E2E_PASS`；按要求暂停不开 S1。
-- Commands: `AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m pytest tests/capabilities/realphotos -q`；`python -m scripts.seed_realphotos_s0`；`python -m scripts.run_worker --worker realphotos_heartbeat --once`；`bash scripts/ci/secret_scan.sh`。
-- Implementation rules: 整数账本禁止桥接 Decimal；网关不回裸路径；SQLite 用条件更新认领，PG 用 `claim_one`。
-- Deploy/rollback notes: production_readiness NOT_READY；真 Secrets 仅 Owner 录入。
+- Outcomes: S0 realphotos 包落地；Cloud pytest + CI 绿；按要求暂停不开 S1。
+- Commands: `AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m pytest tests/capabilities/realphotos -q`；`bash scripts/devhost/run_s0_pg_e2e.sh`（开发机 PG claim_one）；`bash scripts/ci/secret_scan.sh`。
+- Implementation rules: 整数账本禁止桥接 Decimal；网关不回裸路径；SQLite 条件更新认领，PG 用 `claim_one`。
+- Deploy/rollback notes: production_readiness NOT_READY；SSH 方法在清单 §2.1，口令只在同级 `生产物料/`。
+- Autonomy: 每里程碑后 Agent 自行 SSH 开发机端测（`DEV_INSTRUCTIONS` §6.1）；Cloud 不可达 LAN 时走 self-hosted worker。
 
 ### Acceptance
-- Evidence: Cloud `/opt/cursor/artifacts/s0-pytest.txt`、`s0-e2e-service.log`；开发机 PG 端测待办。
-- Defects: n/a
+- Evidence: Cloud `/opt/cursor/artifacts/s0-pytest.txt`、`s0-e2e-service.log`；SSH 探测失败 `/opt/cursor/artifacts/s0-devhost-ssh-attempt.log`。
+- Defects: Cloud→`192.168.19.128` 路由不通，S0 PG 端测未执行。
 - Accepted risks: 租户共用积分店内误花；ND-016 无版权声明；Cloud≠开发机验收。
-- Next sprint knowledge: 开发机补验 S0 → 确认后 S1。
+- Next sprint knowledge: 开发机 worker/VPN 连通 → `run_s0_pg_e2e.sh` → 标 S0 完成 → S1。
 
 ## Reusable Prompts and Commands
 - Agent entry: `DEV_INSTRUCTIONS.md`（必读根目录四职责文件）
