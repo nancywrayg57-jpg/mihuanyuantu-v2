@@ -31,7 +31,7 @@ class RealphotosAsset(TenantBaseModel):
 
 
 class RealphotosBatch(TenantBaseModel):
-    """S1 批次固定 1 张。"""
+    """处理批次。S1 单张路径写入 1 张；S4 写入 1–10 张。"""
 
     __tablename__ = "cap_realphotos_batches"
     __table_args__ = ({"comment": "realphotos processing batches"},)

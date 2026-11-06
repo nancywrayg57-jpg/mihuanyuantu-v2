@@ -157,7 +157,10 @@ export const enUS: Record<string, string> = {
   // realphotos S0 菜单标题
   'menu.蜜獾原图': 'Honey Badger Photos',
   'menu.工作台': 'Workspace',
+  'menu.批量原图': 'Batch originals',
+  'menu.任务详情': 'Task detail',
   'menu.积分钱包': 'Credit Wallet',
+  'menu.积分与充值': 'Credits and recharge',
   'menu.人工加减分': 'Manual Credit Adjust',
   'menu.资源网关': 'Asset Gateway',
   'menu.执行队列': 'Job Queue',

@@ -7,13 +7,13 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-06 CST（Asia/Shanghai） |
-| branch | `cursor/s3-gemini-redo-9973`（本地提交，未 push；基线 `cbb68b4`；`origin/main` 仍是 `25fafd6`；PR #21 未合并） |
-| HEAD | 本文件随 S3 提交写入。提交后不 push，不合并 |
+| branch | `cursor/s4-batch-credits-9973`（从 `9343aa1` 继续；`origin/main` 仍是 `25fafd6`；PR #21 未合并） |
+| HEAD | 本文件随 S4 提交写入。推送该分支，不合并 |
 | 文档态 | PRD **2.10**；架构 **1.7**；物料清单 **1.32**；端测自治见 `DEV_INSTRUCTIONS` §6.1 / `AGENTS.md` §5 |
-| 代码态 | S0 已在 `main`。S1 与 S2 在未合并的 PR #21。S3 在 `cursor/s3-gemini-redo-9973`。不是生产收费已开放 |
-| 验证态 | 真实小样只认 `/tmp/s3-pg-e2e.log` 的 `S3_PG_SAMPLE_READONLY task_id=29 detector=gemini-3.1-pro-preview noise=45 depthOfField=40 lighting=35 colorRealism=50 overallRealism=35 total_score=38 passed=false has_jpeg=true output_bytes=30982 reservation=released total_is_not_dimension_average=true dimension_average=41.0`。`S3_PG_E2E_PASS` 是同一次调用记录，字段以只读行为准。`/tmp/s3-pg-e2e-controls.log` 的 `S3_PG_CONTROLS_PASS` 使用 `gemini-control`，只证明自动重做、无效响应冻结、主动重处理和技术重试，不代替任务 29。工作台用 `realphotos.s1.taskId=29` 打开后，检测报告为 `detector=gemini-3.1-pro-preview total_score=38 passed=false`，积分处置 `released_detection_not_passed`，下载 30982 字节且 JPEG 头通过。pytest `tests/capabilities/realphotos` 19 passed，含超时、非整数分和技术失败冻结，以及 reprocess 的 `REPROCESS_REJECTED` |
-| 当前阶段 | S3 开发机证据已分开。这不是对外「检测通过」，也不是生产收费已开放 |
-| 下一步 | 本提交收齐检测原因、技术重试/主动重处理入口、任务与结果按提交账号隔离。不合并 PR #21。S4 只写清单，不开始实现 |
+| 代码态 | S0 已在 `main`。S1 与 S2 在未合并的 PR #21。S3 在 `cursor/s3-gemini-redo-9973`。S4 在 `cursor/s4-batch-credits-9973`。不是生产收费已开放 |
+| 验证态 | 真实小样只认 `/tmp/s3-pg-e2e.log` 的 `S3_PG_SAMPLE_READONLY task_id=29 detector=gemini-3.1-pro-preview noise=45 depthOfField=40 lighting=35 colorRealism=50 overallRealism=35 total_score=38 passed=false has_jpeg=true output_bytes=30982 reservation=released total_is_not_dimension_average=true dimension_average=41.0`。S4 证据是 `/tmp/s4-pg-e2e.log` 的 `S4_PG_E2E_PASS`：任务 40 `detector=fixture` 消费 10，任务 41 前置失败释放 10，两张通过消费 20，任务 44 技术失败保持冻结。这不是新的 Gemini 小样。pytest `tests/capabilities/realphotos` 25 passed |
+| 当前阶段 | S4 开发机证据已齐。这不是对外「检测通过」，也不是生产收费已开放 |
+| 下一步 | S4 开发机证据 `/tmp/s4-pg-e2e.log` 含 `S4_PG_E2E_PASS`（任务 40 消费 10，任务 41 释放 10，两张通过消费 20，任务 44 技术失败保持冻结）。分支 `cursor/s4-batch-credits-9973` 尚未推送。不合并 PR #21。不开 S5。不是生产收费已开放，也不是对外检测通过 |
 
 ## 1. 仓库与文档基线
 

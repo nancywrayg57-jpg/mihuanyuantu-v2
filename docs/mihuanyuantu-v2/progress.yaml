@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "S3 接入真实 Gemini 检测，并核对自动重做、主动重处理和技术重试"
-    user_value: "商家默认走真实检测；未通过可下载且不扣费；无效响应不给下载并保持冻结"
-    visible_output: "工作台自动重做设置；检测报告带来源模型名"
-    verify: "/tmp/s3-pg-e2e.log 的 S3_PG_SAMPLE_READONLY 只描述任务 29；/tmp/s3-pg-e2e-controls.log 的 gemini-control 不代替该小样；pytest tests/capabilities/realphotos 19 passed"
-    status: s3_devhost_evidenced_not_production
-    next_user_action: "不得开 S4。S4 清单未写，代码未提交"
+    goal: "S4 批次 1–10 张，按张冻结、部分成功、并发对账和勾选下载"
+    user_value: "一批图片里失败的那张只释放自己的预留，通过的每张各扣 10，勾选下载不打包 ZIP"
+    visible_output: "工作台批次表和下载勾选"
+    verify: "/tmp/s4-pg-e2e.log 含 S4_PG_E2E_PASS；detector=fixture，不是新的 Gemini 小样；pytest tests/capabilities/realphotos 25 passed"
+    status: s4_devhost_evidenced_not_production
+    next_user_action: "S5 清单还没写，不得开 S5。不合并 PR #21。不是生产收费已开放，也不是对外检测通过。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -100,7 +100,7 @@ phase_gates:
       - ../architecture_decisions/蜜獾原图-v2-grill-me文档基线收口-2026-11-05.md
   delivery:
     file: 02-delivery.yaml
-    status: s3_devhost_evidenced_not_production
+    status: s4_devhost_evidenced_not_production
     evidence:
       - DEV_INSTRUCTIONS.md#§10.4-S2
       - ../../aojuai-main/backend/app/capabilities/realphotos/
@@ -110,6 +110,7 @@ phase_gates:
       - /tmp/s2-pg-e2e.log
       - /tmp/s3-pg-e2e.log
       - /tmp/s3-pg-e2e-controls.log
+      - /tmp/s4-pg-e2e.log
   acceptance:
     file: 03-acceptance.yaml
     status: pending
@@ -182,10 +183,13 @@ known_conflicts:
   - id: DEVHOST_SSH_AUTONOMY
     status: recorded
     detail: "管理员授权：每里程碑后 Agent 自行 SSH 开发机端测，无需人工代跑。口令在同级 生产物料/；清单与 DEV_INSTRUCTIONS §6.1 / AGENTS.md §5 已写。"
+  - id: S4_PRECHECK_AND_FIXTURE_SAMPLE
+    status: recorded
+    detail: "前置校验用库内资产的软删、不属于提交账号或入库字节再次 inspect 失败，发生在按张冻结之后。PostgreSQL 部分成功的可下载张使用 detection_mode=pass，detector=fixture，任务 40 消费 10、任务 41 释放 10。这不是新的 Gemini 小样，也不代替任务 29。SQLite 单测没有代替 /tmp/s4-pg-e2e.log。"
 
 next_action:
   owner: user
-  action: "本提交收齐 S3 的检测原因、技术重试/主动重处理入口和提交账号隔离。推送后只写 S4 清单，不开始 S4 实现。不是生产收费已开放，也不是对外检测通过。"
+  action: "S4 开发机证据在 /tmp/s4-pg-e2e.log，含 S4_PG_E2E_PASS。分支 cursor/s4-batch-credits-9973，尚未推送。不合并 PR #21。S5 清单未写，不得开 S5。不是生产收费已开放，也不是对外检测通过。"
   notes:
     s1_authorized: user_2026-11-05
     s2_authorized: user_2026-11-06
@@ -204,3 +208,9 @@ next_action:
     s3_controls: "/tmp/s3-pg-e2e-controls.log S3_PG_CONTROLS_PASS detector=gemini-control；只证明自动重做、无效响应冻结、主动重处理和技术重试，不代替任务 29"
     s3_workspace_task_29: "sessionStorage realphotos.s1.taskId=29；检测报告 detector=gemini-3.1-pro-preview total_score=38 passed=false；积分处置 released_detection_not_passed；下载 30982 字节且 JPEG 头通过"
     s3_model_note: "合同默认识别名 gemini-2.5-pro；该密钥调用返回 NOT_FOUND，供应商提示改用 gemini-3.1-pro-preview。模型名只写在本机 .env。"
+    s4_authorized: user_2026-11-06
+    s4_branch: cursor/s4-batch-credits-9973
+    s4_exited: true
+    s4_production_billing: false
+    s5_opened: false
+    s4_sample: "/tmp/s4-pg-e2e.log S4_PG_E2E_PASS partial_tasks=40,41 two_pass_consumed=20 technical_task=44 detector=fixture sample_is_not_public_pass=true"

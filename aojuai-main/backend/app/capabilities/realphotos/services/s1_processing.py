@@ -6,6 +6,7 @@ import secrets
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.capabilities.realphotos.adapters.storage import get_storage_adapter
@@ -20,6 +21,8 @@ from app.capabilities.realphotos.constants import (
     PROCESS_UNIT_CREDITS,
     RUNNING_TASK_STATUSES,
     S1_MAX_IMAGES,
+    S4_MAX_IMAGES,
+    S4_MIN_IMAGES,
     TASK_AUTO_REPROCESS_PENDING,
     TASK_DELIVERED,
     TASK_DETECTION,
@@ -229,6 +232,232 @@ class RealphotosS1Service:
         )
         await self.db.flush()
         return task
+
+    async def submit_batch(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        actor_role_codes: set[str],
+        asset_ids: list[int],
+        preset_code: str,
+        idempotency_key: str,
+        pre_review_mode: str = "pass",
+        detection_mode: str = DETECT_PASS,
+    ) -> tuple[RealphotosBatch, list[RealphotosImageTask]]:
+        """FR-015 / FR-016：1–10 张共用一个预设。整单拒绝不留预留；通过后按张冻结。"""
+        key = str(idempotency_key or "").strip()
+        if not key:
+            raise BusinessError(message="缺少幂等键", code="INPUT_INVALID")
+        if len(key) > 110:
+            raise BusinessError(message="幂等键过长", code="INPUT_INVALID")
+        existing = await self._tasks_for_batch_key(tenant_id=int(tenant_id), batch_key=key)
+        if existing:
+            batch = await self._batch_row(tenant_id=int(tenant_id), batch_id=int(existing[0].batch_id))
+            return batch, existing
+        requested = [int(asset_id) for asset_id in asset_ids]
+        if len(requested) < S4_MIN_IMAGES or len(requested) > S4_MAX_IMAGES:
+            raise BusinessError(message="批次只接受 1 到 10 张，整单拒绝", code="BATCH_REJECTED")
+        preset = preset_by_code(preset_code)
+        if preset is None:
+            raise BusinessError(message="预设未启用或不存在", code="PRESET_REJECTED")
+        review = pre_review_mode if pre_review_mode in {"pass", PRE_REVIEW_REJECT} else "pass"
+        if detection_mode == DETECT_GEMINI:
+            detect = DETECT_GEMINI
+        elif detection_mode in {DETECT_PASS, DETECT_NOT_PASSED, DETECT_TECHNICAL}:
+            detect = detection_mode
+        else:
+            detect = DETECT_PASS
+        injected = review != "pass" or detect in {DETECT_NOT_PASSED, DETECT_TECHNICAL}
+        if injected and ROLE_ADMIN not in actor_role_codes:
+            raise BusinessError(message="仅管理员可注入预审或检测结果", code="FORBIDDEN_INJECT")
+        wallet = await self.credits.get_wallet(tenant_id=int(tenant_id))
+        needed = len(requested) * PROCESS_UNIT_CREDITS
+        if int(wallet["availableInteger"]) < needed:
+            raise BusinessError(message="余额不足，整单拒绝", code="INSUFFICIENT_CREDITS")
+        try:
+            async with self.db.begin_nested():
+                return await self._open_batch(
+                    tenant_id=int(tenant_id),
+                    owner_account_id=int(owner_account_id),
+                    asset_ids=requested,
+                    preset=preset,
+                    batch_key=key,
+                    review=review,
+                    detect=detect,
+                )
+        except IntegrityError:
+            found = await self._tasks_for_batch_key(tenant_id=int(tenant_id), batch_key=key)
+            if not found:
+                raise
+            batch = await self._batch_row(tenant_id=int(tenant_id), batch_id=int(found[0].batch_id))
+            return batch, found
+
+    async def _open_batch(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        asset_ids: list[int],
+        preset: dict,
+        batch_key: str,
+        review: str,
+        detect: str,
+    ) -> tuple[RealphotosBatch, list[RealphotosImageTask]]:
+        batch = RealphotosBatch(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(owner_account_id),
+            image_count=len(asset_ids),
+            preset_code=preset["code"],
+        )
+        self.db.add(batch)
+        await self.db.flush()
+        setting = await self.get_redo_setting(tenant_id=int(tenant_id))
+        tasks: list[RealphotosImageTask] = []
+        for index, asset_id in enumerate(asset_ids):
+            chain = RealphotosTaskChain(
+                tenant_id=int(tenant_id), batch_id=int(batch.id), round_no=1
+            )
+            self.db.add(chain)
+            await self.db.flush()
+            task = RealphotosImageTask(
+                tenant_id=int(tenant_id),
+                owner_account_id=int(owner_account_id),
+                batch_id=int(batch.id),
+                chain_id=int(chain.id),
+                asset_id=int(asset_id),
+                status=TASK_SUBMITTED,
+                preset_code=preset["code"],
+                preset_snapshot=preset,
+                pre_review_mode=review,
+                detection_mode=detect,
+                idempotency_key=f"batch:{batch_key}:{index}",
+                pipeline_version=_PIPELINE,
+            )
+            self.db.add(task)
+            await self.db.flush()
+            self.db.add(
+                RealphotosTaskSnapshot(
+                    tenant_id=int(tenant_id), task_id=int(task.id), snapshot=preset
+                )
+            )
+            self.db.add(
+                RealphotosChainPolicy(
+                    tenant_id=int(tenant_id),
+                    chain_id=int(chain.id),
+                    enabled=bool(setting.enabled),
+                    score_threshold=int(setting.score_threshold),
+                    extra_rounds=int(setting.extra_rounds),
+                    execution_count=1,
+                    origin="submit",
+                )
+            )
+            await self.credits.freeze(
+                tenant_id=int(tenant_id),
+                amount=PROCESS_UNIT_CREDITS,
+                operator_user_id=int(owner_account_id),
+                event_key=f"freeze:task:{int(task.id)}",
+                reference={"taskId": int(task.id), "images": 1, "batchId": int(batch.id)},
+            )
+            self.db.add(
+                RealphotosCreditReservation(
+                    tenant_id=int(tenant_id),
+                    task_id=int(task.id),
+                    amount=PROCESS_UNIT_CREDITS,
+                    state="reserved",
+                    operator_user_id=int(owner_account_id),
+                )
+            )
+            await self.db.flush()
+            if await self._precheck_failed(tenant_id=int(tenant_id), owner_account_id=int(owner_account_id), asset_id=int(asset_id)):
+                task.status = TASK_PRE_REVIEW_FAILED
+                task.failure_class = "precheck"
+                await self._release(task, disposition="released_precheck")
+            else:
+                await self.jobs.enqueue_process(
+                    tenant_id=int(tenant_id),
+                    owner_account_id=int(owner_account_id),
+                    payload={"task_id": int(task.id)},
+                )
+            tasks.append(task)
+        await self.db.flush()
+        return batch, tasks
+
+    async def _precheck_failed(self, *, tenant_id: int, owner_account_id: int, asset_id: int) -> bool:
+        asset = (
+            await self.db.execute(
+                select(RealphotosAsset).where(
+                    RealphotosAsset.id == int(asset_id),
+                    RealphotosAsset.tenant_id == int(tenant_id),
+                    RealphotosAsset.owner_account_id == int(owner_account_id),
+                    RealphotosAsset.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if asset is None:
+            return True
+        try:
+            handle = get_storage_adapter().open_read(asset.object_key)
+            try:
+                data = handle.read()
+            finally:
+                handle.close()
+            inspect_upload(data)
+        except (OSError, AOJUException):
+            return True
+        return False
+
+    async def list_batch_tasks(
+        self, *, tenant_id: int, owner_account_id: int, batch_id: int
+    ) -> list[RealphotosImageTask]:
+        rows = (
+            await self.db.execute(
+                select(RealphotosImageTask)
+                .where(
+                    RealphotosImageTask.tenant_id == int(tenant_id),
+                    RealphotosImageTask.owner_account_id == int(owner_account_id),
+                    RealphotosImageTask.batch_id == int(batch_id),
+                    RealphotosImageTask.deleted_at.is_(None),
+                )
+                .order_by(RealphotosImageTask.id.asc())
+            )
+        ).scalars().all()
+        if not rows:
+            raise NotFoundError(message="任务不存在")
+        return list(rows)
+
+    async def selected_download_items(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        task_ids: list[int],
+        pack: str = "files",
+    ) -> list[dict]:
+        if str(pack or "").strip().lower() == "zip":
+            raise BusinessError(message="不生成 ZIP", code="ZIP_REJECTED")
+        items: list[dict] = []
+        for raw in task_ids:
+            task = (
+                await self.db.execute(
+                    select(RealphotosImageTask).where(
+                        RealphotosImageTask.id == int(raw),
+                        RealphotosImageTask.tenant_id == int(tenant_id),
+                        RealphotosImageTask.owner_account_id == int(owner_account_id),
+                        RealphotosImageTask.deleted_at.is_(None),
+                    )
+                )
+            ).scalar_one_or_none()
+            if task is None or not task.output_object_key:
+                continue
+            items.append(
+                {
+                    "taskId": str(int(task.id)),
+                    "objectKey": task.output_object_key,
+                    "pack": "file",
+                }
+            )
+        return items
 
     async def execute_queued(self, job: RealphotosExecutionJob) -> RealphotosImageTask:
         task_id = int((job.payload or {}).get("task_id") or 0)
@@ -792,6 +1021,37 @@ class RealphotosS1Service:
         if row is None:
             raise BusinessError(message="缺少冻结记录", code="RESERVATION_MISSING")
         return row
+
+    async def _batch_row(self, *, tenant_id: int, batch_id: int) -> RealphotosBatch:
+        row = (
+            await self.db.execute(
+                select(RealphotosBatch).where(
+                    RealphotosBatch.id == int(batch_id),
+                    RealphotosBatch.tenant_id == int(tenant_id),
+                    RealphotosBatch.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if row is None:
+            raise NotFoundError(message="任务不存在")
+        return row
+
+    async def _tasks_for_batch_key(
+        self, *, tenant_id: int, batch_key: str
+    ) -> list[RealphotosImageTask]:
+        keys = [f"batch:{batch_key}:{index}" for index in range(S4_MAX_IMAGES)]
+        rows = (
+            await self.db.execute(
+                select(RealphotosImageTask)
+                .where(
+                    RealphotosImageTask.tenant_id == int(tenant_id),
+                    RealphotosImageTask.deleted_at.is_(None),
+                    RealphotosImageTask.idempotency_key.in_(keys),
+                )
+                .order_by(RealphotosImageTask.id.asc())
+            )
+        ).scalars().all()
+        return list(rows)
 
     async def _asset(self, *, tenant_id: int, asset_id: int) -> RealphotosAsset:
         row = (

@@ -3,7 +3,7 @@
 ## Project Snapshot
 - Goal: 电商商家将商品图/生成图整理为可追溯、可下载、带设备成像参数的图片资产；积分可审计。不承诺外部平台原创/实拍认定。
 - 首期（S1）: 真会话 → 本地上传 → 单张处理 → 预审占位 → 五层占位实现（仍交 sRGB JPG）→ Gemini 规则替身 → 整数积分流水按张 10 → LocalDisk 网关下载；同租户双账号 + 跨租户隔离。
-- Current phase: delivery（S3 开发机端测已通过，不是生产收费就绪；不得开 S4。文档基线 PRD 2.10 / 架构 1.7）。
+- Current phase: delivery（S4 开发机端测已通过，不是生产收费就绪；不得开 S5。文档基线 PRD 2.10 / 架构 1.7）。
 - Protected decisions: 栈=aojuai；认证=用户名密码+验证码；部署=经济起步；数据=LocalDisk+整数租户积分；AI=首期规则替身；FR-033 scopes=能力名映射。
 - Vibe coding mode: 开启；一次一个可见阶段。
 
@@ -47,21 +47,21 @@
 - Prompt notes: 原型尚无「业务 API 凭证」页；S5 前补。
 
 ### Delivery
-- Outcomes: S0 realphotos 包落地；Cloud pytest + CI 绿；开发机 `S0_PG_CLAIM_ONE_PASS`；S1 单张闭环有开发机证据；S2 五层开发机 `S2_PG_E2E_PASS`；S3 真实小样 `S3_PG_E2E_PASS` 与控制路径 `S3_PG_CONTROLS_PASS`。
+- Outcomes: S0 realphotos 包落地；Cloud pytest + CI 绿；开发机 `S0_PG_CLAIM_ONE_PASS`；S1 单张闭环有开发机证据；S2 五层开发机 `S2_PG_E2E_PASS`；S3 真实小样 `S3_PG_E2E_PASS` 与控制路径 `S3_PG_CONTROLS_PASS`；S4 批次 `/tmp/s4-pg-e2e.log` 的 `S4_PG_E2E_PASS`。
 - Commands: `AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m pytest tests/capabilities/realphotos -q`；开发机 `DB_DRIVER=postgresql AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m scripts.s0_pg_claim_one_smoke`（日志 `/tmp/s0-pg-claim-one-smoke.log`）；`bash scripts/ci/secret_scan.sh`。
 - Implementation rules: 整数账本禁止桥接 Decimal；网关不回裸路径；SQLite 条件更新认领，PG 用 `claim_one`。
 - Deploy/rollback notes: production_readiness NOT_READY；SSH 方法在清单 §2.1，口令只在同级 `生产物料/`。
 - Autonomy: 每里程碑后 Agent 自行 SSH 开发机端测（`DEV_INSTRUCTIONS` §6.1）；Cloud 不可达 LAN 时走 self-hosted worker。
 
 ### Acceptance
-- Evidence: `/tmp/s3-pg-e2e.log` = `S3_PG_E2E_PASS`；`/tmp/s3-pg-e2e-controls.log` = `S3_PG_CONTROLS_PASS`；`/tmp/s2-pg-e2e.log` = `S2_PG_E2E_PASS`；S1 与 S0 日志仍有效。
+- Evidence: `/tmp/s4-pg-e2e.log` = `S4_PG_E2E_PASS`；`/tmp/s3-pg-e2e.log` = `S3_PG_E2E_PASS`；`/tmp/s3-pg-e2e-controls.log` = `S3_PG_CONTROLS_PASS`；`/tmp/s2-pg-e2e.log` = `S2_PG_E2E_PASS`；S1 与 S0 日志仍有效。
 - Defects: 开发机 `alembic_version_cap_realphotos` 当时不存在，`realphotos_0002` 未在该库重放。技术失败积分按决定保持冻结。
 - Accepted risks: 开发库已被端测与并发探测写入，不清空。
-- Next sprint knowledge: 技术失败冻结留到技术客服阶段。S3 开发机证据已有，不是生产收费就绪。S4 清单未写，不得开工。
+- Next sprint knowledge: 技术失败冻结留到技术客服阶段。S4 开发机证据已有，不是生产收费就绪。S5 清单未写，不得开工。
 
 ## Reusable Prompts and Commands
 - Agent entry: `DEV_INSTRUCTIONS.md`（必读根目录四职责文件）
-- Gate: S3 开发机证据已回写；`s3_exited=true`；`s3_production_billing=false`；不得开 S4
+- Gate: S4 开发机证据已回写；`s4_exited=true`；`s4_production_billing=false`；不得开 S5
 - Stage checklist: DEV_INSTRUCTIONS §10；`02-delivery.yaml` 只镜像 status
 - Hard rule: 每个里程碑完成后须端到端测试；Cloud ≠ 开发机
 - Root pack: `AGENTS.md` · `handoff.md` · `anchor.md` · `checkpoint.md`
@@ -79,7 +79,8 @@
 | 4-s0-loop | S0 基础可登录/积分/网关/worker | §10.1 + Cloud 端测 + 开发机 claim_one | devhost_passed | S1 已授权 |
 | 5-s1-loop | 单张上传/处理/下载/充值确认拒单 | `/tmp/s1-pg-e2e.log` + `/tmp/s1-browser-e2e.txt` | evidenced | S2 |
 | 6-s2-loop | 有序五层、字节下限、预设 EXIF | `/tmp/s2-pg-e2e.log` | devhost_passed | S3 |
-| 7-s3-loop | 真实 Gemini、自动重做、主动重处理、技术重试 | `/tmp/s3-pg-e2e.log` + `/tmp/s3-pg-e2e-controls.log` | devhost_passed | 不得开 S4 |
+| 7-s3-loop | 真实 Gemini、自动重做、主动重处理、技术重试 | `/tmp/s3-pg-e2e.log` + `/tmp/s3-pg-e2e-controls.log` | devhost_passed | S4 |
+| 8-s4-loop | 1–10 张按张冻结、部分成功、勾选下载 | `/tmp/s4-pg-e2e.log` | devhost_passed | 不得开 S5 |
 
 ## Risks and Watchpoints
 - Risk: 把文档齐全或 CI 绿当成后端已交付。
@@ -88,5 +89,5 @@
 - Mitigation: 架构 1.7 §9.2.1 改造义务；S5 验收 AC-024。
 
 ## Backlog Knowledge
-- Next: FR-033 仍归 S5/R3。技术失败冻结留到技术客服。S4 不得在清单写完前开工。
+- Next: FR-033 仍归 S5/R3。技术失败冻结留到技术客服。S5 不得在清单写完前开工。
 - Deferred: CI Python/pnpm 版本与架构推荐对齐（非 S0 阻塞）；前端 realphotos 菜单 i18n 键。

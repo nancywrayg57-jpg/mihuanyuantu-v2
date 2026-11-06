@@ -1,5 +1,5 @@
 phase: delivery
-status: s3_devhost_evidenced_not_production
+status: s4_devhost_evidenced_not_production
 
 phase_confirmation:
   status: confirmed
@@ -57,13 +57,19 @@ phase_confirmation:
     - date: "2026-11-06"
       change: "S3 真实小样与控制路径通过；不标生产收费就绪；不开 S4"
       reason: "/tmp/s3-pg-e2e.log 含 S3_PG_E2E_PASS；/tmp/s3-pg-e2e-controls.log 含 S3_PG_CONTROLS_PASS"
+    - date: "2026-11-06"
+      change: "S4 tasks / exit_evidence / forbidden 写入 DEV_INSTRUCTIONS §10.6；正式开发未开始"
+      reason: "管理员要求推送 S3 后先完成 S4 清单，暂不编码"
+    - date: "2026-11-06"
+      change: "S4 批次按张冻结与部分成功有开发机 PostgreSQL 证据；不标生产收费就绪；不开 S5"
+      reason: "/tmp/s4-pg-e2e.log 含 S4_PG_E2E_PASS；可下载张 detector=fixture，不是新的 Gemini 小样"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "真实小样只认任务 29 的 S3_PG_SAMPLE_READONLY。控制路径 detector=gemini-control，不代替该小样。不是生产收费已开放，也不是对外检测通过。不得开 S4。"
+  phase_summary: "S4 开发机日志 /tmp/s4-pg-e2e.log 含 S4_PG_E2E_PASS。任务 40 按张消费 10，任务 41 前置失败释放 10，两张通过批次消费 20。detector=fixture，不代替任务 29，也不是对外检测通过。不开 S5。"
   outcomes:
     - "aojuai-main/backend/app/capabilities/realphotos/ S0 包落地"
-    - "pytest tests/capabilities/realphotos 19 passed"
+    - "pytest tests/capabilities/realphotos 25 passed"
     - "开发机 /tmp/s3-pg-e2e.log S3_PG_SAMPLE_READONLY task_id=29 total_score=38 dimension_average=41.0 reservation=released"
     - "开发机 /tmp/s2-pg-e2e.log = S2_PG_E2E_PASS"
     - "开发机 /tmp/s3-pg-e2e.log = S3_PG_E2E_PASS"
@@ -256,7 +262,7 @@ git:
   branch_policy: "本会话 Cloud 硬性 cursor/<name>-6c0b；仓库 AGENTS 仍写 -9973（冲突已记录）"
   protected: "不提交 生产物料/、.env、密钥"
   version_control_required_before_code: true
-  working_branch: "cursor/s3-gemini-redo-9973"
+  working_branch: "cursor/s4-batch-credits-9973"
 
 deployment:
   s1_target: "development host only"
@@ -273,7 +279,8 @@ verification:
     - "开发机 DB_DRIVER=postgresql .venv/bin/python -m scripts.s1_pg_e2e_smoke → S2_PG_E2E_PASS"
     - "开发机 .venv/bin/python -m scripts.s3_pg_e2e_smoke → S3_PG_E2E_PASS"
     - "开发机 .venv/bin/python -m scripts.s3_pg_e2e_controls → S3_PG_CONTROLS_PASS"
-  status: s3_devhost_evidenced_not_production
+    - "开发机 .venv/bin/python -m scripts.s4_pg_e2e_smoke → S4_PG_E2E_PASS"
+  status: s4_devhost_evidenced_not_production
   cloud_artifacts:
     - "/opt/cursor/artifacts/s0-pytest.txt"
     - "/opt/cursor/artifacts/s0-e2e-service.log"

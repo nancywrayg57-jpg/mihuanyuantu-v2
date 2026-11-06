@@ -34,9 +34,12 @@ LEDGER_TYPE_RECHARGE_CONFIRM = "recharge_confirm"
 # FR-003 / NFR-004 / 架构 §8.1：20 MiB = 20,971,520 字节；40MP。
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 MAX_PIXELS = 40_000_000
-# FR-016 / anchor B03：处理单价。S1 只接受 1 张，冻结额 = 1 × 10。
+# FR-016 / anchor B03：处理单价。S1 单张路径只接受 1 张。
+# S4 批次按请求张数冻结，每张仍是 10，上限 10 张。
 PROCESS_UNIT_CREDITS = 10
 S1_MAX_IMAGES = 1
+S4_MIN_IMAGES = 1
+S4_MAX_IMAGES = 10
 # FR-019：处理结果 7×24 小时；站内消息 30 天。
 OUTPUT_TTL_HOURS = 7 * 24
 INBOX_TTL_DAYS = 30
