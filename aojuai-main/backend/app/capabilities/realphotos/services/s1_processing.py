@@ -338,17 +338,20 @@ class RealphotosS1Service:
         asset.deleted_at = _utcnow()
         await self.db.flush()
 
-    async def read_object_for_gateway(self, *, tenant_id: int, object_key: str) -> tuple[str, bytes]:
+    async def read_object_for_gateway(
+        self, *, tenant_id: int, object_key: str, owner_account_id: int | None = None
+    ) -> tuple[str, bytes]:
         key = object_key.strip().lstrip("/")
         now = _utcnow()
         if "/output/" in key:
-            result = await self.db.execute(
-                select(RealphotosImageTask).where(
-                    RealphotosImageTask.tenant_id == int(tenant_id),
-                    RealphotosImageTask.output_object_key == key,
-                    RealphotosImageTask.deleted_at.is_(None),
-                )
-            )
+            filters = [
+                RealphotosImageTask.tenant_id == int(tenant_id),
+                RealphotosImageTask.output_object_key == key,
+                RealphotosImageTask.deleted_at.is_(None),
+            ]
+            if owner_account_id is not None:
+                filters.append(RealphotosImageTask.owner_account_id == int(owner_account_id))
+            result = await self.db.execute(select(RealphotosImageTask).where(*filters))
             task = result.scalar_one_or_none()
             if task is None:
                 raise NotFoundError(message="对象不存在")
@@ -391,8 +394,12 @@ class RealphotosS1Service:
         ).scalars().all()
         return [row for row in rows if _as_utc(row.expires_at) > now]
 
-    async def get_task(self, *, tenant_id: int, task_id: int) -> RealphotosImageTask:
-        return await self._task(tenant_id=tenant_id, task_id=task_id)
+    async def get_task(
+        self, *, tenant_id: int, task_id: int, owner_account_id: int
+    ) -> RealphotosImageTask:
+        return await self._task(
+            tenant_id=tenant_id, task_id=task_id, owner_account_id=owner_account_id
+        )
 
     async def detection_payload(self, *, tenant_id: int, task_id: int) -> dict | None:
         row = (
@@ -473,8 +480,12 @@ class RealphotosS1Service:
         await self.db.flush()
         return row
 
-    async def retry_technical(self, *, tenant_id: int, task_id: int) -> RealphotosImageTask:
-        task = await self._task(tenant_id=tenant_id, task_id=task_id)
+    async def retry_technical(
+        self, *, tenant_id: int, task_id: int, owner_account_id: int
+    ) -> RealphotosImageTask:
+        task = await self._task(
+            tenant_id=tenant_id, task_id=task_id, owner_account_id=owner_account_id
+        )
         if task.failure_class not in _RETRYABLE_FAILURES:
             raise BusinessError(message="只有技术失败可以沿用原任务重试", code="RETRY_REJECTED")
         policy = await self._policy(task)
@@ -502,7 +513,9 @@ class RealphotosS1Service:
         preset_code: str,
         idempotency_key: str,
     ) -> RealphotosImageTask:
-        source = await self._task(tenant_id=tenant_id, task_id=source_task_id)
+        source = await self._task(
+            tenant_id=tenant_id, task_id=source_task_id, owner_account_id=owner_account_id
+        )
         report = await self.detection_payload(tenant_id=tenant_id, task_id=int(source.id))
         if report is None or report.get("detector") == "fixture" or report.get("accepted") is not False:
             raise BusinessError(message="只能对真实检测未通过的处理结果重处理", code="REPROCESS_REJECTED")
@@ -794,15 +807,18 @@ class RealphotosS1Service:
             raise NotFoundError(message="资源不存在")
         return row
 
-    async def _task(self, *, tenant_id: int, task_id: int) -> RealphotosImageTask:
+    async def _task(
+        self, *, tenant_id: int, task_id: int, owner_account_id: int | None = None
+    ) -> RealphotosImageTask:
+        filters = [
+            RealphotosImageTask.id == int(task_id),
+            RealphotosImageTask.tenant_id == int(tenant_id),
+            RealphotosImageTask.deleted_at.is_(None),
+        ]
+        if owner_account_id is not None:
+            filters.append(RealphotosImageTask.owner_account_id == int(owner_account_id))
         row = (
-            await self.db.execute(
-                select(RealphotosImageTask).where(
-                    RealphotosImageTask.id == int(task_id),
-                    RealphotosImageTask.tenant_id == int(tenant_id),
-                    RealphotosImageTask.deleted_at.is_(None),
-                )
-            )
+            await self.db.execute(select(RealphotosImageTask).where(*filters))
         ).scalar_one_or_none()
         if row is None:
             raise NotFoundError(message="任务不存在")

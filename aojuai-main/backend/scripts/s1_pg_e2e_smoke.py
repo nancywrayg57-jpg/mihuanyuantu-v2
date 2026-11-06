@@ -238,7 +238,9 @@ async def _main() -> int:
             if exc.status_code != 410:
                 raise
         try:
-            await loop.get_task(tenant_id=tenant2, task_id=int(done.id))
+            await loop.get_task(
+                tenant_id=tenant2, task_id=int(done.id), owner_account_id=user_a
+            )
             print("FAIL: cross tenant read", file=sys.stderr)
             return 1
         except NotFoundError:

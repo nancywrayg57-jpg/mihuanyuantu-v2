@@ -56,6 +56,7 @@ async def read_object(
         content_type, payload = await RealphotosS1Service(db).read_object_for_gateway(
             tenant_id=int(tenant_ctx.tenant_id),
             object_key=key,
+            owner_account_id=int(current_user.id) if "/output/" in key else None,
         )
 
         def _once():

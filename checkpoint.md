@@ -13,7 +13,7 @@
 | 代码态 | S0 已在 `main`。S1 与 S2 在未合并的 PR #21。S3 在 `cursor/s3-gemini-redo-9973`。不是生产收费已开放 |
 | 验证态 | 真实小样只认 `/tmp/s3-pg-e2e.log` 的 `S3_PG_SAMPLE_READONLY task_id=29 detector=gemini-3.1-pro-preview noise=45 depthOfField=40 lighting=35 colorRealism=50 overallRealism=35 total_score=38 passed=false has_jpeg=true output_bytes=30982 reservation=released total_is_not_dimension_average=true dimension_average=41.0`。`S3_PG_E2E_PASS` 是同一次调用记录，字段以只读行为准。`/tmp/s3-pg-e2e-controls.log` 的 `S3_PG_CONTROLS_PASS` 使用 `gemini-control`，只证明自动重做、无效响应冻结、主动重处理和技术重试，不代替任务 29。工作台用 `realphotos.s1.taskId=29` 打开后，检测报告为 `detector=gemini-3.1-pro-preview total_score=38 passed=false`，积分处置 `released_detection_not_passed`，下载 30982 字节且 JPEG 头通过。pytest `tests/capabilities/realphotos` 19 passed，含超时、非整数分和技术失败冻结，以及 reprocess 的 `REPROCESS_REJECTED` |
 | 当前阶段 | S3 开发机证据已分开。这不是对外「检测通过」，也不是生产收费已开放 |
-| 下一步 | 不得开 S4。不得 push，不得合并 PR #21 |
+| 下一步 | 本提交收齐检测原因、技术重试/主动重处理入口、任务与结果按提交账号隔离。不合并 PR #21。S4 只写清单，不开始实现 |
 
 ## 1. 仓库与文档基线
 

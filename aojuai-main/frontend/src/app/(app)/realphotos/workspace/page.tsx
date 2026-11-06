@@ -14,9 +14,11 @@ type TaskView = {
   presetSnapshot?: Record<string, string>
   outputObjectKey?: string | null
   creditDisposition?: string | null
+  failureClass?: string | null
   detection?: {
     accepted?: boolean
     passed?: boolean
+    reason?: string
     total_score?: number
     noise?: number
     depthOfField?: number
@@ -27,6 +29,29 @@ type TaskView = {
   } | null
 }
 type InboxItem = { id: string; title: string; body: string }
+
+const RETRYABLE = new Set([
+  'technical',
+  'gemini_technical',
+  'GEMINI_TECHNICAL',
+  'GEMINI_NOT_CONFIGURED',
+  'OUTPUT_CONSTRAINT_UNSATISFIED',
+  'EXIF_WRITE_FAILED',
+])
+
+function canRetry(task: TaskView): boolean {
+  return Boolean(task.failureClass && RETRYABLE.has(task.failureClass))
+}
+
+function canReprocess(task: TaskView): boolean {
+  return Boolean(
+    task.outputObjectKey &&
+      task.detection &&
+      task.detection.detector &&
+      task.detection.detector !== 'fixture' &&
+      task.detection.accepted === false,
+  )
+}
 
 export default function RealphotosWorkspacePage() {
   const [presets, setPresets] = useState<Preset[]>([])
@@ -133,6 +158,39 @@ export default function RealphotosWorkspacePage() {
     setDownloadNote(jpeg ? `下载 ${bytes.length} 字节，JPEG 头通过` : '下载内容不是 JPEG')
   }
 
+  async function retryTechnical() {
+    if (!task || !canRetry(task)) return
+    try {
+      const data = await apiFetch<TaskView>(`/api/v1/realphotos/processing-tasks/${task.id}/retry`, {
+        method: 'POST',
+      })
+      const refreshed = await apiFetch<TaskView>(`/api/v1/realphotos/processing-tasks/${data.id}`)
+      setTask(refreshed)
+      window.sessionStorage.setItem('realphotos.s1.taskId', refreshed.id)
+      setNotice(`技术重试已提交，状态 ${refreshed.status}`)
+    } catch (error: unknown) {
+      setNotice(error instanceof ApiError ? error.message : '技术重试失败')
+    }
+  }
+
+  async function reprocessTask() {
+    if (!task || !presetCode || !canReprocess(task)) return
+    try {
+      const data = await apiFetch<TaskView>(`/api/v1/realphotos/processing-tasks/${task.id}/reprocess`, {
+        method: 'POST',
+        body: JSON.stringify({
+          presetCode,
+          idempotencyKey: `reprocess-${task.id}-${Date.now()}`,
+        }),
+      })
+      setTask(data)
+      window.sessionStorage.setItem('realphotos.s1.taskId', data.id)
+      setNotice(`已建立重处理任务 ${data.id}，原任务报告仍保留`)
+    } catch (error: unknown) {
+      setNotice(error instanceof ApiError ? error.message : '主动重处理失败')
+    }
+  }
+
   async function removeAsset() {
     if (!assetId) return
     try {
@@ -236,6 +294,22 @@ export default function RealphotosWorkspacePage() {
         <button className="border px-3 py-1 text-sm" type="button" onClick={() => void download()}>
           下载结果
         </button>
+        <button
+          className="border px-3 py-1 text-sm disabled:opacity-40"
+          type="button"
+          disabled={!task || !canRetry(task)}
+          onClick={() => void retryTechnical()}
+        >
+          技术重试
+        </button>
+        <button
+          className="border px-3 py-1 text-sm disabled:opacity-40"
+          type="button"
+          disabled={!task || !canReprocess(task)}
+          onClick={() => void reprocessTask()}
+        >
+          主动重处理
+        </button>
         <button className="border px-3 py-1 text-sm" type="button" onClick={() => void removeAsset()}>
           删除资产
         </button>
@@ -264,7 +338,7 @@ export default function RealphotosWorkspacePage() {
               <th className="text-left">检测报告</th>
               <td>
                 {task.detection
-                  ? `detector=${task.detection.detector || ''} total_score=${task.detection.total_score} passed=${String(task.detection.passed)} accepted=${String(task.detection.accepted)} noise=${task.detection.noise} depthOfField=${task.detection.depthOfField} lighting=${task.detection.lighting} colorRealism=${task.detection.colorRealism} overallRealism=${task.detection.overallRealism}`
+                  ? `detector=${task.detection.detector || ''} total_score=${task.detection.total_score} passed=${String(task.detection.passed)} accepted=${String(task.detection.accepted)} reason=${task.detection.reason || ''} noise=${task.detection.noise} depthOfField=${task.detection.depthOfField} lighting=${task.detection.lighting} colorRealism=${task.detection.colorRealism} overallRealism=${task.detection.overallRealism}`
                   : '尚无报告'}
               </td>
             </tr>
