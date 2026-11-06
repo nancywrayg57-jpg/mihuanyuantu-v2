@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.capabilities.realphotos.constants import (
     JOB_KIND_HEARTBEAT,
     JOB_KIND_NOOP,
+    JOB_KIND_PROCESS_IMAGE,
     JOB_STATUS_FAILED,
     JOB_STATUS_QUEUED,
     JOB_STATUS_RUNNING,
@@ -65,6 +66,25 @@ class RealphotosJobService:
         await self.db.flush()
         return job
 
+    async def enqueue_process(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int | None,
+        payload: dict | None = None,
+    ) -> RealphotosExecutionJob:
+        job = RealphotosExecutionJob(
+            tenant_id=int(tenant_id),
+            job_kind=JOB_KIND_PROCESS_IMAGE,
+            status=JOB_STATUS_QUEUED,
+            owner_account_id=int(owner_account_id) if owner_account_id else None,
+            payload=dict(payload or {}),
+            available_at=_utcnow(),
+        )
+        self.db.add(job)
+        await self.db.flush()
+        return job
+
     async def get_job(self, *, tenant_id: int, job_id: int) -> RealphotosExecutionJob:
         result = await self.db.execute(
             select(RealphotosExecutionJob).where(
@@ -78,13 +98,28 @@ class RealphotosJobService:
             raise NotFoundError(message="任务不存在")
         return job
 
-    async def claim(self, *, worker_id: str) -> RealphotosExecutionJob | None:
+    async def claim(
+        self,
+        *,
+        worker_id: str,
+        job_kinds: tuple[str, ...] | None = None,
+        payload_task_id: int | None = None,
+    ) -> RealphotosExecutionJob | None:
+        extra_parts: list = []
+        if job_kinds:
+            extra_parts.append(RealphotosExecutionJob.job_kind.in_(tuple(job_kinds)))
+        if payload_task_id is not None:
+            extra_parts.append(
+                RealphotosExecutionJob.payload["task_id"].as_integer() == int(payload_task_id)
+            )
+        extra = tuple(extra_parts)
         if str(settings.DB_DIALECT) == "postgresql":
             return await claim_one(
                 self.db,
                 RealphotosExecutionJob,
                 policy=QUEUE_POLICY,
                 worker_id=worker_id,
+                extra_where=extra,
             )
         # SQLite / CI：无 SKIP LOCKED 时用条件更新做单 worker 认领
         result = await self.db.execute(
@@ -92,6 +127,7 @@ class RealphotosJobService:
             .where(
                 RealphotosExecutionJob.deleted_at.is_(None),
                 RealphotosExecutionJob.status == JOB_STATUS_QUEUED,
+                *extra,
             )
             .order_by(RealphotosExecutionJob.created_at.asc(), RealphotosExecutionJob.id.asc())
             .limit(1)

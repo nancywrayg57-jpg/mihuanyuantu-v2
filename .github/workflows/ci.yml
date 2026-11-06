@@ -65,6 +65,8 @@ jobs:
             aojuai-main/backend/requirements-dev.txt
       - name: Install dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y libimage-exiftool-perl
           python -m pip install -U pip
           pip install -r requirements-dev.txt
           pip install -e .

@@ -3,7 +3,7 @@
 ## Project Snapshot
 - Goal: 电商商家将商品图/生成图整理为可追溯、可下载、带设备成像参数的图片资产；积分可审计。不承诺外部平台原创/实拍认定。
 - 首期（S1）: 真会话 → 本地上传 → 单张处理 → 预审占位 → 五层占位实现（仍交 sRGB JPG）→ Gemini 规则替身 → 整数积分流水按张 10 → LocalDisk 网关下载；同租户双账号 + 跨租户隔离。
-- Current phase: delivery（**S0 开发机端测已通过并暂停**；等待管理员授权开 S1。文档基线 PRD 2.10 / 架构 1.7）。
+- Current phase: delivery（S1 已授权；五项冲突已按 2026-11-06 决定落地；**S2 未开工**。文档基线 PRD 2.10 / 架构 1.7）。
 - Protected decisions: 栈=aojuai；认证=用户名密码+验证码；部署=经济起步；数据=LocalDisk+整数租户积分；AI=首期规则替身；FR-033 scopes=能力名映射。
 - Vibe coding mode: 开启；一次一个可见阶段。
 
@@ -30,14 +30,15 @@
 | 2026-11-05 | delivery | 去掉 GitHub 审批开关与 Collaborator OAuth 绑定类文档跟踪 | confirmed | user |
 | 2026-11-05 | delivery | 授权开 S0；实现 realphotos S0；第一个里程碑后暂停 | confirmed | user |
 | 2026-11-05 | delivery | 分支后缀冲突：Cloud `-6c0b` vs AGENTS `-9973` | recorded | cloud session vs AGENTS |
-| 2026-11-05 | delivery | 开发机 PG `claim_one` 通过；关闭 `S0_E2E_ENV`；不开 S1 | confirmed | `/tmp/s0-pg-claim-one-smoke.log` |
+| 2026-11-05 | delivery | 开发机 PG `claim_one` 通过；关闭 `S0_E2E_ENV` | confirmed | `/tmp/s0-pg-claim-one-smoke.log` |
+| 2026-11-06 | delivery | 五项冲突按管理员决定落地：技术失败保持冻结至技术客服；正方形按横图下限；充值用清单档位；字节下限与分支后缀不变 | decided | 管理员当次回复 |
 
 ## Phase Knowledge
 ### Discovery
 - Outcomes: OSS/共享钱包/MVP 过胖分叉已闭合；FR-033 纳入第一版但不进 S1。
 - Lessons: RESOLVED ND ≠ 上线证据；历史 ADR 头版本可能滞后，以收口 ADR 为准。
 - Reusable rules: 每轮 ≤5 前沿题；事实自查仓库；决策等用户。
-- Open questions: 管理员是否授权开 S1。
+- Open questions: 无上述五项。技术客服阶段再处理已冻结的技术失败积分。
 
 ### Design
 - Outcomes: 架构 **1.7** = 1.6 包 + LocalDisk 网关措辞消歧 + scopes **能力名→路径白名单** 映射合同；PRD **2.10** §7 与矩阵对齐。
@@ -46,21 +47,21 @@
 - Prompt notes: 原型尚无「业务 API 凭证」页；S5 前补。
 
 ### Delivery
-- Outcomes: S0 realphotos 包落地；Cloud pytest + CI 绿；开发机 `S0_PG_CLAIM_ONE_PASS`；按要求暂停不开 S1。
+- Outcomes: S0 realphotos 包落地；Cloud pytest + CI 绿；开发机 `S0_PG_CLAIM_ONE_PASS`；S1 单张闭环有开发机证据；S2 五层开发机 `S2_PG_E2E_PASS`。
 - Commands: `AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m pytest tests/capabilities/realphotos -q`；开发机 `DB_DRIVER=postgresql AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m scripts.s0_pg_claim_one_smoke`（日志 `/tmp/s0-pg-claim-one-smoke.log`）；`bash scripts/ci/secret_scan.sh`。
 - Implementation rules: 整数账本禁止桥接 Decimal；网关不回裸路径；SQLite 条件更新认领，PG 用 `claim_one`。
 - Deploy/rollback notes: production_readiness NOT_READY；SSH 方法在清单 §2.1，口令只在同级 `生产物料/`。
 - Autonomy: 每里程碑后 Agent 自行 SSH 开发机端测（`DEV_INSTRUCTIONS` §6.1）；Cloud 不可达 LAN 时走 self-hosted worker。
 
 ### Acceptance
-- Evidence: Cloud `/opt/cursor/artifacts/s0-pytest.txt`、`s0-e2e-service.log`；开发机 `/tmp/s0-pg-claim-one-smoke.log` = `S0_PG_CLAIM_ONE_PASS`。
-- Defects: 无未关闭的 S0 PG `claim_one` 缺口。S1 仍未授权。
-- Accepted risks: 租户共用积分店内误花；ND-016 无版权声明；Cloud 证据不能单独代替开发机 PG 路径（该路径已补验）。
-- Next sprint knowledge: 管理员授权后才开 S1。
+- Evidence: `/tmp/s2-pg-e2e.log` = `S2_PG_E2E_PASS`；`/tmp/s1-pg-e2e.log` = `S1_PG_E2E_PASS`；`/tmp/s1-browser-e2e.txt`；S0 日志仍有效。
+- Defects: 开发机 `alembic_version_cap_realphotos` 当时不存在，`realphotos_0002` 未在该库重放。技术失败积分按决定保持冻结。
+- Accepted risks: 开发库已被端测与并发探测写入，不清空。
+- Next sprint knowledge: 技术失败冻结留到技术客服阶段。S2 开发机证据已有。S3 清单未写，不得开工。
 
 ## Reusable Prompts and Commands
 - Agent entry: `DEV_INSTRUCTIONS.md`（必读根目录四职责文件）
-- Gate: `s0_coding_authorized=true`；`s0_pause_after_milestone=true`；开发机 `claim_one` 已通过；管理员授权前不得开 S1
+- Gate: S2 开发机证据已回写；`s3_opened=false`
 - Stage checklist: DEV_INSTRUCTIONS §10；`02-delivery.yaml` 只镜像 status
 - Hard rule: 每个里程碑完成后须端到端测试；Cloud ≠ 开发机
 - Root pack: `AGENTS.md` · `handoff.md` · `anchor.md` · `checkpoint.md`
@@ -75,7 +76,9 @@
 | 1-s0-s1-triad | DEV_INSTRUCTIONS §10.1/10.2 | 用户「按此修改并推送」 | done | 曾指向自主 S0 |
 | 2-cicd-public | CI + public + CI gate Required | 保护规则可强制 | done（CI gate） | — |
 | 3-grill-round2 | PRD 2.10 / 架构 1.7 / 收口 ADR / §10.1 Q6 | 收口合入 | done（#10/#11/#12） | 授权开 S0 |
-| 4-s0-loop | S0 基础可登录/积分/网关/worker | §10.1 + Cloud 端测 + 开发机 claim_one | devhost_passed_paused | 等待授权开 S1 |
+| 4-s0-loop | S0 基础可登录/积分/网关/worker | §10.1 + Cloud 端测 + 开发机 claim_one | devhost_passed | S1 已授权 |
+| 5-s1-loop | 单张上传/处理/下载/充值确认拒单 | `/tmp/s1-pg-e2e.log` + `/tmp/s1-browser-e2e.txt` | evidenced | S2 |
+| 6-s2-loop | 有序五层、字节下限、预设 EXIF | `/tmp/s2-pg-e2e.log` | devhost_passed | S3 清单未写 |
 
 ## Risks and Watchpoints
 - Risk: 把文档齐全或 CI 绿当成后端已交付。
@@ -84,5 +87,5 @@
 - Mitigation: 架构 1.7 §9.2.1 改造义务；S5 验收 AC-024。
 
 ## Backlog Knowledge
-- Next: 等待管理员授权开 S1；FR-033 → S5/R3。
+- Next: FR-033 仍归 S5/R3。技术失败冻结留到技术客服。S3 不得在清单写完前开工。
 - Deferred: CI Python/pnpm 版本与架构推荐对齐（非 S0 阻塞）；前端 realphotos 菜单 i18n 键。

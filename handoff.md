@@ -29,8 +29,8 @@
 | 底座 | `aojuai-main/`（上游固定版本见 `aojuai-main/UPSTREAM_PIN.txt`） |
 | S0 业务包 | `aojuai-main/backend/app/capabilities/realphotos/` |
 | 原型 | `prototype/index.html`；改 `prototype.js` 后跑 `node prototype/sync-inline.js` |
-| 分支约定 | 见 `DEV_INSTRUCTIONS.md` / `AGENTS.md` §7；收口分支 `cursor/s0-devhost-e2e-closeout-6c0b`（与 `-9973` 后缀冲突已记录） |
-| 密钥 | 仓库无 `生产物料/`；需要时在聊天向管理员索取，仅写本机环境 |
+| 分支约定 | 见 `DEV_INSTRUCTIONS.md` / `AGENTS.md` §7；当前工作区在 `cursor/s1-single-image-loop-9973`，S1 与 S2 尚未提交。后缀保持 `-9973` |
+| 密钥 | 仓库忽略 `生产物料/`；需要时只读本机物料，不入库 |
 
 当前实现状态摘要见 `checkpoint.md`。
 
@@ -49,16 +49,15 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **当前**：**S0 开发机端测已通过并暂停**。开发机本机 `pg_isready` 通过；`scripts.s0_pg_claim_one_smoke` 日志 `/tmp/s0-pg-claim-one-smoke.log` 含 `S0_PG_CLAIM_ONE_PASS`。
-- **不得开 S1**，直到管理员授权。
-- 端测自治：每里程碑后 Agent 自行在开发机补验（`DEV_INSTRUCTIONS` §6.1）；口令只在同级 `生产物料/` 或本机 `.env`，禁止入库。
-- Cloud 证据：`s0-pytest.txt`、`s0-e2e-service.log`。开发机证据：`/tmp/s0-pg-claim-one-smoke.log`。
+- **当前**：S2 开发机端测已通过。日志 `/tmp/s2-pg-e2e.log` 含 `S2_PG_E2E_PASS`，流水线 `s2-five-layer-1`。工作区仍在 `cursor/s1-single-image-loop-9973`，尚未提交。
+- **不得开 S3**：`DEV_INSTRUCTIONS` 还没有 S3 的 tasks / exit_evidence / forbidden。真 Gemini、自动重做、2–10 张批次都不在本阶段。
+- 检测仍是规则替身。字节下限失败保持冻结，等到技术客服阶段再处理。
 - **协作**：见 `AGENTS.md` §7。**S7** 须管理员确认。
 
 ## 6. 风险提醒
 
 - 原型里的检测替身 ≠ Gemini 真验收；文档齐全 ≠ 后端已交付。
-- Cloud 服务端测 ≠ 开发机 PostgreSQL 验收；本机 `claim_one` 已通过，仍须管理员授权后才开 S1。
+- Cloud 服务端测 ≠ 开发机 PostgreSQL 验收。S2 规则替身检测不等于生产检测通过。
 - 租户共用积分是现行产品选择；账号隔离 ≠ 余额隔离。
 - 首版 LocalDisk；不要按「必须先买 OSS」开工。
 - 客户业务 API ≠ 上游模型 Key 自助 ≠ 外部平台代发；能力名 scope 外接口必须拒绝。

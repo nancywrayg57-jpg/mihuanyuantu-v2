@@ -17,6 +17,8 @@ aiosqlite>=0.22
 alembic
 greenlet
 psycopg2-binary
+pillow>=11.0.0
+numpy>=2.1.0
 
 redis
 
