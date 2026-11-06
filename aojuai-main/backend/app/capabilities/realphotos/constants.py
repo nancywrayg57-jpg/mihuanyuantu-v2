@@ -23,11 +23,64 @@ JOB_STATUS_FAILED = "failed"
 
 JOB_KIND_HEARTBEAT = "heartbeat"
 JOB_KIND_NOOP = "noop"
+JOB_KIND_PROCESS_IMAGE = "process_image"
 
 LEDGER_TYPE_ADMIN_ADJUST = "admin_adjust"
 LEDGER_TYPE_FREEZE = "freeze"
 LEDGER_TYPE_CONSUME = "consume"
 LEDGER_TYPE_RELEASE = "release"
+LEDGER_TYPE_RECHARGE_CONFIRM = "recharge_confirm"
+
+# FR-003 / NFR-004 / 架构 §8.1：20 MiB = 20,971,520 字节；40MP。
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+MAX_PIXELS = 40_000_000
+# FR-016 / anchor B03：处理单价。S1 只接受 1 张，冻结额 = 1 × 10。
+PROCESS_UNIT_CREDITS = 10
+S1_MAX_IMAGES = 1
+# FR-019：处理结果 7×24 小时；站内消息 30 天。
+OUTPUT_TTL_HOURS = 7 * 24
+INBOX_TTL_DAYS = 30
+
+# SM-001 名称。S1 不进入自动重做 / 主动重处理 / 技术重试链。
+TASK_SUBMITTED = "SUBMITTED"
+TASK_PRE_REVIEW = "PRE_REVIEW"
+TASK_PRE_REVIEW_PASSED = "PRE_REVIEW_PASSED"
+TASK_PRE_REVIEW_FAILED = "PRE_REVIEW_FAILED"
+TASK_FULL_PROCESSING = "FULL_PROCESSING"
+TASK_DETECTION = "DETECTION"
+TASK_DELIVERED = "DELIVERED"
+TASK_FAILED = "FAILED"
+
+# 运行中占用资源，禁止删除（anchor E04 / FR-003 段）。
+RUNNING_TASK_STATUSES = frozenset(
+    {
+        TASK_SUBMITTED,
+        TASK_PRE_REVIEW,
+        TASK_PRE_REVIEW_PASSED,
+        TASK_FULL_PROCESSING,
+        TASK_DETECTION,
+    }
+)
+
+# 规则替身结果。技术异常不写五维报告、不写可下载文件（FR-018）。
+DETECT_PASS = "pass"
+DETECT_NOT_PASSED = "not_passed"
+DETECT_TECHNICAL = "technical"
+PRE_REVIEW_PASS = "pass"
+PRE_REVIEW_REJECT = "reject"
+
+# 充值：现行 PRD §12.1 点名的人民币档位。到账积分按 FR-021「1 元 = 10 积分」。
+# 赠送积分只出现在不得作为开发依据的待决策清单/归档，本阶段不采用。
+RECHARGE_TIERS_YUAN = (100, 300, 500, 1000, 3000)
+# 管理员 2026-11-06：按待决策清单已确认档位入账，额外积分并入同一余额。
+RECHARGE_CREDITS_BY_YUAN = {
+    100: 1000,
+    300: 3150,
+    500: 5500,
+    1000: 11500,
+    3000: 36000,
+}
+RECHARGE_PRICE_FORMULA = "decision_list_v1_confirmed_2026_10_23_tier_credits"
 
 SEED_OBJECT_KEY = "__seed__/s0-gateway.txt"
 SEED_OBJECT_BYTES = b"realphotos-s0-seed-gateway-ok\n"

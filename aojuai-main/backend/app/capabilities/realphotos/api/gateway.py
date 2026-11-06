@@ -48,10 +48,28 @@ async def read_object(
     key = object_key.strip().lstrip("/")
     # S0：种子文件允许已登录且有 gateway 权限的账号读取（grill Q6）
     if key != SEED_OBJECT_KEY:
-        # 业务对象键约定 tenant/{tenant_id}/...；越权当不存在
         expected_prefix = f"tenant/{int(tenant_ctx.tenant_id)}/"
         if not key.startswith(expected_prefix):
             raise NotFoundError(message="对象不存在")
+        from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
+
+        content_type, payload = await RealphotosS1Service(db).read_object_for_gateway(
+            tenant_id=int(tenant_ctx.tenant_id),
+            object_key=key,
+        )
+
+        def _once():
+            yield payload
+
+        return StreamingResponse(
+            _once(),
+            media_type=content_type,
+            headers={
+                "Cache-Control": "private, no-store",
+                "X-Realphotos-Object-Key": key,
+                "X-Realphotos-Tenant-Id": str(int(tenant_ctx.tenant_id)),
+            },
+        )
 
     adapter = get_storage_adapter()
     if not adapter.exists(key):

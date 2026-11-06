@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-05 22:49 CST（Asia/Shanghai） |
-| branch | `cursor/s0-devhost-e2e-closeout-6c0b` |
-| HEAD | 本收口提交（推送后以远端 SHA 为准） |
-| 文档态 | PRD **2.10**；架构 **1.7**；物料清单 **1.32**（已登记 SSH）；端测自治写进 `DEV_INSTRUCTIONS` §6.1 / `AGENTS.md` §5 |
-| 代码态 | **S0 realphotos 已实现**（PR #18、#19 在 `main`）；本分支只回写开发机端测证据 |
-| 验证态 | Cloud 服务端测通过；**开发机 PostgreSQL `claim_one` 已通过**（`S0_PG_CLAIM_ONE_PASS`，日志 `/tmp/s0-pg-claim-one-smoke.log`） |
-| 当前阶段 | S0 开发机端测已通过；**暂停，不开 S1** |
-| 下一步 | 等待管理员授权开 S1 |
+| updated | 2026-11-06 CST（Asia/Shanghai） |
+| branch | `cursor/s1-single-image-loop-9973`（未提交；基线 `origin/main` `25fafd6`） |
+| HEAD | 工作区有未提交的 S1 改动；尚未开 PR |
+| 文档态 | PRD **2.10**；架构 **1.7**；物料清单 **1.32**；端测自治见 `DEV_INSTRUCTIONS` §6.1 / `AGENTS.md` §5 |
+| 代码态 | S0 已在 `main`（PR #18、#19、#20）。S1 与 S2 五层在 `cursor/s1-single-image-loop-9973` 工作区，尚未提交。S3 未开工 |
+| 验证态 | `/tmp/s2-pg-e2e.log` = `S2_PG_E2E_PASS`（宽高、sRGB、EXIF 回读、无 GPS、无 MakerNote、`detector=fixture`、字节下限失败保持冻结且无下载对象）；pytest `tests/capabilities/realphotos` 12 passed |
+| 当前阶段 | S2 开发机端测已通过。检测仍是规则替身，不是生产检测通过 |
+| 下一步 | 不得开 S3：该阶段 tasks / exit_evidence / forbidden 尚未写入 DEV_INSTRUCTIONS |
 
 ## 1. 仓库与文档基线
 
@@ -56,9 +56,10 @@
 | 阶段 | 状态 |
 | --- | --- |
 | 文档收口 | 已合入 |
-| S0 基础 | **代码已实现 + CI 绿**；Cloud 服务端测通过；**开发机 PG `claim_one` 已通过**；**暂停，等待管理员授权再开 S1** |
-| S1 首期单张闭环 | 未开工；依赖 S0 退出 + 端测（含开发机） |
-| S2–S6 | 未开工 |
+| S0 基础 | **代码已实现 + CI 绿**；Cloud 服务端测通过；**开发机 PG `claim_one` 已通过** |
+| S1 首期单张闭环 | 开发机 PG 与浏览器主路径已有证据；技术失败积分按决定保持冻结 |
+| S2 真实五层 | 开发机 `/tmp/s2-pg-e2e.log` 含 `S2_PG_E2E_PASS`。成功样本字节数不少于源文件；达不到下限的任务失败且无下载对象。检测仍为规则替身 |
+| S3–S6 | 未开工。清单未写，禁止开工 |
 | S7 生产部署 | **须管理员确认** |
 
 过程进度：`docs/mihuanyuantu-v2/progress.yaml`。
@@ -70,7 +71,8 @@
 | 文档工作区结构 | AidevOps 工作区存在 |
 | 原型交互演示 | 可本地打开；**不等于**后端验收 |
 | S0 业务基础（登录/积分/网关/worker） | Cloud 服务层证据已有；开发机 PG `claim_one` 已通过 |
-| 真实五层处理 / 真 Gemini 小样 | **未通过** |
+| 真实五层处理 | 开发机小样已通过：`/tmp/s2-pg-e2e.log`。不是生产收费验收 |
+| 真 Gemini 小样 | **未做**（属 S3） |
 | 生产收费服务 | **未就绪** |
 | CI Required | **`CI gate`** 已在 `main` 开启 |
 
@@ -88,6 +90,23 @@
 - 命令：`DB_DRIVER=postgresql AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m scripts.s0_pg_claim_one_smoke`
 - 日志：`/tmp/s0-pg-claim-one-smoke.log` 含 `S0_PG_CLAIM_ONE_PASS job_id=1 status=succeeded dialect=postgresql`
 - 库：`realphotos_dev` @ `127.0.0.1:5432`（口令未入库）
+
+### 开发机 S1 证据（2026-11-06）
+
+- 命令：`DB_DRIVER=postgresql AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m scripts.s1_pg_e2e_smoke`
+- 日志：`/tmp/s1-pg-e2e.log` 含 `S1_PG_E2E_PASS task_id=11 peer_task_id=12 dialect=postgresql claimed_by=s1-pg-e2e#15c717aaf1eb9123 presets=3 wallet_delta_two_passes=-20`
+- 该次脚本在认领前删除运行中资源，得到 `ASSET_IN_USE`，然后才 `claim_one` 并执行到终态；过期下载返回 410；第二租户读取任务被拒绝。
+- 同租户两会话并发冻结（各 10，不同 event_key）：两次都返回 ok，可用 −20、冻结 +20。早前一次无重试的探测出现 `VERSION_CONFLICT`，不能当作通过；当前账本路径会重试版本冲突。
+- 浏览器：`/tmp/s1-browser-e2e.txt`。商家工作台拒绝 GIF、接受 1024×768 JPEG、提交后状态为 SUBMITTED，离开页面后 worker 把任务做到 DELIVERED，五维键与 `total_score=90` 可见，下载 JPEG 头通过，站内消息可见。订单客服确认充值单 4、拒单 5 并记下原因。
+- 未做：把 `realphotos_0002` 在这台已有 `create_all` 表的库上重放。`alembic_version_cap_realphotos` 当时不存在。
+- 已决定：技术失败保持冻结，标记 `held_until_tech_support`，等到技术客服阶段再处理。充值按待决策清单档位入账。
+
+### 开发机 S2 证据（2026-11-06）
+
+- 命令：`DB_DRIVER=postgresql AOJ_ENABLED_MODULES=realphotos .venv/bin/python -m scripts.s1_pg_e2e_smoke`
+- 日志：`/tmp/s2-pg-e2e.log` 含 `S2_PG_E2E_PASS task_id=24 peer_task_id=25 constraint_task_id=27 dialect=postgresql claimed_by=s1-pg-e2e#5d0b8414e0d659f3 pipeline=s2-five-layer-1 wallet_delta_two_passes=-20 byte_floor=held dimensions=match colorspace=sRGB exif=read_back gps=none makernote=absent detector=fixture`
+- 成功样本在最终编码并恢复 EXIF 之后检查：宽高等于源图，`ColorSpace=sRGB`，字节数不少于源文件。品牌/型号、APEX 快门与光圈可回读。`gpsMode=none` 无 GPS。无 MakerNote。阶段 L1–L5 状态为 completed。检测 `detector=fixture`。
+- 源文件尾部带 2MB 无关字节、最终文件仍达不到下限时，任务 `FAILED` / `OUTPUT_CONSTRAINT_UNSATISFIED`，积分保持冻结，没有可下载对象，也没有检测报告。
 
 ## 6. 允许标「未测」但不可省略 §0
 

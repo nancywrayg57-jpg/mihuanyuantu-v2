@@ -5,13 +5,35 @@ from .credit import RealphotosCreditAccount, RealphotosCreditLedgerEntry
 from .execution_job import RealphotosExecutionJob
 from .merchant import RealphotosMerchantProfile
 from .outbox import RealphotosOutbox
+from .s1_loop import (
+    RealphotosAsset,
+    RealphotosBatch,
+    RealphotosCreditReservation,
+    RealphotosDetectionResult,
+    RealphotosImageTask,
+    RealphotosInboxMessage,
+    RealphotosRechargeOrder,
+    RealphotosStageResult,
+    RealphotosTaskChain,
+    RealphotosTaskSnapshot,
+)
 
 __all__ = [
+    "RealphotosAsset",
     "RealphotosAuthChallenge",
     "RealphotosAuthGuard",
+    "RealphotosBatch",
     "RealphotosCreditAccount",
     "RealphotosCreditLedgerEntry",
+    "RealphotosCreditReservation",
+    "RealphotosDetectionResult",
     "RealphotosExecutionJob",
+    "RealphotosImageTask",
+    "RealphotosInboxMessage",
     "RealphotosMerchantProfile",
     "RealphotosOutbox",
+    "RealphotosRechargeOrder",
+    "RealphotosStageResult",
+    "RealphotosTaskChain",
+    "RealphotosTaskSnapshot",
 ]

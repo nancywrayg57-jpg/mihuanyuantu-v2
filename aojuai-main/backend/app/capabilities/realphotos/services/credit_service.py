@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.capabilities.realphotos.constants import LEDGER_TYPE_ADMIN_ADJUST
+from app.capabilities.realphotos.constants import (
+    LEDGER_TYPE_ADMIN_ADJUST,
+    LEDGER_TYPE_CONSUME,
+    LEDGER_TYPE_FREEZE,
+    LEDGER_TYPE_RECHARGE_CONFIRM,
+    LEDGER_TYPE_RELEASE,
+)
 from app.capabilities.realphotos.models import (
     RealphotosCreditAccount,
     RealphotosCreditLedgerEntry,
@@ -134,6 +140,160 @@ class RealphotosCreditService:
         self.db.add(entry)
         await self.db.flush()
         return await self.get_wallet(tenant_id=tenant_id)
+
+    async def freeze(
+        self,
+        *,
+        tenant_id: int,
+        amount: int,
+        operator_user_id: int,
+        event_key: str,
+        reference: dict | None = None,
+    ) -> dict:
+        return await self._move(
+            tenant_id=tenant_id,
+            delta_available=-int(amount),
+            delta_reserved=int(amount),
+            operator_user_id=operator_user_id,
+            event_key=event_key,
+            entry_type=LEDGER_TYPE_FREEZE,
+            reference=reference,
+            require_available=int(amount),
+        )
+
+    async def consume_reserved(
+        self,
+        *,
+        tenant_id: int,
+        amount: int,
+        operator_user_id: int,
+        event_key: str,
+        reference: dict | None = None,
+    ) -> dict:
+        return await self._move(
+            tenant_id=tenant_id,
+            delta_available=0,
+            delta_reserved=-int(amount),
+            operator_user_id=operator_user_id,
+            event_key=event_key,
+            entry_type=LEDGER_TYPE_CONSUME,
+            reference=reference,
+            require_reserved=int(amount),
+        )
+
+    async def release_reserved(
+        self,
+        *,
+        tenant_id: int,
+        amount: int,
+        operator_user_id: int,
+        event_key: str,
+        reference: dict | None = None,
+    ) -> dict:
+        return await self._move(
+            tenant_id=tenant_id,
+            delta_available=int(amount),
+            delta_reserved=-int(amount),
+            operator_user_id=operator_user_id,
+            event_key=event_key,
+            entry_type=LEDGER_TYPE_RELEASE,
+            reference=reference,
+            require_reserved=int(amount),
+        )
+
+    async def confirm_recharge(
+        self,
+        *,
+        tenant_id: int,
+        amount: int,
+        operator_user_id: int,
+        target_user_id: int,
+        event_key: str,
+        reference: dict | None = None,
+    ) -> dict:
+        return await self._move(
+            tenant_id=tenant_id,
+            delta_available=int(amount),
+            delta_reserved=0,
+            operator_user_id=operator_user_id,
+            target_user_id=target_user_id,
+            event_key=event_key,
+            entry_type=LEDGER_TYPE_RECHARGE_CONFIRM,
+            reference=reference,
+        )
+
+    async def _move(
+        self,
+        *,
+        tenant_id: int,
+        delta_available: int,
+        delta_reserved: int,
+        operator_user_id: int,
+        event_key: str,
+        entry_type: str,
+        reference: dict | None = None,
+        target_user_id: int | None = None,
+        require_available: int = 0,
+        require_reserved: int = 0,
+    ) -> dict:
+        key = str(event_key).strip()
+        for _attempt in range(5):
+            existing = await self.db.execute(
+                select(RealphotosCreditLedgerEntry).where(
+                    RealphotosCreditLedgerEntry.tenant_id == int(tenant_id),
+                    RealphotosCreditLedgerEntry.event_key == key,
+                    RealphotosCreditLedgerEntry.deleted_at.is_(None),
+                )
+            )
+            if existing.scalar_one_or_none() is not None:
+                return await self.get_wallet(tenant_id=tenant_id)
+            account = await self.get_or_create_account(tenant_id=tenant_id)
+            await self.db.refresh(account)
+            before_available = int(account.available_integer)
+            before_reserved = int(account.reserved_integer)
+            if before_available < int(require_available) or before_reserved < int(require_reserved):
+                raise BusinessError(message="余额或冻结额不足", code="INSUFFICIENT_CREDITS")
+            after_available = before_available + int(delta_available)
+            after_reserved = before_reserved + int(delta_reserved)
+            if after_available < 0 or after_reserved < 0:
+                raise BusinessError(message="余额或冻结额不足", code="INSUFFICIENT_CREDITS")
+            expected = int(account.version)
+            updated = await self.db.execute(
+                update(RealphotosCreditAccount)
+                .where(
+                    RealphotosCreditAccount.id == int(account.id),
+                    RealphotosCreditAccount.version == expected,
+                )
+                .values(
+                    available_integer=after_available,
+                    reserved_integer=after_reserved,
+                    version=expected + 1,
+                )
+            )
+            if int(getattr(updated, "rowcount", 0) or 0) != 1:
+                self.db.expire(account)
+                continue
+            await self.db.refresh(account)
+            self.db.add(
+                RealphotosCreditLedgerEntry(
+                    tenant_id=int(tenant_id),
+                    event_key=key,
+                    entry_type=entry_type,
+                    delta_available=int(delta_available),
+                    delta_reserved=int(delta_reserved),
+                    before_available=before_available,
+                    after_available=after_available,
+                    before_reserved=before_reserved,
+                    after_reserved=after_reserved,
+                    operator_user_id=int(operator_user_id),
+                    target_user_id=int(target_user_id) if target_user_id else None,
+                    reason=entry_type,
+                    reference=dict(reference or {}),
+                )
+            )
+            await self.db.flush()
+            return await self.get_wallet(tenant_id=tenant_id)
+        raise BusinessError(message="积分版本冲突", code="VERSION_CONFLICT")
 
     async def require_account_for_tenant(self, *, tenant_id: int) -> RealphotosCreditAccount:
         result = await self.db.execute(

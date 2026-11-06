@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from . import admin_wallet, auth, gateway, jobs, me, wallet
+from . import admin_wallet, auth, gateway, jobs, me, s1, wallet
 
 router = APIRouter()
 router.include_router(auth.router, tags=["realphotos-auth"])
@@ -11,3 +11,4 @@ router.include_router(wallet.router, tags=["realphotos-wallet"])
 router.include_router(admin_wallet.router, tags=["realphotos-admin"])
 router.include_router(gateway.router, tags=["realphotos-gateway"])
 router.include_router(jobs.router, tags=["realphotos-jobs"])
+router.include_router(s1.router, tags=["realphotos-s1"])

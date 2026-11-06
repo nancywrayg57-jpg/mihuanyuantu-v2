@@ -1,11 +1,10 @@
 phase: delivery
-status: s0_devhost_e2e_passed_waiting_s1_authorization
+status: s2_devhost_evidenced_s3_not_started
 
 phase_confirmation:
-  status: needs_user
+  status: confirmed
   mode: ask-user
-  user_questions:
-    - "是否授权开 S1？"
+  user_questions: []
   auto_filled_for_test: []
   confirmed_decisions:
     - "S0–S6 在获授权后由编码 Agent 按 DEV_INSTRUCTIONS 自主推进"
@@ -14,12 +13,14 @@ phase_confirmation:
     - "grill Q4：未授权前禁止 S0 业务代码"
     - "grill Q6：S0 网关取证可用 StorageAdapter 开发种子文件经鉴权网关读回"
     - "管理员 2026-11-05 明确「启动S0」；随后要求「先实现第一个里程碑后暂停」"
+    - "管理员 2026-11-05 确认 PR 20 已合并并授权自主开发 S1；端测通过前不得开下一里程碑"
+    - "管理员 2026-11-06：技术失败积分保持冻结到技术客服；正方形按横图下限；充值按待决策清单档位；当时占位 JPEG 不执行字节下限；分支继续 cursor/s1-single-image-loop-9973"
+    - "管理员 2026-11-06：继续 S2。S2 开发机端测通过后仍不得开 S3，因为 S3 清单未写"
   accepted_risks:
     - "自主推进仍受 PRD/架构/上线门槛约束"
     - "Cloud Agent 提交作者可能仍为 Cursor Agent；禁自评自合以 PR 作者账号为准"
     - "Cloud SQLite 端测 ≠ 开发机 PostgreSQL 验收"
-  blockers:
-    - "user_requested_pause_after_s0"
+  blockers: []
   confirmed_by: user
   confirmed_at: "2026-11-05T07:55:00-05:00"
   change_log:
@@ -47,13 +48,20 @@ phase_confirmation:
     - date: "2026-11-05"
       change: "开发机 PostgreSQL claim_one 通过；关闭 S0_E2E_ENV；仍等待授权开 S1"
       reason: "日志 /tmp/s0-pg-claim-one-smoke.log 含 S0_PG_CLAIM_ONE_PASS"
+    - date: "2026-11-06"
+      change: "S1 单张闭环有开发机 PG 与浏览器证据；不标 S1 完成、不开 S2"
+      reason: "技术失败积分去向 PRD §4.5 与 FR-016 未调和；证据 /tmp/s1-pg-e2e.log 与 /tmp/s1-browser-e2e.txt"
+    - date: "2026-11-06"
+      change: "S2 五层替换占位实现；开发机日志 /tmp/s2-pg-e2e.log 含 S2_PG_E2E_PASS；不开 S3"
+      reason: "管理员继续 S2；S3 清单尚未写入 DEV_INSTRUCTIONS"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "S0 开发机 PG claim_one 已通过；暂停等待管理员授权开 S1。阶段清单权威在 DEV_INSTRUCTIONS §10。"
+  phase_summary: "S2 开发机端测已通过。流水线 s2-five-layer-1。检测仍是规则替身。S3 清单未写，不得开工。"
   outcomes:
     - "aojuai-main/backend/app/capabilities/realphotos/ S0 包落地"
-    - "pytest tests/capabilities/realphotos 8 passed"
+    - "pytest tests/capabilities/realphotos 12 passed"
+    - "开发机 /tmp/s2-pg-e2e.log = S2_PG_E2E_PASS"
     - "Cloud e2e 服务脚本 /opt/cursor/artifacts/s0-e2e-service.log = S0_E2E_PASS"
     - "开发机 /tmp/s0-pg-claim-one-smoke.log = S0_PG_CLAIM_ONE_PASS"
   lessons:
@@ -145,39 +153,64 @@ tasks:
     verify: "开发机 claim_one → succeeded；日志 /tmp/s0-pg-claim-one-smoke.log"
   - id: T-004
     slice: S1
-    status: pending
+    status: devhost_evidence_s1_not_closed
     artifact: "upload API + resource table"
     verify: "AC-K1-001"
   - id: T-005
     slice: S1
-    status: pending
+    status: devhost_evidence_s1_not_closed
     artifact: "processing task + worker"
     verify: "AC-K1-002"
   - id: T-006
     slice: S1
-    status: pending
+    status: devhost_evidence_s1_not_closed
     artifact: "stub layers + fixture detector"
     verify: "JPG + 五维键；管理员注入"
   - id: T-007
     slice: S1
-    status: pending
+    status: devhost_evidence_s1_not_closed
     artifact: "credit ledger + messages"
     verify: "AC-K1-003；双账号并发快速联通测试"
   - id: T-008
     slice: S1
-    status: pending
+    status: devhost_evidence_s1_not_closed
     artifact: "order support confirm UI/API"
     verify: "确认到账；拒单记原因"
   - id: T-009
     slice: S1
-    status: pending
+    status: devhost_evidence_s1_not_closed
     artifact: "expiry + soft delete"
     verify: "过期拒绝；运行中禁删"
   - id: T-010
     slice: S1
-    status: pending
+    status: devhost_evidence_s1_not_closed
     artifact: "/opt/cursor/artifacts 核对证据 + 端测记录"
     verify: "首期退出清单全勾且端到端测试通过"
+  - id: T-011
+    slice: S2
+    status: devhost_evidenced
+    artifact: "app/capabilities/realphotos/services/five_layer.py"
+    verify: "L1–L5 阶段状态为 completed"
+  - id: T-012
+    slice: S2
+    status: devhost_evidenced
+    artifact: "byte floor"
+    verify: "成功样本 output_bytes >= source_bytes；失败码 OUTPUT_CONSTRAINT_UNSATISFIED 且无下载对象"
+  - id: T-013
+    slice: S2
+    status: devhost_evidenced
+    artifact: "fidelity sample"
+    verify: "宽高不变；sRGB JPEG"
+  - id: T-014
+    slice: S2
+    status: devhost_evidenced
+    artifact: "preset EXIF"
+    verify: "Make/Model 可回读；gpsMode=none 无 GPS；无 MakerNote"
+  - id: T-015
+    slice: S2
+    status: devhost_evidenced
+    artifact: "/tmp/s2-pg-e2e.log"
+    verify: "S2_PG_E2E_PASS"
 
 governance_controls:
   scope_tolerance: "禁止把 Q25 冻结项塞进首期（S1）"
@@ -192,7 +225,7 @@ git:
   branch_policy: "本会话 Cloud 硬性 cursor/<name>-6c0b；仓库 AGENTS 仍写 -9973（冲突已记录）"
   protected: "不提交 生产物料/、.env、密钥"
   version_control_required_before_code: true
-  working_branch: "cursor/s0-devhost-e2e-closeout-6c0b"
+  working_branch: "cursor/s1-single-image-loop-9973"
 
 deployment:
   s1_target: "development host only"
@@ -206,10 +239,13 @@ verification:
     - "pytest tests/capabilities/realphotos"
     - "Cloud e2e service script → S0_E2E_PASS"
     - "开发机 DB_DRIVER=postgresql .venv/bin/python -m scripts.s0_pg_claim_one_smoke → S0_PG_CLAIM_ONE_PASS"
-  status: devhost_pg_claim_one_passed_waiting_s1_authorization
+    - "开发机 DB_DRIVER=postgresql .venv/bin/python -m scripts.s1_pg_e2e_smoke → S2_PG_E2E_PASS"
+  status: s2_devhost_evidenced_s3_not_started
   cloud_artifacts:
     - "/opt/cursor/artifacts/s0-pytest.txt"
     - "/opt/cursor/artifacts/s0-e2e-service.log"
     - "/opt/cursor/artifacts/s0-ruff.txt"
     - "/opt/cursor/artifacts/s0-secret-scan.txt"
     - "/tmp/s0-pg-claim-one-smoke.log"
+    - "/tmp/s1-pg-e2e.log"
+    - "/tmp/s1-browser-e2e.txt"

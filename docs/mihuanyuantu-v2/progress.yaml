@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "S0 开发机 PostgreSQL claim_one 已通过并暂停"
-    user_value: "可审查的登录/RBAC/整数积分/LocalDisk网关/队列worker"
-    visible_output: "realphotos 能力包 + 开发机 S0_PG_CLAIM_ONE_PASS；不开 S1"
-    verify: "/tmp/s0-pg-claim-one-smoke.log 含 S0_PG_CLAIM_ONE_PASS"
-    status: paused_after_s0_devhost_e2e
-    next_user_action: "等待管理员授权开 S1"
+    goal: "S2 用有序五层替换占位 JPEG，并在开发机留下字节下限证据"
+    user_value: "成功结果是 sRGB JPEG，宽高不变，字节数不少于源文件；达不到则任务失败且不可下载"
+    visible_output: "pipeline s2-five-layer-1；工作台显示流水线版本"
+    verify: "/tmp/s2-pg-e2e.log 含 S2_PG_E2E_PASS；pytest tests/capabilities/realphotos 12 passed"
+    status: s2_devhost_evidenced
+    next_user_action: "S3 清单未写，不得开工"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -100,13 +100,14 @@ phase_gates:
       - ../architecture_decisions/蜜獾原图-v2-grill-me文档基线收口-2026-11-05.md
   delivery:
     file: 02-delivery.yaml
-    status: s0_devhost_e2e_passed_waiting_s1_authorization
+    status: s2_devhost_evidenced_s3_not_started
     evidence:
-      - DEV_INSTRUCTIONS.md#§10.1-S0
+      - DEV_INSTRUCTIONS.md#§10.4-S2
       - ../../aojuai-main/backend/app/capabilities/realphotos/
-      - /opt/cursor/artifacts/s0-pytest.txt
-      - /opt/cursor/artifacts/s0-e2e-service.log
       - /tmp/s0-pg-claim-one-smoke.log
+      - /tmp/s1-pg-e2e.log
+      - /tmp/s1-browser-e2e.txt
+      - /tmp/s2-pg-e2e.log
   acceptance:
     file: 03-acceptance.yaml
     status: pending
@@ -141,18 +142,35 @@ evidence_pointers:
     - /opt/cursor/artifacts/s0-pytest-full-file.txt
     - /opt/cursor/artifacts/s0-ruff-clean.txt
     - /tmp/s0-pg-claim-one-smoke.log
+    - /tmp/s1-pg-e2e.log
+    - /tmp/s1-browser-e2e.txt
+    - /tmp/s2-pg-e2e.log
   commits_or_prs:
     - "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/18"
     - "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/19"
     - "cursor/s0-devhost-e2e-closeout-6c0b"
+    - "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/20"
+    - "cursor/s1-single-image-loop-9973（工作区未提交）"
 
 known_conflicts:
   - id: BRANCH_SUFFIX
-    status: recorded_not_harmonized
-    detail: "AGENTS.md §7.1 / DEV_INSTRUCTIONS 约定 cursor/<name>-9973；本 Cloud Agent 会话硬性要求 -6c0b。本分支使用 cursor/s0-foundation-6c0b。"
+    status: decided_keep_9973
+    detail: "管理员 2026-11-06：当前分支继续用 cursor/s1-single-image-loop-9973，不改后缀。早前 Cloud 的 -6c0b 只留历史记录。"
   - id: S0_E2E_ENV
     status: closed
-    detail: "2026-11-05 22:49 CST 开发机本机 pg_isready 127.0.0.1:5432 accepting。DB_DRIVER=postgresql AOJ_ENABLED_MODULES=realphotos 执行 scripts.s0_pg_claim_one_smoke，日志 /tmp/s0-pg-claim-one-smoke.log 含 S0_PG_CLAIM_ONE_PASS（job_id=1 status=succeeded dialect=postgresql）。不开 S1。"
+    detail: "2026-11-05 22:49 CST 开发机本机 pg_isready 127.0.0.1:5432 accepting。DB_DRIVER=postgresql AOJ_ENABLED_MODULES=realphotos 执行 scripts.s0_pg_claim_one_smoke，日志 /tmp/s0-pg-claim-one-smoke.log 含 S0_PG_CLAIM_ONE_PASS（job_id=1 status=succeeded dialect=postgresql）。"
+  - id: TECH_FAILURE_CREDIT
+    status: decided_hold_until_tech_support
+    detail: "管理员 2026-11-06：S1 技术失败先保持冻结，等到开发技术客服时一并处理。标记 credit_disposition=held_until_tech_support。不在 S1 立即释放。"
+  - id: SQUARE_UPLOAD
+    status: decided
+    detail: "管理员 2026-11-06：宽等于高时按横图下限检查（宽>=1024 且高>=768）。"
+  - id: RECHARGE_BONUS
+    status: decided
+    detail: "管理员 2026-11-06：按待决策清单已确认档位入账。100/300/500/1000/3000 元对应 1000/3150/5500/11500/36000 积分。公式 decision_list_v1_confirmed_2026_10_23_tier_credits。"
+  - id: S1_BYTE_FLOOR
+    status: decided_keep_current_for_s1_stub
+    detail: "管理员 2026-11-06：当时占位 JPEG 不执行字节下限。S2 按 DEV_INSTRUCTIONS §10.4 执行 output_bytes >= source_bytes，失败码 OUTPUT_CONSTRAINT_UNSATISFIED，不填充无关字节。"
   - id: JWT_REFRESH_DAYS
     status: mitigated_in_pack
     detail: "底座 JWT_REFRESH_TOKEN_EXPIRE_DAYS 默认 7；realphotos /auth/login 路径单独签发 30 天 refresh（架构 §10.1）。核心 /api/v1/auth/login 未改。"
@@ -162,10 +180,14 @@ known_conflicts:
 
 next_action:
   owner: user
-  action: "等待管理员授权开 S1"
+  action: "S2 开发机端测已通过。S3–S7 清单未写，不得开工。"
   notes:
-    s0_start: authorized_by_user_2026-11-05
-    s0_pause: requested_after_first_milestone
-    s0_devhost_e2e: passed_2026-11-05
-    branch: cursor/s0-devhost-e2e-closeout-6c0b
-    evidence_log: /tmp/s0-pg-claim-one-smoke.log
+    s1_authorized: user_2026-11-05
+    s2_authorized: user_2026-11-06
+    s1_branch: cursor/s1-single-image-loop-9973
+    tech_failure_credit: hold_until_tech_support
+    square_upload: landscape_floor
+    recharge_credits: "100:1000,300:3150,500:5500,1000:11500,3000:36000"
+    byte_floor: enforced_in_s2
+    s2_opened: true
+    s3_opened: false

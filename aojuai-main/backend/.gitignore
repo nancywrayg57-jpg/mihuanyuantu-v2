@@ -34,6 +34,9 @@ ENV/
 # Environment
 .env
 
+# LocalDisk objects written by the realphotos gateway
+static/realphotos/
+
 # Testing
 .pytest_cache/
 .coverage
