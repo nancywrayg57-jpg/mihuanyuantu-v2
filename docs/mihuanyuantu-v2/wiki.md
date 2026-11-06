@@ -57,11 +57,11 @@
 - Evidence: `/tmp/s4-pg-e2e.log` = `S4_PG_E2E_PASS`；`/tmp/s3-pg-e2e.log` = `S3_PG_E2E_PASS`；`/tmp/s3-pg-e2e-controls.log` = `S3_PG_CONTROLS_PASS`；`/tmp/s2-pg-e2e.log` = `S2_PG_E2E_PASS`；S1 与 S0 日志仍有效。
 - Defects: 开发机 `alembic_version_cap_realphotos` 当时不存在，`realphotos_0002` 未在该库重放。技术失败积分按决定保持冻结。
 - Accepted risks: 开发库已被端测与并发探测写入，不清空。
-- Next sprint knowledge: 技术失败冻结留到技术客服阶段。S4 开发机证据已有，不是生产收费就绪。S5 清单未写，不得开工。
+- Next sprint knowledge: 技术失败冻结留到技术客服阶段。S4 树与 `origin/main` `dae37a3` 一致。S5 已授权，未标完成。证据 `/tmp/s5-pg-e2e.log`。URL 导入单次上限为 100。检测模式 pass，不是供应商接通。
 
 ## Reusable Prompts and Commands
 - Agent entry: `DEV_INSTRUCTIONS.md`（必读根目录四职责文件）
-- Gate: S4 开发机证据已回写；`s4_exited=true`；`s4_production_billing=false`；不得开 S5
+- Gate: S4 树与 `dae37a3` 一致；`s5_opened=true`；`s5_exited=false`；`supplier_connected=false`
 - Stage checklist: DEV_INSTRUCTIONS §10；`02-delivery.yaml` 只镜像 status
 - Hard rule: 每个里程碑完成后须端到端测试；Cloud ≠ 开发机
 - Root pack: `AGENTS.md` · `handoff.md` · `anchor.md` · `checkpoint.md`
@@ -80,7 +80,8 @@
 | 5-s1-loop | 单张上传/处理/下载/充值确认拒单 | `/tmp/s1-pg-e2e.log` + `/tmp/s1-browser-e2e.txt` | evidenced | S2 |
 | 6-s2-loop | 有序五层、字节下限、预设 EXIF | `/tmp/s2-pg-e2e.log` | devhost_passed | S3 |
 | 7-s3-loop | 真实 Gemini、自动重做、主动重处理、技术重试 | `/tmp/s3-pg-e2e.log` + `/tmp/s3-pg-e2e-controls.log` | devhost_passed | S4 |
-| 8-s4-loop | 1–10 张按张冻结、部分成功、勾选下载 | `/tmp/s4-pg-e2e.log` | devhost_passed | 不得开 S5 |
+| 8-s4-loop | 1–10 张按张冻结、部分成功、勾选下载 | `/tmp/s4-pg-e2e.log` | devhost_passed | S5 已授权，退出未齐 |
+| 9-s5-loop | 生图只入库、未配置导入、image_processing Key | `/tmp/s5-pg-e2e.log` | pg_s5_added_proofs | 未标 S5 完成；supplier_connected=false |
 
 ## Risks and Watchpoints
 - Risk: 把文档齐全或 CI 绿当成后端已交付。
@@ -89,5 +90,5 @@
 - Mitigation: 架构 1.7 §9.2.1 改造义务；S5 验收 AC-024。
 
 ## Backlog Knowledge
-- Next: FR-033 仍归 S5/R3。技术失败冻结留到技术客服。S5 不得在清单写完前开工。
+- Next: FR-033 仍归 S5/R3，清单已写入 §10.7，未授权开工。技术失败冻结留到技术客服。
 - Deferred: CI Python/pnpm 版本与架构推荐对齐（非 S0 阻塞）；前端 realphotos 菜单 i18n 键。

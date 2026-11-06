@@ -145,7 +145,7 @@
 - **有依赖则不可抢跑**。
 - **S0–S6 自主推进**；**S7 须管理员确认**。
 - 每阶段退出必须有可重复验证证据，并回写 AidevOps 与 `checkpoint.md` §0。
-- **清单硬规则**：每个阶段开工前，本文件须已写明该阶段的 `tasks` / `exit_evidence` / `forbidden`（任务 / 退出证据 / 禁止项）。当前 **S0、S1、S2、S3、S4** 清单已齐；S4 已有开发机 PostgreSQL 证据，**S5 未开**。**开 S5–S7 任一阶段前必须先补齐该阶段清单，缺一禁止开工**。清单正文以本文件为准；`progress.yaml` / `02-delivery.yaml` 只镜像完成状态与 `next_action`。条目只写 ID 与短句，行为冲突仍听 PRD。
+- **清单硬规则**：每个阶段开工前，本文件须已写明该阶段的 `tasks` / `exit_evidence` / `forbidden`（任务 / 退出证据 / 禁止项）。当前 **S0、S1、S2、S3、S4、S5** 清单已齐；S4 已有开发机 PostgreSQL 证据。**S5 已授权并开始实现，退出证据未齐，不得标完成**。S6、S7 清单仍缺。**开任一阶段前必须先补齐该阶段清单，缺一禁止开工**。清单正文以本文件为准；`progress.yaml` / `02-delivery.yaml` 只镜像完成状态与 `next_action`。条目只写 ID 与短句，行为冲突仍听 PRD。
 - **里程碑端测硬规则**：每个里程碑（S0–S7 各阶段）在勾满 `exit_evidence` 后，须在主验证环境（开发机；Cloud 不能替代的项须在开发机补验）完成**端到端测试**，覆盖本阶段用户可见主路径，并留下可复查证据（命令输出、日志路径或浏览器核对记录，写入 `/opt/cursor/artifacts` 或开发机约定目录，并回写 `checkpoint.md` §0 / `progress.yaml`）。**端测确认无误前，不得标该阶段完成，也不得进入下一阶段开发**。单元测试、规则替身单测、文档齐全均不能替代端测。有限并行阶段亦同：依赖阶段未端测通过，不得开工依赖它的实现。
 
 | ID | 阶段 | 内容要点 | 依赖 | 可并行对象 |
@@ -346,6 +346,53 @@
 - 禁止 ZIP、文生图/图生图、URL 真导入、复制处理门闩、技术客服解冻、405 运营台、OSS 必选、扫码支付、客户业务 API。
 - 禁止把批次小样写成对外「检测通过」或生产收费已开放。
 - 禁止用规则替身批次代替上面的 PostgreSQL 部分成功端测。
+
+### 10.7 S5 · 增长能力
+
+依据：阶段表「文生图/图生图只入库；提示词优化；URL 导入（无供应商证据前不得真呼）；客户业务 API」；PRD FR-010—FR-014、FR-016、FR-031—FR-033、AC-002、AC-023、AC-024；架构 §9.2 与 §9.2.1。依赖 S1。图片处理批次沿用 S4，检测沿用 S3，不在本阶段重做。2026-11-06 核对仓库后授权开工。最新开发机日志是 `/tmp/s5-pg-e2e.log`。**不得标 S5 完成。** 计费路径使用 `provider=fixture`，不是供应商接通。
+
+**已记录、不在本阶段自行调和的冲突**
+
+- PRD 概述写「单次本地或 URL 获取最多 20」；URL/JSON 条款、AC-002 与架构写最多 100 条、第 101 条整单拒绝。管理员 2026-11-06 决定：URL/JSON 导入单次上限为 100，第 101 条整单拒绝。本地上传仍是 20。概述句不再覆盖 URL 导入。
+- 生图按 FR-016 不预冻，没有 `RESERVED`，技术失败不需要客服释放冻结。图片处理的技术失败仍按已记录决定保持 `held_until_tech_support`。S5 不改处理链路，也不做 S6 解冻台。
+- FR-013 写提示词优化失败不计费并释放已有冻结；生图条款写不预冻。两条冻结时机分开写，不收成一种。
+- 复制处理门闩不在本阶段表句子内。S5 不实现复制任务，生图任务也不提供复制。
+- 真预审与冻号在 S6。图生图参考图只沿用已有文件硬校验，不接千问或其他真预审模型。
+
+**tasks**
+
+| ID | 任务 | 验证要点 |
+|---|---|---|
+| T-026 | 文生图只入库 | 正向提示词必填，负向选填；宽高各 256–2048；数量 1–10，第 11 张整单拒绝；超长不截断。表单不出现设备预设或 GPS。成功结果写入现有资源表。不创建处理任务，不进入五层或检测 |
+| T-027 | 图生图只入库 | 每任务一张参考图，可从资源库选择或临时上传；临时参考图不入库。参考图走现有文件硬校验。成功结果入库后不自动处理 |
+| T-028 | 提示词优化 | 客户点击后才调用。展示原文与优化文，确认后才可用于生图。成功收 1 积分，未采用仍计费；失败不计费并释放已有冻结。原文、优化文、确认版本保留。客户文案称「提示词优化」，不暴露上游供应商名 |
+| T-029 | 提示词模板 | 名称、适用模式、正/负向、平台或租户范围。商家维护本租户模板；平台模板仅管理员可改。选用只填入表单，不扣积分。订单客服不可见 |
+| T-030 | URL/JSON 导入 | 支持每行 HTTP/HTTPS、粘贴 JSON 数组、上传 JSON 文件。单次最多 100 条，第 101 条整单拒绝。缺供应商合同与接口证据时返回未配置，不抓任意公网地址，不留下半截资源 |
+| T-031 | 生图计费 | 不写 `RESERVED`。提交时可用余额小于 `数量 × 10` 则整单拒绝。成功入库每张扣 10；失败、空响应、超时不扣且不入库。扣费时余额不足则该张失败且不入库。部分成功只扣成功张。与之后另行提交的处理费分开。同一幂等键不重复扣 |
+| T-032 | 客户业务 API 凭证 | 仅 Web 登录态签发，复用 `api_keys`。`scopes` 只允许 `["image_processing"]`。空 scope、省略、通配、培训路径前缀一律拒绝。明文只返回一次，之后只见前缀。吊销后立即拒绝。禁止用已有 Key 创建或吊销 Key |
+| T-033 | 无会话处理主路径与 OpenAPI | 有效 Key 可完成上传、提交处理、查询终态、下载，无需浏览器会话。扣费和冻结记绑定账号。生图、提示词优化、URL 导入、客服、管理、上游模型配置即使持有 Key 也拒绝。跨租户拒绝。OpenAPI 写明鉴权头、`image_processing` 路径集合和错误码，并与实现一致。下载仍逐张，无 ZIP，无裸路径 |
+| T-034 | 开发机端到端测试 | 下列 `exit_evidence` 全勾。缺供应商证据的路径不得外呼。计费替身只证明入库与扣费，不代替供应商小样 |
+
+**exit_evidence**（未齐。不得标 S5 完成）
+
+- [x] 开发机 PostgreSQL 上，文生图成功结果在现有资源表，且没有自动生成处理任务。图生图用一张 1024×768 临时参考成功后，资源只多结果那一条，且没有处理任务。证据：`/tmp/s5-pg-e2e.log` 含 `processing_tasks_for_asset=0 i2i_temp_not_stored=true i2i_processing_tasks=0`。
+- [x] 生图账本没有 `RESERVED`。多张成功时每张各扣 10，失败张不扣。余额小于 `数量 × 10` 时整单拒绝且不建生图任务。数量 11 整单拒绝且不入库。同一幂等键重放不二次扣费。扣费当时可用额不够时只失败该张、不入库，成功张仍扣 10。证据：`/tmp/s5-pg-e2e.log` 含 `reservation_delta=0 two_success_consumed=20 stored_credits=10 failed_credits=0 insufficient=rejected_no_generation eleventh=INPUT_INVALID idempotent_replay_no_second_charge=true charge_time_insufficient_one_image=true`。第二租户可用额为 0，没有改它的余额。扣费中途那次把可用额临时改小，断言后按流水恢复到只保留成功张的 10 积分。
+- [x] 提示词优化成功扣 1 积分。模板保存不扣积分。fixture 失败不扣可用额，冻结额回到原值。未配置优化返回 `SERVICE_NOT_CONFIGURED` 且不扣费。证据：`/tmp/s5-pg-e2e.log` 含 `prompt_opt_credits=1 template_delta=0 prompt_fail_no_charge=true prompt_unconfigured=SERVICE_NOT_CONFIGURED`。
+- [x] 没有供应商证据时，生图、1 条 URL、以及 100 条 JSON（粘贴和上传文件）返回 `SERVICE_NOT_CONFIGURED` 且不入库。101 条整单 `INPUT_INVALID` 且不入库。没有外呼。证据：`/tmp/s5-pg-e2e.log` 含 `json_100=SERVICE_NOT_CONFIGURED json_101=INPUT_INVALID json_file_100=SERVICE_NOT_CONFIGURED json_file_101=INPUT_INVALID supplier_connected=false`。
+- [x] 只持有效 `X-API-Key`、没有浏览器会话，完成上传、提交处理、查询、逐张下载。查询状态是 `DELIVERED`。检测模式是 `pass`，不是新的 Gemini 小样。`pack=zip` 拒绝。业务 Key 由登录态 `POST /business-api-keys` 签发，`scopes` 恰好是 `["image_processing"]`；省略、空列表、`["*"]`、培训路径前缀返回 `SCOPE_REJECTED`。这把 Key 调用提示词优化、URL 导入和签发/吊销 Key 均拒绝。证据：`/tmp/s5-pg-e2e.log` 含 `query_status=DELIVERED business_key_issued_via_http=true business_key_scope_rejected=SCOPE_REJECTED key_prompt_rejected=401 key_import_rejected=401 key_manage_rejected=true zip=rejected detection_mode=pass`。下载字节以 JPEG 头通过。
+- [x] 导出合同写明鉴权头 `X-API-Key`，处理路径留在子集内，生图和导入路径不在子集内。证据：`openapi_header=X-API-Key`。
+- [x] 上述已勾项回写 `progress.yaml`、`02-delivery.yaml` 与 `checkpoint.md` §0。不写成生产收费已就绪，也不写成供应商已接通。`production_billing=false`。
+
+**forbidden**
+
+- 2026-11-06 已授权开工。未勾满本阶段 `exit_evidence` 前，不得把未勾项当成已经通过。
+- 未勾满本阶段 `exit_evidence`、或端测未通过，不得标 S5 完成，不得开 S6–S7。
+- 禁止在没有供应商合同与接口证据时真实调用生图、提示词优化，或抓取任意公网 URL。
+- 禁止生图成功后自动进入五层、最终检测或图片处理任务。
+- 禁止 ZIP、复制处理门闩、技术客服解冻、真预审与冻号、设备预设 405 运营、用户管理、系统日志、运营指标、OSS 必选、扫码支付、客户自建上游模型 Key、向外部平台代发。
+- 禁止空 scope、用 API Key 管理 Key，或让业务 Key 调用生图、提示词优化、URL 导入、客服和管理接口。
+- 禁止把计费替身或未配置响应写成供应商已接通、对外「检测通过」或生产收费已开放。
+- 禁止用 SQLite 单测代替本阶段的 PostgreSQL 端测。
 
 ## 11. 上线门槛与部署（S7）
 

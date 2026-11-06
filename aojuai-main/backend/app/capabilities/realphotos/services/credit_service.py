@@ -161,6 +161,27 @@ class RealphotosCreditService:
             require_available=int(amount),
         )
 
+    async def consume_available(
+        self,
+        *,
+        tenant_id: int,
+        amount: int,
+        operator_user_id: int,
+        event_key: str,
+        reference: dict | None = None,
+    ) -> dict:
+        """生图成功入库后从可用余额扣减。不写预留，也不动 reserved。"""
+        return await self._move(
+            tenant_id=tenant_id,
+            delta_available=-int(amount),
+            delta_reserved=0,
+            operator_user_id=operator_user_id,
+            event_key=event_key,
+            entry_type=LEDGER_TYPE_CONSUME,
+            reference=reference,
+            require_available=int(amount),
+        )
+
     async def consume_reserved(
         self,
         *,

@@ -63,10 +63,19 @@ phase_confirmation:
     - date: "2026-11-06"
       change: "S4 批次按张冻结与部分成功有开发机 PostgreSQL 证据；不标生产收费就绪；不开 S5"
       reason: "/tmp/s4-pg-e2e.log 含 S4_PG_E2E_PASS；可下载张 detector=fixture，不是新的 Gemini 小样"
+    - date: "2026-11-06"
+      change: "S5 tasks / exit_evidence / forbidden 写入 DEV_INSTRUCTIONS §10.7；正式开发未开始"
+      reason: "管理员要求推送 S4 后编写 S5 清单，不授权编码"
+    - date: "2026-11-06"
+      change: "URL 导入上限定为 100。PostgreSQL 补上余额不足整单拒绝，以及无会话上传、提交、查询、下载。图生图与优化失败不扣仍只在 SQLite"
+      reason: "scripts.s5_pg_e2e_smoke 含 S5_PG_E2E_PASS；supplier_connected=false；不得标 S5 完成"
+    - date: "2026-11-06"
+      change: "PostgreSQL 补上图生图临时参考、优化失败不扣、JSON 100/101 与文件入口、登录态签发业务 Key、查询 DELIVERED。不标 S5 完成"
+      reason: "/tmp/s5-pg-e2e.log 含 S5_PG_E2E_PASS；s5_exited=false；supplier_connected=false；production_billing=false"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "S4 开发机日志 /tmp/s4-pg-e2e.log 含 S4_PG_E2E_PASS。任务 40 按张消费 10，任务 41 前置失败释放 10，两张通过批次消费 20。detector=fixture，不代替任务 29，也不是对外检测通过。不开 S5。"
+  phase_summary: "S4 已推送 origin/cursor/s4-batch-credits-9973 的 ec53da3。日志 /tmp/s4-pg-e2e.log 含 S4_PG_E2E_PASS。S5 清单在 DEV_INSTRUCTIONS §10.7，未授权开工。detector=fixture 不代替任务 29。"
   outcomes:
     - "aojuai-main/backend/app/capabilities/realphotos/ S0 包落地"
     - "pytest tests/capabilities/realphotos 25 passed"

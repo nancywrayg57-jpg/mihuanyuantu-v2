@@ -37,7 +37,7 @@ vibe_coding:
     visible_output: "工作台批次表和下载勾选"
     verify: "/tmp/s4-pg-e2e.log 含 S4_PG_E2E_PASS；detector=fixture，不是新的 Gemini 小样；pytest tests/capabilities/realphotos 25 passed"
     status: s4_devhost_evidenced_not_production
-    next_user_action: "S5 清单还没写，不得开 S5。不合并 PR #21。不是生产收费已开放，也不是对外检测通过。"
+    next_user_action: "S5 已授权，未标完成。证据在 /tmp/s5-pg-e2e.log。图生图临时参考、优化失败不扣、JSON 100/101 与文件入口、登录态签发业务 Key、查询 DELIVERED 已写入该日志。不是生产收费已开放，也不是供应商接通。管理员给出的 OpenAI 中转地址本次未调用。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -183,13 +183,16 @@ known_conflicts:
   - id: DEVHOST_SSH_AUTONOMY
     status: recorded
     detail: "管理员授权：每里程碑后 Agent 自行 SSH 开发机端测，无需人工代跑。口令在同级 生产物料/；清单与 DEV_INSTRUCTIONS §6.1 / AGENTS.md §5 已写。"
+  - id: S5_URL_BATCH_LIMIT
+    status: decided_url_import_max_100
+    detail: "管理员 2026-11-06：URL/JSON 导入单次上限为 100，第 101 条整单拒绝。本地上传仍是 20。概述句「URL 最多 20」不再覆盖导入。"
   - id: S4_PRECHECK_AND_FIXTURE_SAMPLE
     status: recorded
     detail: "前置校验用库内资产的软删、不属于提交账号或入库字节再次 inspect 失败，发生在按张冻结之后。PostgreSQL 部分成功的可下载张使用 detection_mode=pass，detector=fixture，任务 40 消费 10、任务 41 释放 10。这不是新的 Gemini 小样，也不代替任务 29。SQLite 单测没有代替 /tmp/s4-pg-e2e.log。"
 
 next_action:
   owner: user
-  action: "S4 开发机证据在 /tmp/s4-pg-e2e.log，含 S4_PG_E2E_PASS。分支 cursor/s4-batch-credits-9973，尚未推送。不合并 PR #21。S5 清单未写，不得开 S5。不是生产收费已开放，也不是对外检测通过。"
+  action: "S5 在 cursor/s5-growth-9973，未标完成，也未推出。/tmp/s5-pg-e2e.log 已含 eleventh=INPUT_INVALID、idempotent_replay_no_second_charge=true、charge_time_insufficient_one_image=true。图生图页面仍不能提交参考图。供应商未接通。s5_exited 仍为 false。"
   notes:
     s1_authorized: user_2026-11-05
     s2_authorized: user_2026-11-06
@@ -212,5 +215,11 @@ next_action:
     s4_branch: cursor/s4-batch-credits-9973
     s4_exited: true
     s4_production_billing: false
-    s5_opened: false
+    s5_opened: true
+    s5_checklist: authorized_exit_incomplete
+    s5_exited: false
+    s5_production_billing: false
+    s5_supplier_connected: false
+    s4_tree_matches_main: "d8345ca == dae37a3"
+    s4_pushed: "origin/main dae37a3 squash of d8345ca"
     s4_sample: "/tmp/s4-pg-e2e.log S4_PG_E2E_PASS partial_tasks=40,41 two_pass_consumed=20 technical_task=44 detector=fixture sample_is_not_public_pass=true"
