@@ -49,8 +49,8 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **当前**：S4 开发机端测已通过，不是生产收费就绪。日志 `/tmp/s4-pg-e2e.log` 含 `S4_PG_E2E_PASS`。可下载张是 fixture，任务 40 消费 10；任务 41 前置失败释放 10。代码在 `cursor/s4-batch-credits-9973`，尚未推送。S3 真实小样仍只认任务 29。
-- **不得开 S5**：S5 的 tasks / exit_evidence / forbidden 还没写。生图、技术客服解冻都不在本阶段。
+- **当前**：S4 已在 `origin/main` 的 `dae37a3`，与分支提交 `d8345ca` 文件树一致。不是生产收费就绪。S3 真实小样仍只认任务 29。
+- **S5 已授权，未标完成**：工作区在 `cursor/s5-growth-9973`。URL/JSON 导入单次上限为 100。证据在 `/tmp/s5-pg-e2e.log`，含 `S5_PG_E2E_PASS`、`i2i_temp_not_stored=true`、`prompt_fail_no_charge=true`、`json_100=SERVICE_NOT_CONFIGURED`、`json_file_101=INPUT_INVALID`、`business_key_issued_via_http=true`、`query_status=DELIVERED`、`detection_mode=pass`、`supplier_connected=false`。不是生产收费已开放。
 - 技术失败和字节下限失败保持冻结，等到技术客服阶段再处理。合同默认识别名仍是 `gemini-2.5-pro`；本机密钥调用该型号返回 404，供应商提示 `gemini-3.1-pro-preview`，该型号只写在本机 `.env`。
 - **协作**：见 `AGENTS.md` §7。**S7** 须管理员确认。
 

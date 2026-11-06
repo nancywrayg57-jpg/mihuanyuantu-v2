@@ -18,6 +18,12 @@ from .s1_loop import (
     RealphotosTaskSnapshot,
 )
 from .s3_detection import RealphotosChainPolicy, RealphotosRedoSetting
+from .s5_growth import (
+    RealphotosGenerationItem,
+    RealphotosGenerationTask,
+    RealphotosPromptOptimization,
+    RealphotosPromptTemplate,
+)
 
 __all__ = [
     "RealphotosAsset",
@@ -30,10 +36,14 @@ __all__ = [
     "RealphotosCreditReservation",
     "RealphotosDetectionResult",
     "RealphotosExecutionJob",
+    "RealphotosGenerationItem",
+    "RealphotosGenerationTask",
     "RealphotosImageTask",
     "RealphotosInboxMessage",
     "RealphotosMerchantProfile",
     "RealphotosOutbox",
+    "RealphotosPromptOptimization",
+    "RealphotosPromptTemplate",
     "RealphotosRechargeOrder",
     "RealphotosRedoSetting",
     "RealphotosStageResult",

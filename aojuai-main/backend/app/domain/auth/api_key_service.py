@@ -42,7 +42,18 @@ MESSAGE_RELAY_SCOPES = ["/api/v1/message-relay"]
 
 # 允许自定义 scope 的前缀白名单。禁止空列表/全局前缀，
 # 防止「畸形 scope 被静默丢弃 → 空列表被当作不限制」而得到全站机器凭证。
+# 蜜獾原图业务 Key 存能力名，不存路径前缀。鉴权时再映射到处理子集。
+IMAGE_PROCESSING_SCOPE = "image_processing"
+IMAGE_PROCESSING_PREFIXES = (
+    "/api/v1/realphotos/assets",
+    "/api/v1/realphotos/presets",
+    "/api/v1/realphotos/processing-batches",
+    "/api/v1/realphotos/processing-tasks",
+    "/api/v1/realphotos/gateway/objects",
+)
+
 ALLOWED_SCOPE_PREFIXES = frozenset(DEFAULT_TRAINING_SCOPES) | frozenset(MESSAGE_RELAY_SCOPES)
+ALLOWED_CAPABILITY_SCOPES = frozenset({IMAGE_PROCESSING_SCOPE})
 
 
 def _normalize_scopes(scopes: list[str] | None) -> list[str]:
@@ -57,11 +68,12 @@ def _normalize_scopes(scopes: list[str] | None) -> list[str]:
         value = raw.strip()
         if not value:
             continue
-        if value not in ALLOWED_SCOPE_PREFIXES:
+        if value not in ALLOWED_SCOPE_PREFIXES and value not in ALLOWED_CAPABILITY_SCOPES:
             raise BusinessError(
                 message=(
                     f"scope 不在允许范围: {value}。"
-                    f"允许的前缀：{', '.join(sorted(ALLOWED_SCOPE_PREFIXES))}"
+                    f"允许的前缀：{', '.join(sorted(ALLOWED_SCOPE_PREFIXES))}；"
+                    f"允许的能力名：{', '.join(sorted(ALLOWED_CAPABILITY_SCOPES))}"
                 )
             )
         if value not in cleaned:
@@ -70,6 +82,17 @@ def _normalize_scopes(scopes: list[str] | None) -> list[str]:
     if not cleaned:
         raise BusinessError(message="scopes 不能为空（空列表会被视为不限制）；请指定允许的接口前缀或省略以使用默认全集")
     return cleaned
+
+
+def _prefixes_for_scopes(scopes: list[str]) -> list[str]:
+    """能力名映射成路径前缀；培训前缀保持原样，不能把能力名当路径去匹配。"""
+    prefixes: list[str] = []
+    for scope in scopes:
+        if scope == IMAGE_PROCESSING_SCOPE:
+            prefixes.extend(IMAGE_PROCESSING_PREFIXES)
+        else:
+            prefixes.append(scope)
+    return prefixes
 
 
 def _hash_key(plaintext: str) -> str:
@@ -172,7 +195,8 @@ class ApiKeyService:
         # 纵深防御：空 scopes 不再等于"不限制"，退化为默认培训集合，
         # 避免历史遗留或异常写入的空 scope key 变成全站凭证。
         scopes = api_key.scopes or list(DEFAULT_TRAINING_SCOPES)
-        if not any(request_path.startswith(prefix) for prefix in scopes):
+        prefixes = _prefixes_for_scopes(scopes)
+        if not any(request_path.startswith(prefix) for prefix in prefixes):
             raise UnauthorizedError(message="API key scope does not allow this endpoint")
 
         # 心跳节流：5 分钟内不重复写
