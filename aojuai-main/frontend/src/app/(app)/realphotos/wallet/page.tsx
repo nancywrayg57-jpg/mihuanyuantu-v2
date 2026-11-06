@@ -48,43 +48,62 @@ export default function RealphotosWalletPage() {
     }
   }
 
+  const credits = RECHARGE_CREDITS_BY_YUAN[tier]
+
   return (
-    <main className="space-y-4 p-6">
-      <h1 className="text-lg font-medium">蜜獾原图 · 积分钱包</h1>
-      <p className="text-sm">
-        可用 {wallet?.availableInteger ?? '—'} ，冻结 {wallet?.reservedInteger ?? '—'}
-      </p>
+    <main className="space-y-6 p-6">
+      <h1 className="text-xl font-medium">积分与充值</h1>
       <p className="text-sm text-muted-foreground">{message}</p>
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="text-sm">
-          档位（元）
-          <select
-            className="mt-1 block border px-2 py-1 text-sm"
-            value={tier}
-            onChange={(event) => setTier(Number(event.target.value))}
-          >
-            {RECHARGE_TIERS_YUAN.map((yuan) => (
-              <option key={yuan} value={yuan}>
-                {yuan} 元 = {RECHARGE_CREDITS_BY_YUAN[yuan]} 积分
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="text-sm">
-          凭证备注
-          <input
-            className="mt-1 block border px-2 py-1 text-sm"
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-          />
-        </label>
-        <button className="border px-3 py-1 text-sm" type="button" onClick={() => void createOrder()}>
-          提交充值单
-        </button>
-        <a className="border px-3 py-1 text-sm" href="/realphotos/workspace">
-          返回工作台
-        </a>
-      </div>
+      <table className="w-full text-sm">
+        <thead>
+          <tr>
+            <th className="text-left">可用余额</th>
+            <th className="text-left">冻结中</th>
+            <th className="text-left">档位换算</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{wallet?.availableInteger ?? '—'}</td>
+            <td>{wallet?.reservedInteger ?? '—'}</td>
+            <td>
+              {tier} 元 → {credits} 积分
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <section className="space-y-3">
+        <h2 className="text-sm font-medium">充值档位</h2>
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="text-sm">
+            档位（元）
+            <select
+              className="mt-1 block border px-2 py-1 text-sm"
+              value={tier}
+              onChange={(event) => setTier(Number(event.target.value))}
+            >
+              {RECHARGE_TIERS_YUAN.map((yuan) => (
+                <option key={yuan} value={yuan}>
+                  {yuan} 元 = {RECHARGE_CREDITS_BY_YUAN[yuan]} 积分
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm">
+            凭证备注
+            <input
+              className="mt-1 block border px-2 py-1 text-sm"
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+            />
+          </label>
+          <button className="border px-3 py-1 text-sm" type="button" onClick={() => void createOrder()}>
+            提交充值单
+          </button>
+        </div>
+      </section>
+      <section className="space-y-3">
+        <h2 className="text-sm font-medium">流水</h2>
       <table className="w-full text-sm">
         <thead>
           <tr>
@@ -105,6 +124,7 @@ export default function RealphotosWalletPage() {
           ))}
         </tbody>
       </table>
+      </section>
     </main>
   )
 }

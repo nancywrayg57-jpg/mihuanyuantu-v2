@@ -7,13 +7,13 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-06 CST（Asia/Shanghai） |
-| branch | `cursor/s1-single-image-loop-9973`（未提交；基线 `origin/main` `25fafd6`） |
-| HEAD | 工作区有未提交的 S1 改动；尚未开 PR |
+| branch | `cursor/s4-batch-credits-9973`（从 `9343aa1` 继续；`origin/main` 仍是 `25fafd6`；PR #21 未合并） |
+| HEAD | 本文件随 S4 提交写入。推送该分支，不合并 |
 | 文档态 | PRD **2.10**；架构 **1.7**；物料清单 **1.32**；端测自治见 `DEV_INSTRUCTIONS` §6.1 / `AGENTS.md` §5 |
-| 代码态 | S0 已在 `main`（PR #18、#19、#20）。S1 与 S2 五层在 `cursor/s1-single-image-loop-9973` 工作区，尚未提交。S3 未开工 |
-| 验证态 | `/tmp/s2-pg-e2e.log` = `S2_PG_E2E_PASS`（宽高、sRGB、EXIF 回读、无 GPS、无 MakerNote、`detector=fixture`、字节下限失败保持冻结且无下载对象）；pytest `tests/capabilities/realphotos` 12 passed |
-| 当前阶段 | S2 开发机端测已通过。检测仍是规则替身，不是生产检测通过 |
-| 下一步 | 不得开 S3：该阶段 tasks / exit_evidence / forbidden 尚未写入 DEV_INSTRUCTIONS |
+| 代码态 | S0 已在 `main`。S1 与 S2 在未合并的 PR #21。S3 在 `cursor/s3-gemini-redo-9973`。S4 在 `cursor/s4-batch-credits-9973`。不是生产收费已开放 |
+| 验证态 | 真实小样只认 `/tmp/s3-pg-e2e.log` 的 `S3_PG_SAMPLE_READONLY task_id=29 detector=gemini-3.1-pro-preview noise=45 depthOfField=40 lighting=35 colorRealism=50 overallRealism=35 total_score=38 passed=false has_jpeg=true output_bytes=30982 reservation=released total_is_not_dimension_average=true dimension_average=41.0`。S4 证据是 `/tmp/s4-pg-e2e.log` 的 `S4_PG_E2E_PASS`：任务 40 `detector=fixture` 消费 10，任务 41 前置失败释放 10，两张通过消费 20，任务 44 技术失败保持冻结。这不是新的 Gemini 小样。pytest `tests/capabilities/realphotos` 25 passed |
+| 当前阶段 | S4 开发机证据已齐。这不是对外「检测通过」，也不是生产收费已开放 |
+| 下一步 | S4 开发机证据 `/tmp/s4-pg-e2e.log` 含 `S4_PG_E2E_PASS`（任务 40 消费 10，任务 41 释放 10，两张通过消费 20，任务 44 技术失败保持冻结）。分支 `cursor/s4-batch-credits-9973` 尚未推送。不合并 PR #21。不开 S5。不是生产收费已开放，也不是对外检测通过 |
 
 ## 1. 仓库与文档基线
 

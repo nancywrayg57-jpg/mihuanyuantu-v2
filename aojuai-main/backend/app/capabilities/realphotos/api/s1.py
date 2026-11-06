@@ -34,7 +34,24 @@ class SubmitBody(BaseModel):
     preset_code: str = Field(alias="presetCode")
     idempotency_key: str = Field(alias="idempotencyKey")
     pre_review_mode: str = Field(default="pass", alias="preReviewMode")
-    detection_mode: str = Field(default="pass", alias="detectionMode")
+    detection_mode: str = Field(default="gemini", alias="detectionMode")
+
+
+class BatchBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    asset_ids: list[int] = Field(alias="assetIds")
+    preset_code: str = Field(alias="presetCode")
+    idempotency_key: str = Field(alias="idempotencyKey")
+    pre_review_mode: str = Field(default="pass", alias="preReviewMode")
+    detection_mode: str = Field(default="gemini", alias="detectionMode")
+
+
+class SelectedDownloadBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    task_ids: list[int] = Field(alias="taskIds")
+    pack: str = "files"
 
 
 class RechargeBody(BaseModel):
@@ -138,15 +155,100 @@ async def submit_task(
     return SuccessResponse(data=_task_payload(task))
 
 
-@router.get("/processing-tasks/{task_id}")
-async def get_task(
-    task_id: int,
+def _actor_roles(roles: set[str]) -> set[str]:
+    if "admin" in roles:
+        roles.add(ROLE_ADMIN)
+    return roles
+
+
+@router.post("/processing-batches")
+async def submit_batch(
+    body: BatchBody,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([JOBS_ENQUEUE])),
+) -> dict[str, Any]:
+    roles = _actor_roles(await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id)))
+    service = RealphotosS1Service(db)
+    batch, tasks = await service.submit_batch(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        actor_role_codes=roles,
+        asset_ids=list(body.asset_ids),
+        preset_code=body.preset_code,
+        idempotency_key=body.idempotency_key,
+        pre_review_mode=body.pre_review_mode,
+        detection_mode=body.detection_mode,
+    )
+    await db.commit()
+    payloads = []
+    for task in tasks:
+        payload = _task_payload(task)
+        payload["detection"] = await service.detection_payload(
+            tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id)
+        )
+        payloads.append(payload)
+    return SuccessResponse(
+        data={"batchId": str(int(batch.id)), "imageCount": int(batch.image_count), "tasks": payloads}
+    )
+
+
+@router.get("/processing-batches/{batch_id}")
+async def get_batch(
+    batch_id: int,
+    current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
     _: None = Depends(PermissionChecker([JOBS_ENQUEUE])),
 ) -> dict[str, Any]:
     service = RealphotosS1Service(db)
-    task = await service.get_task(tenant_id=int(tenant_ctx.tenant_id), task_id=int(task_id))
+    tasks = await service.list_batch_tasks(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        batch_id=int(batch_id),
+    )
+    payloads = []
+    for task in tasks:
+        payload = _task_payload(task)
+        payload["detection"] = await service.detection_payload(
+            tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id)
+        )
+        payloads.append(payload)
+    return SuccessResponse(data={"batchId": str(int(batch_id)), "tasks": payloads})
+
+
+@router.post("/processing-tasks/selected-downloads")
+async def selected_downloads(
+    body: SelectedDownloadBody,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([JOBS_ENQUEUE])),
+) -> dict[str, Any]:
+    items = await RealphotosS1Service(db).selected_download_items(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        task_ids=list(body.task_ids),
+        pack=body.pack,
+    )
+    return SuccessResponse(data={"items": items, "pack": "files"})
+
+
+@router.get("/processing-tasks/{task_id}")
+async def get_task(
+    task_id: int,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([JOBS_ENQUEUE])),
+) -> dict[str, Any]:
+    service = RealphotosS1Service(db)
+    task = await service.get_task(
+        tenant_id=int(tenant_ctx.tenant_id),
+        task_id=int(task_id),
+        owner_account_id=int(current_user.id),
+    )
     payload = _task_payload(task)
     payload["detection"] = await service.detection_payload(
         tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id)
@@ -272,6 +374,100 @@ async def reject_recharge(
     return SuccessResponse(
         data={"id": str(int(order.id)), "status": order.status, "rejectReason": order.reject_reason}
     )
+
+
+class RedoBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    enabled: bool
+    score_threshold: int = Field(alias="scoreThreshold")
+    extra_rounds: int = Field(alias="extraRounds")
+
+
+class ReprocessBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    preset_code: str = Field(alias="presetCode")
+    idempotency_key: str = Field(alias="idempotencyKey")
+
+
+@router.get("/redo-settings")
+async def get_redo(
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([WALLET_READ])),
+) -> dict[str, Any]:
+    row = await RealphotosS1Service(db).get_redo_setting(tenant_id=int(tenant_ctx.tenant_id))
+    await db.commit()
+    return SuccessResponse(
+        data={
+            "enabled": bool(row.enabled),
+            "scoreThreshold": int(row.score_threshold),
+            "extraRounds": int(row.extra_rounds),
+        }
+    )
+
+
+@router.put("/redo-settings")
+async def put_redo(
+    body: RedoBody,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([WALLET_READ])),
+) -> dict[str, Any]:
+    row = await RealphotosS1Service(db).save_redo_setting(
+        tenant_id=int(tenant_ctx.tenant_id),
+        enabled=body.enabled,
+        threshold=body.score_threshold,
+        extra_rounds=body.extra_rounds,
+    )
+    await db.commit()
+    return SuccessResponse(
+        data={
+            "enabled": bool(row.enabled),
+            "scoreThreshold": int(row.score_threshold),
+            "extraRounds": int(row.extra_rounds),
+        }
+    )
+
+
+@router.post("/processing-tasks/{task_id}/retry")
+async def retry_task(
+    task_id: int,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([JOBS_ENQUEUE])),
+) -> dict[str, Any]:
+    task = await RealphotosS1Service(db).retry_technical(
+        tenant_id=int(tenant_ctx.tenant_id),
+        task_id=int(task_id),
+        owner_account_id=int(current_user.id),
+    )
+    await db.commit()
+    return SuccessResponse(data=_task_payload(task))
+
+
+@router.post("/processing-tasks/{task_id}/reprocess")
+async def reprocess_task(
+    task_id: int,
+    body: ReprocessBody,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([JOBS_ENQUEUE])),
+) -> dict[str, Any]:
+    roles = await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    task = await RealphotosS1Service(db).reprocess(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        actor_role_codes=roles,
+        source_task_id=int(task_id),
+        preset_code=body.preset_code,
+        idempotency_key=body.idempotency_key,
+    )
+    await db.commit()
+    return SuccessResponse(data=_task_payload(task))
 
 
 @router.post("/admin/detection-note")

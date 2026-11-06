@@ -29,7 +29,7 @@
 | 底座 | `aojuai-main/`（上游固定版本见 `aojuai-main/UPSTREAM_PIN.txt`） |
 | S0 业务包 | `aojuai-main/backend/app/capabilities/realphotos/` |
 | 原型 | `prototype/index.html`；改 `prototype.js` 后跑 `node prototype/sync-inline.js` |
-| 分支约定 | 见 `DEV_INSTRUCTIONS.md` / `AGENTS.md` §7；当前工作区在 `cursor/s1-single-image-loop-9973`，S1 与 S2 尚未提交。后缀保持 `-9973` |
+| 分支约定 | 见 `DEV_INSTRUCTIONS.md` / `AGENTS.md` §7；当前工作区在 `cursor/s4-batch-credits-9973`。后缀保持 `-9973` |
 | 密钥 | 仓库忽略 `生产物料/`；需要时只读本机物料，不入库 |
 
 当前实现状态摘要见 `checkpoint.md`。
@@ -49,9 +49,9 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **当前**：S2 开发机端测已通过。日志 `/tmp/s2-pg-e2e.log` 含 `S2_PG_E2E_PASS`，流水线 `s2-five-layer-1`。工作区仍在 `cursor/s1-single-image-loop-9973`，尚未提交。
-- **不得开 S3**：`DEV_INSTRUCTIONS` 还没有 S3 的 tasks / exit_evidence / forbidden。真 Gemini、自动重做、2–10 张批次都不在本阶段。
-- 检测仍是规则替身。字节下限失败保持冻结，等到技术客服阶段再处理。
+- **当前**：S4 开发机端测已通过，不是生产收费就绪。日志 `/tmp/s4-pg-e2e.log` 含 `S4_PG_E2E_PASS`。可下载张是 fixture，任务 40 消费 10；任务 41 前置失败释放 10。代码在 `cursor/s4-batch-credits-9973`，尚未推送。S3 真实小样仍只认任务 29。
+- **不得开 S5**：S5 的 tasks / exit_evidence / forbidden 还没写。生图、技术客服解冻都不在本阶段。
+- 技术失败和字节下限失败保持冻结，等到技术客服阶段再处理。合同默认识别名仍是 `gemini-2.5-pro`；本机密钥调用该型号返回 404，供应商提示 `gemini-3.1-pro-preview`，该型号只写在本机 `.env`。
 - **协作**：见 `AGENTS.md` §7。**S7** 须管理员确认。
 
 ## 6. 风险提醒

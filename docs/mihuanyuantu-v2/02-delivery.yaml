@@ -1,5 +1,5 @@
 phase: delivery
-status: s2_devhost_evidenced_s3_not_started
+status: s4_devhost_evidenced_not_production
 
 phase_confirmation:
   status: confirmed
@@ -54,14 +54,26 @@ phase_confirmation:
     - date: "2026-11-06"
       change: "S2 五层替换占位实现；开发机日志 /tmp/s2-pg-e2e.log 含 S2_PG_E2E_PASS；不开 S3"
       reason: "管理员继续 S2；S3 清单尚未写入 DEV_INSTRUCTIONS"
+    - date: "2026-11-06"
+      change: "S3 真实小样与控制路径通过；不标生产收费就绪；不开 S4"
+      reason: "/tmp/s3-pg-e2e.log 含 S3_PG_E2E_PASS；/tmp/s3-pg-e2e-controls.log 含 S3_PG_CONTROLS_PASS"
+    - date: "2026-11-06"
+      change: "S4 tasks / exit_evidence / forbidden 写入 DEV_INSTRUCTIONS §10.6；正式开发未开始"
+      reason: "管理员要求推送 S3 后先完成 S4 清单，暂不编码"
+    - date: "2026-11-06"
+      change: "S4 批次按张冻结与部分成功有开发机 PostgreSQL 证据；不标生产收费就绪；不开 S5"
+      reason: "/tmp/s4-pg-e2e.log 含 S4_PG_E2E_PASS；可下载张 detector=fixture，不是新的 Gemini 小样"
 
 knowledge_assets:
   wiki: wiki.md
-  phase_summary: "S2 开发机端测已通过。流水线 s2-five-layer-1。检测仍是规则替身。S3 清单未写，不得开工。"
+  phase_summary: "S4 开发机日志 /tmp/s4-pg-e2e.log 含 S4_PG_E2E_PASS。任务 40 按张消费 10，任务 41 前置失败释放 10，两张通过批次消费 20。detector=fixture，不代替任务 29，也不是对外检测通过。不开 S5。"
   outcomes:
     - "aojuai-main/backend/app/capabilities/realphotos/ S0 包落地"
-    - "pytest tests/capabilities/realphotos 12 passed"
+    - "pytest tests/capabilities/realphotos 25 passed"
+    - "开发机 /tmp/s3-pg-e2e.log S3_PG_SAMPLE_READONLY task_id=29 total_score=38 dimension_average=41.0 reservation=released"
     - "开发机 /tmp/s2-pg-e2e.log = S2_PG_E2E_PASS"
+    - "开发机 /tmp/s3-pg-e2e.log = S3_PG_E2E_PASS"
+    - "开发机 /tmp/s3-pg-e2e-controls.log = S3_PG_CONTROLS_PASS"
     - "Cloud e2e 服务脚本 /opt/cursor/artifacts/s0-e2e-service.log = S0_E2E_PASS"
     - "开发机 /tmp/s0-pg-claim-one-smoke.log = S0_PG_CLAIM_ONE_PASS"
   lessons:
@@ -211,6 +223,31 @@ tasks:
     status: devhost_evidenced
     artifact: "/tmp/s2-pg-e2e.log"
     verify: "S2_PG_E2E_PASS"
+  - id: T-016
+    slice: S3
+    status: devhost_evidenced
+    artifact: "/tmp/s3-pg-e2e.log"
+    verify: "S3_PG_SAMPLE_READONLY task_id=29 detector=gemini-3.1-pro-preview noise=45 depthOfField=40 lighting=35 colorRealism=50 overallRealism=35 total_score=38 passed=false has_jpeg=true output_bytes=30982 reservation=released total_is_not_dimension_average=true dimension_average=41.0。S3_PG_E2E_PASS 不单独充当这三项证据"
+  - id: T-017
+    slice: S3
+    status: devhost_evidenced
+    artifact: "/tmp/s3-pg-e2e-controls.log"
+    verify: "HTML、缺少 total_score、超时、非整数分均为 GEMINI_TECHNICAL；不写报告、不提供下载、预留保持 held。控制日志不代替任务 29"
+  - id: T-018
+    slice: S3
+    status: devhost_evidenced
+    artifact: "/tmp/s3-pg-e2e-controls.log"
+    verify: "设置快照不变；等于阈值不重做；低于阈值只扣一次；基线通过但仍低于阈值会追加"
+  - id: T-019
+    slice: S3
+    status: devhost_evidenced
+    artifact: "/tmp/s3-pg-e2e-controls.log"
+    verify: "主动重处理是新任务。detector=fixture、accepted 不是 false、没有结果文件均返回 REPROCESS_REJECTED。技术重试不新增冻结，第 3 次执行后再试返回 RETRY_LIMIT"
+  - id: T-020
+    slice: S3
+    status: devhost_evidenced
+    artifact: "pytest tests/capabilities/realphotos"
+    verify: "19 passed。gemini-control 与任务 29 的 gemini-3.1-pro-preview 分开记录"
 
 governance_controls:
   scope_tolerance: "禁止把 Q25 冻结项塞进首期（S1）"
@@ -225,7 +262,7 @@ git:
   branch_policy: "本会话 Cloud 硬性 cursor/<name>-6c0b；仓库 AGENTS 仍写 -9973（冲突已记录）"
   protected: "不提交 生产物料/、.env、密钥"
   version_control_required_before_code: true
-  working_branch: "cursor/s1-single-image-loop-9973"
+  working_branch: "cursor/s4-batch-credits-9973"
 
 deployment:
   s1_target: "development host only"
@@ -240,7 +277,10 @@ verification:
     - "Cloud e2e service script → S0_E2E_PASS"
     - "开发机 DB_DRIVER=postgresql .venv/bin/python -m scripts.s0_pg_claim_one_smoke → S0_PG_CLAIM_ONE_PASS"
     - "开发机 DB_DRIVER=postgresql .venv/bin/python -m scripts.s1_pg_e2e_smoke → S2_PG_E2E_PASS"
-  status: s2_devhost_evidenced_s3_not_started
+    - "开发机 .venv/bin/python -m scripts.s3_pg_e2e_smoke → S3_PG_E2E_PASS"
+    - "开发机 .venv/bin/python -m scripts.s3_pg_e2e_controls → S3_PG_CONTROLS_PASS"
+    - "开发机 .venv/bin/python -m scripts.s4_pg_e2e_smoke → S4_PG_E2E_PASS"
+  status: s4_devhost_evidenced_not_production
   cloud_artifacts:
     - "/opt/cursor/artifacts/s0-pytest.txt"
     - "/opt/cursor/artifacts/s0-e2e-service.log"
