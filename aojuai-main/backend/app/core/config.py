@@ -328,6 +328,9 @@ class Settings(BaseSettings):
     # realphotos capability knobs (optional; empty = package defaults)
     REALPHOTOS_ALLOW_DEV_CAPTCHA: str = ""
     REALPHOTOS_STORAGE_ROOT: str = ""
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-2.5-pro"
+    GEMINI_API_BASE: str = "https://generativelanguage.googleapis.com/v1beta"
 
     # 各 worker 的并发度，形如 "code:2,other_code:4"。
     # 用**一个**通用字段而不是每个 worker 一个字段：Settings 是 pydantic 模型、

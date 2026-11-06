@@ -34,7 +34,7 @@ class SubmitBody(BaseModel):
     preset_code: str = Field(alias="presetCode")
     idempotency_key: str = Field(alias="idempotencyKey")
     pre_review_mode: str = Field(default="pass", alias="preReviewMode")
-    detection_mode: str = Field(default="pass", alias="detectionMode")
+    detection_mode: str = Field(default="gemini", alias="detectionMode")
 
 
 class RechargeBody(BaseModel):
@@ -272,6 +272,97 @@ async def reject_recharge(
     return SuccessResponse(
         data={"id": str(int(order.id)), "status": order.status, "rejectReason": order.reject_reason}
     )
+
+
+class RedoBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    enabled: bool
+    score_threshold: int = Field(alias="scoreThreshold")
+    extra_rounds: int = Field(alias="extraRounds")
+
+
+class ReprocessBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    preset_code: str = Field(alias="presetCode")
+    idempotency_key: str = Field(alias="idempotencyKey")
+
+
+@router.get("/redo-settings")
+async def get_redo(
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([WALLET_READ])),
+) -> dict[str, Any]:
+    row = await RealphotosS1Service(db).get_redo_setting(tenant_id=int(tenant_ctx.tenant_id))
+    await db.commit()
+    return SuccessResponse(
+        data={
+            "enabled": bool(row.enabled),
+            "scoreThreshold": int(row.score_threshold),
+            "extraRounds": int(row.extra_rounds),
+        }
+    )
+
+
+@router.put("/redo-settings")
+async def put_redo(
+    body: RedoBody,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([WALLET_READ])),
+) -> dict[str, Any]:
+    row = await RealphotosS1Service(db).save_redo_setting(
+        tenant_id=int(tenant_ctx.tenant_id),
+        enabled=body.enabled,
+        threshold=body.score_threshold,
+        extra_rounds=body.extra_rounds,
+    )
+    await db.commit()
+    return SuccessResponse(
+        data={
+            "enabled": bool(row.enabled),
+            "scoreThreshold": int(row.score_threshold),
+            "extraRounds": int(row.extra_rounds),
+        }
+    )
+
+
+@router.post("/processing-tasks/{task_id}/retry")
+async def retry_task(
+    task_id: int,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([JOBS_ENQUEUE])),
+) -> dict[str, Any]:
+    task = await RealphotosS1Service(db).retry_technical(
+        tenant_id=int(tenant_ctx.tenant_id), task_id=int(task_id)
+    )
+    await db.commit()
+    return SuccessResponse(data=_task_payload(task))
+
+
+@router.post("/processing-tasks/{task_id}/reprocess")
+async def reprocess_task(
+    task_id: int,
+    body: ReprocessBody,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([JOBS_ENQUEUE])),
+) -> dict[str, Any]:
+    roles = await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    task = await RealphotosS1Service(db).reprocess(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        actor_role_codes=roles,
+        source_task_id=int(task_id),
+        preset_code=body.preset_code,
+        idempotency_key=body.idempotency_key,
+    )
+    await db.commit()
+    return SuccessResponse(data=_task_payload(task))
 
 
 @router.post("/admin/detection-note")

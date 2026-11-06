@@ -49,9 +49,9 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **当前**：S2 开发机端测已通过。日志 `/tmp/s2-pg-e2e.log` 含 `S2_PG_E2E_PASS`，流水线 `s2-five-layer-1`。工作区仍在 `cursor/s1-single-image-loop-9973`，尚未提交。
-- **不得开 S3**：`DEV_INSTRUCTIONS` 还没有 S3 的 tasks / exit_evidence / forbidden。真 Gemini、自动重做、2–10 张批次都不在本阶段。
-- 检测仍是规则替身。字节下限失败保持冻结，等到技术客服阶段再处理。
+- **当前**：S3 开发机端测已通过，不是生产收费就绪。真实小样日志 `/tmp/s3-pg-e2e.log` 含 `S3_PG_E2E_PASS`（任务 29，`detector=gemini-3.1-pro-preview`，`total_score=38`，`passed=False`）。控制路径日志 `/tmp/s3-pg-e2e-controls.log` 含 `S3_PG_CONTROLS_PASS`。代码在 `cursor/s3-gemini-redo-9973`，未提交。
+- **不得开 S4**：S4 的 tasks / exit_evidence / forbidden 还没写。2–10 张批次、生图、技术客服解冻都不在本阶段。
+- 技术失败和字节下限失败保持冻结，等到技术客服阶段再处理。合同默认识别名仍是 `gemini-2.5-pro`；本机密钥调用该型号返回 404，供应商提示 `gemini-3.1-pro-preview`，该型号只写在本机 `.env`。
 - **协作**：见 `AGENTS.md` §7。**S7** 须管理员确认。
 
 ## 6. 风险提醒

@@ -17,12 +17,14 @@ from .s1_loop import (
     RealphotosTaskChain,
     RealphotosTaskSnapshot,
 )
+from .s3_detection import RealphotosChainPolicy, RealphotosRedoSetting
 
 __all__ = [
     "RealphotosAsset",
     "RealphotosAuthChallenge",
     "RealphotosAuthGuard",
     "RealphotosBatch",
+    "RealphotosChainPolicy",
     "RealphotosCreditAccount",
     "RealphotosCreditLedgerEntry",
     "RealphotosCreditReservation",
@@ -33,6 +35,7 @@ __all__ = [
     "RealphotosMerchantProfile",
     "RealphotosOutbox",
     "RealphotosRechargeOrder",
+    "RealphotosRedoSetting",
     "RealphotosStageResult",
     "RealphotosTaskChain",
     "RealphotosTaskSnapshot",

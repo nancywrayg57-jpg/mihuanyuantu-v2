@@ -16,12 +16,14 @@ type TaskView = {
   creditDisposition?: string | null
   detection?: {
     accepted?: boolean
+    passed?: boolean
     total_score?: number
     noise?: number
     depthOfField?: number
     lighting?: number
     colorRealism?: number
     overallRealism?: number
+    detector?: string
   } | null
 }
 type InboxItem = { id: string; title: string; body: string }
@@ -35,6 +37,9 @@ export default function RealphotosWorkspacePage() {
   const [task, setTask] = useState<TaskView | null>(null)
   const [inbox, setInbox] = useState<InboxItem[]>([])
   const [downloadNote, setDownloadNote] = useState('')
+  const [redoEnabled, setRedoEnabled] = useState(false)
+  const [redoThreshold, setRedoThreshold] = useState(70)
+  const [redoRounds, setRedoRounds] = useState(1)
 
   useEffect(() => {
     const saved = window.sessionStorage.getItem('realphotos.s1.taskId')
@@ -43,6 +48,15 @@ export default function RealphotosWorkspacePage() {
         .then((data) => setTask(data))
         .catch(() => undefined)
     }
+    void apiFetch<{ enabled: boolean; scoreThreshold: number; extraRounds: number }>(
+      '/api/v1/realphotos/redo-settings',
+    )
+      .then((data) => {
+        setRedoEnabled(Boolean(data.enabled))
+        setRedoThreshold(Number(data.scoreThreshold))
+        setRedoRounds(Number(data.extraRounds))
+      })
+      .catch(() => undefined)
     void apiFetch<{ items: Preset[] }>('/api/v1/realphotos/presets')
       .then((data) => {
         setPresets(data.items || [])
@@ -132,6 +146,56 @@ export default function RealphotosWorkspacePage() {
   return (
     <main className="space-y-4 p-6">
       <h1 className="text-lg font-medium">蜜獾原图 · 单张处理</h1>
+      <form
+        className="flex flex-wrap items-end gap-3 text-sm"
+        onSubmit={(event) => {
+          event.preventDefault()
+          void apiFetch('/api/v1/realphotos/redo-settings', {
+            method: 'PUT',
+            body: JSON.stringify({
+              enabled: redoEnabled,
+              scoreThreshold: redoThreshold,
+              extraRounds: redoRounds,
+            }),
+          })
+            .then(() => setNotice('自动重做设置已保存，只影响之后提交的任务'))
+            .catch((error: unknown) => setNotice(error instanceof ApiError ? error.message : '设置保存失败'))
+        }}
+      >
+        <label>
+          <input
+            type="checkbox"
+            checked={redoEnabled}
+            onChange={(event) => setRedoEnabled(event.target.checked)}
+          />{' '}
+          自动重做
+        </label>
+        <label>
+          阈值
+          <input
+            className="ml-1 w-16 border px-1"
+            type="number"
+            min={0}
+            max={100}
+            value={redoThreshold}
+            onChange={(event) => setRedoThreshold(Number(event.target.value))}
+          />
+        </label>
+        <label>
+          追加次数
+          <input
+            className="ml-1 w-16 border px-1"
+            type="number"
+            min={1}
+            max={5}
+            value={redoRounds}
+            onChange={(event) => setRedoRounds(Number(event.target.value))}
+          />
+        </label>
+        <button className="border px-3 py-1" type="submit">
+          保存设置
+        </button>
+      </form>
       <p className="text-sm text-muted-foreground">{notice}</p>
       <div className="flex flex-wrap items-end gap-3">
         <label className="text-sm">
@@ -197,10 +261,10 @@ export default function RealphotosWorkspacePage() {
               <td>{task.creditDisposition || '处理中'}</td>
             </tr>
             <tr>
-              <th className="text-left">替身报告</th>
+              <th className="text-left">检测报告</th>
               <td>
                 {task.detection
-                  ? `accepted=${String(task.detection.accepted)} total_score=${task.detection.total_score} noise=${task.detection.noise} depthOfField=${task.detection.depthOfField} lighting=${task.detection.lighting} colorRealism=${task.detection.colorRealism} overallRealism=${task.detection.overallRealism}`
+                  ? `detector=${task.detection.detector || ''} total_score=${task.detection.total_score} passed=${String(task.detection.passed)} accepted=${String(task.detection.accepted)} noise=${task.detection.noise} depthOfField=${task.detection.depthOfField} lighting=${task.detection.lighting} colorRealism=${task.detection.colorRealism} overallRealism=${task.detection.overallRealism}`
                   : '尚无报告'}
               </td>
             </tr>
