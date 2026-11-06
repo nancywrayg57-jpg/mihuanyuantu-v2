@@ -180,7 +180,9 @@ async def _main() -> int:
             return 1
         for _ in range(2):
             queue.push(BusinessError(message="检测响应无法解析", code="GEMINI_TECHNICAL"))
-            retried = await loop.retry_technical(tenant_id=tenant, task_id=int(invalid.id))
+            retried = await loop.retry_technical(
+                tenant_id=tenant, task_id=int(invalid.id), owner_account_id=user
+            )
             await db.commit()
             await run_task(int(retried.id))
         still = await reservation_for(int(invalid.id))
@@ -192,7 +194,9 @@ async def _main() -> int:
             )
         ).scalar_one()
         try:
-            await loop.retry_technical(tenant_id=tenant, task_id=int(invalid.id))
+            await loop.retry_technical(
+                tenant_id=tenant, task_id=int(invalid.id), owner_account_id=user
+            )
             print("FAIL: retry limit", file=sys.stderr)
             return 1
         except BusinessError as exc:
@@ -321,7 +325,9 @@ async def _main() -> int:
         queue.push(_report(total=91, passed=True))
         created_done = await run_task(int(created.id))
         created_reservation = await reservation_for(int(created.id))
-        source_now = await loop.get_task(tenant_id=tenant, task_id=int(equal.id))
+        source_now = await loop.get_task(
+            tenant_id=tenant, task_id=int(equal.id), owner_account_id=user
+        )
         source_report_now = await loop.detection_payload(tenant_id=tenant, task_id=int(equal.id))
         if (
             int(created.id) == int(equal.id)

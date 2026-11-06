@@ -141,12 +141,17 @@ async def submit_task(
 @router.get("/processing-tasks/{task_id}")
 async def get_task(
     task_id: int,
+    current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
     _: None = Depends(PermissionChecker([JOBS_ENQUEUE])),
 ) -> dict[str, Any]:
     service = RealphotosS1Service(db)
-    task = await service.get_task(tenant_id=int(tenant_ctx.tenant_id), task_id=int(task_id))
+    task = await service.get_task(
+        tenant_id=int(tenant_ctx.tenant_id),
+        task_id=int(task_id),
+        owner_account_id=int(current_user.id),
+    )
     payload = _task_payload(task)
     payload["detection"] = await service.detection_payload(
         tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id)
@@ -332,12 +337,15 @@ async def put_redo(
 @router.post("/processing-tasks/{task_id}/retry")
 async def retry_task(
     task_id: int,
+    current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
     _: None = Depends(PermissionChecker([JOBS_ENQUEUE])),
 ) -> dict[str, Any]:
     task = await RealphotosS1Service(db).retry_technical(
-        tenant_id=int(tenant_ctx.tenant_id), task_id=int(task_id)
+        tenant_id=int(tenant_ctx.tenant_id),
+        task_id=int(task_id),
+        owner_account_id=int(current_user.id),
     )
     await db.commit()
     return SuccessResponse(data=_task_payload(task))

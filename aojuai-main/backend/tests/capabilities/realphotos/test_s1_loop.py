@@ -155,7 +155,17 @@ async def test_s1_single_image_loop(db) -> None:
         )
     assert expired.value.status_code == 410
     with pytest.raises(NotFoundError):
-        await loop.get_task(tenant_id=tenant2, task_id=int(finished_task.id))
+        await loop.get_task(
+            tenant_id=tenant2, task_id=int(finished_task.id), owner_account_id=user_a
+        )
+    with pytest.raises(NotFoundError):
+        await loop.get_task(
+            tenant_id=tenant1, task_id=int(finished_task.id), owner_account_id=user_b
+        )
+    own_task = await loop.get_task(
+        tenant_id=tenant1, task_id=int(finished_task.id), owner_account_id=user_a
+    )
+    assert int(own_task.owner_account_id) == user_a
 
     await loop.soft_delete_asset(tenant_id=tenant1, asset_id=int(asset.id))
 
@@ -232,6 +242,22 @@ async def test_s1_single_image_loop(db) -> None:
     assert done_t.credit_disposition == "held_until_tech_support"
     held = await credits.get_wallet(tenant_id=tenant1)
     assert int(held["reservedInteger"]) == 10
+    with pytest.raises(NotFoundError):
+        await loop.retry_technical(
+            tenant_id=tenant1, task_id=int(done_t.id), owner_account_id=user_b
+        )
+    with pytest.raises(NotFoundError):
+        await loop.read_object_for_gateway(
+            tenant_id=tenant1,
+            object_key=str(done_n.output_object_key),
+            owner_account_id=user_b,
+        )
+    _ctype_own, own_body = await loop.read_object_for_gateway(
+        tenant_id=tenant1,
+        object_key=str(done_n.output_object_key),
+        owner_account_id=user_a,
+    )
+    assert own_body.startswith(b"\xff\xd8\xff")
     messages = await loop.list_inbox(tenant_id=tenant1, recipient_user_id=user_a)
     assert messages
     assert admin

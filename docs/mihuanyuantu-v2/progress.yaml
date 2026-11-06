@@ -185,7 +185,7 @@ known_conflicts:
 
 next_action:
   owner: user
-  action: "S3 真实小样与控制路径已分开写明。本提交只在 cursor/s3-gemini-redo-9973，不 push，不合并 PR #21，不开 S4。不是生产收费已开放，也不是对外检测通过。"
+  action: "本提交收齐 S3 的检测原因、技术重试/主动重处理入口和提交账号隔离。推送后只写 S4 清单，不开始 S4 实现。不是生产收费已开放，也不是对外检测通过。"
   notes:
     s1_authorized: user_2026-11-05
     s2_authorized: user_2026-11-06
