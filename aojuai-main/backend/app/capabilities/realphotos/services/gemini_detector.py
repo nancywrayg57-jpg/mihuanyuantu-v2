@@ -49,7 +49,7 @@ def parse_gemini_report(payload: str) -> dict:
 
 def detect_jpeg(jpeg: bytes) -> dict:
     key = str(settings.GEMINI_API_KEY or "").strip()
-    model = str(settings.GEMINI_MODEL or "gemini-2.5-pro").strip()
+    model = str(settings.GEMINI_MODEL or "gemini-3.1-pro-preview").strip()
     if not key or not model:
         raise BusinessError(message="最终检测未配置", code="GEMINI_NOT_CONFIGURED")
     url = f"{str(settings.GEMINI_API_BASE).rstrip('/')}/models/{model}:generateContent"

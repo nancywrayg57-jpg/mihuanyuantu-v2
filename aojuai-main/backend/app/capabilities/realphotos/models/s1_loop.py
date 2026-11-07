@@ -28,6 +28,15 @@ class RealphotosAsset(TenantBaseModel):
     height: Mapped[int] = mapped_column(Integer, nullable=False)
     sha256: Mapped[str] = mapped_column(String(64), nullable=False)
     origin_kind: Mapped[str] = mapped_column(String(32), nullable=False, default="local_upload")
+    meta_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    meta_seller: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    meta_sku: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    meta_asn: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    meta_price: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    meta_website: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    meta_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    requested_width: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    requested_height: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class RealphotosBatch(TenantBaseModel):
@@ -88,6 +97,10 @@ class RealphotosImageTask(TenantBaseModel):
     pipeline_version: Mapped[str] = mapped_column(
         String(64), nullable=False, default="stub-s1", server_default="stub-s1"
     )
+    copied_from_task_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    billing_mode: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="normal", server_default="normal"
+    )
 
 
 class RealphotosTaskSnapshot(TenantBaseModel):
@@ -129,7 +142,7 @@ class RealphotosDetectionResult(TenantBaseModel):
     passed: Mapped[bool] = mapped_column(Boolean, nullable=False)
     reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     detector: Mapped[str] = mapped_column(
-        String(32), nullable=False, default="fixture", server_default="fixture"
+        String(128), nullable=False, default="fixture", server_default="fixture"
     )
 
 

@@ -15,6 +15,7 @@ from app.capabilities.realphotos.services.supplier_clients import (
     GENERATION_BASE,
 )
 from app.capabilities.realphotos.services.supplier_material import read_material_secret, supplier_live_enabled
+from app.core.config import settings
 from app.core.exceptions import BusinessError, ForbiddenError
 
 _SPECS: tuple[dict[str, Any], ...] = (
@@ -79,6 +80,21 @@ _SPECS: tuple[dict[str, Any], ...] = (
         "gap_note": "物料清单 T03 仍缺正式导入供应商。临时图床不作为正式合同，保持不外呼。",
         "secret_duty": "",
     },
+    {
+        "duty": "final_detection",
+        "provider": "google-gemini",
+        "model_id": "gemini-3.1-pro-preview",
+        "region": "generativelanguage",
+        "credential_ref": "生产物料#Gemini / .env GEMINI_API_KEY",
+        "base_url": "https://generativelanguage.googleapis.com/v1beta",
+        "capabilities": {
+            "role": "final_physical_detection",
+            "dimensions": ["noise", "depthOfField", "lighting", "colorRealism", "overallRealism"],
+            "passRule": "total_score>=75 and passed=true",
+        },
+        "gap_note": "启用识别名以本机可调用型号为准；不可用的 gemini-2.5-pro 不再作为客户默认。",
+        "secret_duty": "final_detection",
+    },
 )
 
 
@@ -102,20 +118,33 @@ class RealphotosSupplierConfigService:
         self.db = db
 
     async def ensure(self) -> None:
-        if not supplier_live_enabled():
-            return
+        live = supplier_live_enabled()
         for spec in _SPECS:
-            existing = await self._row(spec["duty"])
-            if existing is not None:
+            # final_detection is config/settings based; other duties still require supplier live.
+            if spec["duty"] != "final_detection" and not live:
                 continue
-            secret_ok = bool(spec["secret_duty"]) and bool(read_material_secret(str(spec["secret_duty"])))
+            existing = await self._row(spec["duty"])
+            model_id = str(spec["model_id"])
+            if spec["duty"] == "final_detection":
+                model_id = str(settings.GEMINI_MODEL or model_id).strip() or model_id
+                secret_ok = bool(str(settings.GEMINI_API_KEY or "").strip())
+            else:
+                secret_ok = bool(spec["secret_duty"]) and bool(read_material_secret(str(spec["secret_duty"])))
             enabled = secret_ok and spec["duty"] != "import"
+            if existing is not None:
+                if spec["duty"] == "final_detection":
+                    if existing.model_id in {"", "gemini-2.5-pro"} or existing.model_id != model_id:
+                        existing.model_id = model_id
+                    existing.enabled = enabled
+                    existing.config_version = CONFIG_VERSION
+                    existing.gap_note = spec["gap_note"]
+                continue
             self.db.add(
                 RealphotosProviderContract(
                     tenant_id=0,
                     duty=spec["duty"],
                     provider=spec["provider"],
-                    model_id=spec["model_id"],
+                    model_id=model_id,
                     config_version=CONFIG_VERSION,
                     region=spec["region"],
                     credential_ref=spec["credential_ref"],

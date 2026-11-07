@@ -29,6 +29,10 @@ export function RealphotosGenerateClient() {
   const [originalText, setOriginalText] = useState('')
   const [optimizedText, setOptimizedText] = useState('')
   const [confirmed, setConfirmed] = useState(false)
+  const [width, setWidth] = useState('1024')
+  const [height, setHeight] = useState('768')
+  const [seed, setSeed] = useState('')
+  const [lastSizes, setLastSizes] = useState('')
 
   useEffect(() => {
     setMode(initialMode)
@@ -124,29 +128,48 @@ export function RealphotosGenerateClient() {
       mode,
       positivePrompt: prompt,
       negativePrompt: negative,
-      width: '1024',
-      height: '768',
+      width,
+      height,
       quantity: '1',
       idempotencyKey: `ui-gen-${Date.now()}`,
+      ...(seed.trim() ? { seed: seed.trim() } : {}),
     }
     try {
+      let data: {
+        requestedWidth?: number
+        requestedHeight?: number
+        items?: Array<{ actualWidth?: number | null; actualHeight?: number | null; status?: string }>
+        supplier?: { seedSent?: boolean; seedNote?: string; requestedSize?: string }
+      }
       if (mode === 'image_to_image' && reference) {
         const body = new FormData()
         for (const [key, value] of Object.entries(fields)) body.set(key, value)
         body.set('reference', reference)
-        await apiFetch('/api/v1/realphotos/generation-tasks', { method: 'POST', body })
+        data = await apiFetch('/api/v1/realphotos/generation-tasks', { method: 'POST', body })
       } else {
-        await apiFetch('/api/v1/realphotos/generation-tasks', {
+        data = await apiFetch('/api/v1/realphotos/generation-tasks', {
           method: 'POST',
           body: JSON.stringify({
             ...fields,
-            width: 1024,
-            height: 768,
+            width: Number(width),
+            height: Number(height),
             quantity: 1,
+            ...(seed.trim() ? { seed: seed.trim() } : {}),
           }),
         })
       }
-      setMessage('已入库。生图不会自动进入处理。')
+      const stored = (data.items || []).find((item) => item.status === 'stored')
+      const sizeNote = stored
+        ? `请求 ${data.requestedWidth || width}×${data.requestedHeight || height}；实际 ${stored.actualWidth}×${stored.actualHeight}`
+        : `请求 ${width}×${height}`
+      setLastSizes(sizeNote)
+      const seedNote =
+        data.supplier?.seedSent === true
+          ? '种子已发送'
+          : seed.trim()
+            ? data.supplier?.seedNote || '种子未发送'
+            : '未填写种子（未发送）'
+      setMessage(`已入库。生图不会自动进入处理。${sizeNote}。${seedNote}`)
     } catch (error: unknown) {
       setMessage(error instanceof ApiError ? error.message : '提交失败')
     }
@@ -218,6 +241,26 @@ export function RealphotosGenerateClient() {
             onChange={(event) => setNegative(event.target.value)}
           />
         </label>
+        <div className="flex flex-wrap gap-3 text-sm">
+          <label>
+            宽
+            <input className="ml-1 border px-2 py-1 w-24" value={width} onChange={(e) => setWidth(e.target.value)} />
+          </label>
+          <label>
+            高
+            <input className="ml-1 border px-2 py-1 w-24" value={height} onChange={(e) => setHeight(e.target.value)} />
+          </label>
+          <label>
+            可选种子
+            <input
+              className="ml-1 border px-2 py-1 w-40"
+              value={seed}
+              onChange={(e) => setSeed(e.target.value)}
+              placeholder="合同不支持时会拒绝"
+            />
+          </label>
+        </div>
+        {lastSizes ? <p className="text-xs text-muted-foreground">{lastSizes}</p> : null}
         <div className="space-y-2 text-sm">
           <div className="flex flex-wrap gap-2">
             <button className="border px-3 py-1" type="button" onClick={() => void optimize()}>

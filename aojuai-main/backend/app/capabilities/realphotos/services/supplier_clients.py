@@ -15,7 +15,7 @@ from app.capabilities.realphotos.services.supplier_material import read_material
 GENERATION_BASE = "https://apis.aoju.ai/v1"
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 DASHSCOPE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
-CONFIG_VERSION = "2026-11-06.1"
+CONFIG_VERSION = "2026-11-07.blocking-fix"
 
 
 class SupplierCallError(Exception):
@@ -73,6 +73,19 @@ def _require_json(response: httpx.Response) -> dict[str, Any]:
     return payload
 
 
+def prepare_reference_jpeg(data: bytes, *, max_edge: int = 1280, quality: int = 85) -> bytes:
+    """Downscale/re-encode reference for supplier transport. Hard-check remains on original bytes."""
+    with Image.open(io.BytesIO(data)) as image:
+        rgb = image.convert("RGB")
+        width, height = rgb.size
+        scale = min(1.0, float(max_edge) / float(max(width, height, 1)))
+        if scale < 1.0:
+            rgb = rgb.resize((max(1, int(width * scale)), max(1, int(height * scale))), Image.Resampling.LANCZOS)
+        buf = io.BytesIO()
+        rgb.save(buf, format="JPEG", quality=int(quality), optimize=True)
+        return buf.getvalue()
+
+
 async def generate_images(
     *,
     model_id: str,
@@ -81,12 +94,15 @@ async def generate_images(
     height: int,
     quantity: int,
     reference: bytes | None,
+    seed: str | int | None = None,
 ) -> dict[str, Any]:
     secret = read_material_secret("generation")
     if not secret:
         raise SupplierCallError(kind="missing_credential", status=None, content_type="", detail="generation")
     size = f"{int(width)}x{int(height)}"
     headers = {"Authorization": f"Bearer {secret}"}
+    # Contract gap: seed is not sent and must not be forged as accepted.
+    _ = seed
     try:
         async with httpx.AsyncClient(timeout=_timeout(180.0)) as client:
             if reference is None:
@@ -100,7 +116,7 @@ async def generate_images(
                     f"{GENERATION_BASE}/images/edits",
                     headers=headers,
                     data={"model": model_id, "prompt": prompt, "n": str(int(quantity)), "size": size},
-                    files={"image": ("reference.bin", reference, "application/octet-stream")},
+                    files={"image": ("reference.jpg", reference, "image/jpeg")},
                 )
     except httpx.TimeoutException as exc:
         raise SupplierCallError(kind="timeout", status=None, content_type="", detail="generation") from exc

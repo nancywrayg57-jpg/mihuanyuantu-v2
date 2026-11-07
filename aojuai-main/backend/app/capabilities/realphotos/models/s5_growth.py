@@ -6,6 +6,7 @@ from sqlalchemy import BigInteger, Boolean, Index, Integer, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import TenantBaseModel
+from app.infrastructure.database.types import PortableJSON
 
 
 class RealphotosGenerationTask(TenantBaseModel):
@@ -34,6 +35,10 @@ class RealphotosGenerationTask(TenantBaseModel):
     provider: Mapped[str] = mapped_column(String(32), nullable=False)
     idempotency_key: Mapped[str] = mapped_column(String(128), nullable=False)
     template_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    requested_seed: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    supplier_trace: Mapped[dict] = mapped_column(
+        PortableJSON, nullable=False, default=dict, server_default="{}"
+    )
 
 
 class RealphotosGenerationItem(TenantBaseModel):
@@ -47,6 +52,8 @@ class RealphotosGenerationItem(TenantBaseModel):
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     asset_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     credits_consumed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    actual_width: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    actual_height: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class RealphotosPromptTemplate(TenantBaseModel):

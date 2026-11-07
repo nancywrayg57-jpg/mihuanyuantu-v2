@@ -107,7 +107,7 @@ export default function RealphotosPresetsPage() {
       })
       setMessage(
         gpsMode === 'fixed' || gpsMode === 'random_by_scene'
-          ? '已保存预设与版本快照。GPS 配置已记录；五层写入未接通，禁止静默假装已写入。'
+          ? '已保存预设与版本快照。GPS 将随处理任务写入 EXIF 并可回读。'
           : '已保存预设与版本快照',
       )
       await load()

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 
@@ -104,7 +104,16 @@ def _task_payload(task) -> dict[str, Any]:
         "outputObjectKey": task.output_object_key,
         "outputExpiresAt": task.output_expires_at.isoformat() if task.output_expires_at else None,
         "pipelineVersion": task.pipeline_version,
+        "copiedFrom": str(int(task.copied_from_task_id)) if task.copied_from_task_id else None,
+        "billingMode": str(getattr(task, "billing_mode", "normal") or "normal"),
     }
+
+
+class CopyBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    idempotency_key: str = Field(alias="idempotencyKey")
+    detection_mode: str = Field(default="pass", alias="detectionMode")
 
 
 @router.get("/presets")
@@ -124,15 +133,34 @@ async def upload_asset(
     tenant_ctx: TenantCtx,
     db: DBSession,
     file: UploadFile = File(...),
+    name: str | None = Form(default=None),
+    seller: str | None = Form(default=None),
+    sku: str | None = Form(default=None),
+    asn: str | None = Form(default=None),
+    price: str | None = Form(default=None),
+    website: str | None = Form(default=None),
+    url: str | None = Form(default=None),
     _: None = Depends(PermissionChecker([GATEWAY_READ])),
 ) -> dict[str, Any]:
+    from app.capabilities.realphotos.services.asset_naming import compose_list_filename, meta_from_asset
+
     data = await file.read()
     asset = await RealphotosS1Service(db).upload(
         tenant_id=int(tenant_ctx.tenant_id),
         owner_account_id=int(current_user.id),
         data=data,
+        meta_name=name,
+        meta_seller=seller,
+        meta_sku=sku,
+        meta_asn=asn,
+        meta_price=price,
+        meta_website=website,
+        meta_url=url,
     )
     await db.commit()
+    naming = compose_list_filename(
+        meta=meta_from_asset(asset), asset_id=int(asset.id), origin_kind=str(asset.origin_kind)
+    )
     return SuccessResponse(
         data={
             "id": str(int(asset.id)),
@@ -141,8 +169,30 @@ async def upload_asset(
             "width": int(asset.width),
             "height": int(asset.height),
             "objectKey": asset.object_key,
+            "displayName": naming["displayName"],
+            "degraded": naming["degraded"] == "true",
         }
     )
+
+
+@router.post("/processing-tasks/{task_id}/copy")
+async def copy_processing_task(
+    task_id: int,
+    body: CopyBody,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([JOBS_ENQUEUE])),
+) -> dict[str, Any]:
+    task = await RealphotosS1Service(db).copy_processing_task(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        source_task_id=int(task_id),
+        idempotency_key=body.idempotency_key,
+        detection_mode=body.detection_mode,
+    )
+    await db.commit()
+    return SuccessResponse(data=_task_payload(task))
 
 
 @router.post("/processing-tasks")
@@ -311,6 +361,9 @@ async def get_task(
     )
     payload = _task_payload(task)
     payload["detection"] = await service.detection_payload(
+        tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id)
+    )
+    payload["gpsWrite"] = await service.gps_write_summary(
         tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id)
     )
     return SuccessResponse(data=payload)
