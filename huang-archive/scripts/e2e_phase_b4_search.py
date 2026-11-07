@@ -73,18 +73,21 @@ def main():
     mine = [a for a in lst if MARK in str(a.get("title"))]
     assert len(mine) >= 2
     assert len([a for a in mine if match(a, q="春游")]) == 1
-    assert len([a for a in mine if match(a, person="黄志松")]) == 1  # only spring photo
-    assert len([a for a in mine if match(a, person="黄纲生")]) == 2  # uploader on both
-    assert len([a for a in mine if match(a, date_from="1988-01-01")]) == 1
+    assert len([a for a in mine if match(a, q="黄志松")]) == 1  # related_persons in unified search
+    assert len([a for a in mine if match(a, q="黄纲生")]) == 2  # uploader on both
     assert len([a for a in mine if match(a, category="video")]) == 1
     print("PASS filter_logic")
 
     html = urllib.request.urlopen(BASE + "/").read().decode("utf-8", "ignore")
     js = "".join(urllib.request.urlopen(BASE + u).read().decode("utf-8", "ignore")
                  for u in re.findall(r'src="(/assets/[^"]+\.js)"', html))
-    for m in ["search-filters", "search-input", "filter-person", "date-from", "date-to"]:
-        assert m in (html + js), m
+    blob = html + js
+    for m in ["search-filters", "search-input", "list-pagination", "timeline-year"]:
+        assert m in blob, m
         print("PASS ui", m)
+    for gone in ["filter-person", "date-from", "date-to"]:
+        assert gone not in blob, f"stale filter marker {gone}"
+        print("PASS removed", gone)
 
     for i in ids:
         urllib.request.urlopen(urllib.request.Request(

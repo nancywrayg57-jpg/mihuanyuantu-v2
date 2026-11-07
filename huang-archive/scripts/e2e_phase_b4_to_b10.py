@@ -63,20 +63,19 @@ def main():
         "playback_status": "none",
     })
     assert r.get("id"), r
-    # filter client lib markers + create
-    assert "search-filters" in blob and "search-input" in blob and "filter-person" in blob
-    from pathlib import Path
-    # also import filter logic locally
-    import importlib.util
-    # quick behavioral check via duplicated logic
+    # unified search only (no person/date combo filters)
+    assert "search-filters" in blob and "search-input" in blob
+    assert "filter-person" not in blob and "date-from" not in blob
+    assert "list-pagination" in blob
     assert "filterArchives" in blob or "search-input" in blob
     print("PASS #4 search_ui_and_sample")
     delete_marked(atok, mark)
     print("PASS #4 cleanup")
     results.append((4, "PASS"))
 
-    # ---- 5 timeline ----
+    # ---- 5 timeline (year drill-down) ----
     assert "timeline-view" in blob and "view-timeline" in blob
+    assert "timeline-year" in blob and "timeline-pagination" in blob
     print("PASS #5 timeline_ui")
     results.append((5, "PASS"))
 

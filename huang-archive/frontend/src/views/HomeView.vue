@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { LogOut, KeyRound, Upload, Users, Search, Download, Type } from 'lucide-vue-next'
+import { LogOut, KeyRound, Upload, Users, Search, Download, Type, Maximize2 } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
@@ -13,6 +13,8 @@ import { zhError } from '../lib/errors'
 import ArchiveCard from '../components/ArchiveCard.vue'
 import UploadModal from '../components/UploadModal.vue'
 import TimelineView from '../components/TimelineView.vue'
+
+const PAGE_SIZE = 10
 
 const auth = useAuthStore()
 const queue = useUploadQueueStore()
@@ -32,9 +34,7 @@ const confirmPwd = ref('')
 const pwdMsg = ref('')
 const pwdErr = ref('')
 const searchQ = ref('')
-const filterPerson = ref('')
-const dateFrom = ref('')
-const dateTo = ref('')
+const page = ref(1)
 const notices = ref([])
 const exportMsg = ref('')
 
@@ -45,17 +45,33 @@ const uploadLabel = computed(() =>
 const filtered = computed(() =>
   filterArchives(archives.value, {
     q: searchQ.value,
-    person: filterPerson.value,
-    dateFrom: dateFrom.value,
-    dateTo: dateTo.value,
     category: tab.value,
   }),
 )
 
+const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / PAGE_SIZE)))
+
+const paged = computed(() => {
+  const start = (page.value - 1) * PAGE_SIZE
+  return filtered.value.slice(start, start + PAGE_SIZE)
+})
+
+watch([tab, searchQ, viewMode], () => {
+  page.value = 1
+})
+
+watch(filtered, () => {
+  if (page.value > totalPages.value) page.value = totalPages.value
+})
+
+function goPage(p) {
+  page.value = Math.min(totalPages.value, Math.max(1, p))
+}
+
 async function load() {
   loading.value = true
   try {
-    const list = await pb.collection('archives').getList(1, 200, { sort: '-created' })
+    const list = await pb.collection('archives').getList(1, 500, { sort: '-created' })
     archives.value = list.items
     const mem = await pb.collection('memories').getFullList({ fields: 'id,archive_id' }).catch(() => [])
     const counts = {}
@@ -191,9 +207,12 @@ onMounted(load)
           type="button"
           class="min-h-tap px-3 border border-clay inline-flex items-center gap-1"
           data-testid="a11y-tap"
+          :title="a11y.largeTap ? '标准按钮' : '大按钮'"
+          :aria-pressed="a11y.largeTap"
           @click="a11y.largeTap = !a11y.largeTap"
         >
-          {{ a11y.largeTap ? '标准按钮' : '大按钮' }}
+          <Maximize2 class="w-5 h-5" :class="a11y.largeTap ? 'text-cinnabar' : ''" />
+          <span class="sr-only">{{ a11y.largeTap ? '标准按钮' : '大按钮' }}</span>
         </button>
         <button
           v-if="auth.isAdmin"
@@ -266,7 +285,7 @@ onMounted(load)
     </nav>
 
     <section class="max-w-6xl mx-auto px-4 pt-4 space-y-3" data-testid="search-filters">
-      <div class="flex flex-col sm:flex-row gap-2">
+      <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
         <label class="relative flex-1">
           <Search class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
           <input
@@ -277,21 +296,7 @@ onMounted(load)
             data-testid="search-input"
           />
         </label>
-        <input
-          v-model="filterPerson"
-          class="sm:w-40 min-h-tap px-3 border border-clay bg-parchment"
-          placeholder="关系人"
-          data-testid="filter-person"
-        />
-      </div>
-      <div class="flex flex-wrap gap-2 items-center">
-        <label class="text-mute text-sm">从
-          <input v-model="dateFrom" type="date" class="ml-1 min-h-tap px-2 border border-clay bg-parchment" data-testid="date-from" />
-        </label>
-        <label class="text-mute text-sm">到
-          <input v-model="dateTo" type="date" class="ml-1 min-h-tap px-2 border border-clay bg-parchment" data-testid="date-to" />
-        </label>
-        <div class="ml-auto flex border border-clay">
+        <div class="flex border border-clay shrink-0">
           <button
             type="button"
             class="min-h-tap px-3"
@@ -308,7 +313,12 @@ onMounted(load)
           >年表</button>
         </div>
       </div>
-      <p class="text-mute text-sm">共 {{ filtered.length }} 条</p>
+      <p class="text-mute text-sm" data-testid="result-count">
+        共 {{ filtered.length }} 条
+        <template v-if="viewMode === 'grid' && filtered.length">
+          · 第 {{ page }} / {{ totalPages }} 页（每页 {{ PAGE_SIZE }} 条）
+        </template>
+      </p>
     </section>
 
     <main class="max-w-6xl mx-auto px-4 py-6">
@@ -322,20 +332,43 @@ onMounted(load)
         @updated="onUpdated"
         @memory="onMemory"
       />
-      <div
-        v-else
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-      >
-        <ArchiveCard
-          v-for="a in filtered"
-          :key="a.id"
-          :archive="a"
-          :memory-count="memoryCounts[a.id] || 0"
-          @deleted="onDeleted"
-          @updated="onUpdated"
-          @memory="onMemory"
-        />
-      </div>
+      <template v-else>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+          data-testid="archive-grid"
+        >
+          <ArchiveCard
+            v-for="a in paged"
+            :key="a.id"
+            :archive="a"
+            :memory-count="memoryCounts[a.id] || 0"
+            @deleted="onDeleted"
+            @updated="onUpdated"
+            @memory="onMemory"
+          />
+        </div>
+        <div
+          v-if="totalPages > 1"
+          class="flex items-center justify-center gap-2 pt-6"
+          data-testid="list-pagination"
+        >
+          <button
+            type="button"
+            class="min-h-tap px-3 border border-clay disabled:opacity-40"
+            :disabled="page <= 1"
+            data-testid="page-prev"
+            @click="goPage(page - 1)"
+          >上一页</button>
+          <span class="text-mute text-sm">{{ page }} / {{ totalPages }}</span>
+          <button
+            type="button"
+            class="min-h-tap px-3 border border-clay disabled:opacity-40"
+            :disabled="page >= totalPages"
+            data-testid="page-next"
+            @click="goPage(page + 1)"
+          >下一页</button>
+        </div>
+      </template>
     </main>
 
     <button
