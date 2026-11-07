@@ -71,10 +71,10 @@ async def _main() -> int:
     note("partial_align_e2e start")
     note("production_billing=false s7_started=false url_import_connected=false")
 
-    import app.capabilities.realphotos.models  # noqa: F401
-    import app.domain  # noqa: F401
     from sqlalchemy import select
 
+    import app.capabilities.realphotos.models  # noqa: F401
+    import app.domain  # noqa: F401
     from app.capabilities.realphotos.seed import reconcile
     from app.capabilities.realphotos.services.bootstrap import DEFAULT_PASSWORD, bootstrap_s0_accounts
     from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
