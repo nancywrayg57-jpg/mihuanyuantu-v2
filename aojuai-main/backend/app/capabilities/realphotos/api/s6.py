@@ -435,6 +435,40 @@ async def activate_preset_import(
     return SuccessResponse(data=payload)
 
 
+@router.post("/device-preset-imports/clear-placeholders")
+async def clear_preset_placeholders(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
+) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    if ROLE_ADMIN not in roles and "admin" not in roles:
+        raise ForbiddenError(message="只有平台管理员可以清除占位预设")
+    from app.capabilities.realphotos.services.legacy_preset_imports import clear_placeholder_presets
+
+    payload = await clear_placeholder_presets(db, actor_role_codes=roles)
+    await db.commit()
+    return SuccessResponse(data=payload)
+
+
+@router.post("/device-preset-imports/activate-all")
+async def activate_all_preset_imports(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
+) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    if ROLE_ADMIN not in roles and "admin" not in roles:
+        raise ForbiddenError(message="只有平台管理员可以全量导入旧版预设")
+    from app.capabilities.realphotos.services.legacy_preset_imports import activate_all_legacy_templates
+
+    payload = await activate_all_legacy_templates(db, actor_role_codes=roles, enabled=True)
+    await db.commit()
+    return SuccessResponse(data=payload)
+
+
 @router.get("/device-presets")
 async def list_device_presets(
     current_user: CurrentUser,

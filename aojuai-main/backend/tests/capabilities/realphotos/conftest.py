@@ -42,6 +42,29 @@ async def db(storage_tmpdir: Path) -> AsyncIterator[AsyncSession]:
 
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
     async with session_factory() as session:
+        # PRESET-BULK-IMPORT B1 stops catalog injection; seed RuntimeCam rows so S1/S2/S3/S4/S6
+        # unit tests that still reference S1_ENABLED_PRESETS codes keep a real enabled preset.
+        from app.capabilities.realphotos.permissions import ROLE_ADMIN
+        from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
+        from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
+
+        ops = RealphotosOpsService(session)
+        for item in S1_ENABLED_PRESETS:
+            await ops.save_preset(
+                actor_role_codes={ROLE_ADMIN, "admin"},
+                code=str(item["code"]),
+                device_type=str(item["deviceType"]),
+                brand="RuntimeCam",
+                model_name=str(item["model"]),
+                gps_mode=str(item.get("gpsMode") or "none"),
+                enabled=True,
+                iso=str(item.get("iso") or "100"),
+                shutter=str(item.get("shutter") or "1/125"),
+                aperture=str(item.get("aperture") or "f/1.8"),
+                focal_length=str(item.get("focalLength") or "26mm"),
+                source="admin",
+            )
+        await session.commit()
         yield session
     await engine.dispose()
     feature_switches.settings.AOJ_ENABLED_MODULES = ""
