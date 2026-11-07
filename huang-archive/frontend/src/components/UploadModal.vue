@@ -4,6 +4,7 @@ import { X, Image, Video, FileText, Link2, Mic, Boxes } from 'lucide-vue-next'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
 import { zhError } from '../lib/errors'
+import { FILE_ACCEPT, UPLOAD_LIMIT_LABELS, validateUploadFiles } from '../lib/uploadLimits'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -34,9 +35,18 @@ const submitting = ref(false)
 const error = ref('')
 
 const isLink = computed(() => category.value === 'link')
+const sizeHint = computed(() => {
+  if (category.value === 'video') return UPLOAD_LIMIT_LABELS.video
+  if (category.value === 'image') return UPLOAD_LIMIT_LABELS.image
+  if (category.value === 'scan') return '扫描图片不超过 30MB；PDF 等不超过 100MB'
+  if (isLink.value) return '填写可访问的 https 链接即可'
+  return UPLOAD_LIMIT_LABELS.other
+})
 
 function onFileChange(e) {
   files.value = Array.from(e.target.files || []).slice(0, 9)
+  const msg = validateUploadFiles(files.value, category.value)
+  error.value = msg || ''
 }
 
 async function submit() {
@@ -45,17 +55,29 @@ async function submit() {
     error.value = '请填写标题、发生时间与关系人'
     return
   }
-  if (isLink.value && !externalLink.value.trim()) {
-    error.value = '请填写外部链接'
-    return
+  if (isLink.value) {
+    const link = externalLink.value.trim()
+    if (!link) {
+      error.value = '请填写外部链接'
+      return
+    }
+    if (!/^https?:\/\//i.test(link)) {
+      error.value = '链接需以 http:// 或 https:// 开头'
+      return
+    }
   }
   if (!isLink.value && files.value.length === 0) {
     error.value = '请选择至少一个文件'
     return
   }
+  const sizeErr = validateUploadFiles(files.value, category.value)
+  if (sizeErr) {
+    error.value = sizeErr
+    return
+  }
 
   submitting.value = true
-  progress.value = 5
+  progress.value = 8
   try {
     const form = new FormData()
     form.append('title', archiveTitle.value.trim())
@@ -67,7 +89,10 @@ async function submit() {
     form.append('uploader_name', auth.displayName)
     form.append('likes_count', '0')
     if (externalLink.value.trim()) form.append('external_link', externalLink.value.trim())
-    for (const f of files.value) form.append('media_files', f)
+    for (const f of files.value) {
+      // Ensure filename is present for MIME sniffing on some mobile browsers
+      form.append('media_files', f, f.name || `upload-${Date.now()}`)
+    }
 
     const record = await pb.collection('archives').create(form, {
       requestKey: null,
@@ -77,7 +102,8 @@ async function submit() {
     reset()
     emit('close')
   } catch (e) {
-    error.value = zhError(e, '上传失败，请稍后重试')
+    console.error('upload failed', e)
+    error.value = zhError(e, '上传失败，请检查文件格式与大小后重试')
   } finally {
     submitting.value = false
   }
@@ -124,7 +150,7 @@ function close() {
               type="button"
               class="min-h-tap border px-2 py-3 flex flex-col items-center gap-1"
               :class="category === c.key ? 'border-cinnabar bg-cinnabar/5 text-cinnabar' : 'border-clay'"
-              @click="category = c.key"
+              @click="category = c.key; error = ''; files = []"
             >
               <component :is="c.icon" class="w-6 h-6" />
               <span class="text-sm">{{ c.label }}</span>
@@ -158,7 +184,12 @@ function close() {
 
           <label v-if="isLink" class="block">
             <span class="text-mute">外部链接</span>
-            <input v-model="externalLink" type="url" class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice" />
+            <input
+              v-model="externalLink"
+              type="url"
+              class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice"
+              placeholder="https://"
+            />
           </label>
 
           <label v-else class="block">
@@ -166,9 +197,11 @@ function close() {
             <input
               type="file"
               multiple
+              :accept="FILE_ACCEPT"
               class="mt-1 w-full min-h-tap px-3 py-2 border border-clay bg-rice"
               @change="onFileChange"
             />
+            <p class="text-mute text-sm mt-1">{{ sizeHint }}</p>
             <p v-if="files.length" class="text-mute text-sm mt-1">已选 {{ files.length }} 个文件</p>
           </label>
 
@@ -176,7 +209,7 @@ function close() {
             <div class="h-full bg-cinnabar transition-all" :style="{ width: progress + '%' }" />
           </div>
 
-          <p v-if="error" class="text-cinnabar">{{ error }}</p>
+          <p v-if="error" class="text-cinnabar" data-testid="upload-error">{{ error }}</p>
 
           <button
             type="button"

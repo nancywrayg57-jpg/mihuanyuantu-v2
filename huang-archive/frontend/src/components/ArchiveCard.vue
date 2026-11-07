@@ -46,11 +46,8 @@ const firstFile = computed(() => files.value[0] || '')
 const fileUrl = computed(() =>
   firstFile.value ? pb.files.getUrl(props.archive, firstFile.value) : '',
 )
-const thumbUrl = computed(() =>
-  firstFile.value
-    ? pb.files.getUrl(props.archive, firstFile.value, { thumb: '600x0' })
-    : '',
-)
+// Prefer full file URL; thumb sizes are optional (upload no longer requires generated thumbs)
+const thumbUrl = computed(() => (firstFile.value ? fileUrl.value : ''))
 const isPdf = computed(() => String(firstFile.value).toLowerCase().endsWith('.pdf'))
 const isVideo = computed(() => props.archive.category === 'video')
 const isAudio = computed(() => props.archive.category === 'audio')

@@ -5,7 +5,7 @@
 huangzhisong.com {
 	encode gzip zstd
 	request_body {
-		max_size 500MB
+		max_size 650MB
 	}
 
 	handle /api/health {
@@ -39,7 +39,7 @@ huangzhisong.com {
 http://47.239.73.214 {
 	encode gzip zstd
 	request_body {
-		max_size 500MB
+		max_size 650MB
 	}
 
 	handle /api/health {
