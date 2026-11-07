@@ -49,6 +49,7 @@ def main():
             "allowUsernameAuth": True,
             "allowOAuth2Auth": False,
             "requireEmail": True,
+            "manageRule": '@request.auth.role = "admin"',
         }
     )
     req(
