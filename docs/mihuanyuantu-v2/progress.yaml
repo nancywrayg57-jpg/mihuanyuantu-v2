@@ -186,6 +186,9 @@ known_conflicts:
   - id: BLOCKING_FIX_SCOPE
     status: recorded
     detail: "工单明确排除 URL 真导入与中国大陆/上线门槛/S7。种子合同仍 gap-not-sent：带种子提交返回 SEED_UNSUPPORTED，不伪造。"
+  - id: PR27_OPENER_ACCOUNT
+    status: recorded
+    detail: "提交作者为 Collaborator 身份 xtzhou247；PR #27 由本机当前 gh 登录账号 nancywrayg57-jpg 创建。合入仍须非自评自合：若 PR 作者账号与审合账号相同则换 Collaborator 账号审合或按 AGENTS §7 处理。"
   - id: DEVHOST_SSH_AUTONOMY
     status: recorded
     detail: "管理员授权：每里程碑后 Agent 自行 SSH 开发机端测，无需人工代跑。口令在同级 生产物料/；清单与 DEV_INSTRUCTIONS §6.1 / AGENTS.md §5 已写。"
@@ -201,7 +204,7 @@ next_action:
   action: "审阅 cursor/blocking-fix-9973 PR（BLOCKING-FIX A–G）；仅经非本人作者账号 squash 合入 main。不得开 S7。合入后更新本文件与 checkpoint §0。"
   work_order: "BLOCKING-FIX-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-阻断级修复工单.md"
   branch: cursor/blocking-fix-9973
-  pr: pending_open
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/27"
   blocking_fix_status:
     A_copy_latch: done
     B_gps_write: done

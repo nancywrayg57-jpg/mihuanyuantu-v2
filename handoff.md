@@ -50,7 +50,7 @@
 ## 5. 下一步（摘要；以 progress 为准）
 
 - **main 基线**：`origin/main` 已含 S0–S6 + IA-PAGE（#25 squash `ad9ebf5`）。不是生产收费就绪。
-- **待合入分支**：`cursor/blocking-fix-9973`（工单 `BLOCKING-FIX-2026-11-07` A–G）。合入仅 Owner、非本人作者账号 squash。
+- **待合入 PR**：https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/27 （`cursor/blocking-fix-9973`，工单 `BLOCKING-FIX-2026-11-07` A–G）。合入仅非作者账号 squash。
 - **阻断修复证据**：`/tmp/blocking-fix-e2e.log` 含 `BLOCKING_FIX_E2E_PASS`，且 `production_billing=false`；URL 导入仍 `SERVICE_NOT_CONFIGURED`。
 - **要点**：复制免冻门闩；GPS `fixed`/`random_by_scene` 可写回读；资源文件名按字段拼接；种子合同不支持则拒绝不伪造；请求/实际尺寸双字段；图生图真路径成功入库；Gemini 启用识别名 `gemini-3.1-pro-preview`。
 - **S6**：管理员已结束；证据 `/tmp/s6-pg-e2e.log`。不重跑当验收。

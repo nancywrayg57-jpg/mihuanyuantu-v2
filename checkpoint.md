@@ -13,7 +13,7 @@
 | 代码态 | `origin/main` 已含 S0–S6 + IA-PAGE（#25）。本分支另含 BLOCKING-FIX A–G（复制免冻、GPS 写入、文件名拼接、种子诚实拒绝、尺寸诚实字段、图生图真路径、Gemini 识别名收口）。不是生产收费已开放 |
 | 验证态 | BLOCKING `/tmp/blocking-fix-e2e.log` `BLOCKING_FIX_E2E_PASS` 且 `production_billing=false`。S3 小样仍只认任务 29。S4/S6/供应商日志仍有效。URL 导入仍未接通。本机不是最终中国大陆节点 |
 | 当前阶段 | S6 管理员已结束。IA-PAGE 已合入 main。BLOCKING-FIX 开发机端测已通过，待 Owner 审 PR。不得开 S7 |
-| 下一步 | 审阅并 squash 合入 `cursor/blocking-fix-9973` PR（非作者账号）；不得开 S7 |
+| 下一步 | 审阅 https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/27 并 squash 合入（非作者账号）；不得开 S7 |
 
 ## 1. 仓库与文档基线
 
