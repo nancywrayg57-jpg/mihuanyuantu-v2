@@ -63,7 +63,7 @@ export default function RealphotosGeneratePage() {
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">生图入库</h1>
       <p className="text-sm text-muted-foreground">
-        成功结果只写入图片资源。没有供应商证据时不外呼，也不创建处理任务。
+        成功结果只写入图片资源，不创建处理任务。未配置时不外呼。
       </p>
       <p className="text-sm">{message}</p>
       <section className="space-y-3">

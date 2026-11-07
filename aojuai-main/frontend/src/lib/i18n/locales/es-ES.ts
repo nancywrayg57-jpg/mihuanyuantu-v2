@@ -172,4 +172,9 @@ export const esES: Record<string, string> = {
   'menu.入队': 'Encolar',
   'menu.订单客服': 'Soporte de pedidos',
   'menu.管理': 'Administración',
+  'menu.技术客服': 'Soporte técnico',
+  'menu.用户管理': 'Usuarios',
+  'menu.系统日志': 'Registro',
+  'menu.设备预设': 'Preajustes',
+  'menu.模型合同': 'Contratos de modelo',
 }

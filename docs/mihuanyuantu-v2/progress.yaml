@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "S4 批次 1–10 张，按张冻结、部分成功、并发对账和勾选下载"
-    user_value: "一批图片里失败的那张只释放自己的预留，通过的每张各扣 10，勾选下载不打包 ZIP"
-    visible_output: "工作台批次表和下载勾选"
-    verify: "/tmp/s4-pg-e2e.log 含 S4_PG_E2E_PASS；detector=fixture，不是新的 Gemini 小样；pytest tests/capabilities/realphotos 25 passed"
-    status: s4_devhost_evidenced_not_production
-    next_user_action: "S5 已授权，未标完成。证据在 /tmp/s5-pg-e2e.log。图生图临时参考、优化失败不扣、JSON 100/101 与文件入口、登录态签发业务 Key、查询 DELIVERED 已写入该日志。不是生产收费已开放，也不是供应商接通。管理员给出的 OpenAI 中转地址本次未调用。"
+    goal: "补齐生图、提示词优化和预审的接口合同，并用真实请求做业务端测"
+    user_value: "商家能文生图入库和优化提示词；没有正式导入合同时 URL 导入仍不外呼"
+    visible_output: "生图页、提示词页、URL 导入页和管理员模型合同表"
+    verify: "/tmp/supplier-live-e2e.log 含 SUPPLIER_LIVE_E2E_RECORDED；导入仍未接通；production_billing=false"
+    status: supplier_live_recorded_not_production
+    next_user_action: "S6 已由管理员结束，不重跑。供应商证据在 /tmp/supplier-live-e2e.log。未提交、未推送、未开 S7。S5 仍未标完成。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -192,7 +192,7 @@ known_conflicts:
 
 next_action:
   owner: user
-  action: "S5 在 cursor/s5-growth-9973，未标完成，也未推出。/tmp/s5-pg-e2e.log 已含 eleventh=INPUT_INVALID、idempotent_replay_no_second_charge=true、charge_time_insufficient_one_image=true。图生图页面仍不能提交参考图。供应商未接通。s5_exited 仍为 false。"
+  action: "管理员 2026-11-06：S6 已结束，不重跑。供应商真实请求记在 /tmp/supplier-live-e2e.log。文生图和提示词优化有响应小样；预审有真实拒绝；导入未接通。production_billing=false。未提交、未推送、未开 S7。"
   notes:
     s1_authorized: user_2026-11-05
     s2_authorized: user_2026-11-06
@@ -220,6 +220,23 @@ next_action:
     s5_exited: false
     s5_production_billing: false
     s5_supplier_connected: false
+    s5_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/23"
+    s6_authorized: user_2026-11-06
+    s6_branch: cursor/s6-ops-9973
+    s6_checklist: authorized_pg_evidenced
+    s6_exited: false
+    s6_production_billing: false
+    s6_supplier_connected: false
+    s6_sample: "/tmp/s6-pg-e2e.log S6_PG_E2E_PASS supplier_connected=false production_billing=false"
+    s6_admin_closed: "管理员 2026-11-06 说明 S6 已结束。s6_exited 未靠重跑改写"
+    supplier_log: "/tmp/supplier-live-e2e.log SUPPLIER_LIVE_E2E_RECORDED"
+    supplier_generation_sample: "text_to_image http=200 model=gpt-image-2 result=b64_json requested=1024x768 actual=1536x1024 seed=gap credits=10"
+    supplier_image_to_image_stored: false
+    supplier_prompt_sample: "http=200 requested_model=deepseek-chat response_model=deepseek-flash credits=1"
+    supplier_pre_review_sample: "processing http=200 verdict=uncertain passed=false; browser reference http=200 rejected before generation"
+    supplier_import_connected: false
+    supplier_production_billing: false
+    supplier_final_mainland_node: false
     s4_tree_matches_main: "d8345ca == dae37a3"
     s4_pushed: "origin/main dae37a3 squash of d8345ca"
     s4_sample: "/tmp/s4-pg-e2e.log S4_PG_E2E_PASS partial_tasks=40,41 two_pass_consumed=20 technical_task=44 detector=fixture sample_is_not_public_pass=true"

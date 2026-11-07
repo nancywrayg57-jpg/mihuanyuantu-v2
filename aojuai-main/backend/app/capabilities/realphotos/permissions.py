@@ -8,6 +8,7 @@ JOBS_READ = "realphotos:jobs:read"
 JOBS_ENQUEUE = "realphotos:jobs:enqueue"
 ORDER_SUPPORT_READ = "realphotos:order_support:read"
 ADMIN_READ = "realphotos:admin:read"
+TECH_DESK_READ = "realphotos:tech_desk:read"
 
 ALL_PERMISSIONS = (
     WORKSPACE_READ,
@@ -18,6 +19,7 @@ ALL_PERMISSIONS = (
     JOBS_ENQUEUE,
     ORDER_SUPPORT_READ,
     ADMIN_READ,
+    TECH_DESK_READ,
 )
 
 # 岗位角色码（与 access / bootstrap 对齐）
@@ -37,6 +39,7 @@ __all__ = [
     "ROLE_MERCHANT",
     "ROLE_ORDER_SUPPORT",
     "ROLE_TECH_SUPPORT",
+    "TECH_DESK_READ",
     "WALLET_ADJUST",
     "WALLET_READ",
     "WORKSPACE_READ",

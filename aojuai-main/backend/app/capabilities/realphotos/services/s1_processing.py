@@ -57,8 +57,8 @@ from app.capabilities.realphotos.services.redo_policy import (
     should_auto_redo,
     validate_setting,
 )
-from app.capabilities.realphotos.services.s1_catalog import preset_by_code
 from app.capabilities.realphotos.services.s1_upload import inspect_upload
+from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
 from app.core.exceptions import AOJUException, BusinessError, NotFoundError
 
 _PIPELINE = "s2-five-layer-1"
@@ -151,17 +151,20 @@ class RealphotosS1Service:
         existing = await self._task_by_idempotency(tenant_id=tenant_id, idempotency_key=key)
         if existing is not None:
             return existing
-        preset = preset_by_code(preset_code)
+        await RealphotosOpsService(self.db).assert_can_create_task(
+            tenant_id=int(tenant_id), owner_account_id=int(owner_account_id)
+        )
+        preset = await RealphotosOpsService(self.db).enabled_preset(preset_code)
         if preset is None:
             raise BusinessError(message="预设未启用或不存在", code="PRESET_REJECTED")
-        review = pre_review_mode if pre_review_mode in {"pass", PRE_REVIEW_REJECT} else "pass"
+        review = pre_review_mode if pre_review_mode in {"pass", PRE_REVIEW_REJECT, "live"} else "pass"
         if detection_mode == DETECT_GEMINI:
             detect = DETECT_GEMINI
         elif detection_mode in {DETECT_PASS, DETECT_NOT_PASSED, DETECT_TECHNICAL}:
             detect = detection_mode
         else:
             detect = DETECT_PASS
-        injected = review != "pass" or detect in {DETECT_NOT_PASSED, DETECT_TECHNICAL}
+        injected = review == PRE_REVIEW_REJECT or detect in {DETECT_NOT_PASSED, DETECT_TECHNICAL}
         if injected and ROLE_ADMIN not in actor_role_codes:
             raise BusinessError(message="仅管理员可注入预审或检测结果", code="FORBIDDEN_INJECT")
         asset = await self._asset(tenant_id=tenant_id, asset_id=asset_id)
@@ -255,20 +258,23 @@ class RealphotosS1Service:
         if existing:
             batch = await self._batch_row(tenant_id=int(tenant_id), batch_id=int(existing[0].batch_id))
             return batch, existing
+        await RealphotosOpsService(self.db).assert_can_create_task(
+            tenant_id=int(tenant_id), owner_account_id=int(owner_account_id)
+        )
         requested = [int(asset_id) for asset_id in asset_ids]
         if len(requested) < S4_MIN_IMAGES or len(requested) > S4_MAX_IMAGES:
             raise BusinessError(message="批次只接受 1 到 10 张，整单拒绝", code="BATCH_REJECTED")
-        preset = preset_by_code(preset_code)
+        preset = await RealphotosOpsService(self.db).enabled_preset(preset_code)
         if preset is None:
             raise BusinessError(message="预设未启用或不存在", code="PRESET_REJECTED")
-        review = pre_review_mode if pre_review_mode in {"pass", PRE_REVIEW_REJECT} else "pass"
+        review = pre_review_mode if pre_review_mode in {"pass", PRE_REVIEW_REJECT, "live"} else "pass"
         if detection_mode == DETECT_GEMINI:
             detect = DETECT_GEMINI
         elif detection_mode in {DETECT_PASS, DETECT_NOT_PASSED, DETECT_TECHNICAL}:
             detect = detection_mode
         else:
             detect = DETECT_PASS
-        injected = review != "pass" or detect in {DETECT_NOT_PASSED, DETECT_TECHNICAL}
+        injected = review == PRE_REVIEW_REJECT or detect in {DETECT_NOT_PASSED, DETECT_TECHNICAL}
         if injected and ROLE_ADMIN not in actor_role_codes:
             raise BusinessError(message="仅管理员可注入预审或检测结果", code="FORBIDDEN_INJECT")
         wallet = await self.credits.get_wallet(tenant_id=int(tenant_id))
@@ -459,6 +465,57 @@ class RealphotosS1Service:
             )
         return items
 
+    async def _live_pre_review(self, task: RealphotosImageTask) -> RealphotosImageTask | None:
+        from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
+        from app.capabilities.realphotos.services.supplier_clients import SupplierCallError, review_image
+        from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
+
+        contract = await RealphotosSupplierConfigService(self.db).enabled("pre_review")
+        if contract is None:
+            await self._hold_technical(task, code="pre_review_unconfigured", message="预审合同未启用，未扣处理积分。")
+            return task
+        asset = await self._asset(tenant_id=int(task.tenant_id), asset_id=int(task.asset_id))
+        handle = get_storage_adapter().open_read(asset.object_key)
+        try:
+            data = handle.read()
+        finally:
+            handle.close()
+        mime = "image/png" if data.startswith(b"\x89PNG") else "image/jpeg"
+        try:
+            outcome = await review_image(model_id=contract.model_id, data=data, mime=mime)
+        except SupplierCallError as exc:
+            await self._hold_technical(task, code="pre_review_failed", message=f"预审请求失败 {exc.kind}，积分保持冻结。")
+            task.supplier_trace = {"status": exc.status, "contentType": exc.content_type, "kind": exc.kind}
+            return task
+        await RealphotosSupplierConfigService(self.db).note_response(
+            duty="pre_review",
+            model_id=str(outcome.get("model_id") or contract.model_id),
+            result_kind=str(outcome.get("verdict")),
+        )
+        recorded = await RealphotosOpsService(self.db).review_content(
+            tenant_id=int(task.tenant_id),
+            owner_account_id=int(task.owner_account_id),
+            data=data,
+            subject="processing",
+            provider="dashscope",
+            verdict=str(outcome["verdict"]),
+        )
+        task.supplier_trace = {
+            "status": outcome.get("http_status"),
+            "contentType": outcome.get("content_type"),
+            "modelId": outcome.get("model_id"),
+            "verdict": outcome.get("verdict"),
+            "passed": bool(recorded["passed"]),
+        }
+        if recorded["passed"]:
+            return None
+        await self._release(task, disposition="released_pre_review_reject")
+        task.status = TASK_PRE_REVIEW_FAILED
+        task.failure_class = "pre_review"
+        await self._notify(task, title="预审未通过", body="内容预审未通过，未扣处理积分。")
+        await self.db.flush()
+        return task
+
     async def execute_queued(self, job: RealphotosExecutionJob) -> RealphotosImageTask:
         task_id = int((job.payload or {}).get("task_id") or 0)
         task = await self._task(tenant_id=int(job.tenant_id), task_id=task_id)
@@ -473,6 +530,10 @@ class RealphotosS1Service:
             await self._notify(task, title="预审未通过", body="占位预审被管理员拒绝，未扣处理积分。")
             await self.db.flush()
             return task
+        if task.pre_review_mode == "live":
+            reviewed = await self._live_pre_review(task)
+            if reviewed is not None:
+                return reviewed
         task.status = TASK_PRE_REVIEW_PASSED
         task.status = TASK_FULL_PROCESSING
         task.status = TASK_DETECTION

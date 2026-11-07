@@ -3,7 +3,7 @@
 ## Project Snapshot
 - Goal: 电商商家将商品图/生成图整理为可追溯、可下载、带设备成像参数的图片资产；积分可审计。不承诺外部平台原创/实拍认定。
 - 首期（S1）: 真会话 → 本地上传 → 单张处理 → 预审占位 → 五层占位实现（仍交 sRGB JPG）→ Gemini 规则替身 → 整数积分流水按张 10 → LocalDisk 网关下载；同租户双账号 + 跨租户隔离。
-- Current phase: delivery（S4 开发机端测已通过，不是生产收费就绪；不得开 S5。文档基线 PRD 2.10 / 架构 1.7）。
+- Current phase: delivery（S6 已由管理员结束；供应商真实请求已记录，导入未接通，不是生产收费就绪；不得开 S7。文档基线 PRD 2.10 / 架构 1.7）。
 - Protected decisions: 栈=aojuai；认证=用户名密码+验证码；部署=经济起步；数据=LocalDisk+整数租户积分；AI=首期规则替身；FR-033 scopes=能力名映射。
 - Vibe coding mode: 开启；一次一个可见阶段。
 
@@ -57,11 +57,11 @@
 - Evidence: `/tmp/s4-pg-e2e.log` = `S4_PG_E2E_PASS`；`/tmp/s3-pg-e2e.log` = `S3_PG_E2E_PASS`；`/tmp/s3-pg-e2e-controls.log` = `S3_PG_CONTROLS_PASS`；`/tmp/s2-pg-e2e.log` = `S2_PG_E2E_PASS`；S1 与 S0 日志仍有效。
 - Defects: 开发机 `alembic_version_cap_realphotos` 当时不存在，`realphotos_0002` 未在该库重放。技术失败积分按决定保持冻结。
 - Accepted risks: 开发库已被端测与并发探测写入，不清空。
-- Next sprint knowledge: 技术失败冻结留到技术客服阶段。S4 树与 `origin/main` `dae37a3` 一致。S5 已授权，未标完成。证据 `/tmp/s5-pg-e2e.log`。URL 导入单次上限为 100。检测模式 pass，不是供应商接通。
+- Next sprint knowledge: 技术失败冻结留到技术客服阶段。S5 PR #23 未合并，未标完成。S6 已由管理员结束，不重跑。供应商证据在 `/tmp/supplier-live-e2e.log`，导入未接通。不得开 S7。
 
 ## Reusable Prompts and Commands
 - Agent entry: `DEV_INSTRUCTIONS.md`（必读根目录四职责文件）
-- Gate: S4 树与 `dae37a3` 一致；`s5_opened=true`；`s5_exited=false`；`supplier_connected=false`
+- Gate: S4 树与 `dae37a3` 一致；`s5_exited=false`；`s6_exited` 未靠重跑改写；导入未接通；`production_billing=false`
 - Stage checklist: DEV_INSTRUCTIONS §10；`02-delivery.yaml` 只镜像 status
 - Hard rule: 每个里程碑完成后须端到端测试；Cloud ≠ 开发机
 - Root pack: `AGENTS.md` · `handoff.md` · `anchor.md` · `checkpoint.md`
@@ -81,7 +81,9 @@
 | 6-s2-loop | 有序五层、字节下限、预设 EXIF | `/tmp/s2-pg-e2e.log` | devhost_passed | S3 |
 | 7-s3-loop | 真实 Gemini、自动重做、主动重处理、技术重试 | `/tmp/s3-pg-e2e.log` + `/tmp/s3-pg-e2e-controls.log` | devhost_passed | S4 |
 | 8-s4-loop | 1–10 张按张冻结、部分成功、勾选下载 | `/tmp/s4-pg-e2e.log` | devhost_passed | S5 已授权，退出未齐 |
-| 9-s5-loop | 生图只入库、未配置导入、image_processing Key | `/tmp/s5-pg-e2e.log` | pg_s5_added_proofs | 未标 S5 完成；supplier_connected=false |
+| 9-s5-loop | 生图只入库、未配置导入、image_processing Key | `/tmp/s5-pg-e2e.log` | pr_23_open | 未标 S5 完成；未合并 |
+| 10-s6-list | 运营完备 | `/tmp/s6-pg-e2e.log` | admin_closed_not_rerun | 不重跑，不开 S7 |
+| 11-supplier-live | 生图、提示词优化、预审真实请求；导入未配置 | `/tmp/supplier-live-e2e.log` | recorded_not_production | 未提交，不开 S7 |
 
 ## Risks and Watchpoints
 - Risk: 把文档齐全或 CI 绿当成后端已交付。

@@ -29,7 +29,7 @@
 | 底座 | `aojuai-main/`（上游固定版本见 `aojuai-main/UPSTREAM_PIN.txt`） |
 | S0 业务包 | `aojuai-main/backend/app/capabilities/realphotos/` |
 | 原型 | `prototype/index.html`；改 `prototype.js` 后跑 `node prototype/sync-inline.js` |
-| 分支约定 | 见 `DEV_INSTRUCTIONS.md` / `AGENTS.md` §7；当前工作区在 `cursor/s4-batch-credits-9973`。后缀保持 `-9973` |
+| 分支约定 | 见 `DEV_INSTRUCTIONS.md` / `AGENTS.md` §7；当前工作区在 `cursor/s6-ops-9973`。后缀保持 `-9973` |
 | 密钥 | 仓库忽略 `生产物料/`；需要时只读本机物料，不入库 |
 
 当前实现状态摘要见 `checkpoint.md`。
@@ -50,7 +50,8 @@
 ## 5. 下一步（摘要；以 progress 为准）
 
 - **当前**：S4 已在 `origin/main` 的 `dae37a3`，与分支提交 `d8345ca` 文件树一致。不是生产收费就绪。S3 真实小样仍只认任务 29。
-- **S5 已授权，未标完成**：工作区在 `cursor/s5-growth-9973`。URL/JSON 导入单次上限为 100。证据在 `/tmp/s5-pg-e2e.log`，含 `S5_PG_E2E_PASS`、`i2i_temp_not_stored=true`、`prompt_fail_no_charge=true`、`json_100=SERVICE_NOT_CONFIGURED`、`json_file_101=INPUT_INVALID`、`business_key_issued_via_http=true`、`query_status=DELIVERED`、`detection_mode=pass`、`supplier_connected=false`。不是生产收费已开放。
+- **S5 已推送，未标完成**：PR https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/23 。未合并。不是生产收费已开放。
+- **S6 已授权并实现，未提交**：分支 `cursor/s6-ops-9973`。证据 `/tmp/s6-pg-e2e.log`。`supplier_connected=false`，`production_billing=false`。不在 PR #23。不得开 S7。
 - 技术失败和字节下限失败保持冻结，等到技术客服阶段再处理。合同默认识别名仍是 `gemini-2.5-pro`；本机密钥调用该型号返回 404，供应商提示 `gemini-3.1-pro-preview`，该型号只写在本机 `.env`。
 - **协作**：见 `AGENTS.md` §7。**S7** 须管理员确认。
 

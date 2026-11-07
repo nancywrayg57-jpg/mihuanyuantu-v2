@@ -172,4 +172,9 @@ export const enUS: Record<string, string> = {
   'menu.入队': 'Enqueue',
   'menu.订单客服': 'Order Support',
   'menu.管理': 'Admin',
+  'menu.技术客服': 'Tech support',
+  'menu.用户管理': 'User admin',
+  'menu.系统日志': 'System log',
+  'menu.设备预设': 'Device presets',
+  'menu.模型合同': 'Model contracts',
 }

@@ -1,0 +1,830 @@
+"""S6 ops: content review without a supplier call, freeze desk, users, presets, metrics.
+
+`provider=fixture` is an in-process stand-in. It is not a connected supplier.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import io
+from datetime import UTC, datetime
+from typing import Any
+
+from PIL import Image
+from sqlalchemy import delete, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.capabilities.realphotos.models import (
+    RealphotosAccountLog,
+    RealphotosAsset,
+    RealphotosAuthGuard,
+    RealphotosContentReview,
+    RealphotosCreditAccount,
+    RealphotosCreditReservation,
+    RealphotosDetectionResult,
+    RealphotosDevicePreset,
+    RealphotosExecutionJob,
+    RealphotosImageLock,
+    RealphotosImageTask,
+    RealphotosMerchantProfile,
+    RealphotosPresetVersion,
+    RealphotosReviewStreak,
+    RealphotosSupportTicket,
+)
+from app.capabilities.realphotos.permissions import ROLE_ADMIN, ROLE_ORDER_SUPPORT, ROLE_TECH_SUPPORT
+from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
+from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
+from app.capabilities.realphotos.services.s1_upload import inspect_upload
+from app.core.exceptions import BusinessError, ForbiddenError
+from app.core.security import hash_password
+from app.domain.roles.models import Role
+from app.domain.users.models import User, UserRole, UserStatus
+
+FIXTURE_PROVIDER = "fixture"
+UNCONFIGURED_PROVIDER = "unconfigured"
+USER_PAGE_SIZE = 10
+LOG_PAGE_SIZE = 20
+GPS_MODES = {"none", "fixed", "random_by_scene"}
+PROTECTED_USERNAME = "rp_admin"
+
+
+def pixel_identity(data: bytes) -> str:
+    """Decoded RGB bytes. EXIF-only edits do not become a new image."""
+    inspect_upload(data)
+    with Image.open(io.BytesIO(data)) as image:
+        raw = image.convert("RGB").tobytes()
+    return hashlib.sha256(raw).hexdigest()
+
+
+class RealphotosOpsService:
+    def __init__(self, db: AsyncSession) -> None:
+        self.db = db
+
+    async def review_content(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        data: bytes,
+        subject: str,
+        provider: str = UNCONFIGURED_PROVIDER,
+        verdict: str = "reject",
+    ) -> dict[str, Any]:
+        kind = str(subject or "").strip()
+        if kind not in {"processing", "reference"}:
+            raise BusinessError(message="预审对象无效", code="INPUT_INVALID")
+        identity = pixel_identity(data)
+        chosen = str(provider or UNCONFIGURED_PROVIDER).strip() or UNCONFIGURED_PROVIDER
+        if chosen not in {FIXTURE_PROVIDER, "dashscope"}:
+            raise BusinessError(message="缺少供应商合同与接口证据", code="SERVICE_NOT_CONFIGURED")
+        label = str(verdict or "").strip()
+        if label not in {"pass", "reject", "uncertain"}:
+            raise BusinessError(message="预审结论无效", code="INPUT_INVALID")
+        passed = label == "pass"
+        row = RealphotosContentReview(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(owner_account_id),
+            subject=kind,
+            image_identity=identity,
+            verdict=label,
+            passed=passed,
+            provider=chosen,
+            counts_for_streak=kind == "processing" and not passed,
+        )
+        self.db.add(row)
+        await self.db.flush()
+        locked = False
+        frozen = False
+        ticket_id = None
+        if kind == "reference":
+            if not passed:
+                locked = await self._lock_on_second(tenant_id, owner_account_id, identity, kind)
+            return self._review_payload(row, locked=locked, frozen=False, ticket_id=None)
+        if passed:
+            await self._reset_streak(tenant_id, owner_account_id)
+            return self._review_payload(row, locked=False, frozen=False, ticket_id=None)
+        locked = await self._lock_on_second(tenant_id, owner_account_id, identity, kind)
+        frozen, ticket_id = await self._note_distinct_failure(tenant_id, owner_account_id, identity)
+        return self._review_payload(row, locked=locked, frozen=frozen, ticket_id=ticket_id)
+
+    async def assert_can_create_task(self, *, tenant_id: int, owner_account_id: int) -> None:
+        profile = await self._profile(tenant_id, owner_account_id)
+        if profile is not None and bool(profile.pre_review_frozen):
+            raise BusinessError(message="账号已因预审冻结，不能新建任务", code="ACCOUNT_FROZEN")
+
+    async def release_held_credit(
+        self,
+        *,
+        actor_role_codes: set[str],
+        operator_user_id: int,
+        tenant_id: int,
+        task_id: int,
+        reason: str,
+    ) -> dict[str, Any]:
+        self._require_tech_or_admin(actor_role_codes)
+        note = str(reason or "").strip()
+        if not note:
+            raise BusinessError(message="释放必须填写原因", code="INPUT_INVALID")
+        task = await self.db.get(RealphotosImageTask, int(task_id))
+        if task is None or task.deleted_at is not None or int(task.tenant_id) != int(tenant_id):
+            raise BusinessError(message="任务不存在", code="NOT_FOUND")
+        if task.credit_disposition != "held_until_tech_support":
+            raise BusinessError(message="这笔不是待技术客服释放的冻结", code="INPUT_INVALID")
+        reservation = (
+            await self.db.execute(
+                select(RealphotosCreditReservation).where(
+                    RealphotosCreditReservation.task_id == int(task.id),
+                    RealphotosCreditReservation.tenant_id == int(tenant_id),
+                    RealphotosCreditReservation.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if reservation is None or reservation.state != "held":
+            raise BusinessError(message="没有保持中的预留", code="INPUT_INVALID")
+        await RealphotosCreditService(self.db).release_reserved(
+            tenant_id=int(tenant_id),
+            amount=int(reservation.amount),
+            operator_user_id=int(operator_user_id),
+            event_key=f"tech-release:{int(task.id)}",
+            reference={"taskId": int(task.id), "source": "tech_audit"},
+        )
+        reservation.state = "released"
+        task.credit_disposition = "released_tech_audit"
+        await self.db.flush()
+        return {"taskId": int(task.id), "disposition": task.credit_disposition}
+
+    async def unfreeze_account(
+        self,
+        *,
+        actor_role_codes: set[str],
+        tenant_id: int,
+        user_id: int,
+        reason: str,
+    ) -> dict[str, Any]:
+        self._require_tech_or_admin(actor_role_codes)
+        if not str(reason or "").strip():
+            raise BusinessError(message="解冻必须填写原因", code="INPUT_INVALID")
+        profile = await self._profile(tenant_id, user_id)
+        if profile is None:
+            raise BusinessError(message="账号档案不存在", code="NOT_FOUND")
+        profile.pre_review_frozen = False
+        await self.db.flush()
+        return {"userId": int(user_id), "preReviewFrozen": False}
+
+    async def list_tickets(self, *, actor_role_codes: set[str]) -> dict[str, Any]:
+        self._require_tech_or_admin(actor_role_codes)
+        rows = (
+            await self.db.execute(
+                select(RealphotosSupportTicket)
+                .where(RealphotosSupportTicket.deleted_at.is_(None))
+                .order_by(RealphotosSupportTicket.id.desc())
+            )
+        ).scalars().all()
+        return {
+            "items": [
+                {
+                    "id": int(row.id),
+                    "tenantId": int(row.tenant_id),
+                    "ownerAccountId": int(row.owner_account_id),
+                    "ticketType": row.ticket_type,
+                    "status": row.status,
+                    "reason": row.reason,
+                }
+                for row in rows
+            ]
+        }
+
+    async def enabled_preset(self, code: str) -> dict | None:
+        row = await self._preset_row(code)
+        if row is not None:
+            if not row.enabled:
+                return None
+            return self._preset_dict(row)
+        for item in S1_ENABLED_PRESETS:
+            if item["code"] == code:
+                return dict(item)
+        return None
+
+    async def list_admin_presets(self, *, actor_role_codes: set[str]) -> list[dict]:
+        if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
+            raise ForbiddenError(message="只有平台管理员可以浏览预设台账")
+        rows = {
+            row.code: row
+            for row in (await self.db.execute(select(RealphotosDevicePreset))).scalars().all()
+            if row.deleted_at is None
+        }
+        items: list[dict] = []
+        seen: set[str] = set()
+        for item in S1_ENABLED_PRESETS:
+            row = rows.get(item["code"])
+            payload = self._preset_dict(row) if row is not None else dict(item)
+            payload["enabled"] = True if row is None else bool(row.enabled)
+            items.append(payload)
+            seen.add(item["code"])
+        for code, row in rows.items():
+            if code not in seen:
+                items.append(self._preset_dict(row))
+        return items
+
+    async def list_enabled_presets(self) -> list[dict]:
+        disabled = {
+            row.code
+            for row in (await self.db.execute(select(RealphotosDevicePreset))).scalars().all()
+            if row.deleted_at is None and not row.enabled
+        }
+        items = [dict(item) for item in S1_ENABLED_PRESETS if item["code"] not in disabled]
+        extra = (
+            await self.db.execute(
+                select(RealphotosDevicePreset).where(
+                    RealphotosDevicePreset.deleted_at.is_(None),
+                    RealphotosDevicePreset.enabled.is_(True),
+                    RealphotosDevicePreset.source == "admin",
+                )
+            )
+        ).scalars().all()
+        seen = {item["code"] for item in items}
+        for row in extra:
+            if row.code not in seen:
+                items.append(self._preset_dict(row))
+        return items
+
+    async def save_preset(
+        self,
+        *,
+        actor_role_codes: set[str],
+        code: str,
+        device_type: str,
+        brand: str,
+        model_name: str,
+        gps_mode: str = "none",
+        enabled: bool = True,
+        maker_note: str | None = None,
+        author: str | None = None,
+        ip_geo: str | None = None,
+    ) -> dict[str, Any]:
+        if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
+            raise ForbiddenError(message="只有平台管理员可以维护设备预设")
+        if maker_note or author or ip_geo:
+            raise BusinessError(message="第一版不接收 MakerNote、作者或 IP-GEO", code="INPUT_INVALID")
+        mode = str(gps_mode or "none").strip()
+        if mode not in GPS_MODES:
+            raise BusinessError(message="GPS 模式无效", code="INPUT_INVALID")
+        label = str(code or "").strip()
+        if not label or not str(brand or "").strip() or not str(model_name or "").strip():
+            raise BusinessError(message="预设编号、品牌和型号必填", code="INPUT_INVALID")
+        row = await self._preset_row(label)
+        if row is None:
+            row = RealphotosDevicePreset(
+                tenant_id=0,
+                code=label,
+                device_type=str(device_type or "phone"),
+                brand=str(brand).strip(),
+                model_name=str(model_name).strip(),
+                gps_mode=mode,
+                enabled=bool(enabled),
+                version_no=1,
+                source="admin" if label not in {item["code"] for item in S1_ENABLED_PRESETS} else "catalog",
+            )
+            self.db.add(row)
+        else:
+            row.device_type = str(device_type or row.device_type)
+            row.brand = str(brand).strip()
+            row.model_name = str(model_name).strip()
+            row.gps_mode = mode
+            row.enabled = bool(enabled)
+            row.version_no = int(row.version_no) + 1
+        await self.db.flush()
+        self.db.add(
+            RealphotosPresetVersion(
+                tenant_id=int(row.tenant_id or 0),
+                preset_code=row.code,
+                version_no=int(row.version_no),
+                snapshot=self._preset_dict(row),
+            )
+        )
+        await self.db.flush()
+        return self._preset_dict(row)
+
+    async def set_preset_enabled(
+        self, *, actor_role_codes: set[str], code: str, enabled: bool
+    ) -> dict[str, Any]:
+        current = await self.enabled_preset(code) if enabled else None
+        catalog = next((dict(item) for item in S1_ENABLED_PRESETS if item["code"] == code), None)
+        base = current or catalog
+        if base is None and not enabled:
+            row = await self._preset_row(code)
+            if row is None:
+                raise BusinessError(message="预设不存在", code="NOT_FOUND")
+            base = self._preset_dict(row)
+        if base is None:
+            raise BusinessError(message="预设不存在", code="NOT_FOUND")
+        return await self.save_preset(
+            actor_role_codes=actor_role_codes,
+            code=code,
+            device_type=str(base.get("deviceType") or "phone"),
+            brand=str(base.get("brand") or ""),
+            model_name=str(base.get("model") or ""),
+            gps_mode=str(base.get("gpsMode") or "none"),
+            enabled=bool(enabled),
+        )
+
+    async def create_user(
+        self,
+        *,
+        actor_role_codes: set[str],
+        operator_user_id: int,
+        tenant_id: int,
+        username: str,
+        password: str,
+        role_code: str,
+    ) -> dict[str, Any]:
+        self._require_tech_or_admin(actor_role_codes)
+        name = str(username or "").strip()
+        if not name or not str(password or ""):
+            raise BusinessError(message="用户名和密码必填", code="INPUT_INVALID")
+        exists = (
+            await self.db.execute(select(User).where(User.username == name, User.deleted_at.is_(None)))
+        ).scalar_one_or_none()
+        if exists is not None:
+            raise BusinessError(message="用户名已存在", code="INPUT_INVALID")
+        role = await self._role(tenant_id, role_code)
+        user = User(
+            tenant_id=int(tenant_id),
+            username=name,
+            password_hash=hash_password(password),
+            nickname=name,
+            status=int(UserStatus.ENABLED),
+        )
+        self.db.add(user)
+        await self.db.flush()
+        self.db.add(UserRole(tenant_id=int(tenant_id), user_id=int(user.id), role_id=int(role.id)))
+        self.db.add(
+            RealphotosMerchantProfile(
+                tenant_id=int(tenant_id), user_id=int(user.id), display_name=name
+            )
+        )
+        await self._log(
+            operator_user_id=operator_user_id,
+            target=user,
+            action="create",
+            before={},
+            after={"username": name, "status": "enabled", "role": role_code},
+            reason="",
+        )
+        return {"id": int(user.id), "username": name}
+
+    async def adjust_credits(
+        self,
+        *,
+        actor_role_codes: set[str],
+        operator_user_id: int,
+        tenant_id: int,
+        user_id: int,
+        delta: object,
+        reason: str,
+        event_key: str,
+    ) -> dict[str, Any]:
+        self._require_tech_or_admin(actor_role_codes)
+        if isinstance(delta, bool) or not isinstance(delta, int):
+            raise BusinessError(message="积分必须是整数", code="INPUT_INVALID")
+        target = await self._managed_user(actor_role_codes, operator_user_id, user_id, allow_self=True)
+        before = int((await RealphotosCreditService(self.db).get_wallet(tenant_id=tenant_id))["availableInteger"])
+        await RealphotosCreditService(self.db).admin_adjust(
+            tenant_id=int(tenant_id),
+            delta_available=int(delta),
+            operator_user_id=int(operator_user_id),
+            reason=reason,
+            event_key=event_key,
+            target_user_id=int(user_id),
+        )
+        after = int((await RealphotosCreditService(self.db).get_wallet(tenant_id=tenant_id))["availableInteger"])
+        await self._log(
+            operator_user_id=operator_user_id,
+            target=target,
+            action="credit",
+            before={"availableInteger": before},
+            after={"availableInteger": after, "delta": int(delta)},
+            reason=reason,
+        )
+        return {"availableInteger": after}
+
+    async def set_roles(
+        self,
+        *,
+        actor_role_codes: set[str],
+        operator_user_id: int,
+        tenant_id: int,
+        user_id: int,
+        role_codes: list[str],
+    ) -> dict[str, Any]:
+        self._require_tech_or_admin(actor_role_codes)
+        target = await self._managed_user(actor_role_codes, operator_user_id, user_id, allow_self=False)
+        before = await self._role_codes(int(target.id), int(target.tenant_id))
+        await self.db.execute(
+            delete(UserRole).where(
+                UserRole.user_id == int(target.id),
+                UserRole.tenant_id == int(tenant_id),
+            )
+        )
+        for code in role_codes:
+            role = await self._role(tenant_id, code)
+            self.db.add(UserRole(tenant_id=int(tenant_id), user_id=int(target.id), role_id=int(role.id)))
+        await self.db.flush()
+        after = await self._role_codes(int(target.id), int(tenant_id))
+        await self._log(
+            operator_user_id=operator_user_id,
+            target=target,
+            action="permission",
+            before={"roles": before},
+            after={"roles": after},
+            reason="",
+        )
+        return {"roles": after}
+
+    async def set_status(
+        self,
+        *,
+        actor_role_codes: set[str],
+        operator_user_id: int,
+        user_id: int,
+        enabled: bool,
+    ) -> dict[str, Any]:
+        self._require_tech_or_admin(actor_role_codes)
+        target = await self._managed_user(actor_role_codes, operator_user_id, user_id, allow_self=False)
+        before = int(target.status)
+        target.status = int(UserStatus.ENABLED if enabled else UserStatus.DISABLED)
+        await self.db.flush()
+        await self._log(
+            operator_user_id=operator_user_id,
+            target=target,
+            action="status",
+            before={"status": before},
+            after={"status": int(target.status)},
+            reason="",
+        )
+        return {"status": int(target.status)}
+
+    async def reset_password(
+        self,
+        *,
+        actor_role_codes: set[str],
+        operator_user_id: int,
+        user_id: int,
+        password: str,
+        confirm: str,
+    ) -> dict[str, Any]:
+        self._require_tech_or_admin(actor_role_codes)
+        if str(password or "") == "" or str(password) != str(confirm or ""):
+            raise BusinessError(message="两次密码不一致", code="INPUT_INVALID")
+        target = await self._managed_user(actor_role_codes, operator_user_id, user_id, allow_self=True)
+        target.password_hash = hash_password(password)
+        await self.db.flush()
+        await self._log(
+            operator_user_id=operator_user_id,
+            target=target,
+            action="reset_password",
+            before={},
+            after={"passwordStored": "hash_only"},
+            reason="",
+        )
+        return {"reset": True}
+
+    async def delete_user(
+        self,
+        *,
+        actor_role_codes: set[str],
+        operator_user_id: int,
+        user_id: int,
+        confirm_username: str,
+    ) -> dict[str, Any]:
+        self._require_tech_or_admin(actor_role_codes)
+        target = await self._managed_user(actor_role_codes, operator_user_id, user_id, allow_self=False)
+        if str(confirm_username or "").strip() != target.username:
+            raise BusinessError(message="须输入登录名确认删除", code="INPUT_INVALID")
+        if target.username == PROTECTED_USERNAME:
+            raise ForbiddenError(message="不能删除受保护的平台管理员")
+        target.deleted_at = datetime.now(UTC)
+        await self.db.flush()
+        await self._log(
+            operator_user_id=operator_user_id,
+            target=target,
+            action="delete",
+            before={"username": target.username},
+            after={"deleted": True},
+            reason="",
+        )
+        return {"deleted": True}
+
+    async def list_users(self, *, actor_role_codes: set[str], page: int = 1) -> dict[str, Any]:
+        self._require_tech_or_admin(actor_role_codes)
+        size = USER_PAGE_SIZE
+        index = max(int(page), 1)
+        rows = (
+            await self.db.execute(
+                select(User).where(User.deleted_at.is_(None)).order_by(User.id.asc())
+            )
+        ).scalars().all()
+        start = (index - 1) * size
+        page_rows = rows[start : start + size]
+        return {
+            "pageSize": size,
+            "items": [{"id": int(row.id), "username": row.username, "status": int(row.status)} for row in page_rows],
+        }
+
+    async def list_logs(self, *, actor_role_codes: set[str], page: int = 1) -> dict[str, Any]:
+        self._require_tech_or_admin(actor_role_codes)
+        size = LOG_PAGE_SIZE
+        index = max(int(page), 1)
+        rows = (
+            await self.db.execute(
+                select(RealphotosAccountLog)
+                .where(RealphotosAccountLog.deleted_at.is_(None))
+                .order_by(RealphotosAccountLog.id.desc())
+            )
+        ).scalars().all()
+        start = (index - 1) * size
+        return {
+            "pageSize": size,
+            "items": [
+                {
+                    "id": int(row.id),
+                    "operatorUserId": int(row.operator_user_id),
+                    "targetUserId": int(row.target_user_id),
+                    "tenantId": int(row.tenant_id),
+                    "action": row.action,
+                    "before": dict(row.before_state or {}),
+                    "after": dict(row.after_state or {}),
+                    "createdAt": row.created_at.isoformat() if row.created_at else None,
+                    "reason": row.reason,
+                    "result": row.result,
+                }
+                for row in rows[start : start + size]
+            ],
+        }
+
+    async def metrics(self, *, actor_role_codes: set[str]) -> dict[str, Any]:
+        if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
+            raise ForbiddenError(message="运营指标只对平台管理员开放")
+        available = await self.db.scalar(select(func.coalesce(func.sum(RealphotosAsset.byte_size), 0)))
+        queued = await self.db.scalar(
+            select(func.count())
+            .select_from(RealphotosExecutionJob)
+            .where(RealphotosExecutionJob.status.in_(("queued", "running")), RealphotosExecutionJob.deleted_at.is_(None))
+        )
+        tasks = int(
+            await self.db.scalar(
+                select(func.count()).select_from(RealphotosImageTask).where(RealphotosImageTask.deleted_at.is_(None))
+            )
+            or 0
+        )
+        failed = int(
+            await self.db.scalar(
+                select(func.count())
+                .select_from(RealphotosImageTask)
+                .where(RealphotosImageTask.deleted_at.is_(None), RealphotosImageTask.status == "FAILED")
+            )
+            or 0
+        )
+        detected = int(
+            await self.db.scalar(select(func.count()).select_from(RealphotosDetectionResult))
+            or 0
+        )
+        passed = int(
+            await self.db.scalar(
+                select(func.count())
+                .select_from(RealphotosDetectionResult)
+                .where(RealphotosDetectionResult.passed.is_(True))
+            )
+            or 0
+        )
+        balance = await self.db.scalar(select(func.coalesce(func.sum(RealphotosCreditAccount.available_integer), 0)))
+        reserved = await self.db.scalar(select(func.coalesce(func.sum(RealphotosCreditAccount.reserved_integer), 0)))
+        return {
+            "availableInteger": int(balance or 0),
+            "reservedInteger": int(reserved or 0),
+            "queueDepth": int(queued or 0),
+            "failureRate": None if tasks == 0 else failed / tasks,
+            "detectionPassRate": None if detected == 0 else passed / detected,
+            "cost": None,
+            "modelCalls": None,
+            "storageBytes": int(available or 0),
+            "merchantCards": False,
+        }
+
+    async def _lock_on_second(self, tenant_id: int, owner_id: int, identity: str, subject: str) -> bool:
+        prior = int(
+            await self.db.scalar(
+                select(func.count())
+                .select_from(RealphotosContentReview)
+                .where(
+                    RealphotosContentReview.tenant_id == int(tenant_id),
+                    RealphotosContentReview.owner_account_id == int(owner_id),
+                    RealphotosContentReview.image_identity == identity,
+                    RealphotosContentReview.subject == subject,
+                    RealphotosContentReview.passed.is_(False),
+                    RealphotosContentReview.deleted_at.is_(None),
+                )
+            )
+            or 0
+        )
+        if prior < 2:
+            return False
+        existing = (
+            await self.db.execute(
+                select(RealphotosImageLock).where(
+                    RealphotosImageLock.tenant_id == int(tenant_id),
+                    RealphotosImageLock.owner_account_id == int(owner_id),
+                    RealphotosImageLock.image_identity == identity,
+                    RealphotosImageLock.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if existing is None:
+            self.db.add(
+                RealphotosImageLock(
+                    tenant_id=int(tenant_id),
+                    owner_account_id=int(owner_id),
+                    image_identity=identity,
+                    reason="second_content_failure",
+                )
+            )
+            await self.db.flush()
+        return True
+
+    async def _note_distinct_failure(self, tenant_id: int, owner_id: int, identity: str) -> tuple[bool, int | None]:
+        streak = (
+            await self.db.execute(
+                select(RealphotosReviewStreak).where(
+                    RealphotosReviewStreak.tenant_id == int(tenant_id),
+                    RealphotosReviewStreak.owner_account_id == int(owner_id),
+                    RealphotosReviewStreak.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if streak is None:
+            streak = RealphotosReviewStreak(
+                tenant_id=int(tenant_id), owner_account_id=int(owner_id), identities=[]
+            )
+            self.db.add(streak)
+            await self.db.flush()
+        identities = [str(item) for item in list(streak.identities or [])]
+        added = identity not in identities
+        if added:
+            identities.append(identity)
+        streak.identities = identities
+        await self.db.flush()
+        if len(identities) < 3 or not added or len(identities) != 3:
+            return False, None
+        profile = await self._profile(tenant_id, owner_id)
+        if profile is None:
+            profile = RealphotosMerchantProfile(
+                tenant_id=int(tenant_id), user_id=int(owner_id), display_name="", pre_review_frozen=True
+            )
+            self.db.add(profile)
+        else:
+            profile.pre_review_frozen = True
+        ticket = RealphotosSupportTicket(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(owner_id),
+            ticket_type="account_freeze",
+            status="open",
+            reason="三张不同图连续预审未通过",
+        )
+        self.db.add(ticket)
+        await self.db.flush()
+        return True, int(ticket.id)
+
+    async def _reset_streak(self, tenant_id: int, owner_id: int) -> None:
+        streak = (
+            await self.db.execute(
+                select(RealphotosReviewStreak).where(
+                    RealphotosReviewStreak.tenant_id == int(tenant_id),
+                    RealphotosReviewStreak.owner_account_id == int(owner_id),
+                    RealphotosReviewStreak.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if streak is not None:
+            streak.identities = []
+            await self.db.flush()
+
+    async def _profile(self, tenant_id: int, user_id: int) -> RealphotosMerchantProfile | None:
+        return (
+            await self.db.execute(
+                select(RealphotosMerchantProfile).where(
+                    RealphotosMerchantProfile.tenant_id == int(tenant_id),
+                    RealphotosMerchantProfile.user_id == int(user_id),
+                    RealphotosMerchantProfile.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+
+    async def _preset_row(self, code: str) -> RealphotosDevicePreset | None:
+        return (
+            await self.db.execute(
+                select(RealphotosDevicePreset).where(
+                    RealphotosDevicePreset.code == code,
+                    RealphotosDevicePreset.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+
+    async def _role(self, tenant_id: int, code: str) -> Role:
+        role = (
+            await self.db.execute(
+                select(Role).where(
+                    Role.tenant_id == int(tenant_id),
+                    Role.code == str(code),
+                    Role.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if role is None:
+            raise BusinessError(message="角色不存在", code="INPUT_INVALID")
+        return role
+
+    async def _role_codes(self, user_id: int, tenant_id: int) -> list[str]:
+        rows = (
+            await self.db.execute(
+                select(Role.code)
+                .join(UserRole, UserRole.role_id == Role.id)
+                .where(UserRole.user_id == int(user_id), UserRole.tenant_id == int(tenant_id))
+            )
+        ).all()
+        return sorted(str(code) for (code,) in rows)
+
+    async def _managed_user(
+        self, actor_roles: set[str], operator_user_id: int, user_id: int, *, allow_self: bool
+    ) -> User:
+        user = await self.db.get(User, int(user_id))
+        if user is None or user.deleted_at is not None:
+            raise BusinessError(message="用户不存在", code="NOT_FOUND")
+        if user.username == PROTECTED_USERNAME and ROLE_ADMIN not in actor_roles and "admin" not in actor_roles:
+            raise ForbiddenError(message="不能改受保护的平台管理员")
+        if int(user.id) == int(operator_user_id) and not allow_self:
+            raise ForbiddenError(message="不能对自己做这项操作")
+        return user
+
+    async def _log(
+        self,
+        *,
+        operator_user_id: int,
+        target: User,
+        action: str,
+        before: dict,
+        after: dict,
+        reason: str,
+    ) -> None:
+        self.db.add(
+            RealphotosAccountLog(
+                tenant_id=int(target.tenant_id),
+                operator_user_id=int(operator_user_id),
+                target_user_id=int(target.id),
+                action=action,
+                before_state=before,
+                after_state=after,
+                reason=str(reason or ""),
+                result="success",
+            )
+        )
+        await self.db.flush()
+
+    def _require_tech_or_admin(self, roles: set[str]) -> None:
+        if ROLE_TECH_SUPPORT in roles or ROLE_ADMIN in roles or "admin" in roles:
+            return
+        if ROLE_ORDER_SUPPORT in roles:
+            raise ForbiddenError(message="订单客服不能做这项操作")
+        raise ForbiddenError(message="没有这项权限")
+
+    @staticmethod
+    def _review_payload(row: RealphotosContentReview, *, locked: bool, frozen: bool, ticket_id: int | None) -> dict:
+        return {
+            "verdict": row.verdict,
+            "passed": bool(row.passed),
+            "provider": row.provider,
+            "supplierConnected": False,
+            "locked": locked,
+            "frozen": frozen,
+            "ticketId": ticket_id,
+        }
+
+    @staticmethod
+    def _preset_dict(row: RealphotosDevicePreset) -> dict:
+        return {
+            "code": row.code,
+            "deviceType": row.device_type,
+            "brand": row.brand,
+            "model": row.model_name,
+            "iso": row.iso,
+            "shutter": row.shutter,
+            "aperture": row.aperture,
+            "focalLength": row.focal_length,
+            "gpsMode": row.gps_mode,
+            "enabled": bool(row.enabled),
+        }
+
+
+def login_lock_untouched(guard: RealphotosAuthGuard | None, previous: object) -> bool:
+    if guard is None:
+        return previous is None
+    return guard.locked_until == previous

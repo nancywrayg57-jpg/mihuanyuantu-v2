@@ -43,6 +43,7 @@ S0_ACCOUNTS: tuple[SeedAccount, ...] = (
         "rp_order_support", ROLE_ORDER_SUPPORT, "rp-platform", "平台运营租户", "订单客服A"
     ),
     SeedAccount("rp_admin", ROLE_ADMIN, "rp-platform", "平台运营租户", "平台管理员"),
+    SeedAccount("rp_tech_support", ROLE_TECH_SUPPORT, "rp-platform", "平台运营租户", "技术客服"),
     SeedAccount("rp_merchant_b1", ROLE_MERCHANT, "rp-tenant-2", "蜜獾演示租户二", "第二租户商家"),
 )
 
