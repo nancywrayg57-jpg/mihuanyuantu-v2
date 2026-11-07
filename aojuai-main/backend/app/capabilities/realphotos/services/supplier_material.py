@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-import os
 import re
 from pathlib import Path
+
+from app.core.config import settings
 
 _SECTIONS = {
     "generation": "ChatGPT IMAGE 2",
@@ -14,7 +15,7 @@ _SECTIONS = {
 
 
 def supplier_live_enabled() -> bool:
-    return os.environ.get("REALPHOTOS_SUPPLIER_LIVE", "").strip().lower() in {"1", "true", "yes", "on"}
+    return str(settings.REALPHOTOS_SUPPLIER_LIVE or "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def material_paths() -> list[Path]:
