@@ -190,12 +190,20 @@ async def unfreeze(
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     payload = await RealphotosOpsService(db).unfreeze_account(
         actor_role_codes=roles,
+        operator_user_id=int(current_user.id),
         tenant_id=int(body.tenant_id),
         user_id=int(body.user_id),
         reason=body.reason,
     )
     await db.commit()
     return SuccessResponse(data=payload)
+
+
+class TicketResolveBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    outcome: str
+    note: str
 
 
 @router.get("/support-tickets")
@@ -207,6 +215,39 @@ async def list_tickets(
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     payload = await RealphotosOpsService(db).list_tickets(actor_role_codes=roles)
+    return SuccessResponse(data=payload)
+
+
+@router.post("/support-tickets/{ticket_id}/resolve")
+async def resolve_ticket(
+    ticket_id: int,
+    body: TicketResolveBody,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosOpsService(db).resolve_ticket(
+        actor_role_codes=roles,
+        operator_user_id=int(current_user.id),
+        ticket_id=int(ticket_id),
+        outcome=body.outcome,
+        note=body.note,
+    )
+    await db.commit()
+    return SuccessResponse(data=payload)
+
+
+@router.get("/held-credits")
+async def list_held_credits(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosOpsService(db).list_held_credit_tasks(actor_role_codes=roles)
     return SuccessResponse(data=payload)
 
 

@@ -48,19 +48,22 @@ export default function RealphotosLibraryPage() {
     let cancelled = false
     const created: string[] = []
     async function loadThumbs() {
-      const next: Record<string, string> = {}
+      // Progressive updates: waiting for all 60 (incl. multi-MB generation PNGs)
+      // before setState left the column stuck on 「图」 even when the gateway was healthy (F8).
+      setThumbs({})
       for (const item of items.slice(0, 60)) {
+        if (cancelled) return
         if (!item.objectKey) continue
         try {
           const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${item.objectKey}`)
+          if (cancelled) return
           const url = URL.createObjectURL(blob)
           created.push(url)
-          next[item.id] = url
+          setThumbs((prev) => ({ ...prev, [item.id]: url }))
         } catch {
           // 网关鉴权失败时保留占位
         }
       }
-      if (!cancelled) setThumbs(next)
     }
     void loadThumbs()
     return () => {

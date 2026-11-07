@@ -20,7 +20,7 @@ from app.capabilities.realphotos.services.credit_service import RealphotosCredit
 from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
 from app.capabilities.realphotos.services.s1_recharge import RealphotosRechargeService
 from app.capabilities.realphotos.services.s5_growth import RealphotosGrowthService
-from app.core.exceptions import BusinessError, UnauthorizedError
+from app.core.exceptions import BusinessError, NotFoundError, UnauthorizedError
 from app.domain.auth.api_key_service import ApiKeyService
 
 
@@ -189,6 +189,61 @@ async def test_image_to_image_temp_reference_is_not_stored(db):
     )
     after = int(await db.scalar(select(func.count()).select_from(RealphotosAsset)) or 0)
     assert after == before + 1
+
+
+@pytest.mark.asyncio
+async def test_gateway_reads_generation_asset_bytes(db):
+    """BROWSER-E2E-FIX F8: generation/* must resolve via RealphotosAsset, not path allowlist alone."""
+    ctx = await _funded(db)
+    task = await ctx["growth"].submit_generation(
+        tenant_id=ctx["tenant"],
+        owner_account_id=ctx["user"],
+        mode="text_to_image",
+        positive_prompt="网关可读",
+        width=256,
+        height=256,
+        quantity=1,
+        idempotency_key="gen-gateway-f8",
+        provider="fixture",
+    )
+    items = await ctx["growth"].list_generation_items(tenant_id=ctx["tenant"], task_id=int(task.id))
+    stored = [item for item in items if item.status == "stored" and item.asset_id]
+    assert len(stored) == 1
+    asset = await db.get(RealphotosAsset, int(stored[0].asset_id))
+    assert asset is not None
+    assert "/generation/" in asset.object_key
+    content_type, body = await ctx["loop"].read_object_for_gateway(
+        tenant_id=ctx["tenant"], object_key=asset.object_key
+    )
+    assert content_type.startswith("image/")
+    assert body.startswith(b"\xff\xd8\xff") or body.startswith(b"\x89PNG")
+    with pytest.raises(NotFoundError):
+        await ctx["loop"].read_object_for_gateway(
+            tenant_id=ctx["tenant"] + 999_001, object_key=asset.object_key
+        )
+    img2 = await ctx["growth"].submit_generation(
+        tenant_id=ctx["tenant"],
+        owner_account_id=ctx["user"],
+        mode="image_to_image",
+        positive_prompt="网关可读图生图",
+        width=256,
+        height=256,
+        quantity=1,
+        idempotency_key="gen-gateway-f8-i2i",
+        provider="fixture",
+        reference_bytes=_jpeg(),
+    )
+    i2i_items = await ctx["growth"].list_generation_items(
+        tenant_id=ctx["tenant"], task_id=int(img2.id)
+    )
+    i2i_stored = [item for item in i2i_items if item.status == "stored" and item.asset_id]
+    assert len(i2i_stored) == 1
+    i2i_asset = await db.get(RealphotosAsset, int(i2i_stored[0].asset_id))
+    assert i2i_asset is not None and "/generation/" in i2i_asset.object_key
+    _ct2, body2 = await ctx["loop"].read_object_for_gateway(
+        tenant_id=ctx["tenant"], object_key=i2i_asset.object_key
+    )
+    assert body2.startswith(b"\xff\xd8\xff") or body2.startswith(b"\x89PNG")
 
 
 @pytest.mark.asyncio

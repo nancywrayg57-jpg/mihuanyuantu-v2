@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 import { ApiError, apiFetch } from '@/lib/api'
+import { formatRate } from '@/lib/format-rate'
 
 type WorkspacePayload = {
   viewKind?: 'merchant' | 'admin' | 'order_support' | 'tech_support'
@@ -181,11 +182,11 @@ export default function RealphotosWorkspacePage() {
               </tr>
               <tr>
                 <th className="border px-2 py-1 text-left">失败率</th>
-                <td className="border px-2 py-1">{cell(data.opsMetrics.failureRate)}</td>
+                <td className="border px-2 py-1">{formatRate(data.opsMetrics.failureRate)}</td>
               </tr>
               <tr>
                 <th className="border px-2 py-1 text-left">检测通过率</th>
-                <td className="border px-2 py-1">{cell(data.opsMetrics.detectionPassRate)}</td>
+                <td className="border px-2 py-1">{formatRate(data.opsMetrics.detectionPassRate)}</td>
               </tr>
               <tr>
                 <th className="border px-2 py-1 text-left">成本</th>

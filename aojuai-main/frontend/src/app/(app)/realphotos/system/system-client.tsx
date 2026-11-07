@@ -18,6 +18,12 @@ type Contract = {
   capabilities?: Record<string, unknown>
 }
 
+/**
+ * F7 role matrix (ticket default + PRD PG-011 / §7):
+ * - merchant / admin: may write auto-redo for tenant
+ * - tech_support: entrance visible, content read-only
+ * - model API: admin only
+ */
 export function RealphotosSystemClient() {
   const searchParams = useSearchParams()
   const initialTab = searchParams.get('tab') === 'models' ? 'models' : 'redo'
@@ -33,6 +39,12 @@ export function RealphotosSystemClient() {
     () => roles.includes('rp_admin') || roles.includes('admin'),
     [roles],
   )
+  const isTechOnly = useMemo(() => {
+    const tech = roles.includes('rp_tech_support')
+    const merchant = roles.includes('rp_merchant') || roles.some((r) => r.startsWith('rp_merchant'))
+    return tech && !isAdmin && !merchant
+  }, [isAdmin, roles])
+  const canEditRedo = !isTechOnly
 
   useEffect(() => {
     void apiFetch<{ roleCodes: string[] }>('/api/v1/realphotos/me')
@@ -59,6 +71,10 @@ export function RealphotosSystemClient() {
   }, [tab, isAdmin])
 
   async function saveRedo() {
+    if (!canEditRedo) {
+      setMessage('技术客服只能查看自动重做设置，不能保存')
+      return
+    }
     try {
       await apiFetch('/api/v1/realphotos/redo-settings', {
         method: 'PUT',
@@ -96,8 +112,16 @@ export function RealphotosSystemClient() {
       {tab === 'redo' ? (
         <section className="space-y-3 text-sm">
           <p>默认关；阈值 70；追加 1。越界由后端拒绝。</p>
+          {isTechOnly ? (
+            <p className="text-muted-foreground">技术客服只读：可查看本租户快照，不可改写。</p>
+          ) : null}
           <label className="block">
-            <input type="checkbox" checked={redoEnabled} onChange={(event) => setRedoEnabled(event.target.checked)} />{' '}
+            <input
+              type="checkbox"
+              checked={redoEnabled}
+              disabled={!canEditRedo}
+              onChange={(event) => setRedoEnabled(event.target.checked)}
+            />{' '}
             启用自动重做
           </label>
           <label className="block">
@@ -108,6 +132,7 @@ export function RealphotosSystemClient() {
               min={0}
               max={100}
               value={redoThreshold}
+              disabled={!canEditRedo}
               onChange={(event) => setRedoThreshold(Number(event.target.value))}
             />
           </label>
@@ -119,10 +144,16 @@ export function RealphotosSystemClient() {
               min={1}
               max={5}
               value={redoRounds}
+              disabled={!canEditRedo}
               onChange={(event) => setRedoRounds(Number(event.target.value))}
             />
           </label>
-          <button className="border px-3 py-1" type="button" onClick={() => void saveRedo()}>
+          <button
+            className="border px-3 py-1 disabled:opacity-50"
+            type="button"
+            disabled={!canEditRedo}
+            onClick={() => void saveRedo()}
+          >
             保存
           </button>
         </section>
