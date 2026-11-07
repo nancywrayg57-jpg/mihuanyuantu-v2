@@ -125,10 +125,14 @@ def main():
     assert mcode in (200, 201) and mem.get("id"), (mcode, mem)
     print("PASS guest_text_comment")
 
-    # guest can voice comment (multipart)
-    with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as f:
-        f.write(b"\x1aE\xdf\xa3" + b"\x00" * 64)
-        path = f.name
+    # guest can voice comment (multipart valid wav)
+    import struct, wave
+    path = tempfile.mktemp(suffix=".wav")
+    with wave.open(path, "w") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(8000)
+        w.writeframes(b"\x00\x00" * 800)
     cmd = [
         "curl", "-sS", "-X", "POST", BASE + "/api/collections/memories/records",
         "-H", f"Authorization: {gtok}",
@@ -138,7 +142,7 @@ def main():
         "-F", "content_type=voice",
         "-F", f"text_content={MARK} 语音追思",
         "-F", "voice_duration=1",
-        "-F", f"voice_file=@{path};type=audio/webm;filename=guest.webm",
+        "-F", f"voice_file=@{path};type=audio/wav;filename=guest.wav",
     ]
     out = json.loads(subprocess.check_output(cmd, text=True))
     assert out.get("id"), out
