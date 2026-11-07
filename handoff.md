@@ -6,10 +6,7 @@
 
 **开工入口（编码工具）**：`docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md`  
 必读根目录职责文件：`AGENTS.md`、`handoff.md`（本文件）、`anchor.md`、`checkpoint.md`。  
-过程续作权威：`docs/mihuanyuantu-v2/progress.yaml` 的 `next_action` / 阶段状态（本文件与 `checkpoint.md` 只作同步摘要）。
-
-再按需打开现行 PRD、项目架构、生产物料清单、Gemini 方案、`prototype/`。  
-不要把离线 HTML 原型或文档齐全误当成后端已上线。
+过程续作权威：`docs/mihuanyuantu-v2/progress.yaml` 的 `next_action` / 阶段状态。
 
 ## 2. 权威顺序
 
@@ -26,9 +23,8 @@
 | 仓库根 | `AGENTS.md`、`handoff.md`、`anchor.md`、`checkpoint.md`、`aojuai-main/`、`docs/`、`prototype/`、`输入材料/`、`aidevops/` |
 | 本功能文档区 | `docs/mihuanyuantu-v2/` |
 | 编码指令 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
-| 底座 | `aojuai-main/`（上游固定版本见 `aojuai-main/UPSTREAM_PIN.txt`） |
+| 底座 | `aojuai-main/` |
 | 业务包 | `aojuai-main/backend/app/capabilities/realphotos/` |
-| 原型 | `prototype/index.html`；改 `prototype.js` 后跑 `node prototype/sync-inline.js` |
 | 分支约定 | 见 `AGENTS.md` §7；后缀保持 `-9973` |
 | 密钥 | 仓库忽略 `生产物料/`；需要时只读本机物料，不入库 |
 
@@ -38,34 +34,25 @@
 
 | 范围 | 打开 |
 | --- | --- |
-| 阶段 S0–S7、上线门槛、验证环境 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
+| 阶段 S0–S7 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
 | 约束条目 | `anchor.md` |
 | 就绪/未就绪事实表 | `checkpoint.md` |
 | 协作纪律 | `AGENTS.md` |
-| AidevOps 阶段 | `docs/mihuanyuantu-v2/` 下 `progress.yaml` 与阶段 yaml、`wiki.md` |
-| 界面约定 | `prototype/README.md` |
-| 旧算法/405 预设只读 | `输入材料/旧版可复用模块/` |
-| 开发/生产主机与目录登记 | `docs/蜜獾原图-v2-生产物料清单-v1.0.md` |
+| 旧版 55 键对照 | `docs/mihuanyuantu-v2/legacy-preset-parameter-map.md` |
+| 旧版目录 | `输入材料/旧版可复用模块/02_设备参数/` |
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **main 基线**：`origin/main`=`922ef06`（已含阻断级 #27、部分对齐 #28）。不是生产收费就绪。
-- **待合入 PR**：https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/29 （`cursor/product-gap-a-9973`，工单 `PRODUCT-GAP-A-2026-11-07`）。
-- **本轮证据**：`/tmp/product-gap-a-e2e.log` 含 `PRODUCT_GAP_A_E2E_PASS`；浏览器 `/tmp/product-gap-a-browser.txt` 含 `PRODUCT_GAP_A_BROWSER_PASS`；截图 `/tmp/product-gap-a-browser-shots/`；`production_billing=false`；`url_import_connected=false`。
-- **要点**：A2 种子仍 `SEED_UNSUPPORTED`；A3 预设 AI 提示词；A4 设备类型四枚举；A5 成本延后空态；A6 消息清理；A7 旧预设激活+MakerNote 回读；A8 订单/技术客服/商家真浏览器 DOM。
-- **冲突已登记**：MakerNote 管理员覆盖；生产物料同级路径缺失→同机浏览器；PR 创建账号可能为 Owner（同 #28），合入不得自评自合。
-- **不得开 S7**；不得接通 URL 真导入；不得用演示数字填成本。
-- **协作**：见 `AGENTS.md` §7（功能分支 `-9973`、仅 PR squash 合入 `main`、不得自评自合）。
+- **待合入 PR**：https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/30 （`cursor/preset-bulk-import-9973`，工单 `PRESET-BULK-IMPORT-2026-11-07`），依赖/叠入 PRODUCT-GAP-A #29。
+- **证据**：`/tmp/preset-bulk-import-e2e.log` 含 `PRESET_BULK_IMPORT_E2E_PASS`；`legacy_activated_count=405`；`placeholder_presets_removed=true`；`legacy_param_keys_complete=true`；`production_billing=false`。
+- **要点**：先清 Honeybadger/s1 占位；405 全量启用；快照含完整 `legacyParameters`；GPS 源模式保留、不伪造坐标。
+- **不得开 S7**；不得接通 URL 真导入；不得自评自合。
 
 ## 6. 风险提醒
 
-- 原型里的检测替身 ≠ Gemini 真验收；文档齐全 ≠ 后端已交付。
-- Cloud 服务端测 ≠ 开发机 PostgreSQL 验收。S2 规则替身检测不等于生产检测通过。
-- 租户共用积分是现行产品选择；账号隔离 ≠ 余额隔离。
-- 首版 LocalDisk；不要按「必须先买 OSS」开工。
-- 客户业务 API ≠ 上游模型 Key 自助 ≠ 外部平台代发；能力名 scope 外接口必须拒绝。
-- 菜单缓存：同进程 bump 已修；多 worker 无共享 Redis 仍需 Redis 或重启（见 progress `IA_C6_MENU_CACHE_STALE`）。
-- `docs/architecture_decisions/`、`docs/archive/`、待决策清单正文不作为开发指令依据路径；ND-017 现行口径以 PRD **2.10** 为准。
+- Cloud 服务端测 ≠ 开发机 PostgreSQL 验收。
+- 菜单缓存多 worker 无 Redis 仍需重启（IA_C6）。
+- 旧版 GPS override 禁止继承固定坐标：模式可保留，坐标不得发明。
 
 ## 7. 新会话粘贴提示词（复制即用）
 
@@ -74,8 +61,6 @@
 1) 仓库根 handoff.md、anchor.md、checkpoint.md、AGENTS.md
 2) docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md
 3) docs/mihuanyuantu-v2/progress.yaml（以 next_action / 冲突裁决为准）
-4) 需要时再读 aidevops/SKILL.md、现行 PRD 2.10、架构 1.7
-
 硬约束：中文回复、标识符英语；不提交真实密钥；不直推/不合并 main；不开 S7；不得自评自合。
-当前工作：读 checkpoint §0 与 progress.next_action；找到 cursor/product-gap-a-9973 的开放 PR 状态；区分「已合入 main / 仅在 PR / 仅有本地证据」。
+当前工作：读 checkpoint §0 与 progress.next_action；找到 cursor/preset-bulk-import-9973 与 #29 状态。
 ```

@@ -166,6 +166,42 @@ export default function RealphotosPresetsPage() {
     }
   }
 
+  async function clearPlaceholders() {
+    try {
+      const data = await apiFetch<{
+        placeholder_presets_removed?: boolean
+        softDeletedCodes?: string[]
+        disabledCodes?: string[]
+      }>('/api/v1/realphotos/device-preset-imports/clear-placeholders', { method: 'POST', body: '{}' })
+      setMessage(
+        `占位预设已清除 placeholder_presets_removed=${Boolean(data.placeholder_presets_removed)} ` +
+          `软删 ${data.softDeletedCodes?.length || 0} / 停用 ${data.disabledCodes?.length || 0}`,
+      )
+      await load()
+    } catch (error: unknown) {
+      setMessage(error instanceof ApiError ? error.message : '清除占位失败')
+    }
+  }
+
+  async function activateAllImports() {
+    try {
+      setMessage('正在全量导入 405 条，请稍候…')
+      const data = await apiFetch<{
+        total?: number
+        legacy_activated_count?: number
+        failedCount?: number
+        progress?: string
+      }>('/api/v1/realphotos/device-preset-imports/activate-all', { method: 'POST', body: '{}' })
+      setMessage(
+        `全量导入完成 total=${data.total} activated=${data.legacy_activated_count} ` +
+          `failed=${data.failedCount} progress=${data.progress}`,
+      )
+      await load()
+    } catch (error: unknown) {
+      setMessage(error instanceof ApiError ? error.message : '全量导入失败')
+    }
+  }
+
   async function loadVersions(target: string) {
     try {
       const data = await apiFetch<{ items: VersionRow[] }>(`/api/v1/realphotos/device-presets/${target}/versions`)
@@ -186,6 +222,14 @@ export default function RealphotosPresetsPage() {
       <section className="space-y-2">
         <h2 className="text-sm font-medium">导入记录 · 共 {importTotal} 条</h2>
         <p className="text-xs text-muted-foreground">{importNote}</p>
+        <div className="flex flex-wrap gap-2">
+          <button className="border px-2 py-1 text-sm" type="button" onClick={() => void clearPlaceholders()}>
+            清除占位假预设
+          </button>
+          <button className="border px-2 py-1 text-sm" type="button" onClick={() => void activateAllImports()}>
+            一键导入全部（405）
+          </button>
+        </div>
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr>

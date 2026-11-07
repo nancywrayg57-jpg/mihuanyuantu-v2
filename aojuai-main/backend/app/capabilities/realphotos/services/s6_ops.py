@@ -48,6 +48,8 @@ UNCONFIGURED_PROVIDER = "unconfigured"
 USER_PAGE_SIZE = 10
 LOG_PAGE_SIZE = 20
 GPS_MODES = {"none", "fixed", "random_by_scene"}
+# PRESET-BULK-IMPORT B1: stop injecting Honeybadger s1-* into merchant enabled list.
+INJECT_S1_CATALOG_INTO_ENABLED = False
 PROTECTED_USERNAME = "rp_admin"
 
 
@@ -323,10 +325,16 @@ class RealphotosOpsService:
                     payload["gpsConfig"] = dict(snap["gpsConfig"])
                 if "gpsWriteConnected" in snap:
                     payload["gpsWriteConnected"] = bool(snap["gpsWriteConnected"])
+                if isinstance(snap.get("legacyParameters"), dict):
+                    payload["legacyParameters"] = dict(snap["legacyParameters"])
+                if isinstance(snap.get("legacyGpsMeta"), dict):
+                    payload["legacyGpsMeta"] = dict(snap["legacyGpsMeta"])
             return payload
-        for item in S1_ENABLED_PRESETS:
-            if item["code"] == code:
-                return dict(item)
+        # B1: catalog placeholders are no longer auto-enabled for processing preview.
+        if INJECT_S1_CATALOG_INTO_ENABLED:
+            for item in S1_ENABLED_PRESETS:
+                if item["code"] == code:
+                    return dict(item)
         return None
 
     async def list_admin_presets(self, *, actor_role_codes: set[str]) -> list[dict]:
@@ -339,24 +347,29 @@ class RealphotosOpsService:
         }
         items: list[dict] = []
         seen: set[str] = set()
-        for item in S1_ENABLED_PRESETS:
-            row = rows.get(item["code"])
-            payload = self._preset_dict(row) if row is not None else dict(item)
-            payload["enabled"] = True if row is None else bool(row.enabled)
-            items.append(payload)
-            seen.add(item["code"])
+        # Do not invent enabled Honeybadger catalog rows; only show DB truth.
         for code, row in rows.items():
-            if code not in seen:
-                items.append(self._preset_dict(row))
+            items.append(self._preset_dict(row))
+            seen.add(code)
+        if INJECT_S1_CATALOG_INTO_ENABLED:
+            for item in S1_ENABLED_PRESETS:
+                if item["code"] in seen:
+                    continue
+                payload = dict(item)
+                payload["enabled"] = False
+                payload["placeholder"] = True
+                items.append(payload)
         return items
 
     async def list_enabled_presets(self) -> list[dict]:
-        disabled = {
-            row.code
-            for row in (await self.db.execute(select(RealphotosDevicePreset))).scalars().all()
-            if row.deleted_at is None and not row.enabled
-        }
-        items = [dict(item) for item in S1_ENABLED_PRESETS if item["code"] not in disabled]
+        items: list[dict] = []
+        if INJECT_S1_CATALOG_INTO_ENABLED:
+            disabled = {
+                row.code
+                for row in (await self.db.execute(select(RealphotosDevicePreset))).scalars().all()
+                if row.deleted_at is None and not row.enabled
+            }
+            items = [dict(item) for item in S1_ENABLED_PRESETS if item["code"] not in disabled]
         extra = (
             await self.db.execute(
                 select(RealphotosDevicePreset).where(
@@ -367,7 +380,17 @@ class RealphotosOpsService:
             )
         ).scalars().all()
         seen = {item["code"] for item in items}
+        catalog_codes = {item["code"] for item in S1_ENABLED_PRESETS}
         for row in extra:
+            # Skip catalog / Honeybadger placeholders; RuntimeCam test seeds with same codes remain visible until cleared.
+            if str(row.source) == "catalog":
+                continue
+            if row.code in catalog_codes and row.brand == "Honeybadger":
+                continue
+            if str(row.code).startswith(("pa-gps-", "bf-")) and row.brand == "Honeybadger":
+                continue
+            if row.brand == "Honeybadger" and str(row.source) == "admin" and str(row.code).startswith("s1-"):
+                continue
             if row.code not in seen:
                 items.append(self._preset_dict(row))
         return items
@@ -397,6 +420,7 @@ class RealphotosOpsService:
         legacy_template_ref: str | None = None,
         legacy_visibility: str | None = None,
         legacy_review_bucket: str | None = None,
+        snapshot_extra: dict | None = None,
     ) -> dict[str, Any]:
         if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
             raise ForbiddenError(message="只有平台管理员可以维护设备预设")
@@ -461,6 +485,10 @@ class RealphotosOpsService:
             snapshot["deviceTypeMappedFrom"] = mapped_from
         if gps_config:
             snapshot["gpsConfig"] = dict(gps_config)
+        if snapshot_extra:
+            for key, value in dict(snapshot_extra).items():
+                snapshot[key] = value
+        # When fixed/random without coords, still mark write path connected but honesty lives in legacyGpsMeta.
         snapshot["gpsWriteConnected"] = True
         self.db.add(
             RealphotosPresetVersion(
@@ -476,6 +504,9 @@ class RealphotosOpsService:
             payload["deviceTypeMappedFrom"] = mapped_from
         if gps_config:
             payload["gpsConfig"] = dict(gps_config)
+        if snapshot_extra:
+            for key, value in dict(snapshot_extra).items():
+                payload[key] = value
         payload["gpsWriteConnected"] = True
         return payload
 

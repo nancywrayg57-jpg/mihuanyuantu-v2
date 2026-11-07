@@ -37,7 +37,7 @@ vibe_coding:
     visible_output: "生图页、提示词页、URL 导入页和管理员模型合同表"
     verify: "/tmp/supplier-live-e2e.log 含 SUPPLIER_LIVE_E2E_RECORDED；导入仍未接通；production_billing=false"
     status: supplier_live_recorded_not_production
-    next_user_action: "PRODUCT-GAP-A A2–A4/A6–A8 已落地；A5 延后；/tmp/product-gap-a-e2e.log PRODUCT_GAP_A_E2E_PASS；浏览器 /tmp/product-gap-a-browser.txt PRODUCT_GAP_A_BROWSER_PASS。待 Owner 审阅 cursor/product-gap-a-9973。不得开 S7；不得接通 URL 真导入。"
+    next_user_action: "PRESET-BULK-IMPORT B1–B3 已落地；/tmp/preset-bulk-import-e2e.log PRESET_BULK_IMPORT_E2E_PASS（405）。叠于 PRODUCT-GAP-A #29。待 Owner 审阅 cursor/preset-bulk-import-9973。不得开 S7；不得接通 URL 真导入。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -204,11 +204,25 @@ known_conflicts:
 
 next_action:
   owner: owner
-  action: "审阅 cursor/product-gap-a-9973 PR（PRODUCT-GAP-A A2–A4/A6–A8；A5 延后）。仅经非本人作者账号 squash 合入 main。不得开 S7；不得接通 URL 真导入；不得用演示数字填成本。"
-  work_order: "PRODUCT-GAP-A-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-产品行为缺口修复工单.md"
-  branch: cursor/product-gap-a-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/29"
-  baseline_main: "922ef06 (#28 PARTIAL-ALIGN squash already on origin/main)"
+  action: "审阅 cursor/preset-bulk-import-9973 PR（PRESET-BULK-IMPORT B1–B3；依赖/叠入 PRODUCT-GAP-A #29）。仅经非本人作者账号 squash 合入 main。不得开 S7；不得接通 URL 真导入。"
+  work_order: "PRESET-BULK-IMPORT-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-设备预设全量导入补丁工单.md"
+  branch: cursor/preset-bulk-import-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/30"
+  depends_on_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/29"
+  baseline_branch: "cursor/product-gap-a-9973 (A7 parent; #29 not yet on main at open)"
+  preset_bulk_import_status:
+    B1_clear_placeholders: done
+    B2_bulk_405: done
+    B3_param_map_55: done
+    field_map: "docs/mihuanyuantu-v2/legacy-preset-parameter-map.md"
+    e2e_log: "/tmp/preset-bulk-import-e2e.log"
+    e2e_mark: PRESET_BULK_IMPORT_E2E_PASS
+    legacy_activated_count: 405
+    placeholder_presets_removed: true
+    legacy_param_keys_complete: true
+    production_billing: false
+    url_import_connected: false
+    s7_started: false
   product_gap_a_status:
     A1_url_import: skipped_admin
     A2_seed_honesty: done_SEED_UNSUPPORTED
@@ -308,6 +322,12 @@ next_action:
     - id: PRODUCT_GAP_A_PR_AUTHOR_ACCOUNT
       status: recorded
       detail: "提交作者期望 Collaborator xtzhou247；本机会话 gh 活跃账号为 Owner nancywrayg57-jpg（同 #28 模式）。合入仍须非自评自合：Owner 不得合并本人创建的 PR。"
+    - id: PRESET_BULK_BASE_NOT_ON_MAIN
+      status: recorded
+      detail: "本补丁自 cursor/product-gap-a-9973 开出（A7 父能力）；#29 开 PR 时尚未合入 origin/main。合入顺序须先/一并处理 #29，禁止假装已在 main。"
+    - id: PRESET_BULK_GPS_NO_INHERIT_COORDS
+      status: kept_with_honesty
+      detail: "旧版 v2_runtime_overrides.gps 声明不继承固定坐标；B3 保留 gps_mode 源值进列/快照，不伪造 lat/lng；EXIF 无坐标时诚实失败，不得静默改 none 丢源值。"
   notes:
     s1_authorized: user_2026-11-05
     s2_authorized: user_2026-11-06
