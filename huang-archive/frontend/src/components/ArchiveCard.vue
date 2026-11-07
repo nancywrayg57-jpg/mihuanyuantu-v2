@@ -60,7 +60,7 @@ watch(files, (list) => {
 const firstFile = computed(() => files.value[0] || '')
 const activeFile = computed(() => files.value[slide.value] || firstFile.value || '')
 const fileUrl = computed(() =>
-  activeFile.value ? pb.files.getUrl(props.archive, activeFile.value) : '',
+  activeFile.value ? pb.files.getURL(props.archive, activeFile.value) : '',
 )
 const listCoverUrl = computed(() => coverOrThumbUrl(pb, props.archive))
 const isPdf = computed(() => String(firstFile.value).toLowerCase().endsWith('.pdf'))
@@ -71,8 +71,8 @@ const isLink = computed(() => props.archive.category === 'link')
 const imageUrls = computed(() =>
   files.value.map((name) => ({
     name,
-    url: thumbUrl(pb, props.archive, name, '600x0') || pb.files.getUrl(props.archive, name),
-    full: pb.files.getUrl(props.archive, name),
+    url: thumbUrl(pb, props.archive, name, '600x0') || pb.files.getURL(props.archive, name),
+    full: pb.files.getURL(props.archive, name),
   })),
 )
 const multiCount = computed(() => (isImageLike.value ? files.value.length : 0))
@@ -208,7 +208,31 @@ function onEdited(rec) {
 }
 
 function voiceUrl(m) {
-  return m.voice_file ? pb.files.getUrl(m, m.voice_file) : ''
+  const name = Array.isArray(m.voice_file) ? m.voice_file[0] : m.voice_file
+  return name ? pb.files.getURL(m, name) : ''
+}
+
+function canDeleteMemory(m) {
+  if (!auth.user?.id) return false
+  if (auth.isAdmin) return true
+  const authorId = typeof m.author === 'string' ? m.author : m.author?.id
+  return !!authorId && authorId === auth.user.id
+}
+
+async function deleteMemory(m) {
+  if (!canDeleteMemory(m) || busy.value) return
+  if (!window.confirm('确认删除这条追忆留言？')) return
+  busy.value = true
+  actionError.value = ''
+  try {
+    await pb.collection('memories').delete(m.id)
+    memories.value = memories.value.filter((x) => x.id !== m.id)
+    emit('memory', { ...m, _deleted: true, archive_id: m.archive_id || props.archive.id })
+  } catch (e) {
+    actionError.value = zhError(e, '删除留言失败')
+  } finally {
+    busy.value = false
+  }
 }
 </script>
 
@@ -377,7 +401,18 @@ function voiceUrl(m) {
       <div v-if="showMemories" class="border-t border-clay pt-3 space-y-3">
         <div class="space-y-2 max-h-48 overflow-auto">
           <div v-for="m in memories" :key="m.id" class="text-sm border border-clay/70 p-2 bg-rice">
-            <div class="text-mute mb-1">{{ m.author_name }} · {{ m.content_type === 'voice' ? '语音' : '文字' }}</div>
+            <div class="flex items-start justify-between gap-2 text-mute mb-1">
+              <span>{{ m.author_name }} · {{ m.content_type === 'voice' ? '语音' : '文字' }}</span>
+              <button
+                v-if="canDeleteMemory(m)"
+                type="button"
+                class="shrink-0 text-cinnabar underline underline-offset-2"
+                data-testid="delete-memory"
+                @click="deleteMemory(m)"
+              >
+                删除
+              </button>
+            </div>
             <p v-if="m.content_type === 'text'">{{ m.text_content }}</p>
             <audio v-else-if="voiceUrl(m)" :src="voiceUrl(m)" controls class="w-full" />
           </div>

@@ -131,21 +131,21 @@ export function formatDuration(sec) {
 export function thumbUrl(pb, record, filename, size = '600x0') {
   if (!record || !filename) return ''
   try {
-    return pb.files.getUrl(record, filename, { thumb: size })
+    return pb.files.getURL(record, filename, { thumb: size })
   } catch {
-    return pb.files.getUrl(record, filename)
+    return pb.files.getURL(record, filename)
   }
 }
 
 export function coverOrThumbUrl(pb, archive) {
   const cover = archive?.cover_file
   const coverName = Array.isArray(cover) ? cover[0] : cover
-  if (coverName) return thumbUrl(pb, archive, coverName, '600x0') || pb.files.getUrl(archive, coverName)
+  if (coverName) return thumbUrl(pb, archive, coverName, '600x0') || pb.files.getURL(archive, coverName)
   const files = archive?.media_files || []
   const first = files[0]
   if (!first) return ''
   if (['image', 'scan'].includes(archive.category)) {
-    return thumbUrl(pb, archive, first, '600x0') || pb.files.getUrl(archive, first)
+    return thumbUrl(pb, archive, first, '600x0') || pb.files.getURL(archive, first)
   }
   return ''
 }
