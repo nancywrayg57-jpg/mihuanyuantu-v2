@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import pb from '../lib/pb'
 import { normalizePassword, resolveIdentity } from '../lib/roster'
+import { zhError } from '../lib/errors'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(pb.authStore.model)
@@ -55,12 +56,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
       throw lastErr || new Error('登录失败，请检查姓名与密码')
     } catch (e) {
-      const msg = e?.message || ''
-      if (msg.includes('Failed to authenticate') || e?.status === 400) {
-        error.value = '登录失败：姓名或密码不正确（密码请用半角英文/数字，默认成员密码 hzs1933）'
-      } else {
-        error.value = msg || '登录失败，请检查姓名与密码'
-      }
+      error.value = zhError(e, '登录失败：姓名或密码不正确')
       throw e
     } finally {
       loading.value = false

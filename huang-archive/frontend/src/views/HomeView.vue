@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
 import { CATEGORY_TABS, uploadLabelFor } from '../lib/roster'
+import { zhError } from '../lib/errors'
 import ArchiveCard from '../components/ArchiveCard.vue'
 import UploadModal from '../components/UploadModal.vue'
 
@@ -78,7 +79,6 @@ async function savePassword() {
     newPwd.value = ''
     confirmPwd.value = ''
   } catch (e) {
-    // Some PocketBase configs don't require oldPassword for self-update
     try {
       if (!oldPwd.value) throw e
       await auth.changePassword(newPwd.value, confirmPwd.value)
@@ -87,7 +87,7 @@ async function savePassword() {
       newPwd.value = ''
       confirmPwd.value = ''
     } catch (e2) {
-      pwdErr.value = e2?.message || e?.message || '修改失败'
+      pwdErr.value = zhError(e2, zhError(e, '修改密码失败'))
     }
   }
 }
@@ -183,7 +183,7 @@ onMounted(load)
       <Upload class="w-5 h-5" /> {{ uploadLabel }}
     </button>
 
-    <UploadModal :open="uploadOpen" :title="uploadLabel" @close="uploadOpen = false" @uploaded="onUploaded" />
+    <UploadModal :open="uploadOpen" :heading="uploadLabel" @close="uploadOpen = false" @uploaded="onUploaded" />
 
     <div
       v-if="pwdOpen"

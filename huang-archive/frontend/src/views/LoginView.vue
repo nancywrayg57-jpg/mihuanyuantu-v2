@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { FAMILY_ROSTER } from '../lib/roster'
+import { zhError } from '../lib/errors'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -30,7 +31,7 @@ async function onSubmit() {
     await auth.login(name.value, password.value)
     router.replace(route.query.redirect || '/')
   } catch (e) {
-    localError.value = auth.error || e.message || '登录失败'
+    localError.value = auth.error || zhError(e, '登录失败：姓名或密码不正确')
   }
 }
 </script>

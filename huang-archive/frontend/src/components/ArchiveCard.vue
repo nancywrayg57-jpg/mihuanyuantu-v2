@@ -1,9 +1,11 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { Heart, MessageCircle, Trash2, ExternalLink } from 'lucide-vue-next'
+import { Heart, MessageCircle, Trash2, ExternalLink, Pencil } from 'lucide-vue-next'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
+import { zhError } from '../lib/errors'
 import VoiceRecorder from './VoiceRecorder.vue'
+import EditArchiveModal from './EditArchiveModal.vue'
 
 const props = defineProps({
   archive: { type: Object, required: true },
@@ -20,12 +22,23 @@ const memories = ref([])
 const textContent = ref('')
 const busy = ref(false)
 const confirmDelete = ref(false)
+const editOpen = ref(false)
+const actionError = ref('')
 
 watch(
   () => props.archive.likes_count,
   (v) => {
     likes.value = v || 0
   },
+)
+
+const uploaderId = computed(() => {
+  const u = props.archive.uploader
+  return typeof u === 'string' ? u : u?.id || ''
+})
+
+const canEdit = computed(
+  () => auth.isAdmin || (!!auth.user?.id && uploaderId.value === auth.user.id),
 )
 
 const files = computed(() => props.archive.media_files || [])
@@ -61,6 +74,7 @@ checkLiked()
 async function toggleLike() {
   if (busy.value) return
   busy.value = true
+  actionError.value = ''
   try {
     if (liked.value && likeId.value) {
       await pb.collection('archive_likes').delete(likeId.value)
@@ -76,60 +90,85 @@ async function toggleLike() {
       likeId.value = rec.id
       likes.value += 1
     }
-    await pb.collection('archives').update(props.archive.id, { likes_count: likes.value })
+    // likes_count is maintained by PocketBase hook — do not PATCH archives here
     emit('updated', { ...props.archive, likes_count: likes.value })
   } catch (e) {
-    console.error(e)
+    actionError.value = zhError(e, '点赞失败，请稍后重试')
   } finally {
     busy.value = false
   }
 }
 
 async function loadMemories() {
-  showMemories.value = true
-  const list = await pb.collection('memories').getList(1, 50, {
-    filter: `archive_id="${props.archive.id}"`,
-    sort: '-created',
-  })
-  memories.value = list.items
+  actionError.value = ''
+  try {
+    showMemories.value = true
+    const list = await pb.collection('memories').getList(1, 50, {
+      filter: `archive_id="${props.archive.id}"`,
+      sort: '-created',
+    })
+    memories.value = list.items
+  } catch (e) {
+    actionError.value = zhError(e, '加载留言失败')
+  }
 }
 
 async function postText() {
   if (!textContent.value.trim()) return
-  const rec = await pb.collection('memories').create({
-    archive_id: props.archive.id,
-    author: auth.user.id,
-    author_name: auth.displayName,
-    content_type: 'text',
-    text_content: textContent.value.trim(),
-  })
-  textContent.value = ''
-  memories.value.unshift(rec)
-  emit('memory', rec)
+  actionError.value = ''
+  try {
+    const rec = await pb.collection('memories').create({
+      archive_id: props.archive.id,
+      author: auth.user.id,
+      author_name: auth.displayName,
+      content_type: 'text',
+      text_content: textContent.value.trim(),
+    })
+    textContent.value = ''
+    memories.value.unshift(rec)
+    emit('memory', rec)
+  } catch (e) {
+    actionError.value = zhError(e, '发布留言失败')
+  }
 }
 
 async function postVoice({ blob, duration }) {
-  const form = new FormData()
-  form.append('archive_id', props.archive.id)
-  form.append('author', auth.user.id)
-  form.append('author_name', auth.displayName)
-  form.append('content_type', 'voice')
-  form.append('voice_duration', String(duration || 0))
-  const ext = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm'
-  form.append('voice_file', blob, `voice.${ext}`)
-  const rec = await pb.collection('memories').create(form)
-  memories.value.unshift(rec)
-  emit('memory', rec)
+  actionError.value = ''
+  try {
+    const form = new FormData()
+    form.append('archive_id', props.archive.id)
+    form.append('author', auth.user.id)
+    form.append('author_name', auth.displayName)
+    form.append('content_type', 'voice')
+    form.append('voice_duration', String(duration || 0))
+    const ext = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm'
+    form.append('voice_file', blob, `voice.${ext}`)
+    const rec = await pb.collection('memories').create(form)
+    memories.value.unshift(rec)
+    emit('memory', rec)
+  } catch (e) {
+    actionError.value = zhError(e, '发布语音失败')
+  }
 }
 
 async function doDelete() {
-  await pb.collection('archives').delete(props.archive.id)
-  confirmDelete.value = false
-  emit('deleted', props.archive.id)
+  actionError.value = ''
+  try {
+    await pb.collection('archives').delete(props.archive.id)
+    confirmDelete.value = false
+    emit('deleted', props.archive.id)
+  } catch (e) {
+    actionError.value = zhError(e, '删除失败')
+    confirmDelete.value = false
+  }
 }
 
 function askDelete() {
   confirmDelete.value = true
+}
+
+function onEdited(rec) {
+  emit('updated', rec)
 }
 
 function voiceUrl(m) {
@@ -185,8 +224,9 @@ function voiceUrl(m) {
         <div>上传：{{ archive.uploader_name || '—' }}</div>
       </dl>
       <p v-if="archive.description" class="text-ink/90">{{ archive.description }}</p>
+      <p v-if="actionError" class="text-cinnabar text-sm">{{ actionError }}</p>
 
-      <div class="mt-auto flex items-center gap-2 pt-2">
+      <div class="mt-auto flex flex-wrap items-center gap-2 pt-2">
         <button
           type="button"
           class="inline-flex items-center gap-1.5 min-h-tap px-3 border border-clay"
@@ -203,6 +243,15 @@ function voiceUrl(m) {
         >
           <MessageCircle class="w-5 h-5" />
           {{ memoryCount }}
+        </button>
+        <button
+          v-if="canEdit"
+          type="button"
+          data-testid="edit-archive"
+          class="inline-flex items-center gap-1.5 min-h-tap px-3 border border-celadon text-celadon"
+          @click="editOpen = true"
+        >
+          <Pencil class="w-5 h-5" /> 编辑
         </button>
         <button
           v-if="auth.isAdmin"
@@ -236,6 +285,8 @@ function voiceUrl(m) {
         <VoiceRecorder @publish="postVoice" />
       </div>
     </div>
+
+    <EditArchiveModal :open="editOpen" :archive="archive" @close="editOpen = false" @saved="onEdited" />
 
     <div
       v-if="confirmDelete"

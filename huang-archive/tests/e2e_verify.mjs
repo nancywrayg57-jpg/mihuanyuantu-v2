@@ -112,7 +112,7 @@ async function test3() {
     const form = new FormData()
     form.append('title', `E2E测试图-${Date.now()}`)
     form.append('category', 'image')
-    form.append('occurred_time', '1985年秋')
+    form.append('occurred_time', '1985-10-01')
     form.append('related_persons', '黄志松、黄纲生')
     form.append('description', '端测上传')
     form.append('uploader', u.record.id)
@@ -127,7 +127,7 @@ async function test3() {
     })
     if (!res.ok) throw new Error(`upload ${res.status} ${JSON.stringify(body)}`)
     if (body.category !== 'image') throw new Error('category')
-    if (body.occurred_time !== '1985年秋') throw new Error('occurred_time')
+    if (body.occurred_time !== '1985-10-01') throw new Error('occurred_time')
     if (body.related_persons !== '黄志松、黄纲生') throw new Error('related_persons')
 
     const list = await fetchJson(

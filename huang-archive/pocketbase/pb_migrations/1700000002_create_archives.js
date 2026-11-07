@@ -11,7 +11,7 @@ migrate((db) => {
     listRule: '@request.auth.id != ""',
     viewRule: '@request.auth.id != ""',
     createRule: '@request.auth.id != ""',
-    updateRule: '@request.auth.id != ""',
+    updateRule: '@request.auth.role = "admin" || (uploader = @request.auth.id && @request.data.category:isset = false && @request.data.media_files:isset = false && @request.data.external_link:isset = false && @request.data.uploader:isset = false && @request.data.uploader_name:isset = false && @request.data.likes_count:isset = false)',
     deleteRule: '@request.auth.role = "admin"',
     schema: [
       {

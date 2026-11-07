@@ -3,10 +3,11 @@ import { computed, ref } from 'vue'
 import { X, Image, Video, FileText, Link2, Mic, Boxes } from 'lucide-vue-next'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
+import { zhError } from '../lib/errors'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
-  title: { type: String, default: '上传资料' },
+  heading: { type: String, default: '上传资料' },
 })
 const emit = defineEmits(['close', 'uploaded'])
 
@@ -22,7 +23,7 @@ const categories = [
 ]
 
 const category = ref('image')
-const title = ref('')
+const archiveTitle = ref('')
 const occurredTime = ref('')
 const relatedPersons = ref('')
 const description = ref('')
@@ -40,8 +41,8 @@ function onFileChange(e) {
 
 async function submit() {
   error.value = ''
-  if (!title.value.trim() || !occurredTime.value.trim() || !relatedPersons.value.trim()) {
-    error.value = '请填写标题、时间与关系人'
+  if (!archiveTitle.value.trim() || !occurredTime.value || !relatedPersons.value.trim()) {
+    error.value = '请填写标题、发生时间与关系人'
     return
   }
   if (isLink.value && !externalLink.value.trim()) {
@@ -57,9 +58,9 @@ async function submit() {
   progress.value = 5
   try {
     const form = new FormData()
-    form.append('title', title.value.trim())
+    form.append('title', archiveTitle.value.trim())
     form.append('category', category.value)
-    form.append('occurred_time', occurredTime.value.trim())
+    form.append('occurred_time', occurredTime.value)
     form.append('related_persons', relatedPersons.value.trim())
     form.append('description', description.value.trim())
     form.append('uploader', auth.user.id)
@@ -76,14 +77,14 @@ async function submit() {
     reset()
     emit('close')
   } catch (e) {
-    error.value = e?.message || '上传失败'
+    error.value = zhError(e, '上传失败，请稍后重试')
   } finally {
     submitting.value = false
   }
 }
 
 function reset() {
-  title.value = ''
+  archiveTitle.value = ''
   occurredTime.value = ''
   relatedPersons.value = ''
   description.value = ''
@@ -109,7 +110,7 @@ function close() {
     >
       <div class="w-full max-w-xl max-h-[92vh] overflow-auto bg-parchment border border-clay">
         <div class="sticky top-0 flex items-center justify-between px-5 py-4 border-b border-clay bg-parchment">
-          <h2 class="font-song text-xl">{{ title }}</h2>
+          <h2 class="font-song text-xl">{{ heading }}</h2>
           <button type="button" class="min-h-tap min-w-[48px] grid place-items-center" @click="close">
             <X class="w-6 h-6" />
           </button>
@@ -132,14 +133,14 @@ function close() {
 
           <label class="block">
             <span class="text-mute">标题</span>
-            <input v-model="title" class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice" />
+            <input v-model="archiveTitle" class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice" />
           </label>
           <label class="block">
             <span class="text-mute">发生时间</span>
             <input
               v-model="occurredTime"
+              type="date"
               class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice"
-              placeholder="如 1985年秋"
             />
           </label>
           <label class="block">
