@@ -419,9 +419,7 @@ async def _main() -> int:
             note("E-G6-1 fixed_mode_not_silently_none=true")
             note("E-G6-3 honesty=no_silent_none")
 
-            control_task_id = int(done_none.id)
             control_key = none_key
-            library_asset_id = int(asset_none.id)
 
         # ---------- G2: output TTL cleanup ----------
         async with async_session_factory() as db:

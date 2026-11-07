@@ -2,8 +2,8 @@
 
 from .geocoder import (
     GEOCODER_MODE,
-    GeocodeResult,
     GeocoderAdapter,
+    GeocodeResult,
     NotConfiguredGeocoder,
     get_geocoder_adapter,
 )
