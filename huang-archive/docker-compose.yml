@@ -1,0 +1,41 @@
+services:
+  pocketbase:
+    build:
+      context: ./pocketbase
+    container_name: huang-pb
+    restart: unless-stopped
+    environment:
+      PB_ADMIN_EMAIL: admin@huangzhisong.com
+      PB_ADMIN_PASSWORD: "HbsAdmin#2026"
+    volumes:
+      - pb_data:/pb/pb_data
+    expose:
+      - "8090"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8090/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  web-proxy:
+    image: caddy:2.8-alpine
+    container_name: huang-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend/dist:/srv:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+
+volumes:
+  pb_data:
+  caddy_data:
+  caddy_config:

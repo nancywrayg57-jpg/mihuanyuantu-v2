@@ -130,3 +130,9 @@ $RECYCLE.BIN/
 
 # Intentionally tracked: lockfiles, migrations, docs, original input archives,
 # and aojuai-main/frontend/build/ source helpers (if present).
+
+# huang-archive
+huang-archive/frontend/node_modules/
+huang-archive/frontend/dist/
+huang-archive/pocketbase/pb_data/
+huang-archive/artifacts/
