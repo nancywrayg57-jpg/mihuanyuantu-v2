@@ -3,7 +3,7 @@
 ## Project Snapshot
 - Goal: 电商商家将商品图/生成图整理为可追溯、可下载、带设备成像参数的图片资产；积分可审计。不承诺外部平台原创/实拍认定。
 - 首期（S1）: 真会话 → 本地上传 → 单张处理 → 预审占位 → 五层占位实现（仍交 sRGB JPG）→ Gemini 规则替身 → 整数积分流水按张 10 → LocalDisk 网关下载；同租户双账号 + 跨租户隔离。
-- Current phase: delivery（S6 已由管理员结束；供应商真实请求已记录，导入未接通，不是生产收费就绪；不得开 S7。文档基线 PRD 2.10 / 架构 1.7）。
+- Current phase: delivery（PRODUCT-GAP-A 待合入；S5 已退出；S6 管理员已结束；导入未接通；不是生产收费就绪；不得开 S7。文档基线 PRD 2.10 / 架构 1.7）。
 - Protected decisions: 栈=aojuai；认证=用户名密码+验证码；部署=经济起步；数据=LocalDisk+整数租户积分；AI=首期规则替身；FR-033 scopes=能力名映射。
 - Vibe coding mode: 开启；一次一个可见阶段。
 
@@ -61,7 +61,7 @@
 
 ## Reusable Prompts and Commands
 - Agent entry: `DEV_INSTRUCTIONS.md`（必读根目录四职责文件）
-- Gate: S4 树与 `dae37a3` 一致；`s5_exited=false`；`s6_exited` 未靠重跑改写；导入未接通；`production_billing=false`
+- Gate: `origin/main`=`922ef06`（#27/#28）；`s5_exited=true`；`s6_exited` 未靠重跑改写；导入未接通；`production_billing=false`；PRODUCT-GAP-A 证据 `/tmp/product-gap-a-e2e.log` + `/tmp/product-gap-a-browser.txt`
 - Stage checklist: DEV_INSTRUCTIONS §10；`02-delivery.yaml` 只镜像 status
 - Hard rule: 每个里程碑完成后须端到端测试；Cloud ≠ 开发机
 - Root pack: `AGENTS.md` · `handoff.md` · `anchor.md` · `checkpoint.md`
@@ -84,7 +84,9 @@
 | 9-s5-loop | 生图只入库、未配置导入、image_processing Key | `/tmp/s5-pg-e2e.log` | pr_23_open | 未标 S5 完成；未合并 |
 | 10-s6-list | 运营完备 | `/tmp/s6-pg-e2e.log` | admin_closed_not_rerun | 随 ia-page 分支待合入；不重跑；不开 S7 |
 | 11-supplier-live | 生图、提示词优化、预审真实请求；导入未配置 | `/tmp/supplier-live-e2e.log` | recorded_not_production | 不是生产节点；不开 S7 |
-| 12-ia-page | 分角色工作台、侧栏、铃铛、任务双 Tab 等 | `/tmp/ia-page-smoke-c2c3c7.txt` | coded_pr_pending | Owner 审 PR / 浏览器冒烟 |
+| 12-ia-page | 分角色工作台、侧栏、铃铛、任务双 Tab 等 | `/tmp/ia-page-smoke-c2c3c7.txt` | merged_#25 | — |
+| 13-blocking-partial | 阻断级 A–G + 部分对齐 A–F | `/tmp/blocking-fix-e2e.log` `/tmp/partial-align-e2e.log` | merged_#27_#28 | product-gap-a |
+| 14-product-gap-a | 种子诚实/AI提示词/设备枚举/消息清理/旧预设MakerNote/客服浏览器 | `/tmp/product-gap-a-e2e.log` `/tmp/product-gap-a-browser.txt` | coded_pr_pending | Owner 审 PR；A5 延后；不开 S7 |
 
 ## Risks and Watchpoints
 - Risk: 把文档齐全或 CI 绿当成后端已交付。
@@ -93,5 +95,5 @@
 - Mitigation: 架构 1.7 §9.2.1 改造义务；S5 验收 AC-024。
 
 ## Backlog Knowledge
-- Next: 合入 `cursor/ia-page-fix-9973`；Owner 浏览器冒烟；不得开 S7。技术失败冻结留到技术客服。
-- Deferred: CI Python/pnpm 版本与架构推荐对齐（非阻塞）；菜单缓存 bump 可能不生效须重启 API（IA_C6）。
+- Next: 合入 `cursor/product-gap-a-9973`；不得开 S7；不得接通 URL 真导入。
+- Deferred: A5 运营成本真实聚合（无账本物料）；CI Python/pnpm 版本与架构推荐对齐（非阻塞）；多 worker 菜单缓存仍需 Redis/重启（IA_C6）。

@@ -49,12 +49,12 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **main 基线**：`origin/main` 已含 S0–S6 + IA-PAGE（#25 squash `ad9ebf5`）。不是生产收费就绪。
-- **待合入 PR**：https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/28 （`cursor/partial-align-9973`，依赖 #27 若未合）。工单 `PARTIAL-ALIGN-2026-11-07` A–F。
-- **部分对齐证据**：`/tmp/partial-align-e2e.log` 含 `PARTIAL_ALIGN_E2E_PASS`；浏览器 `/tmp/partial-align-browser.txt`；`production_billing=false`；URL 导入仍未接通。
-- **要点**：客户预审默认 live / 无合同 `SERVICE_NOT_CONFIGURED`；运营指标真实聚合（cost 诚实空态）；批量下载优先目录选择器并降级；405 导入浏览（MakerNote 不伪造成功）；三 GPS 模式运营可见；`s5_exited=true`；菜单缓存同进程 bump（IA_C6=fixed）。
-- **阻断级**：仍在祖先提交；证据 `/tmp/blocking-fix-e2e.log`；PR #27 待/或已合。
-- **不得开 S7**；技术失败积分仍 `held_until_tech_support`。
+- **main 基线**：`origin/main`=`922ef06`（已含阻断级 #27、部分对齐 #28）。不是生产收费就绪。
+- **待合入**：`cursor/product-gap-a-9973`（工单 `PRODUCT-GAP-A-2026-11-07`）。PR URL 以 `progress.yaml` `next_action.pr` 为准（推送后回填）。
+- **本轮证据**：`/tmp/product-gap-a-e2e.log` 含 `PRODUCT_GAP_A_E2E_PASS`；浏览器 `/tmp/product-gap-a-browser.txt` 含 `PRODUCT_GAP_A_BROWSER_PASS`；截图 `/tmp/product-gap-a-browser-shots/`；`production_billing=false`；`url_import_connected=false`。
+- **要点**：A2 种子仍 `SEED_UNSUPPORTED`；A3 预设 AI 提示词；A4 设备类型四枚举；A5 成本延后空态；A6 消息清理；A7 旧预设激活+MakerNote 回读；A8 订单/技术客服/商家真浏览器 DOM。
+- **冲突已登记**：MakerNote 管理员覆盖；生产物料同级路径缺失→同机浏览器；PR 创建账号可能为 Owner（同 #28），合入不得自评自合。
+- **不得开 S7**；不得接通 URL 真导入；不得用演示数字填成本。
 - **协作**：见 `AGENTS.md` §7（功能分支 `-9973`、仅 PR squash 合入 `main`、不得自评自合）。
 
 ## 6. 风险提醒
@@ -77,6 +77,5 @@
 4) 需要时再读 aidevops/SKILL.md、现行 PRD 2.10、架构 1.7
 
 硬约束：中文回复、标识符英语；不提交真实密钥；不直推/不合并 main；不开 S7；不得自评自合。
-当前工作：读 checkpoint §0 与 progress.next_action；找到 cursor/ia-page-fix-9973 的开放 PR 状态；区分「已合入 main / 仅在 PR / 仅有本地证据」。
-先用不超过 10 行中文汇报：当前阶段、分支/PR、已证实证据路径、未决冲突、你建议的下一步（等授权再改代码）。
+当前工作：读 checkpoint §0 与 progress.next_action；找到 cursor/product-gap-a-9973 的开放 PR 状态；区分「已合入 main / 仅在 PR / 仅有本地证据」。
 ```

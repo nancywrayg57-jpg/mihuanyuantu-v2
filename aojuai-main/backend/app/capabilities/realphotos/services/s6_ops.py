@@ -14,6 +14,7 @@ from PIL import Image
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.capabilities.realphotos.constants import DEVICE_TYPE_ALIASES, DEVICE_TYPES
 from app.capabilities.realphotos.models import (
     RealphotosAccountLog,
     RealphotosAsset,
@@ -48,6 +49,20 @@ USER_PAGE_SIZE = 10
 LOG_PAGE_SIZE = 20
 GPS_MODES = {"none", "fixed", "random_by_scene"}
 PROTECTED_USERNAME = "rp_admin"
+
+
+def normalize_device_type(raw: str | None) -> tuple[str, str | None]:
+    """Return (canonical_type, mapped_from_or_None). Reject undocumented names on write."""
+    label = str(raw or "").strip()
+    if label in DEVICE_TYPES:
+        return label, None
+    if label in DEVICE_TYPE_ALIASES:
+        return DEVICE_TYPE_ALIASES[label], label
+    raise BusinessError(
+        message=f"设备类型无效，允许：{', '.join(DEVICE_TYPES)}",
+        code="INPUT_INVALID",
+        details={"deviceType": label, "allowed": list(DEVICE_TYPES)},
+    )
 
 
 def pixel_identity(data: bytes) -> str:
@@ -347,7 +362,7 @@ class RealphotosOpsService:
                 select(RealphotosDevicePreset).where(
                     RealphotosDevicePreset.deleted_at.is_(None),
                     RealphotosDevicePreset.enabled.is_(True),
-                    RealphotosDevicePreset.source == "admin",
+                    RealphotosDevicePreset.source.in_(("admin", "legacy_import", "catalog")),
                 )
             )
         ).scalars().all()
@@ -375,14 +390,23 @@ class RealphotosOpsService:
         aperture: str | None = None,
         focal_length: str | None = None,
         gps_config: dict | None = None,
+        ai_positive_prompt: str | None = None,
+        ai_negative_prompt: str | None = None,
+        source: str | None = None,
+        legacy_source_id: str | None = None,
+        legacy_template_ref: str | None = None,
+        legacy_visibility: str | None = None,
+        legacy_review_bucket: str | None = None,
     ) -> dict[str, Any]:
         if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
             raise ForbiddenError(message="只有平台管理员可以维护设备预设")
-        if maker_note or author or ip_geo:
-            raise BusinessError(message="第一版不接收 MakerNote、作者或 IP-GEO", code="INPUT_INVALID")
+        # PRODUCT-GAP A7：管理员 2026-11-07 授权 MakerNote 写入；作者/IP-GEO 仍禁止。
+        if author or ip_geo:
+            raise BusinessError(message="第一版不接收作者或 IP-GEO", code="INPUT_INVALID")
         mode = str(gps_mode or "none").strip()
         if mode not in GPS_MODES:
             raise BusinessError(message="GPS 模式无效", code="INPUT_INVALID")
+        dtype, mapped_from = normalize_device_type(device_type)
         label = str(code or "").strip()
         if not label or not str(brand or "").strip() or not str(model_name or "").strip():
             raise BusinessError(message="预设编号、品牌和型号必填", code="INPUT_INVALID")
@@ -391,22 +415,24 @@ class RealphotosOpsService:
             row = RealphotosDevicePreset(
                 tenant_id=0,
                 code=label,
-                device_type=str(device_type or "phone"),
+                device_type=dtype,
                 brand=str(brand).strip(),
                 model_name=str(model_name).strip(),
                 gps_mode=mode,
                 enabled=bool(enabled),
                 version_no=1,
-                source="admin" if label not in {item["code"] for item in S1_ENABLED_PRESETS} else "catalog",
+                source=str(source or ("catalog" if label in {item["code"] for item in S1_ENABLED_PRESETS} else "admin")),
             )
             self.db.add(row)
         else:
-            row.device_type = str(device_type or row.device_type)
+            row.device_type = dtype
             row.brand = str(brand).strip()
             row.model_name = str(model_name).strip()
             row.gps_mode = mode
             row.enabled = bool(enabled)
             row.version_no = int(row.version_no) + 1
+            if source:
+                row.source = str(source)
         if iso is not None:
             row.iso = str(iso)
         if shutter is not None:
@@ -415,11 +441,26 @@ class RealphotosOpsService:
             row.aperture = str(aperture)
         if focal_length is not None:
             row.focal_length = str(focal_length)
+        if ai_positive_prompt is not None:
+            row.ai_positive_prompt = str(ai_positive_prompt)
+        if ai_negative_prompt is not None:
+            row.ai_negative_prompt = str(ai_negative_prompt)
+        if maker_note is not None:
+            row.maker_note = str(maker_note)
+        if legacy_source_id is not None:
+            row.legacy_source_id = str(legacy_source_id)
+        if legacy_template_ref is not None:
+            row.legacy_template_ref = str(legacy_template_ref)
+        if legacy_visibility is not None:
+            row.legacy_visibility = str(legacy_visibility)
+        if legacy_review_bucket is not None:
+            row.legacy_review_bucket = str(legacy_review_bucket)
         await self.db.flush()
         snapshot = self._preset_dict(row)
+        if mapped_from:
+            snapshot["deviceTypeMappedFrom"] = mapped_from
         if gps_config:
             snapshot["gpsConfig"] = dict(gps_config)
-        # B: fixed / random_by_scene 已接入五层 EXIF 写入；none 仍明确不写。
         snapshot["gpsWriteConnected"] = True
         self.db.add(
             RealphotosPresetVersion(
@@ -431,6 +472,8 @@ class RealphotosOpsService:
         )
         await self.db.flush()
         payload = self._preset_dict(row)
+        if mapped_from:
+            payload["deviceTypeMappedFrom"] = mapped_from
         if gps_config:
             payload["gpsConfig"] = dict(gps_config)
         payload["gpsWriteConnected"] = True
@@ -971,9 +1014,17 @@ class RealphotosOpsService:
 
     @staticmethod
     def _preset_dict(row: RealphotosDevicePreset) -> dict:
+        dtype = str(row.device_type or "")
+        mapped_from = None
+        if dtype in DEVICE_TYPE_ALIASES:
+            mapped_from = dtype
+            dtype = DEVICE_TYPE_ALIASES[dtype]
+        elif dtype not in DEVICE_TYPES:
+            # Undocumented historical value: keep visible but mark disabled for honesty.
+            mapped_from = dtype
         return {
             "code": row.code,
-            "deviceType": row.device_type,
+            "deviceType": dtype if dtype in DEVICE_TYPES else str(row.device_type or ""),
             "brand": row.brand,
             "model": row.model_name,
             "iso": row.iso,
@@ -982,6 +1033,16 @@ class RealphotosOpsService:
             "focalLength": row.focal_length,
             "gpsMode": row.gps_mode,
             "enabled": bool(row.enabled),
+            "source": row.source,
+            "aiPositivePrompt": getattr(row, "ai_positive_prompt", "") or "",
+            "aiNegativePrompt": getattr(row, "ai_negative_prompt", "") or "",
+            "makerNote": getattr(row, "maker_note", "") or "",
+            "legacySourceId": getattr(row, "legacy_source_id", "") or "",
+            "legacyTemplateRef": getattr(row, "legacy_template_ref", "") or "",
+            "legacyVisibility": getattr(row, "legacy_visibility", "") or "",
+            "legacyReviewBucket": getattr(row, "legacy_review_bucket", "") or "",
+            "deviceTypeMappedFrom": mapped_from,
+            "deviceTypeUnsupported": bool(dtype not in DEVICE_TYPES and mapped_from),
         }
 
 

@@ -53,6 +53,10 @@ IMAGE_PROCESSING_SCOPE = "image_processing"
 # FR-019：处理结果 7×24 小时；站内消息 30 天。
 OUTPUT_TTL_HOURS = 7 * 24
 INBOX_TTL_DAYS = 30
+# FR-007 首期设备类型（英文 identifier）；与 PRD「手机/单反/无反/运动相机」对应。
+DEVICE_TYPES = ("phone", "dslr", "mirrorless", "action")
+DEVICE_TYPE_ALIASES = {"camera": "dslr"}  # 历史错误值诚实映射，禁止静默冒充未说明的第三套名
+JOB_KIND_INBOX_CLEANUP = "inbox_cleanup"
 
 # SM-001 名称。S1 不进入自动重做 / 主动重处理 / 技术重试链。
 TASK_SUBMITTED = "SUBMITTED"

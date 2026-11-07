@@ -406,14 +406,27 @@ async def test_user_admin_log_preset_and_metrics(db):
             idempotency_key="s6-preset-off",
         )
     assert rejected.value.code == "PRESET_REJECTED"
+    # PRODUCT-GAP A7: MakerNote allowed; author/IP-GEO still rejected.
+    saved_mn = await ctx["ops"].save_preset(
+        actor_role_codes={ROLE_ADMIN},
+        code="s6-brand",
+        device_type="phone",
+        brand="Honeybadger",
+        model_name="HB-S6",
+        maker_note="CANON",
+        ai_positive_prompt="pos",
+        ai_negative_prompt="neg",
+    )
+    assert saved_mn["makerNote"] == "CANON"
+    assert saved_mn["aiPositivePrompt"] == "pos"
     with pytest.raises(BusinessError):
         await ctx["ops"].save_preset(
             actor_role_codes={ROLE_ADMIN},
-            code="s6-brand",
+            code="s6-author",
             device_type="phone",
             brand="Honeybadger",
             model_name="HB-S6",
-            maker_note="CANON",
+            author="someone",
         )
     with pytest.raises(ForbiddenError):
         await ctx["ops"].save_preset(

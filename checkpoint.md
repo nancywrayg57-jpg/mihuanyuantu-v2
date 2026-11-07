@@ -7,13 +7,13 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-07 CST（Asia/Shanghai） |
-| branch | `cursor/partial-align-9973`（基线含 blocking-fix tip `d58a86a`；`origin/main` 仍为 `ad9ebf5`/#25） |
+| branch | `cursor/product-gap-a-9973`（基线 `origin/main`=`922ef06`，已含 #27/#28） |
 | HEAD | 以推送后该分支 tip 为准；合入仅经 PR squash，禁止直推 `main` |
-| 文档态 | PRD **2.10**；架构 **1.7**；`DEV_INSTRUCTIONS` §10.7 S5 `exit_evidence` 已齐并收口 |
-| 代码态 | PARTIAL-ALIGN A–F：客户预审默认 live/unconfigured；运营指标真实聚合（cost 诚实空态）；目录选择器+降级；405 导入浏览；三 GPS 模式运营可见；菜单缓存进程内 bump；`s5_exited=true`。阻断级能力仍在本分支祖先。不是生产收费已开放 |
-| 验证态 | `/tmp/partial-align-e2e.log` `PARTIAL_ALIGN_E2E_PASS` 且 `production_billing=false`；浏览器 `/tmp/partial-align-browser.txt`；`/tmp/s5-pg-e2e.log` 仍绿；URL 导入仍未接通；不得开 S7 |
-| 当前阶段 | S5 退出已收口（非生产收费）；S6 管理员已结束；PARTIAL-ALIGN 开发机端测已通过，待 Owner 审 PR |
-| 下一步 | 审阅 https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/28（依赖 #27）；仅非作者账号 squash；不得开 S7 |
+| 文档态 | PRD **2.10**；架构 **1.7**；`s5_exited=true`；S7 未开 |
+| 代码态 | PRODUCT-GAP-A：A2 `SEED_UNSUPPORTED`；A3 预设 AI 正/负向提示词；A4 `phone/dslr/mirrorless/action`（`camera`→`dslr`）；A5 延后 `cost=null`；A6 站内信 30 天清理；A7 旧预设激活+MakerNote（管理员 2026-11-07 允许写入）；A8 开发机真浏览器 DOM。未接通 URL 真导入；非生产收费 |
+| 验证态 | `/tmp/product-gap-a-e2e.log` `PRODUCT_GAP_A_E2E_PASS` 且 `production_billing=false` `url_import_connected=false`；浏览器 `/tmp/product-gap-a-browser.txt` `PRODUCT_GAP_A_BROWSER_PASS`；截图 `/tmp/product-gap-a-browser-shots/`；不得开 S7 |
+| 当前阶段 | S5 已退出收口；S6 管理员已结束；PRODUCT-GAP-A 开发机端测+浏览器冒烟已通过，待 Owner 审 PR |
+| 下一步 | 审阅 product-gap-a PR（推送后 URL 写入 progress）；仅非作者账号 squash；不得开 S7；A5 仍延后 |
 
 ## 1. 仓库与文档基线
 
@@ -33,7 +33,8 @@
 | S0–S4 | 开发机证据在案；非生产收费 |
 | S5 | **`s5_exited=true`**（`/tmp/s5-pg-e2e.log`；`supplier_connected=false`；`production_billing=false`） |
 | S6 | 管理员结束；`s6_exited` 未靠重跑改写 |
-| PARTIAL-ALIGN | A–F 端测 PASS；待 PR 合入 |
+| BLOCKING-FIX / PARTIAL-ALIGN | 已合入 `origin/main`（#27/#28 → `922ef06`） |
+| PRODUCT-GAP-A | A2–A4/A6–A8 端测+浏览器 PASS；A5 延后；待 PR 合入 |
 | S7 | **须管理员确认** |
 
 过程进度：`docs/mihuanyuantu-v2/progress.yaml`。

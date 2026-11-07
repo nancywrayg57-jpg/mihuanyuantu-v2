@@ -323,7 +323,7 @@ async def _main() -> int:
         idata = imports.json()["data"]
         assert idata["importedBrands"] == []
         assert isinstance(idata["items"], list)
-        catalog = browse_legacy_imports(page=1, page_size=5)
+        catalog = await browse_legacy_imports(page=1, page_size=5)
         assert catalog["importedBrands"] == []
         note(
             f"D imports_browse items={len(idata['items'])} total={idata.get('total')} "
