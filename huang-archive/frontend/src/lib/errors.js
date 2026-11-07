@@ -11,6 +11,7 @@ const PHRASES = [
   [/failed to update/i, '保存失败，请稍后重试'],
   [/failed to delete/i, '删除失败，请稍后重试'],
   [/validation_required|missing required/i, '必填项未填写'],
+  [/validation_missing_rel|failed to find all relation/i, '关联数据无效，请重新登录后再试'],
   [/validation_invalid_mime|mime type must be/i, '文件格式不支持，请换 JPEG/PNG/PDF 等常见格式'],
   [/validation_invalid_|validation|invalid|out of range|required/i, '提交内容不符合要求，请检查后重试'],
   [/file type|max file|file size|mime|不能超过/i, '文件不符合要求（格式或大小）'],

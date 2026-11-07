@@ -6,6 +6,7 @@ import {
   uploadFileChunked,
   abortSession,
   patchMediaMeta,
+  resolveRecordId,
 } from '../lib/chunkedUpload'
 import { validateUploadFiles } from '../lib/uploadLimits'
 import { zhError } from '../lib/errors'
@@ -59,7 +60,8 @@ export const useUploadQueueStore = defineStore('uploadQueue', () => {
     next.progress = 2
     try {
       const auth = useAuthStore()
-      if (!auth.user?.id) throw new Error('登录已失效，请重新登录')
+      const uploaderId = resolveRecordId(auth.user)
+      if (!uploaderId) throw new Error('登录已失效，请重新登录')
 
       const title = String(next.title || next.fields?.title || '').trim()
       const occurred_time = String(next.fields?.occurred_time || '').trim()
@@ -76,8 +78,9 @@ export const useUploadQueueStore = defineStore('uploadQueue', () => {
         related_persons,
         description: String(next.fields?.description || '').trim(),
         external_link: String(next.fields?.external_link || '').trim(),
-        uploader: auth.user.id,
-        uploader_name: auth.displayName || auth.user.display_name || '',
+        // uploader bound server-side; keep id only for chunked session meta / debugging
+        uploader: uploaderId,
+        uploader_name: auth.displayName || auth.user?.display_name || '',
         likes_count: '0',
         duration_sec: next.durationSec ? String(next.durationSec) : '',
       }

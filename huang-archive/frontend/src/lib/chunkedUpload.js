@@ -282,7 +282,8 @@ const ALLOWED_FIELD_KEYS = new Set([
   'related_persons',
   'description',
   'external_link',
-  'uploader',
+  // uploader is set by archives_uploader.pb.js from auth — never send from client
+  // (String(user) → "[object Object]" caused mobile「上传者：内容不符合要求」).
   'uploader_name',
   'likes_count',
   'playback_status',
@@ -290,22 +291,70 @@ const ALLOWED_FIELD_KEYS = new Set([
   'duration_sec',
 ])
 
+/** PocketBase record id → safe string; never String(object) → "[object Object]". */
+export function resolveRecordId(value) {
+  if (value == null || value === '') return ''
+  if (typeof value === 'string') return value.trim()
+  if (typeof value === 'number') return String(value)
+  if (typeof value === 'object') {
+    const id = value.id ?? value.record?.id
+    if (typeof id === 'string' && id.trim()) return id.trim()
+  }
+  return ''
+}
+
+function formFieldValue(key, value) {
+  if (value == null || value === '') return null
+  if (typeof value === 'object') {
+    // Never append "[object Object]" into multipart (breaks relation fields).
+    const id = resolveRecordId(value)
+    return id || null
+  }
+  const s = String(value)
+  if (!s || s === '[object Object]') return null
+  return s
+}
+
+/** Sanitize filename for WeChat/iOS path-like or empty names. */
+export function safeUploadFilename(file, fallbackExt = 'bin') {
+  let name = String(file?.name || '').trim()
+  // Strip fake path prefixes from some WebViews
+  name = name.replace(/^.*[/\\]/, '')
+  name = name.replace(/[^\w.\u4e00-\u9fff()\-+]+/g, '_')
+  name = name.replace(/_+/g, '_').replace(/^_|_$/g, '')
+  if (!name || name === '.' || name === '..') {
+    const mime = guessMime(file)
+    const ext =
+      Object.entries(EXT_MIME).find(([, m]) => m === mime)?.[0] ||
+      fallbackExt
+    name = `upload-${Date.now()}.${ext}`
+  }
+  if (name.length > 120) {
+    const dot = name.lastIndexOf('.')
+    const ext = dot > 0 ? name.slice(dot) : ''
+    name = name.slice(0, 120 - ext.length) + ext
+  }
+  return name
+}
+
 /** Direct (non-chunked) create via PocketBase SDK — for small files / links. */
 export async function uploadDirect(files, fields, { coverFile } = {}) {
   const form = new FormData()
   const merged = { ...fields, ...playbackFieldsFor(fields.category, files) }
+  delete merged.uploader // server hook binds from authRecord
   Object.entries(merged).forEach(([k, v]) => {
     if (!ALLOWED_FIELD_KEYS.has(k)) return
-    if (v == null || v === '') return
-    form.append(k, String(v))
+    const sv = formFieldValue(k, v)
+    if (sv == null) return
+    form.append(k, sv)
   })
   for (const f of files || []) {
     const nf = normalizeUploadFile(f)
-    form.append('media_files', nf, nf.name || `upload-${Date.now()}`)
+    form.append('media_files', nf, safeUploadFilename(nf, 'jpg'))
   }
   if (coverFile) {
     const cf = normalizeUploadFile(coverFile)
-    form.append('cover_file', cf, cf.name || 'cover.jpg')
+    form.append('cover_file', cf, safeUploadFilename(cf, 'jpg') || 'cover.jpg')
   }
   try {
     return await pb.collection('archives').create(form, { requestKey: null })
