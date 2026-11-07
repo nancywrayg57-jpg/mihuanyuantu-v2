@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-06 CST（Asia/Shanghai） |
-| branch | `cursor/s6-ops-9973`（从 S5 `3f8358e` 继续；未提交；`origin/main` 是 `dae37a3`） |
-| HEAD | 本文件随 S4 提交写入。推送该分支，不合并 |
-| 文档态 | PRD **2.10**；架构 **1.7**；物料清单 **1.32**；端测自治见 `DEV_INSTRUCTIONS` §6.1 / `AGENTS.md` §5 |
-| 代码态 | S0–S4 的文件树已在 `origin/main` `dae37a3`。S5 在 PR #23，未标完成。S6 与供应商合同在 `cursor/s6-ops-9973`，未提交。不是生产收费已开放 |
-| 验证态 | 真实小样只认 `/tmp/s3-pg-e2e.log` 的 `S3_PG_SAMPLE_READONLY task_id=29 detector=gemini-3.1-pro-preview noise=45 depthOfField=40 lighting=35 colorRealism=50 overallRealism=35 total_score=38 passed=false has_jpeg=true output_bytes=30982 reservation=released total_is_not_dimension_average=true dimension_average=41.0`。S4 证据是 `/tmp/s4-pg-e2e.log` 的 `S4_PG_E2E_PASS`。供应商证据是 `/tmp/supplier-live-e2e.log`：文生图 `b64_json`，提示词优化有正文，预审拒绝未扣处理积分，导入未接通。本机不是最终中国大陆节点 |
-| 当前阶段 | 管理员 2026-11-06 说明 S6 已结束。`s6_exited` 未靠重跑改写。供应商补测不是 S7，也不是对外「检测通过」或生产收费已开放 |
-| 下一步 | S5 PR https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/23 未合并，未标完成。当前改动未提交、未推送。不得开 S7 |
+| updated | 2026-11-07 CST（Asia/Shanghai） |
+| branch | `cursor/ia-page-fix-9973`（含 S6 提交 + IA-PAGE 页面/信息架构；相对 `origin/main` `d6f4b5d`） |
+| HEAD | 以推送后该分支 tip 为准；合入仅经 PR squash，禁止直推 `main` |
+| 文档态 | PRD **2.10**；架构 **1.7**；物料清单现行版；端测自治见 `DEV_INSTRUCTIONS` §6.1 / `AGENTS.md` §5 |
+| 代码态 | `origin/main` 已含 S0–S5。本分支另含 S6 运营/供应商合同控制 + IA-PAGE（分角色工作台、侧栏清除生图/URL、订单客服充值铃铛等）。不是生产收费已开放 |
+| 验证态 | S3 小样只认 `/tmp/s3-pg-e2e.log` 任务 29。S4 `/tmp/s4-pg-e2e.log` `S4_PG_E2E_PASS`。S6 `/tmp/s6-pg-e2e.log` `S6_PG_E2E_PASS`（`supplier_connected=false`）。供应商 `/tmp/supplier-live-e2e.log`。IA `/tmp/ia-page-smoke-c2c3c7.txt`。本机不是最终中国大陆节点 |
+| 当前阶段 | S6 管理员已结束（不重跑改写 `s6_exited`）。IA-PAGE 代码与裁决已落地，待 Owner 审 PR / 浏览器冒烟。不得开 S7 |
+| 下一步 | 审阅 https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/25 ；浏览器冒烟；squash 合入须非作者账号；不得开 S7 |
 
 ## 1. 仓库与文档基线
 
@@ -58,8 +58,12 @@
 | 文档收口 | 已合入 |
 | S0 基础 | **代码已实现 + CI 绿**；Cloud 服务端测通过；**开发机 PG `claim_one` 已通过** |
 | S1 首期单张闭环 | 开发机 PG 与浏览器主路径已有证据；技术失败积分按决定保持冻结 |
-| S2 真实五层 | 开发机 `/tmp/s2-pg-e2e.log` 含 `S2_PG_E2E_PASS`。成功样本字节数不少于源文件；达不到下限的任务失败且无下载对象。检测仍为规则替身 |
-| S3–S6 | 未开工。清单未写，禁止开工 |
+| S2 真实五层 | `/tmp/s2-pg-e2e.log` `S2_PG_E2E_PASS`；检测当时仍可为规则替身路径 |
+| S3 真 Gemini | 任务 29 小样 + 控制路径有证据；合同默认识别名与本机 `.env` 型号可能不一致 |
+| S4 批次按张 | `/tmp/s4-pg-e2e.log` `S4_PG_E2E_PASS`；pack≠zip |
+| S5 增长 | 已合入 `main`（#23）；清单未全部标完成；导入未接通；`production_billing=false` |
+| S6 运营 | 管理员结束；证据在分支/日志；随 IA 分支待合入 |
+| IA-PAGE | 工单 A–J + IA_C2/C3/C7 已落地；API 冒烟有证据；浏览器冒烟待 Owner |
 | S7 生产部署 | **须管理员确认** |
 
 过程进度：`docs/mihuanyuantu-v2/progress.yaml`。

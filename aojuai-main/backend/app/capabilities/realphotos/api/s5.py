@@ -112,6 +112,7 @@ async def list_assets(
                     "width": int(row.width),
                     "height": int(row.height),
                     "byteSize": int(row.byte_size),
+                    "objectKey": row.object_key,
                 }
                 for row in rows
             ]
@@ -147,6 +148,61 @@ async def _generation_body(request: Request) -> tuple[GenerationBody, bytes | No
             reference_bytes or None,
         )
     return GenerationBody.model_validate(await request.json()), None
+
+
+@router.get("/generation-tasks")
+async def list_generation_tasks(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    page: int = 1,
+    page_size: int = 10,
+    mode: str | None = None,
+    _: None = Depends(PermissionChecker([WORKSPACE_READ])),
+) -> dict[str, Any]:
+    service = RealphotosGrowthService(db)
+    rows, total = await service.list_generation_tasks(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        page=page,
+        page_size=page_size,
+        mode=mode,
+    )
+    items = []
+    for task in rows:
+        gen_items = await service.list_generation_items(
+            tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id)
+        )
+        items.append(
+            {
+                "id": str(int(task.id)),
+                "mode": task.mode,
+                "provider": task.provider,
+                "quantity": int(task.quantity),
+                "width": int(task.width),
+                "height": int(task.height),
+                "positivePrompt": task.positive_prompt,
+                "negativePrompt": task.negative_prompt,
+                "createdAt": task.created_at.isoformat() if task.created_at else None,
+                "items": [
+                    {
+                        "index": int(item.item_index),
+                        "status": item.status,
+                        "assetId": str(int(item.asset_id)) if item.asset_id else None,
+                        "creditsConsumed": int(item.credits_consumed),
+                    }
+                    for item in gen_items
+                ],
+            }
+        )
+    return SuccessResponse(
+        data={
+            "items": items,
+            "page": max(1, int(page or 1)),
+            "pageSize": min(50, max(1, int(page_size or 10))),
+            "total": total,
+        }
+    )
 
 
 @router.post("/generation-tasks")

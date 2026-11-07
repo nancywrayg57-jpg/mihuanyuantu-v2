@@ -27,9 +27,9 @@
 | 本功能文档区 | `docs/mihuanyuantu-v2/` |
 | 编码指令 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
 | 底座 | `aojuai-main/`（上游固定版本见 `aojuai-main/UPSTREAM_PIN.txt`） |
-| S0 业务包 | `aojuai-main/backend/app/capabilities/realphotos/` |
+| 业务包 | `aojuai-main/backend/app/capabilities/realphotos/` |
 | 原型 | `prototype/index.html`；改 `prototype.js` 后跑 `node prototype/sync-inline.js` |
-| 分支约定 | 见 `DEV_INSTRUCTIONS.md` / `AGENTS.md` §7；当前工作区在 `cursor/s6-ops-9973`。后缀保持 `-9973` |
+| 分支约定 | 见 `AGENTS.md` §7；后缀保持 `-9973` |
 | 密钥 | 仓库忽略 `生产物料/`；需要时只读本机物料，不入库 |
 
 当前实现状态摘要见 `checkpoint.md`。
@@ -49,11 +49,13 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **当前**：S4 已在 `origin/main` 的 `dae37a3`，与分支提交 `d8345ca` 文件树一致。不是生产收费就绪。S3 真实小样仍只认任务 29。
-- **S5 已推送，未标完成**：PR https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/23 。未合并。不是生产收费已开放。
-- **S6 已授权并实现，未提交**：分支 `cursor/s6-ops-9973`。证据 `/tmp/s6-pg-e2e.log`。`supplier_connected=false`，`production_billing=false`。不在 PR #23。不得开 S7。
-- 技术失败和字节下限失败保持冻结，等到技术客服阶段再处理。合同默认识别名仍是 `gemini-2.5-pro`；本机密钥调用该型号返回 404，供应商提示 `gemini-3.1-pro-preview`，该型号只写在本机 `.env`。
-- **协作**：见 `AGENTS.md` §7。**S7** 须管理员确认。
+- **main 基线**：`origin/main` 已含 S0–S5（S5 squash `d6f4b5d` / #23）。不是生产收费就绪。
+- **待合入 PR**：https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/25 （`cursor/ia-page-fix-9973`，含 S6 运营控制 + IA-PAGE）。合入仅 Owner、且非本人作者账号（本 PR 作者为 Owner 账号时须换 Collaborator 重开或换账号审合）。
+- **IA 裁决已落地**：IA_C2 订单/技术客服分角色工作台；IA_C3 生图/URL 仅资源页入口、侧栏清除；IA_C7 订单客服铃铛仅充值通知。冒烟 `/tmp/ia-page-smoke-c2c3c7.txt`。
+- **S6**：管理员已结束；证据 `/tmp/s6-pg-e2e.log`；`supplier_connected=false`，`production_billing=false`。不重跑当验收。
+- **供应商补测**：`/tmp/supplier-live-e2e.log`；导入未接通；不是生产节点、不是对外检测通过。
+- **不得开 S7**；技术失败积分仍 `held_until_tech_support`。
+- **协作**：见 `AGENTS.md` §7（功能分支 `-9973`、仅 PR squash 合入 `main`、不得自评自合）。
 
 ## 6. 风险提醒
 
@@ -62,4 +64,19 @@
 - 租户共用积分是现行产品选择；账号隔离 ≠ 余额隔离。
 - 首版 LocalDisk；不要按「必须先买 OSS」开工。
 - 客户业务 API ≠ 上游模型 Key 自助 ≠ 外部平台代发；能力名 scope 外接口必须拒绝。
+- 菜单 reconcile 后若 live uvicorn 仍吐旧侧栏，需重启 API（见 progress `IA_C6_MENU_CACHE_STALE`）。
 - `docs/architecture_decisions/`、`docs/archive/`、待决策清单正文不作为开发指令依据路径；ND-017 现行口径以 PRD **2.10** 为准。
+
+## 7. 新会话粘贴提示词（复制即用）
+
+```text
+你是蜜獾原图 v2 的续作 Agent。先按顺序只读、不要改代码：
+1) 仓库根 handoff.md、anchor.md、checkpoint.md、AGENTS.md
+2) docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md
+3) docs/mihuanyuantu-v2/progress.yaml（以 next_action / 冲突裁决为准）
+4) 需要时再读 aidevops/SKILL.md、现行 PRD 2.10、架构 1.7
+
+硬约束：中文回复、标识符英语；不提交真实密钥；不直推/不合并 main；不开 S7；不得自评自合。
+当前工作：读 checkpoint §0 与 progress.next_action；找到 cursor/ia-page-fix-9973 的开放 PR 状态；区分「已合入 main / 仅在 PR / 仅有本地证据」。
+先用不超过 10 行中文汇报：当前阶段、分支/PR、已证实证据路径、未决冲突、你建议的下一步（等授权再改代码）。
+```

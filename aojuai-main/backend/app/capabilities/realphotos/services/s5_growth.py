@@ -243,6 +243,43 @@ class RealphotosGrowthService:
         )
         return list(rows.scalars().all())
 
+    async def list_generation_tasks(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        page: int = 1,
+        page_size: int = 10,
+        mode: str | None = None,
+    ) -> tuple[list[RealphotosGenerationTask], int]:
+        from sqlalchemy import func
+
+        page_no = max(1, int(page or 1))
+        size = min(50, max(1, int(page_size or 10)))
+        filters = [
+            RealphotosGenerationTask.tenant_id == int(tenant_id),
+            RealphotosGenerationTask.owner_account_id == int(owner_account_id),
+            RealphotosGenerationTask.deleted_at.is_(None),
+        ]
+        if mode and str(mode).strip() and str(mode).strip() != "all":
+            filters.append(RealphotosGenerationTask.mode == str(mode).strip())
+        total = int(
+            await self.db.scalar(
+                select(func.count()).select_from(RealphotosGenerationTask).where(*filters)
+            )
+            or 0
+        )
+        rows = (
+            await self.db.execute(
+                select(RealphotosGenerationTask)
+                .where(*filters)
+                .order_by(RealphotosGenerationTask.id.desc())
+                .offset((page_no - 1) * size)
+                .limit(size)
+            )
+        ).scalars().all()
+        return list(rows), total
+
     async def processing_task_count_for_assets(self, *, tenant_id: int, asset_ids: list[int]) -> int:
         if not asset_ids:
             return 0
