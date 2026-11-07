@@ -204,7 +204,7 @@ next_action:
   action: "审阅 cursor/partial-align-9973 PR（PARTIAL-ALIGN A–F；依赖 blocking-fix #27 若尚未合入须先/一并处理）。仅经非本人作者账号 squash 合入 main。不得开 S7。"
   work_order: "PARTIAL-ALIGN-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-部分对齐修复工单.md"
   branch: cursor/partial-align-9973
-  pr: null
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/28"
   depends_on_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/27"
   partial_align_status:
     A_pre_review_honesty: done

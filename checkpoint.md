@@ -13,7 +13,7 @@
 | 代码态 | PARTIAL-ALIGN A–F：客户预审默认 live/unconfigured；运营指标真实聚合（cost 诚实空态）；目录选择器+降级；405 导入浏览；三 GPS 模式运营可见；菜单缓存进程内 bump；`s5_exited=true`。阻断级能力仍在本分支祖先。不是生产收费已开放 |
 | 验证态 | `/tmp/partial-align-e2e.log` `PARTIAL_ALIGN_E2E_PASS` 且 `production_billing=false`；浏览器 `/tmp/partial-align-browser.txt`；`/tmp/s5-pg-e2e.log` 仍绿；URL 导入仍未接通；不得开 S7 |
 | 当前阶段 | S5 退出已收口（非生产收费）；S6 管理员已结束；PARTIAL-ALIGN 开发机端测已通过，待 Owner 审 PR |
-| 下一步 | 推送并开 `cursor/partial-align-9973` PR；若 #27 未合须在 PR 声明依赖；仅非作者账号 squash；不得开 S7 |
+| 下一步 | 审阅 https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/28（依赖 #27）；仅非作者账号 squash；不得开 S7 |
 
 ## 1. 仓库与文档基线
 
