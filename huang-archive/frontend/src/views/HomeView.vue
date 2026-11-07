@@ -128,7 +128,7 @@ onMounted(load)
     <section class="max-w-6xl mx-auto px-4 py-6">
       <div class="border border-clay bg-parchment p-5 sm:p-7 relative overflow-hidden">
         <h2 class="font-song text-xl sm:text-2xl mb-3 leading-relaxed">
-          抟土化金，九秩风霜承勤俭，祥开五世享期颐
+          抟土化金，九秩风霜承勤俭，祥开四世享期颐
         </h2>
         <p class="text-ink/90 max-w-3xl leading-relaxed">
           本馆由家人共同守护，汇集图片、录像、扫描件、新闻与口述录音，
