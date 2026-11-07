@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -379,7 +379,7 @@ async def clear_placeholder_presets(
     ).scalars().all()
     disabled: list[str] = []
     soft_deleted: list[str] = []
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     catalog_codes = {item["code"] for item in S1_ENABLED_PRESETS}
     for row in rows:
         if not _is_placeholder_row(row):
