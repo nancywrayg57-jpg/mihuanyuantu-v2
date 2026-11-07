@@ -8,12 +8,12 @@
 | --- | --- |
 | updated | 2026-11-07 CST（Asia/Shanghai） |
 | branch | `cursor/browser-e2e-fix-9973`（基线 post-#31 / `origin/main` tip） |
-| HEAD | 本地未推送提交（实现中） |
+| HEAD | `0e3faff` 已推送；PR #32 待审合 |
 | 文档态 | PRD **2.10**；架构 **1.7**；`s5_exited=true`；S7 未开 |
 | 代码态 | BROWSER-E2E-FIX F1–F8：登录 next、工单办结/held 释放、用户管理 UI、率百分比、藏演示、系统页角色裁剪、**generation 网关可读**。未接通 URL 真导入；非生产收费 |
-| 验证态 | `/tmp/browser-e2e-fix-e2e.log` 含 `BROWSER_E2E_FIX_E2E_PASS` 且 `production_billing=false`；F8 截图 `/tmp/cursor/screenshots/browser-e2e-fix-f8-library-thumbs.png`；ALIGN #31 仍待审合 |
-| 当前阶段 | BROWSER-E2E-FIX 端测 PASS，待 Collaborator 推送开 PR |
-| 下一步 | 推送 `cursor/browser-e2e-fix-9973` 开 PR；Owner 非自评自合；不得开 S7 |
+| 验证态 | `/tmp/browser-e2e-fix-e2e.log` 含 `BROWSER_E2E_FIX_E2E_PASS` 且 `production_billing=false`；F8 截图 `/tmp/cursor/screenshots/browser-e2e-fix-f8-library-thumbs.png`；ALIGN #31 / 本单 #32 均待非作者审合 |
+| 当前阶段 | BROWSER-E2E-FIX PR #32 待非作者 Owner squash |
+| 下一步 | Owner 审合 #32（及 #31）；不得自评自合；不得开 S7 |
 
 ## 1. 仓库与文档基线
 

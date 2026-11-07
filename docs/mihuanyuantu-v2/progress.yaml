@@ -204,10 +204,11 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "BROWSER-E2E-FIX F1–F8 本地已实现且 /tmp/browser-e2e-fix-e2e.log 含 BROWSER_E2E_FIX_E2E_PASS；推送开 PR 待非作者审合。ALIGN #31 仍待 Owner squash。不得开 S7；不得接通 URL 真导入。"
+  action: "BROWSER-E2E-FIX PR #32 待非作者 squash；ALIGN #31 仍待 Owner 审合。不得开 S7；不得接通 URL 真导入。"
   work_order: "BROWSER-E2E-FIX-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-浏览器端测缺口修复工单.md"
   prior_work_order: "ALIGN-GAP-A5BC-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-合同缺口A5BC闭合工单.md"
   branch: cursor/browser-e2e-fix-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/32"
   prior_branch: cursor/align-gap-a5bc-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/31"
   live_gen_probe_2026_11_07:
@@ -232,8 +233,9 @@ next_action:
     production_billing: false
     url_import_connected: false
     s7_started: false
-    git_commit_push: pending_pr
-  baseline_main: "fbe3542 post-#31 align on origin/main when synced; branch from post-align tip"
+    git_commit_push: pushed_pr_32
+    commit: "0e3faff"
+  baseline_main: "fbe3542 (#31 ALIGN-GAP-A5BC on origin/main)"
   align_gap_a5bc_status:
     G1_nd020_021_archive: done
     G2_output_cleanup: done
