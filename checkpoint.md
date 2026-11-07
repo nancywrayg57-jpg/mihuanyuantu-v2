@@ -7,13 +7,13 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-07 CST（Asia/Shanghai） |
-| branch | `cursor/align-gap-a5bc-9973`（基线 `origin/main`=`7017443`，已含 #29/#30） |
-| HEAD | `61e3a8a` 已推送；PR #31 待审合 |
-| 文档态 | PRD **2.10**；架构 **1.7**；`s5_exited=true`；`nd020_021_archived=true`；S7 未开 |
-| 代码态 | ALIGN-GAP-A5BC G1–G8：五层归档、输出到期清理、OpenAPI 离线制品、geocoder 预留、版本矩阵 accepted_risk、fixed GPS 诚实、生图尺寸审计、IA_C6 方案 B。未接通 URL 真导入；非生产收费 |
-| 验证态 | `/tmp/align-gap-a5bc-e2e.log` `ALIGN_GAP_A5BC_E2E_PASS`；`ND020_021_ARCHIVE_PASS`；`output_cleanup=ok`；`geocoder_mode=reserved`；`version_align=accepted_risk`；`honesty=no_silent_none`；`size_audit=ok`；`IA_C6=mitigated_with_ops_note`；`production_billing=false` |
-| 当前阶段 | ALIGN-GAP-A5BC 已开 PR #31，待非作者 Owner squash |
-| 下一步 | Owner 审合 #31；不得开 S7 |
+| branch | `cursor/browser-e2e-fix-9973`（基线 post-#31 / `origin/main` tip） |
+| HEAD | 本地未推送提交（实现中） |
+| 文档态 | PRD **2.10**；架构 **1.7**；`s5_exited=true`；S7 未开 |
+| 代码态 | BROWSER-E2E-FIX F1–F8：登录 next、工单办结/held 释放、用户管理 UI、率百分比、藏演示、系统页角色裁剪、**generation 网关可读**。未接通 URL 真导入；非生产收费 |
+| 验证态 | `/tmp/browser-e2e-fix-e2e.log` 含 `BROWSER_E2E_FIX_E2E_PASS` 且 `production_billing=false`；F8 截图 `/tmp/cursor/screenshots/browser-e2e-fix-f8-library-thumbs.png`；ALIGN #31 仍待审合 |
+| 当前阶段 | BROWSER-E2E-FIX 端测 PASS，待 Collaborator 推送开 PR |
+| 下一步 | 推送 `cursor/browser-e2e-fix-9973` 开 PR；Owner 非自评自合；不得开 S7 |
 
 ## 1. 仓库与文档基线
 
@@ -33,7 +33,8 @@
 | S0–S6 | 既有证据；非生产收费 |
 | PRODUCT-GAP-A / PRESET-BULK | 已合入 `origin/main`（#29/#30） |
 | OPS-QUALITY-D | D1 已吸收进 ALIGN G8；D2 本地 PASS |
-| ALIGN-GAP-A5BC | G1–G8 本地 PASS；**未推送** |
+| ALIGN-GAP-A5BC | G1–G8 PASS；PR #31 待非作者 squash |
+| BROWSER-E2E-FIX | F1–F8 本地 PASS；待推送开 PR |
 | S7 | **须管理员确认** |
 
 过程进度：`docs/mihuanyuantu-v2/progress.yaml`。

@@ -15,11 +15,14 @@ from app.capabilities.realphotos.permissions import (
     JOBS_ENQUEUE,
     ORDER_SUPPORT_READ,
     ROLE_ADMIN,
+    ROLE_MERCHANT,
     ROLE_ORDER_SUPPORT,
+    ROLE_TECH_SUPPORT,
     TECH_DESK_READ,
     WALLET_READ,
     WORKSPACE_READ,
 )
+from app.core.exceptions import ForbiddenError
 from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
 from app.capabilities.realphotos.services.s1_recharge import (
     RealphotosRechargeService,
@@ -706,10 +709,23 @@ async def get_redo(
 @router.put("/redo-settings")
 async def put_redo(
     body: RedoBody,
+    current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
     _: None = Depends(PermissionChecker([WALLET_READ, WORKSPACE_READ])),
 ) -> dict[str, Any]:
+    """F7: merchant/admin may write; tech_support and order_support rejected (not UI-only)."""
+    roles = await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    is_admin = ROLE_ADMIN in roles or "admin" in roles
+    is_merchant = ROLE_MERCHANT in roles or any(str(code).startswith("rp_merchant") for code in roles)
+    is_tech = ROLE_TECH_SUPPORT in roles
+    is_order = ROLE_ORDER_SUPPORT in roles
+    if is_order and not is_admin and not is_merchant:
+        raise ForbiddenError(message="订单客服不能修改自动重做设置")
+    if is_tech and not is_admin and not is_merchant:
+        raise ForbiddenError(message="技术客服只能查看自动重做设置，不能保存")
+    if not is_admin and not is_merchant:
+        raise ForbiddenError(message="当前角色不能修改自动重做设置")
     row = await RealphotosS1Service(db).save_redo_setting(
         tenant_id=int(tenant_ctx.tenant_id),
         enabled=body.enabled,

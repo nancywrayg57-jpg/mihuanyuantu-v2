@@ -176,19 +176,122 @@ class RealphotosOpsService:
         self,
         *,
         actor_role_codes: set[str],
+        operator_user_id: int,
         tenant_id: int,
         user_id: int,
         reason: str,
     ) -> dict[str, Any]:
         self._require_tech_or_admin(actor_role_codes)
-        if not str(reason or "").strip():
+        note = str(reason or "").strip()
+        if not note:
             raise BusinessError(message="解冻必须填写原因", code="INPUT_INVALID")
         profile = await self._profile(tenant_id, user_id)
         if profile is None:
             raise BusinessError(message="账号档案不存在", code="NOT_FOUND")
         profile.pre_review_frozen = False
+        closed = await self._close_open_tickets(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(user_id),
+            ticket_type="account_freeze",
+            operator_user_id=int(operator_user_id),
+            resolution_note=note,
+            resolution_outcome="unfrozen",
+        )
         await self.db.flush()
-        return {"userId": int(user_id), "preReviewFrozen": False}
+        return {
+            "userId": int(user_id),
+            "preReviewFrozen": False,
+            "closedFreezeTickets": closed,
+        }
+
+    async def _close_open_tickets(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        ticket_type: str,
+        operator_user_id: int,
+        resolution_note: str,
+        resolution_outcome: str,
+    ) -> int:
+        from datetime import UTC, datetime
+
+        rows = (
+            await self.db.execute(
+                select(RealphotosSupportTicket).where(
+                    RealphotosSupportTicket.tenant_id == int(tenant_id),
+                    RealphotosSupportTicket.owner_account_id == int(owner_account_id),
+                    RealphotosSupportTicket.ticket_type == str(ticket_type),
+                    RealphotosSupportTicket.status == "open",
+                    RealphotosSupportTicket.deleted_at.is_(None),
+                )
+            )
+        ).scalars().all()
+        now = datetime.now(UTC)
+        for row in rows:
+            row.status = "resolved"
+            row.resolved_at = now
+            row.resolved_by_user_id = int(operator_user_id)
+            row.resolution_note = str(resolution_note or "")
+            row.resolution_outcome = str(resolution_outcome or "")
+        return len(rows)
+
+    async def resolve_ticket(
+        self,
+        *,
+        actor_role_codes: set[str],
+        operator_user_id: int,
+        ticket_id: int,
+        outcome: str,
+        note: str,
+    ) -> dict[str, Any]:
+        """Close image_appeal (or other non-freeze) tickets. Does not unlock images."""
+        from datetime import UTC, datetime
+
+        self._require_tech_or_admin(actor_role_codes)
+        result = str(outcome or "").strip()
+        if result not in {"accepted", "rejected", "resolved"}:
+            raise BusinessError(message="办结结果无效", code="INPUT_INVALID")
+        text = str(note or "").strip()
+        if not text:
+            raise BusinessError(message="办结原因必填", code="INPUT_INVALID")
+        row = await self.db.get(RealphotosSupportTicket, int(ticket_id))
+        if row is None or row.deleted_at is not None:
+            raise BusinessError(message="工单不存在", code="NOT_FOUND")
+        if row.ticket_type == "account_freeze":
+            raise BusinessError(
+                message="账号冻结工单须通过解冻动作办结，不能单独标记",
+                code="INPUT_INVALID",
+            )
+        if row.status != "open":
+            raise BusinessError(message="工单已办结", code="INPUT_INVALID")
+        row.status = "resolved"
+        row.resolved_at = datetime.now(UTC)
+        row.resolved_by_user_id = int(operator_user_id)
+        row.resolution_note = text
+        row.resolution_outcome = result
+        await self.db.flush()
+        return self._ticket_dict(row)
+
+    @staticmethod
+    def _ticket_dict(row: RealphotosSupportTicket) -> dict[str, Any]:
+        return {
+            "id": int(row.id),
+            "tenantId": int(row.tenant_id),
+            "ownerAccountId": int(row.owner_account_id),
+            "ticketType": row.ticket_type,
+            "status": row.status,
+            "reason": row.reason,
+            "createdAt": row.created_at.isoformat() if row.created_at else None,
+            "resolvedAt": row.resolved_at.isoformat() if getattr(row, "resolved_at", None) else None,
+            "resolvedByUserId": (
+                int(row.resolved_by_user_id)
+                if getattr(row, "resolved_by_user_id", None) is not None
+                else None
+            ),
+            "resolutionNote": getattr(row, "resolution_note", "") or "",
+            "resolutionOutcome": getattr(row, "resolution_outcome", "") or "",
+        }
 
     async def list_tickets(self, *, actor_role_codes: set[str]) -> dict[str, Any]:
         self._require_tech_or_admin(actor_role_codes)
@@ -199,20 +302,7 @@ class RealphotosOpsService:
                 .order_by(RealphotosSupportTicket.id.desc())
             )
         ).scalars().all()
-        return {
-            "items": [
-                {
-                    "id": int(row.id),
-                    "tenantId": int(row.tenant_id),
-                    "ownerAccountId": int(row.owner_account_id),
-                    "ticketType": row.ticket_type,
-                    "status": row.status,
-                    "reason": row.reason,
-                    "createdAt": row.created_at.isoformat() if row.created_at else None,
-                }
-                for row in rows
-            ]
-        }
+        return {"items": [self._ticket_dict(row) for row in rows]}
 
     async def create_ticket(
         self,
@@ -241,15 +331,7 @@ class RealphotosOpsService:
         )
         self.db.add(row)
         await self.db.flush()
-        return {
-            "id": int(row.id),
-            "tenantId": int(row.tenant_id),
-            "ownerAccountId": int(row.owner_account_id),
-            "ticketType": row.ticket_type,
-            "status": row.status,
-            "reason": row.reason,
-            "createdAt": row.created_at.isoformat() if row.created_at else None,
-        }
+        return self._ticket_dict(row)
 
     async def list_merchant_tickets(
         self, *, tenant_id: int, owner_account_id: int
@@ -265,16 +347,32 @@ class RealphotosOpsService:
                 .order_by(RealphotosSupportTicket.id.desc())
             )
         ).scalars().all()
+        return {"items": [self._ticket_dict(row) for row in rows]}
+
+    async def list_held_credit_tasks(self, *, actor_role_codes: set[str]) -> dict[str, Any]:
+        self._require_tech_or_admin(actor_role_codes)
+        from app.capabilities.realphotos.models import RealphotosImageTask
+
+        rows = (
+            await self.db.execute(
+                select(RealphotosImageTask)
+                .where(
+                    RealphotosImageTask.deleted_at.is_(None),
+                    RealphotosImageTask.credit_disposition == "held_until_tech_support",
+                )
+                .order_by(RealphotosImageTask.id.desc())
+                .limit(100)
+            )
+        ).scalars().all()
         return {
             "items": [
                 {
-                    "id": int(row.id),
+                    "taskId": int(row.id),
                     "tenantId": int(row.tenant_id),
                     "ownerAccountId": int(row.owner_account_id),
-                    "ticketType": row.ticket_type,
                     "status": row.status,
-                    "reason": row.reason,
-                    "createdAt": row.created_at.isoformat() if row.created_at else None,
+                    "failureClass": row.failure_class,
+                    "creditDisposition": row.credit_disposition,
                 }
                 for row in rows
             ]

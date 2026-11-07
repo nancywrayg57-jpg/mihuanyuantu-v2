@@ -5,11 +5,13 @@ No supplier client lives in these tables. Fixture rows are in-process only.
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from sqlalchemy import BigInteger, Boolean, Index, Integer, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import TenantBaseModel
-from app.infrastructure.database.types import PortableJSON
+from app.infrastructure.database.types import PortableDateTime, PortableJSON
 
 
 class RealphotosContentReview(TenantBaseModel):
@@ -75,6 +77,11 @@ class RealphotosSupportTicket(TenantBaseModel):
     ticket_type: Mapped[str] = mapped_column(String(32), nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="open")
     reason: Mapped[str] = mapped_column(Text, nullable=False)
+    # BROWSER-E2E-FIX F2 / FR-022: terminal state audit
+    resolved_at: Mapped[datetime | None] = mapped_column(PortableDateTime(), nullable=True)
+    resolved_by_user_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    resolution_note: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    resolution_outcome: Mapped[str] = mapped_column(String(32), nullable=False, default="")
 
 
 class RealphotosAccountLog(TenantBaseModel):

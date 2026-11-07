@@ -19,6 +19,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useSiteBranding } from '@/hooks/useSiteBranding'
 import { useTheme } from '@/hooks/useTheme'
 import { useT } from '@/lib/i18n'
+import { sanitizeNextPath } from '@/lib/sanitize-next-path'
 
 import styles from './login.module.css'
 
@@ -29,11 +30,10 @@ export function LoginClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const nextPath = useMemo(() => {
-    const next = searchParams.get('next')
-    if (!next) return '/welcome'
-    return next.startsWith('/') ? next : '/'
-  }, [searchParams])
+  const nextPath = useMemo(
+    () => sanitizeNextPath(searchParams.get('next'), '/welcome'),
+    [searchParams],
+  )
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -42,8 +42,10 @@ export function LoginClient() {
 
   useEffect(() => {
     if (!session) return
-    router.replace(session.mustCompleteProfile ? '/personal/profile-required' : '/welcome')
-  }, [router, session])
+    router.replace(
+      session.mustCompleteProfile ? '/personal/profile-required' : nextPath,
+    )
+  }, [nextPath, router, session])
 
   const fillDemoAccount = (account: { username: string; password: string }) => {
     setUsername(account.username)

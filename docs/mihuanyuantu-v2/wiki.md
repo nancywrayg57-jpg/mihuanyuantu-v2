@@ -88,14 +88,17 @@
 | 13-blocking-partial | 阻断级 A–G + 部分对齐 A–F | `/tmp/blocking-fix-e2e.log` `/tmp/partial-align-e2e.log` | merged_#27_#28 | product-gap-a |
 | 14-product-gap-a | 种子诚实/AI提示词/设备枚举/消息清理/旧预设MakerNote/客服浏览器 | `/tmp/product-gap-a-e2e.log` `/tmp/product-gap-a-browser.txt` | coded_pr_pending | Owner 审 #29；A5 延后 |
 | 15-preset-bulk | 清占位 + 405 全量导入 + 55 键快照 | `/tmp/preset-bulk-import-e2e.log` | coded_pr_pending | Owner 审 PR；依赖 #29；不开 S7 |
+| 16-browser-e2e-fix | F1–F8：深链/工单/用户/held/率%/藏演示/系统裁剪/generation 网关 | `/tmp/browser-e2e-fix-e2e.log` | local_pass_pr_pending | 推送开 PR；Owner 非自评自合；不开 S7 |
 
 ## Risks and Watchpoints
 - Risk: 把文档齐全或 CI 绿当成后端已交付。
 - Mitigation: checkpoint 代码态 + progress `s0_coding_authorized`。
 - Risk: 实现时直接复用底座路径前缀 scopes。
 - Mitigation: 架构 1.7 §9.2.1 改造义务；S5 验收 AC-024。
+- Risk: 生图已入库但缩略图恒「图」被误判为模型未接入。
+- Mitigation: F8 网关放行 `generation/*`（资产表校验）；「(降级)」仅文件名元数据回退。
 
 ## Backlog Knowledge
-- Next: Owner 审合 https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/31 ；不得开 S7；不得接通 URL 真导入。
-- Closed this loop: ALIGN-GAP-A5BC G1–G8（`/tmp/align-gap-a5bc-e2e.log` `ALIGN_GAP_A5BC_E2E_PASS`）；`nd020_021_archived=true` 仍 `production_billing=false`；OpenAPI 离线制品 `aojuai-main/backend/contracts/realphotos_image_processing.openapi.json`；geocoder=reserved；G5 `version_align=accepted_risk`（CI 3.11/pnpm9 vs 架构 3.12/pnpm10）。
+- Next: 推送 `cursor/browser-e2e-fix-9973` 开 PR；Owner 审合本单与 #31；不得开 S7；不得接通 URL 真导入。
+- Closed this loop: BROWSER-E2E-FIX F1–F8（`/tmp/browser-e2e-fix-e2e.log` `BROWSER_E2E_FIX_E2E_PASS`；F8 截图 `browser-e2e-fix-f8-library-thumbs.png`）；ALIGN-GAP-A5BC G1–G8 仍见 #31。
 - Deferred: A5 运营成本真实聚合（无账本物料）；CI 升至架构推荐 3.12/pnpm10（accepted_risk，待 Owner 锁文件验证）；多 worker 菜单缓存无 Redis 时仍须滚动重启（IA_C6=mitigated_with_ops_note）。

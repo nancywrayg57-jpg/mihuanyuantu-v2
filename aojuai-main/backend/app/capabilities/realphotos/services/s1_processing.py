@@ -777,6 +777,14 @@ class RealphotosS1Service:
     async def read_object_for_gateway(
         self, *, tenant_id: int, object_key: str, owner_account_id: int | None = None
     ) -> tuple[str, bytes]:
+        """Stream a LocalDisk object after DB ownership checks.
+
+        Paths:
+        - ``/output/`` → image task output (optional owner filter; may 410 when expired)
+        - any other key → ``RealphotosAsset.object_key`` hit (covers ``/upload/``,
+          ``/generation/``, and future asset prefixes). Cross-tenant prefix is
+          enforced by the gateway router before this method runs.
+        """
         key = object_key.strip().lstrip("/")
         now = _utcnow()
         if "/output/" in key:
@@ -799,23 +807,22 @@ class RealphotosS1Service:
                 return "image/jpeg", handle.read()
             finally:
                 handle.close()
-        if "/upload/" in key:
-            result = await self.db.execute(
-                select(RealphotosAsset).where(
-                    RealphotosAsset.tenant_id == int(tenant_id),
-                    RealphotosAsset.object_key == key,
-                    RealphotosAsset.deleted_at.is_(None),
-                )
+        # BROWSER-E2E-FIX F8: generation/* (and upload/*) via asset table — not path allowlist alone.
+        result = await self.db.execute(
+            select(RealphotosAsset).where(
+                RealphotosAsset.tenant_id == int(tenant_id),
+                RealphotosAsset.object_key == key,
+                RealphotosAsset.deleted_at.is_(None),
             )
-            asset = result.scalar_one_or_none()
-            if asset is None:
-                raise NotFoundError(message="对象不存在")
-            handle = get_storage_adapter().open_read(key)
-            try:
-                return asset.content_type, handle.read()
-            finally:
-                handle.close()
-        raise NotFoundError(message="对象不存在")
+        )
+        asset = result.scalar_one_or_none()
+        if asset is None:
+            raise NotFoundError(message="对象不存在")
+        handle = get_storage_adapter().open_read(key)
+        try:
+            return asset.content_type, handle.read()
+        finally:
+            handle.close()
 
     async def list_inbox(self, *, tenant_id: int, recipient_user_id: int) -> list[RealphotosInboxMessage]:
         now = _utcnow()

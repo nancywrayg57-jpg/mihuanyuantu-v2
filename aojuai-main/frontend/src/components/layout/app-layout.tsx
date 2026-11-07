@@ -37,6 +37,7 @@ import {
 import { InboxBell } from '@/components/layout/inbox-bell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { apiFetch } from '@/lib/api'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -150,9 +151,32 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   // 手风琴互斥：undefined = 跟随当前路由所在分组，null = 全部收起
   const [expandedGroupId, setExpandedGroupId] = useState<string | null | undefined>(undefined)
+  const [hideDemoMenus, setHideDemoMenus] = useState(false)
   const { locale, setLocale, t, tMenu } = useLocale()
   const sessionDisplayName = resolveSessionDisplayName(session, t('system.layout.accountFallback'))
   const sessionAvatarSrc = resolveSessionAvatarSrc(session?.avatar)
+
+  useEffect(() => {
+    if (!session) {
+      setHideDemoMenus(false)
+      return
+    }
+    void apiFetch<{ roleCodes?: string[] }>('/api/v1/realphotos/me')
+      .then((data) => {
+        const roles = data.roleCodes || []
+        const business = new Set([
+          'rp_merchant',
+          'rp_order_support',
+          'rp_tech_support',
+          'rp_admin',
+          'admin',
+        ])
+        setHideDemoMenus(
+          roles.some((code) => business.has(code) || String(code).startsWith('rp_merchant')),
+        )
+      })
+      .catch(() => setHideDemoMenus(false))
+  }, [session])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -180,16 +204,27 @@ export function AppLayout({ children }: { children: ReactNode }) {
       },
     ]
 
+    const demoLabel = t('system.layout.demo')
     for (const root of (menuRoutes || []).filter(isRouteVisible)) {
+      const rootTitle = routeTitle(root)
+      if (hideDemoMenus && (rootTitle === demoLabel || rootTitle === '演示' || root.path === '/demo')) {
+        continue
+      }
       const children = root.children || []
       const visibleChildren = children.filter(isRouteVisible)
       const leafRoutes = collectLeafRoutes(visibleChildren)
       const sources = leafRoutes.length ? leafRoutes : children.length ? [] : [root]
-      const items = sources.map((r) => ({
-        to: r.path,
-        label: routeTitle(r),
-        icon: iconFromBackendKey(r.meta?.icon ?? null),
-      }))
+      const items = sources
+        .filter((r) => {
+          if (!hideDemoMenus) return true
+          const title = routeTitle(r)
+          return title !== demoLabel && title !== '演示' && !String(r.path || '').startsWith('/schedule')
+        })
+        .map((r) => ({
+          to: r.path,
+          label: routeTitle(r),
+          icon: iconFromBackendKey(r.meta?.icon ?? null),
+        }))
       if (items.length > 0) {
         groups.push({
           id: `menu:${root.path || routeTitle(root)}`,
@@ -200,26 +235,28 @@ export function AppLayout({ children }: { children: ReactNode }) {
       }
     }
 
-    const usedPaths = new Set(groups.flatMap((g) => g.items.map((i) => i.to)))
-    const demoItems: NavItem[] = [
-      { to: '/schedule', label: t('system.layout.schedule'), icon: CalendarDays },
-      { to: '/permission/page', label: t('system.layout.pagePermission'), icon: Shield },
-      { to: '/permission/button', label: t('system.layout.buttonPermission'), icon: KeyRound },
-      { to: '/system/dict', label: t('system.layout.dict'), icon: BookOpen },
-      { to: '/tenant/package/index', label: t('system.layout.tenantPackage'), icon: Building2 },
-    ]
-    const missingDemoItems = demoItems.filter((i) => !usedPaths.has(i.to))
-    if (missingDemoItems.length) {
-      groups.push({
-        id: 'demo',
-        label: t('system.layout.demo'),
-        icon: Shield,
-        items: missingDemoItems,
-      })
+    if (!hideDemoMenus) {
+      const usedPaths = new Set(groups.flatMap((g) => g.items.map((i) => i.to)))
+      const demoItems: NavItem[] = [
+        { to: '/schedule', label: t('system.layout.schedule'), icon: CalendarDays },
+        { to: '/permission/page', label: t('system.layout.pagePermission'), icon: Shield },
+        { to: '/permission/button', label: t('system.layout.buttonPermission'), icon: KeyRound },
+        { to: '/system/dict', label: t('system.layout.dict'), icon: BookOpen },
+        { to: '/tenant/package/index', label: t('system.layout.tenantPackage'), icon: Building2 },
+      ]
+      const missingDemoItems = demoItems.filter((i) => !usedPaths.has(i.to))
+      if (missingDemoItems.length) {
+        groups.push({
+          id: 'demo',
+          label: demoLabel,
+          icon: Shield,
+          items: missingDemoItems,
+        })
+      }
     }
 
     return groups
-  }, [menuRoutes, t])
+  }, [hideDemoMenus, menuRoutes, t])
 
   const renderNav = (options: { compact: boolean; allowCollapseToggle: boolean }) => {
     const { compact, allowCollapseToggle } = options

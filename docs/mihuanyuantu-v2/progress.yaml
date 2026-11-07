@@ -204,11 +204,36 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "ALIGN-GAP-A5BC PR #31 已开；合入仅非作者 Owner 账号 squash。不得开 S7；不得接通 URL 真导入。"
-  work_order: "ALIGN-GAP-A5BC-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-合同缺口A5BC闭合工单.md"
-  branch: cursor/align-gap-a5bc-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/31"
-  baseline_main: "7017443 (#30 PRESET-BULK-IMPORT already on origin/main)"
+  action: "BROWSER-E2E-FIX F1–F8 本地已实现且 /tmp/browser-e2e-fix-e2e.log 含 BROWSER_E2E_FIX_E2E_PASS；推送开 PR 待非作者审合。ALIGN #31 仍待 Owner squash。不得开 S7；不得接通 URL 真导入。"
+  work_order: "BROWSER-E2E-FIX-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-浏览器端测缺口修复工单.md"
+  prior_work_order: "ALIGN-GAP-A5BC-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-合同缺口A5BC闭合工单.md"
+  branch: cursor/browser-e2e-fix-9973
+  prior_branch: cursor/align-gap-a5bc-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/31"
+  live_gen_probe_2026_11_07:
+    text_to_image: "task=32 asset=108 provider=aoju gpt-image-2 stored; e2e also task=34 asset=112"
+    image_to_image: "task=33 asset=109 provider=aoju gpt-image-2 stored ref_review=qwen3-vl-plus:pass"
+    gateway_generation: "FIXED read_object_for_gateway resolves RealphotosAsset incl. /generation/; GET 200 bytes match disk"
+    degraded_label: "metadata filename fallback, not model offline"
+    credits_spent: 20
+    production_billing: false
+  browser_e2e_fix_status:
+    F1_login_next: done
+    F2_ticket_resolve_unfreeze: done
+    F3_users_ui: done
+    F4_held_release_ui: done
+    F5_format_rate: done
+    F6_hide_demo: done
+    F7_system_role_trim: done_default_merchant_write_tech_ro
+    F8_generation_gateway: done
+    e2e_log: "/tmp/browser-e2e-fix-e2e.log"
+    e2e_mark: BROWSER_E2E_FIX_E2E_PASS
+    screenshot_f8: "/tmp/cursor/screenshots/browser-e2e-fix-f8-library-thumbs.png"
+    production_billing: false
+    url_import_connected: false
+    s7_started: false
+    git_commit_push: pending_pr
+  baseline_main: "fbe3542 post-#31 align on origin/main when synced; branch from post-align tip"
   align_gap_a5bc_status:
     G1_nd020_021_archive: done
     G2_output_cleanup: done
@@ -264,6 +289,15 @@ next_action:
     - id: ALIGN_GAP_G4_GEOCODER_SCHEME_A
       status: recorded
       detail: "首版不启用外部 geocoder；adapters/geocoder.py Protocol+NotConfigured；FR-008 仅预设解析。"
+    - id: BROWSER_E2E_F7_REDO_ROLE_DEFAULT
+      status: decided_ticket_default
+      detail: "工单 F7：商家可写自动重做、技术客服只读、管理员全量；与「仅管理员可改」产品裁决冲突时停问。本轮按工单默认落地，后端 PUT 对 tech 403。"
+    - id: BROWSER_E2E_F8_I2I_LIVE_SYNTHETIC
+      status: recorded_fixture_fallback
+      detail: "E-F8-5 用合成 JPEG 走 live 图生图会参考图预审拒绝；端测回退 fixture 仍覆盖 generation 网关。文生图 live provider=aoju 已证网关；浏览器资源页缩略图已非占位「图」。"
+    - id: BROWSER_E2E_F8_THUMB_BATCH_SETSTATE
+      status: fixed_progressive
+      detail: "资源页原对 60 条串行拉完才 setThumbs，大 PNG 期间整列停在「图」。已改为逐条渐进 setState；根因网关仍是 F8 主修复。"
   preset_bulk_import_status:
     merged_main: "7017443"
     B1_clear_placeholders: done

@@ -1,9 +1,11 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react'
 
 import { PageHeader } from '@/components/page/page-header'
+import { apiFetch } from '@/lib/api'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -110,11 +112,39 @@ const weekdayKeys = [
 
 export default function SchedulePage() {
   const t = useT()
+  const router = useRouter()
+  const [blocked, setBlocked] = useState(false)
   const today = useMemo(() => new Date(), [])
   const [month, setMonth] = useState<Date>(() => startOfMonth(new Date()))
   const [items, setItems] = useState<ScheduleItem[]>(() => createSeedItems(t))
 
+  useEffect(() => {
+    void apiFetch<{ roleCodes?: string[] }>('/api/v1/realphotos/me')
+      .then((data) => {
+        const roles = data.roleCodes || []
+        const business = new Set([
+          'rp_merchant',
+          'rp_order_support',
+          'rp_tech_support',
+          'rp_admin',
+          'admin',
+        ])
+        if (roles.some((code) => business.has(code) || String(code).startsWith('rp_merchant'))) {
+          setBlocked(true)
+          router.replace('/welcome')
+        }
+      })
+      .catch(() => undefined)
+  }, [router])
+
   const monthValue = useMemo(() => `${month.getFullYear()}-${pad2(month.getMonth() + 1)}`, [month])
+  if (blocked) {
+    return (
+      <main className="p-6 text-sm text-muted-foreground">
+        当前业务角色无权访问演示页，已离开日程演示。
+      </main>
+    )
+  }
 
   const gridDays = useMemo(() => {
     const first = startOfMonth(month)

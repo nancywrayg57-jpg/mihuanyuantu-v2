@@ -274,6 +274,7 @@ async def test_only_tech_or_admin_can_release_held_credit(db):
     assert guard.locked_until == locked_until
     await ctx["ops"].unfreeze_account(
         actor_role_codes={ROLE_ADMIN},
+        operator_user_id=ctx["user"],
         tenant_id=ctx["tenant"],
         user_id=ctx["user"],
         reason="没有冻结也只清预审标记",
