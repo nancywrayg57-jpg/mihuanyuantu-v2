@@ -1,13 +1,13 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { Heart, MessageCircle, Trash2, ExternalLink, Pencil } from 'lucide-vue-next'
+import { Heart, MessageCircle, Trash2, ExternalLink, Pencil, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
 import { zhError } from '../lib/errors'
 import VoiceRecorder from './VoiceRecorder.vue'
 import EditArchiveModal from './EditArchiveModal.vue'
 import VideoPlayer from './VideoPlayer.vue'
-import { coverOrThumbUrl, formatDuration } from '../lib/mediaPrepare'
+import { coverOrThumbUrl, formatDuration, thumbUrl } from '../lib/mediaPrepare'
 
 const props = defineProps({
   archive: { type: Object, required: true },
@@ -43,24 +43,55 @@ const canEdit = computed(
   () => auth.isAdmin || (!!auth.user?.id && uploaderId.value === auth.user.id),
 )
 
-const files = computed(() => props.archive.media_files || [])
+const files = computed(() => {
+  const raw = props.archive.media_files
+  return Array.isArray(raw) ? raw.filter(Boolean) : raw ? [raw] : []
+})
+const slide = ref(0)
+watch(
+  () => props.archive.id,
+  () => {
+    slide.value = 0
+  },
+)
+watch(files, (list) => {
+  if (slide.value >= list.length) slide.value = Math.max(0, list.length - 1)
+})
 const firstFile = computed(() => files.value[0] || '')
+const activeFile = computed(() => files.value[slide.value] || firstFile.value || '')
 const fileUrl = computed(() =>
-  firstFile.value ? pb.files.getUrl(props.archive, firstFile.value) : '',
+  activeFile.value ? pb.files.getUrl(props.archive, activeFile.value) : '',
 )
 const listCoverUrl = computed(() => coverOrThumbUrl(pb, props.archive))
-const durationLabel = computed(() => {
-  const d = Number(props.archive.duration_sec || 0)
-  return d > 0 ? formatDuration(d) : ''
-})
 const isPdf = computed(() => String(firstFile.value).toLowerCase().endsWith('.pdf'))
 const isVideo = computed(() => props.archive.category === 'video')
 const isAudio = computed(() => props.archive.category === 'audio')
 const isImageLike = computed(() => ['image', 'scan'].includes(props.archive.category))
 const isLink = computed(() => props.archive.category === 'link')
+const imageUrls = computed(() =>
+  files.value.map((name) => ({
+    name,
+    url: thumbUrl(pb, props.archive, name, '600x0') || pb.files.getUrl(props.archive, name),
+    full: pb.files.getUrl(props.archive, name),
+  })),
+)
+const multiCount = computed(() => (isImageLike.value ? files.value.length : 0))
+const durationLabel = computed(() => {
+  const d = Number(props.archive.duration_sec || 0)
+  return d > 0 ? formatDuration(d) : ''
+})
 const showListCover = computed(
   () => isImageLike.value || (isVideo.value && !!listCoverUrl.value) || (isAudio.value && !!listCoverUrl.value),
 )
+
+function prevSlide() {
+  if (!files.value.length) return
+  slide.value = (slide.value - 1 + files.value.length) % files.value.length
+}
+function nextSlide() {
+  if (!files.value.length) return
+  slide.value = (slide.value + 1) % files.value.length
+}
 
 async function checkLiked() {
   try {
@@ -230,14 +261,65 @@ function voiceUrl(m) {
           >{{ durationLabel }}</span>
         </div>
       </template>
-      <template v-else-if="isImageLike && (listCoverUrl || fileUrl)">
-        <img
-          :src="listCoverUrl || fileUrl"
-          :alt="archive.title"
-          class="w-full h-full object-cover"
-          loading="lazy"
-          data-testid="archive-thumb"
-        />
+      <template v-else-if="isImageLike && imageUrls.length">
+        <a
+          :href="imageUrls[slide]?.full || fileUrl"
+          target="_blank"
+          rel="noopener"
+          class="block w-full h-full"
+          data-testid="archive-thumb-link"
+        >
+          <img
+            :src="imageUrls[slide]?.url || listCoverUrl || fileUrl"
+            :alt="`${archive.title}（${slide + 1}/${imageUrls.length}）`"
+            class="w-full h-full object-cover"
+            loading="lazy"
+            data-testid="archive-thumb"
+          />
+        </a>
+        <div
+          v-if="multiCount > 1"
+          class="absolute top-2 right-2 z-10 text-xs bg-ink/75 text-parchment px-2 py-0.5"
+          data-testid="archive-multi-badge"
+        >
+          {{ slide + 1 }}/{{ multiCount }} 张
+        </div>
+        <div v-if="multiCount > 1" class="absolute inset-y-0 left-0 right-0 z-10 flex items-center justify-between px-1 pointer-events-none">
+          <button
+            type="button"
+            class="pointer-events-auto min-h-tap min-w-[44px] grid place-items-center bg-ink/45 text-parchment"
+            data-testid="archive-prev"
+            aria-label="上一张"
+            @click.prevent="prevSlide"
+          >
+            <ChevronLeft class="w-6 h-6" />
+          </button>
+          <button
+            type="button"
+            class="pointer-events-auto min-h-tap min-w-[44px] grid place-items-center bg-ink/45 text-parchment"
+            data-testid="archive-next"
+            aria-label="下一张"
+            @click.prevent="nextSlide"
+          >
+            <ChevronRight class="w-6 h-6" />
+          </button>
+        </div>
+        <div
+          v-if="multiCount > 1"
+          class="absolute bottom-2 left-2 right-2 z-10 flex gap-1 overflow-x-auto pointer-events-auto"
+          data-testid="archive-thumbs"
+        >
+          <button
+            v-for="(img, i) in imageUrls"
+            :key="img.name"
+            type="button"
+            class="shrink-0 w-10 h-10 border-2 overflow-hidden"
+            :class="i === slide ? 'border-cinnabar' : 'border-parchment/80'"
+            @click.prevent="slide = i"
+          >
+            <img :src="img.url" :alt="`缩略图 ${i + 1}`" class="w-full h-full object-cover" />
+          </button>
+        </div>
       </template>
       <template v-else>
         <div class="absolute inset-0 grid place-items-center text-mute">暂无预览</div>

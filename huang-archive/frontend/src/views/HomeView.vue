@@ -8,7 +8,7 @@ import { useUploadQueueStore } from '../stores/uploadQueue'
 import { useA11yStore } from '../stores/a11y'
 import { CATEGORY_TABS, uploadLabelFor } from '../lib/roster'
 import { filterArchives } from '../lib/archiveFilters'
-import { buildArchiveExport, downloadJson } from '../lib/exportArchives'
+import { downloadFullBackup } from '../lib/exportArchives'
 import { zhError } from '../lib/errors'
 import ArchiveCard from '../components/ArchiveCard.vue'
 import UploadModal from '../components/UploadModal.vue'
@@ -74,14 +74,22 @@ async function load() {
   }
 }
 
+const exporting = ref(false)
 async function doExport() {
+  if (exporting.value) return
   exportMsg.value = ''
+  exporting.value = true
   try {
-    const data = await buildArchiveExport()
-    downloadJson(data, `huang-archive-backup-${new Date().toISOString().slice(0, 10)}.json`)
-    exportMsg.value = `已导出 ${data.counts.archives} 条档案`
+    const counts = await downloadFullBackup({
+      onProgress: ({ done, total, label }) => {
+        exportMsg.value = `正在打包备份 ${done}/${total}${label ? ` · ${label}` : ''}`
+      },
+    })
+    exportMsg.value = `已导出 ZIP：${counts.archives} 条档案、${counts.files} 个文件（含元数据）`
   } catch (e) {
     exportMsg.value = zhError(e, '导出失败')
+  } finally {
+    exporting.value = false
   }
 }
 
@@ -183,11 +191,14 @@ onMounted(load)
         </button>
         <button
           type="button"
-          class="min-h-tap px-3 border border-clay inline-flex items-center gap-1"
+          class="min-h-tap px-3 border border-clay inline-flex items-center gap-1 disabled:opacity-60"
           data-testid="export-backup"
+          :disabled="exporting"
+          :title="exporting ? '正在打包…' : '一键导出全部档案与文件（ZIP）'"
           @click="doExport"
         >
-          <Download class="w-5 h-5" /> <span class="hidden sm:inline">备份导出</span>
+          <Download class="w-5 h-5" />
+          <span class="hidden sm:inline">{{ exporting ? '打包中…' : '备份导出' }}</span>
         </button>
         <button
           type="button"

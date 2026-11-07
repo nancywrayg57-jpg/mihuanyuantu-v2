@@ -337,6 +337,32 @@ export function safeUploadFilename(file, fallbackExt = 'bin') {
   return name
 }
 
+/** Ensure multi-select files keep distinct names (WeChat often reuses image.jpg). */
+export function uniqueUploadNames(files) {
+  const seen = new Map()
+  return (files || []).map((file, index) => {
+    const nf = normalizeUploadFile(file)
+    let name = safeUploadFilename(nf, 'jpg')
+    const key = name.toLowerCase()
+    const n = (seen.get(key) || 0) + 1
+    seen.set(key, n)
+    if (n > 1) {
+      const dot = name.lastIndexOf('.')
+      const base = dot > 0 ? name.slice(0, dot) : name
+      const ext = dot > 0 ? name.slice(dot) : ''
+      name = `${base}_${n}${ext}`
+    }
+    // also stamp index to avoid collisions after PB rewrite
+    if ((files || []).length > 1) {
+      const dot = name.lastIndexOf('.')
+      const base = dot > 0 ? name.slice(0, dot) : name
+      const ext = dot > 0 ? name.slice(dot) : ''
+      name = `${base}_p${index + 1}${ext}`
+    }
+    return { file: nf, name }
+  })
+}
+
 /** Direct (non-chunked) create via PocketBase SDK — for small files / links. */
 export async function uploadDirect(files, fields, { coverFile } = {}) {
   const form = new FormData()
@@ -348,9 +374,8 @@ export async function uploadDirect(files, fields, { coverFile } = {}) {
     if (sv == null) return
     form.append(k, sv)
   })
-  for (const f of files || []) {
-    const nf = normalizeUploadFile(f)
-    form.append('media_files', nf, safeUploadFilename(nf, 'jpg'))
+  for (const { file, name } of uniqueUploadNames(files)) {
+    form.append('media_files', file, name)
   }
   if (coverFile) {
     const cf = normalizeUploadFile(coverFile)
@@ -367,6 +392,43 @@ export async function uploadDirect(files, fields, { coverFile } = {}) {
     err.status = e?.status
     throw err
   }
+}
+
+/**
+ * Upload many files into ONE archive. Uses direct multipart when possible;
+ * if the first file needs chunking, chunk it then append the rest via update
+ * (replace with full set after collecting blobs is avoided — we create with
+ * first file then PATCH remaining as additional media_files in one request).
+ */
+export async function uploadManyAsOneArchive(files, fields, { coverFile, onProgress } = {}) {
+  const list = Array.from(files || [])
+  if (!list.length) return uploadDirect([], fields)
+  if (list.length === 1) {
+    if (shouldUseChunked(list[0])) {
+      const rec = await uploadFileChunked(list[0], fields, { onProgress })
+      if (coverFile || fields.duration_sec) {
+        try {
+          return (
+            (await patchMediaMeta(rec.id, {
+              coverFile,
+              durationSec: fields.duration_sec,
+            })) || rec
+          )
+        } catch {
+          return rec
+        }
+      }
+      return rec
+    }
+    return uploadDirect(list, fields, { coverFile })
+  }
+
+  // Prefer single create with all files (PB keeps all media_files).
+  // Chunk only when the batch is one large file (handled above).
+  onProgress?.({ percent: 5 })
+  const record = await uploadDirect(list, fields, { coverFile })
+  onProgress?.({ percent: 100 })
+  return record
 }
 
 /** Attach cover/duration after chunked create (complete API may not take files). */

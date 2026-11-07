@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "fflate": "^0.8.3",
     "lucide-vue-next": "^0.469.0",
     "pinia": "^4.1.0",
     "pocketbase": "^0.28.2",
