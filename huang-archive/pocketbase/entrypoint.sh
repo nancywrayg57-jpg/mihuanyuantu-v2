@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-mkdir -p /pb/pb_data
+mkdir -p /pb/pb_data /pb/pb_data/upload_sessions /pb/pb_data/transcode_tmp
 
 # Apply migrations before admin bootstrap
 /pb/pocketbase migrate up \
@@ -16,6 +16,15 @@ if [ ! -f /pb/pb_data/.admin_bootstrapped ]; then
     || true
   touch /pb/pb_data/.admin_bootstrapped
 fi
+
+# Background transcoder for non-MP4 video → WeChat-friendly H.264 MP4
+(
+  sleep 8
+  while true; do
+    /pb/scripts/transcode_pending.sh || true
+    sleep 12
+  done
+) &
 
 exec /pb/pocketbase serve \
   --http=0.0.0.0:8090 \

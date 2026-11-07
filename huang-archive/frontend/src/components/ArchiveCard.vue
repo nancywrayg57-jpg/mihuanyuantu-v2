@@ -6,6 +6,7 @@ import { useAuthStore } from '../stores/auth'
 import { zhError } from '../lib/errors'
 import VoiceRecorder from './VoiceRecorder.vue'
 import EditArchiveModal from './EditArchiveModal.vue'
+import VideoPlayer from './VideoPlayer.vue'
 
 const props = defineProps({
   archive: { type: Object, required: true },
@@ -196,8 +197,8 @@ function voiceUrl(m) {
           <span class="text-mute">复古卷宗封面</span>
         </a>
       </template>
-      <template v-else-if="isVideo && fileUrl">
-        <video :src="fileUrl" class="w-full h-full object-cover" controls playsinline preload="metadata" />
+      <template v-else-if="isVideo">
+        <VideoPlayer :archive="archive" />
       </template>
       <template v-else-if="isAudio && fileUrl">
         <div class="absolute inset-0 flex flex-col justify-end p-4 gap-3">

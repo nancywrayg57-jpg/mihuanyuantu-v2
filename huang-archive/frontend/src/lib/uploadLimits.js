@@ -14,7 +14,11 @@ export const UPLOAD_LIMIT_LABELS = {
 export function fileKind(file, category) {
   const name = String(file?.name || '').toLowerCase()
   const type = String(file?.type || '').toLowerCase()
-  if (category === 'video' || type.startsWith('video/') || /\.(mp4|mov|webm|m4v)$/.test(name)) {
+  if (
+    category === 'video' ||
+    type.startsWith('video/') ||
+    /\.(mp4|mov|webm|m4v|avi|mkv|3gp|mpeg|mpg)$/.test(name)
+  ) {
     return 'video'
   }
   // Images (incl. photo scans) → 30MB; PDF/other under scan/audio/other → 100MB
@@ -43,4 +47,4 @@ export function validateUploadFiles(files, category) {
 }
 
 export const FILE_ACCEPT =
-  'image/*,video/*,audio/*,.pdf,.heic,.heif,.mov,.mp4,.webm,.m4a,.mp3,.wav'
+  'image/*,video/*,audio/*,.pdf,.heic,.heif,.mov,.mp4,.m4v,.webm,.avi,.mkv,.3gp,.mpeg,.mpg,.m4a,.mp3,.wav'

@@ -1,15 +1,17 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { LogOut, KeyRound, Upload, Users } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
+import { useUploadQueueStore } from '../stores/uploadQueue'
 import { CATEGORY_TABS, uploadLabelFor } from '../lib/roster'
 import { zhError } from '../lib/errors'
 import ArchiveCard from '../components/ArchiveCard.vue'
 import UploadModal from '../components/UploadModal.vue'
 
 const auth = useAuthStore()
+const queue = useUploadQueueStore()
 const router = useRouter()
 
 const tab = ref('all')
@@ -68,8 +70,19 @@ function onMemory(rec) {
 }
 
 function onUploaded(rec) {
+  if (!rec?.id) return
+  if (archives.value.some((a) => a.id === rec.id)) return
   archives.value.unshift(rec)
 }
+
+watch(
+  () => queue.items.map((i) => `${i.id}:${i.status}:${i.record?.id || ''}`).join('|'),
+  () => {
+    for (const it of queue.items) {
+      if (it.status === 'done' && it.record?.id) onUploaded(it.record)
+    }
+  },
+)
 
 async function savePassword() {
   pwdMsg.value = ''
@@ -193,7 +206,7 @@ onMounted(load)
       <Upload class="w-5 h-5" /> {{ uploadLabel }}
     </button>
 
-    <UploadModal :open="uploadOpen" :heading="uploadLabel" @close="uploadOpen = false" @uploaded="onUploaded" />
+    <UploadModal :open="uploadOpen" :heading="uploadLabel" @close="uploadOpen = false" />
 
     <div
       v-if="pwdOpen"

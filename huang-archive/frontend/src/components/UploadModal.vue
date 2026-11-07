@@ -1,18 +1,19 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { X, Image, Video, FileText, Link2, Mic, Boxes } from 'lucide-vue-next'
-import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
-import { zhError } from '../lib/errors'
+import { useUploadQueueStore } from '../stores/uploadQueue'
 import { FILE_ACCEPT, UPLOAD_LIMIT_LABELS, validateUploadFiles } from '../lib/uploadLimits'
+import { shouldUseChunked } from '../lib/chunkedUpload'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
   heading: { type: String, default: '上传资料' },
 })
-const emit = defineEmits(['close', 'uploaded'])
+const emit = defineEmits(['close', 'queued'])
 
 const auth = useAuthStore()
+const queue = useUploadQueueStore()
 
 const categories = [
   { key: 'image', label: '图片', icon: Image },
@@ -30,17 +31,20 @@ const relatedPersons = ref('')
 const description = ref('')
 const externalLink = ref('')
 const files = ref([])
-const progress = ref(0)
-const submitting = ref(false)
 const error = ref('')
 
 const isLink = computed(() => category.value === 'link')
 const sizeHint = computed(() => {
-  if (category.value === 'video') return UPLOAD_LIMIT_LABELS.video
+  if (category.value === 'video') return UPLOAD_LIMIT_LABELS.video + '；大文件自动分片续传'
   if (category.value === 'image') return UPLOAD_LIMIT_LABELS.image
   if (category.value === 'scan') return '扫描图片不超过 30MB；PDF 等不超过 100MB'
   if (isLink.value) return '填写可访问的 https 链接即可'
-  return UPLOAD_LIMIT_LABELS.other
+  return UPLOAD_LIMIT_LABELS.other + '；超过 1MB 自动分片'
+})
+const chunkHint = computed(() => {
+  if (isLink.value || !files.value.length) return ''
+  if (files.value.some((f) => shouldUseChunked(f))) return '已启用分片/断点续传（可关页后续传同名文件）'
+  return ''
 })
 
 function onFileChange(e) {
@@ -49,7 +53,7 @@ function onFileChange(e) {
   error.value = msg || ''
 }
 
-async function submit() {
+function submit() {
   error.value = ''
   if (!archiveTitle.value.trim() || !occurredTime.value || !relatedPersons.value.trim()) {
     error.value = '请填写标题、发生时间与关系人'
@@ -76,37 +80,25 @@ async function submit() {
     return
   }
 
-  submitting.value = true
-  progress.value = 8
-  try {
-    const form = new FormData()
-    form.append('title', archiveTitle.value.trim())
-    form.append('category', category.value)
-    form.append('occurred_time', occurredTime.value)
-    form.append('related_persons', relatedPersons.value.trim())
-    form.append('description', description.value.trim())
-    form.append('uploader', auth.user.id)
-    form.append('uploader_name', auth.displayName)
-    form.append('likes_count', '0')
-    if (externalLink.value.trim()) form.append('external_link', externalLink.value.trim())
-    for (const f of files.value) {
-      // Ensure filename is present for MIME sniffing on some mobile browsers
-      form.append('media_files', f, f.name || `upload-${Date.now()}`)
-    }
-
-    const record = await pb.collection('archives').create(form, {
-      requestKey: null,
-    })
-    progress.value = 100
-    emit('uploaded', record)
-    reset()
-    emit('close')
-  } catch (e) {
-    console.error('upload failed', e)
-    error.value = zhError(e, '上传失败，请检查文件格式与大小后重试')
-  } finally {
-    submitting.value = false
-  }
+  const entry = queue.enqueue({
+    title: archiveTitle.value.trim(),
+    category: category.value,
+    files: isLink.value ? [] : [...files.value],
+    fields: {
+      title: archiveTitle.value.trim(),
+      category: category.value,
+      occurred_time: occurredTime.value,
+      related_persons: relatedPersons.value.trim(),
+      description: description.value.trim(),
+      external_link: externalLink.value.trim(),
+      uploader: auth.user.id,
+      uploader_name: auth.displayName,
+      likes_count: '0',
+    },
+  })
+  emit('queued', entry)
+  reset()
+  emit('close')
 }
 
 function reset() {
@@ -116,13 +108,11 @@ function reset() {
   description.value = ''
   externalLink.value = ''
   files.value = []
-  progress.value = 0
   error.value = ''
   category.value = 'image'
 }
 
 function close() {
-  if (submitting.value) return
   emit('close')
 }
 </script>
@@ -202,22 +192,19 @@ function close() {
               @change="onFileChange"
             />
             <p class="text-mute text-sm mt-1">{{ sizeHint }}</p>
+            <p v-if="chunkHint" class="text-celadon text-sm mt-1">{{ chunkHint }}</p>
             <p v-if="files.length" class="text-mute text-sm mt-1">已选 {{ files.length }} 个文件</p>
           </label>
-
-          <div v-if="submitting" class="h-2 bg-clay overflow-hidden">
-            <div class="h-full bg-cinnabar transition-all" :style="{ width: progress + '%' }" />
-          </div>
 
           <p v-if="error" class="text-cinnabar" data-testid="upload-error">{{ error }}</p>
 
           <button
             type="button"
-            class="w-full min-h-tap bg-cinnabar text-parchment disabled:opacity-60"
-            :disabled="submitting"
+            class="w-full min-h-tap bg-cinnabar text-parchment"
+            data-testid="upload-submit"
             @click="submit"
           >
-            {{ submitting ? '上传中…' : '确认上传' }}
+            加入上传队列
           </button>
         </div>
       </div>
