@@ -69,13 +69,13 @@ function buildClientResponseHeaders(upstream: Response) {
 }
 
 export async function proxyToBackend(request: NextRequest, pathname: string) {
-  const backendBaseUrl = resolveBackendBaseUrl()
-  const search = request.nextUrl.search || ''
-  const targetUrl = `${backendBaseUrl}${pathname}${search}`
-  const headers = buildUpstreamHeaders(request)
-  const shouldSendBody = request.method !== 'GET' && request.method !== 'HEAD'
-
   try {
+    const backendBaseUrl = resolveBackendBaseUrl()
+    const search = request.nextUrl.search || ''
+    const targetUrl = `${backendBaseUrl}${pathname}${search}`
+    const headers = buildUpstreamHeaders(request)
+    const shouldSendBody = request.method !== 'GET' && request.method !== 'HEAD'
+
     const upstream = await fetch(targetUrl, {
       method: request.method,
       headers,
@@ -91,14 +91,17 @@ export async function proxyToBackend(request: NextRequest, pathname: string) {
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
+    const isConfigError = message.includes('Backend API base URL is not configured')
     return Response.json(
       {
         success: false,
-        code: 'UPSTREAM_PROXY_ERROR',
-        message: 'Frontend proxy failed to reach the backend',
+        code: isConfigError ? 'PROXY_BASE_URL_MISSING' : 'UPSTREAM_PROXY_ERROR',
+        message: isConfigError
+          ? '前端未配置后端地址（API_BASE_URL / BACKEND_PORT）'
+          : 'Frontend proxy failed to reach the backend',
         details: message,
       },
-      { status: 502 },
+      { status: isConfigError ? 500 : 502 },
     )
   }
 }

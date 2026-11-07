@@ -279,7 +279,9 @@ async def _main() -> int:
         bad_payload = await ops.enabled_preset(preset_fixed_bad)
         assert bad_payload is not None
         assert bad_payload["gpsMode"] == "fixed"
-        assert bad_payload["gpsWritable"] is False
+        # Legacy-aligned: fixed without coords is writable via GPS skip (mode stays fixed).
+        assert bad_payload["gpsWritable"] is True
+        assert missing >= 1
         ok_payload = await ops.enabled_preset(preset_fixed_ok)
         assert ok_payload is not None and ok_payload["gpsWritable"] is True
         profile = (
@@ -383,7 +385,7 @@ async def _main() -> int:
             assert abs(float(gps_ok["GPSLongitude"]) - 121.4737) < 0.01
             note("E-G4-2 fixed_coords_written=true")
 
-            # fixed missing → EXIF_WRITE_FAILED, mode stays fixed
+            # fixed missing → GPS skipped, task succeeds; mode stays fixed (legacy silent skip)
             asset_bad = await loop.upload(
                 tenant_id=tenant, owner_account_id=merchant_user, data=_jpeg(color=(90, 10, 10))
             )
@@ -403,10 +405,11 @@ async def _main() -> int:
             )
             done_bad = await loop.execute_queued(claimed3)
             await db.commit()
-            assert done_bad.failure_class == "EXIF_WRITE_FAILED", done_bad.failure_class
+            assert not done_bad.failure_class, done_bad.failure_class
+            assert str(done_bad.status) == "DELIVERED", (done_bad.status, done_bad.failure_class)
+            assert done_bad.output_asset_id is not None
             snap_mode = str((done_bad.preset_snapshot or {}).get("gpsMode") or "")
             assert snap_mode == "fixed"
-            # DB row mode unchanged
             from app.capabilities.realphotos.models import RealphotosDevicePreset
 
             preset_row = (
@@ -415,7 +418,7 @@ async def _main() -> int:
                 )
             ).scalar_one()
             assert preset_row.gps_mode == "fixed"
-            note("E-G4-3 fixed_missing_EXIF_WRITE_FAILED=true")
+            note("E-G4-3 fixed_missing_gps_skipped_success=true")
             note("E-G6-1 fixed_mode_not_silently_none=true")
             note("E-G6-3 honesty=no_silent_none")
 
@@ -702,7 +705,7 @@ async def _main() -> int:
         assert live["components"]["securitySchemes"]["ApiKeyAuth"]["name"] == "X-API-Key"
 
     plan = resolve_gps(preset={"gpsMode": "fixed", "gpsConfig": {}}, seed=1)
-    assert plan["action"] == "fail" and plan["mode"] == "fixed"
+    assert plan["action"] == "skip" and plan["mode"] == "fixed"
 
     note(
         "ALIGN_GAP_A5BC_E2E_PASS "
