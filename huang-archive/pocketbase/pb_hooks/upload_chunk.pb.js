@@ -8,8 +8,12 @@ routerAdd("POST", "/api/hz/upload/init", (c) => {
     const info = $apis.requestInfo(c)
     const user = info && info.authRecord
     if (!user) return c.json(401, { message: "请先登录" })
+    if (String(user.get("role") || "") === "guest") {
+      return c.json(403, { message: "吊唁贵宾不可上传资料" })
+    }
 
     const body = info.data || {}
+
     const filename = String(body.filename || "file.bin")
     const size = Number(body.size || 0)
     const mime = String(body.mime || "application/octet-stream")

@@ -75,7 +75,10 @@ def main():
     _, users = req("GET", "/api/collections/users/records?perPage=200", token=token)
     reset = 0
     for u in users.get("items", []):
-        if u.get("display_name") == "黄祥财" or u.get("role") == "admin":
+        # Guest uses passwordless /api/hz/guest-login; keep a fixed backend password only.
+        if u.get("role") == "guest" or u.get("display_name") == "吊唁贵宾":
+            password = "HzsGuest#1933"
+        elif u.get("display_name") == "黄祥财" or u.get("role") == "admin":
             password = SUPER_PASSWORD
         else:
             password = MEMBER_PASSWORD
@@ -87,6 +90,7 @@ def main():
         )
         reset += 1
         print(f"reset {u.get('display_name')} ({u.get('email')})")
+
 
     # verify samples
     samples = [

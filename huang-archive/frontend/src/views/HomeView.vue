@@ -232,8 +232,10 @@ onMounted(load)
             <span class="hidden sm:inline">{{ exporting ? '打包中…' : '备份导出' }}</span>
           </button>
           <button
+            v-if="!auth.isGuest"
             type="button"
             class="min-h-tap px-3 border border-clay inline-flex items-center gap-1 shrink-0"
+            data-testid="change-password"
             @click="pwdOpen = true"
           >
             <KeyRound class="w-5 h-5" /> <span class="hidden sm:inline">修改密码</span>
@@ -378,14 +380,21 @@ onMounted(load)
     </main>
 
     <button
+      v-if="auth.canUpload"
       type="button"
       class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 min-h-tap px-6 bg-cinnabar text-parchment shadow-lg inline-flex items-center gap-2"
+      data-testid="upload-fab"
       @click="uploadOpen = true"
     >
       <Upload class="w-5 h-5" /> {{ uploadLabel }}
     </button>
 
-    <UploadModal :open="uploadOpen" :heading="uploadLabel" @close="uploadOpen = false" />
+    <UploadModal
+      v-if="auth.canUpload"
+      :open="uploadOpen"
+      :heading="uploadLabel"
+      @close="uploadOpen = false"
+    />
 
     <div
       v-if="pwdOpen"

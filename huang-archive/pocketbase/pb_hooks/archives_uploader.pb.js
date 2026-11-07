@@ -31,6 +31,10 @@ onRecordBeforeCreateRequest((e) => {
     }
     if (!uid) throw new BadRequestError("无法确认上传者身份，请重新登录后再试")
 
+    if (String(user.get("role") || "") === "guest") {
+      throw new BadRequestError("吊唁贵宾不可上传资料")
+    }
+
     // Always overwrite — ignore client uploader (may be truncated / object string)
     e.record.set("uploader", uid)
 

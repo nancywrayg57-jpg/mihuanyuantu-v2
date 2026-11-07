@@ -4,12 +4,21 @@
 
 routerAdd("GET", "/api/hz/member-names", (c) => {
   try {
-    const records = $app.dao().findRecordsByFilter("users", "id != ''", "display_name", 500, 0)
+    // Family members only — 吊唁贵宾 is the default login identity, not a roster pick.
+    const records = $app.dao().findRecordsByFilter(
+      "users",
+      'role != "guest"',
+      "display_name",
+      500,
+      0,
+    )
     const items = []
     for (const r of records) {
+      const role = r.get("role") || "member"
+      if (role === "guest") continue
       items.push({
         display_name: r.get("display_name"),
-        role: r.get("role") || "member",
+        role: role,
       })
     }
     return c.json(200, { items })
@@ -17,6 +26,7 @@ routerAdd("GET", "/api/hz/member-names", (c) => {
     return c.json(500, { message: "加载成员列表失败" })
   }
 })
+
 
 routerAdd("GET", "/api/hz/resolve-name", (c) => {
   const name = (c.queryParam("name") || "").trim()

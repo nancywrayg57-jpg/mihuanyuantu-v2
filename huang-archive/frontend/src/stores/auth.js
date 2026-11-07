@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import pb from '../lib/pb'
 import { normalizePassword, normalizePersonName, resolveIdentity } from '../lib/roster'
+import { isGuestUser } from '../lib/guest'
 import { zhError } from '../lib/errors'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -17,6 +18,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isLoggedIn = computed(() => !!user.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
+  const isGuest = computed(() => isGuestUser(user.value))
+  const canUpload = computed(() => isLoggedIn.value && !isGuest.value)
   const displayName = computed(() => user.value?.display_name || '')
 
   async function authOnce(identity, password) {
@@ -32,6 +35,30 @@ export const useAuthStore = defineStore('auth', () => {
       return await res.json()
     } catch {
       return null
+    }
+  }
+
+  async function loginAsGuest() {
+    loading.value = true
+    error.value = ''
+    try {
+      const res = await fetch('/api/hz/guest-login', { method: 'POST' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(data?.message || '吊唁贵宾登录失败')
+      }
+      if (!data?.token || !data?.record) {
+        throw new Error('吊唁贵宾登录失败')
+      }
+      pb.authStore.save(data.token, data.record)
+      user.value = data.record
+      token.value = data.token
+      return data.record
+    } catch (e) {
+      error.value = zhError(e, '吊唁贵宾登录失败')
+      throw e
+    } finally {
+      loading.value = false
     }
   }
 
@@ -126,8 +153,11 @@ export const useAuthStore = defineStore('auth', () => {
     loading,
     isLoggedIn,
     isAdmin,
+    isGuest,
+    canUpload,
     displayName,
     login,
+    loginAsGuest,
     changePassword,
     changePasswordWithOld,
     logout,

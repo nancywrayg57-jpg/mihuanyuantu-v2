@@ -50,7 +50,9 @@ async function load() {
   error.value = ''
   try {
     const list = await pb.collection('users').getFullList({ sort: 'display_name' })
-    members.value = list
+    // Shared guest identity is system-managed; keep out of member admin table
+    members.value = list.filter((m) => m.role !== 'guest' && m.display_name !== '吊唁贵宾')
+
     audits.value = await pb.collection('audit_logs').getList(1, 30, { sort: '-created' }).then((r) => r.items).catch(() => [])
   } catch (e) {
     error.value = zhError(e, '加载成员失败')

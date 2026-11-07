@@ -58,8 +58,10 @@ export const useUploadQueueStore = defineStore('uploadQueue', () => {
     next.progress = 2
     try {
       const auth = useAuthStore()
+      if (auth.isGuest) throw new Error('吊唁贵宾不可上传资料')
       const uploaderId = resolveRecordId(auth.user)
       if (!uploaderId) throw new Error('登录已失效，请重新登录')
+
 
       const title = String(next.title || next.fields?.title || '').trim()
       const occurred_time = String(next.fields?.occurred_time || '').trim()
