@@ -47,13 +47,13 @@ async def main() -> int:
     note("production_billing=false url_import_connected=false s7_started=false")
 
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from scripts.product_gap_a_schema import ensure_product_gap_a_schema
     from app.capabilities.realphotos.services.bootstrap import DEFAULT_PASSWORD, bootstrap_s0_accounts
     from app.capabilities.realphotos.services.legacy_preset_imports import (
         LEGACY_PARAMETER_KEYS,
         expected_template_count,
     )
     from app.infrastructure.database.session import async_session_factory, engine
+    from scripts.product_gap_a_schema import ensure_product_gap_a_schema
 
     await ensure_product_gap_a_schema(engine)
 
