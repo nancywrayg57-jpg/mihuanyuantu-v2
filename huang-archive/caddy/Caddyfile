@@ -1,0 +1,55 @@
+{
+	email admin@huangzhisong.com
+}
+
+huangzhisong.com {
+	encode gzip zstd
+	request_body {
+		max_size 500MB
+	}
+
+	handle /api/health {
+		header Content-Type application/json
+		respond `{"status":"ok","service":"huang-archive"}` 200
+	}
+
+	handle /api/* {
+		reverse_proxy pocketbase:8090
+	}
+
+	handle /_/* {
+		reverse_proxy pocketbase:8090
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+http://47.239.73.214 {
+	encode gzip zstd
+	request_body {
+		max_size 500MB
+	}
+
+	handle /api/health {
+		header Content-Type application/json
+		respond `{"status":"ok","service":"huang-archive"}` 200
+	}
+
+	handle /api/* {
+		reverse_proxy pocketbase:8090
+	}
+
+	handle /_/* {
+		reverse_proxy pocketbase:8090
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

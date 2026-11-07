@@ -1,0 +1,191 @@
+<script setup>
+import { computed, ref } from 'vue'
+import { X, Image, Video, FileText, Link2, Mic, Boxes } from 'lucide-vue-next'
+import pb from '../lib/pb'
+import { useAuthStore } from '../stores/auth'
+
+const props = defineProps({
+  open: { type: Boolean, default: false },
+})
+const emit = defineEmits(['close', 'uploaded'])
+
+const auth = useAuthStore()
+
+const categories = [
+  { key: 'image', label: '图片', icon: Image },
+  { key: 'video', label: '视频', icon: Video },
+  { key: 'scan', label: '扫描件', icon: FileText },
+  { key: 'link', label: '新闻链接', icon: Link2 },
+  { key: 'audio', label: '录音', icon: Mic },
+  { key: 'other', label: '其他', icon: Boxes },
+]
+
+const category = ref('image')
+const title = ref('')
+const occurredTime = ref('')
+const relatedPersons = ref('')
+const description = ref('')
+const externalLink = ref('')
+const files = ref([])
+const progress = ref(0)
+const submitting = ref(false)
+const error = ref('')
+
+const isLink = computed(() => category.value === 'link')
+
+function onFileChange(e) {
+  files.value = Array.from(e.target.files || []).slice(0, 9)
+}
+
+async function submit() {
+  error.value = ''
+  if (!title.value.trim() || !occurredTime.value.trim() || !relatedPersons.value.trim()) {
+    error.value = '请填写标题、时间与关系人'
+    return
+  }
+  if (isLink.value && !externalLink.value.trim()) {
+    error.value = '请填写外部链接'
+    return
+  }
+  if (!isLink.value && files.value.length === 0) {
+    error.value = '请选择至少一个文件'
+    return
+  }
+
+  submitting.value = true
+  progress.value = 5
+  try {
+    const form = new FormData()
+    form.append('title', title.value.trim())
+    form.append('category', category.value)
+    form.append('occurred_time', occurredTime.value.trim())
+    form.append('related_persons', relatedPersons.value.trim())
+    form.append('description', description.value.trim())
+    form.append('uploader', auth.user.id)
+    form.append('uploader_name', auth.displayName)
+    form.append('likes_count', '0')
+    if (externalLink.value.trim()) form.append('external_link', externalLink.value.trim())
+    for (const f of files.value) form.append('media_files', f)
+
+    const record = await pb.collection('archives').create(form, {
+      requestKey: null,
+    })
+    progress.value = 100
+    emit('uploaded', record)
+    reset()
+    emit('close')
+  } catch (e) {
+    error.value = e?.message || '上传失败'
+  } finally {
+    submitting.value = false
+  }
+}
+
+function reset() {
+  title.value = ''
+  occurredTime.value = ''
+  relatedPersons.value = ''
+  description.value = ''
+  externalLink.value = ''
+  files.value = []
+  progress.value = 0
+  error.value = ''
+  category.value = 'image'
+}
+
+function close() {
+  if (submitting.value) return
+  emit('close')
+}
+</script>
+
+<template>
+  <Teleport to="body">
+    <div
+      v-if="open"
+      class="fixed inset-0 z-50 bg-ink/45 flex items-end sm:items-center justify-center p-0 sm:p-6"
+      @click.self="close"
+    >
+      <div class="w-full max-w-xl max-h-[92vh] overflow-auto bg-parchment border border-clay">
+        <div class="sticky top-0 flex items-center justify-between px-5 py-4 border-b border-clay bg-parchment">
+          <h2 class="font-song text-xl">上传爷爷的资料</h2>
+          <button type="button" class="min-h-tap min-w-[48px] grid place-items-center" @click="close">
+            <X class="w-6 h-6" />
+          </button>
+        </div>
+
+        <div class="p-5 space-y-5">
+          <div class="grid grid-cols-3 gap-2">
+            <button
+              v-for="c in categories"
+              :key="c.key"
+              type="button"
+              class="min-h-tap border px-2 py-3 flex flex-col items-center gap-1"
+              :class="category === c.key ? 'border-cinnabar bg-cinnabar/5 text-cinnabar' : 'border-clay'"
+              @click="category = c.key"
+            >
+              <component :is="c.icon" class="w-6 h-6" />
+              <span class="text-sm">{{ c.label }}</span>
+            </button>
+          </div>
+
+          <label class="block">
+            <span class="text-mute">标题</span>
+            <input v-model="title" class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice" />
+          </label>
+          <label class="block">
+            <span class="text-mute">发生时间</span>
+            <input
+              v-model="occurredTime"
+              class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice"
+              placeholder="如 1985年秋"
+            />
+          </label>
+          <label class="block">
+            <span class="text-mute">关系人</span>
+            <input
+              v-model="relatedPersons"
+              class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice"
+              placeholder="如 黄志松、黄纲生"
+            />
+          </label>
+          <label class="block">
+            <span class="text-mute">说明（选填）</span>
+            <textarea v-model="description" rows="3" class="mt-1 w-full px-3 py-3 border border-clay bg-rice" />
+          </label>
+
+          <label v-if="isLink" class="block">
+            <span class="text-mute">外部链接</span>
+            <input v-model="externalLink" type="url" class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice" />
+          </label>
+
+          <label v-else class="block">
+            <span class="text-mute">文件（最多 9 个）</span>
+            <input
+              type="file"
+              multiple
+              class="mt-1 w-full min-h-tap px-3 py-2 border border-clay bg-rice"
+              @change="onFileChange"
+            />
+            <p v-if="files.length" class="text-mute text-sm mt-1">已选 {{ files.length }} 个文件</p>
+          </label>
+
+          <div v-if="submitting" class="h-2 bg-clay overflow-hidden">
+            <div class="h-full bg-cinnabar transition-all" :style="{ width: progress + '%' }" />
+          </div>
+
+          <p v-if="error" class="text-cinnabar">{{ error }}</p>
+
+          <button
+            type="button"
+            class="w-full min-h-tap bg-cinnabar text-parchment disabled:opacity-60"
+            :disabled="submitting"
+            @click="submit"
+          >
+            {{ submitting ? '上传中…' : '确认上传' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
