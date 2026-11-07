@@ -22,12 +22,12 @@ from app.capabilities.realphotos.permissions import (
     WALLET_READ,
     WORKSPACE_READ,
 )
-from app.core.exceptions import ForbiddenError
 from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
 from app.capabilities.realphotos.services.s1_recharge import (
     RealphotosRechargeService,
     is_recharge_inbox_event,
 )
+from app.core.exceptions import ForbiddenError
 from app.core.response import SuccessResponse
 from app.domain.roles.models import Role
 from app.domain.users.models import UserRole
