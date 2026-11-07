@@ -327,6 +327,7 @@ class Settings(BaseSettings):
 
     # realphotos capability knobs (optional; empty = package defaults)
     REALPHOTOS_ALLOW_DEV_CAPTCHA: str = ""
+    REALPHOTOS_SUPPLIER_LIVE: str = ""
     REALPHOTOS_STORAGE_ROOT: str = ""
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.5-pro"

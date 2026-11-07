@@ -17,7 +17,6 @@ from app.capabilities.realphotos.permissions import (
     ROLE_ADMIN,
     WALLET_READ,
 )
-from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
 from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
 from app.capabilities.realphotos.services.s1_recharge import RealphotosRechargeService
 from app.core.response import SuccessResponse
@@ -33,7 +32,7 @@ class SubmitBody(BaseModel):
     asset_id: int = Field(alias="assetId")
     preset_code: str = Field(alias="presetCode")
     idempotency_key: str = Field(alias="idempotencyKey")
-    pre_review_mode: str = Field(default="pass", alias="preReviewMode")
+    pre_review_mode: str | None = Field(default=None, alias="preReviewMode")
     detection_mode: str = Field(default="gemini", alias="detectionMode")
 
 
@@ -43,7 +42,7 @@ class BatchBody(BaseModel):
     asset_ids: list[int] = Field(alias="assetIds")
     preset_code: str = Field(alias="presetCode")
     idempotency_key: str = Field(alias="idempotencyKey")
-    pre_review_mode: str = Field(default="pass", alias="preReviewMode")
+    pre_review_mode: str | None = Field(default=None, alias="preReviewMode")
     detection_mode: str = Field(default="gemini", alias="detectionMode")
 
 
@@ -99,8 +98,14 @@ def _task_payload(task) -> dict[str, Any]:
 
 
 @router.get("/presets")
-async def list_presets(_: None = Depends(PermissionChecker([WALLET_READ]))) -> dict[str, Any]:
-    return SuccessResponse(data={"items": list(S1_ENABLED_PRESETS), "enabledCount": len(S1_ENABLED_PRESETS)})
+async def list_presets(
+    db: DBSession,
+    _: None = Depends(PermissionChecker([WALLET_READ])),
+) -> dict[str, Any]:
+    from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
+
+    items = await RealphotosOpsService(db).list_enabled_presets()
+    return SuccessResponse(data={"items": items, "enabledCount": len(items)})
 
 
 @router.post("/assets")
@@ -148,11 +153,20 @@ async def submit_task(
         asset_id=int(body.asset_id),
         preset_code=body.preset_code,
         idempotency_key=body.idempotency_key,
-        pre_review_mode=body.pre_review_mode,
+        pre_review_mode=await _customer_pre_review(db, body.pre_review_mode),
         detection_mode=body.detection_mode,
     )
     await db.commit()
     return SuccessResponse(data=_task_payload(task))
+
+
+async def _customer_pre_review(db: DBSession, explicit: str | None) -> str:
+    if explicit:
+        return explicit
+    from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
+
+    row = await RealphotosSupplierConfigService(db).enabled("pre_review")
+    return "live" if row is not None else "pass"
 
 
 def _actor_roles(roles: set[str]) -> set[str]:
@@ -178,7 +192,7 @@ async def submit_batch(
         asset_ids=list(body.asset_ids),
         preset_code=body.preset_code,
         idempotency_key=body.idempotency_key,
-        pre_review_mode=body.pre_review_mode,
+        pre_review_mode=await _customer_pre_review(db, body.pre_review_mode),
         detection_mode=body.detection_mode,
     )
     await db.commit()

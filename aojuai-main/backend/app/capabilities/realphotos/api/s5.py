@@ -159,28 +159,35 @@ async def create_generation(
 ) -> dict[str, Any]:
     body, reference_bytes = await _generation_body(request)
     service = RealphotosGrowthService(db)
-    task = await service.submit_generation(
-        tenant_id=int(tenant_ctx.tenant_id),
-        owner_account_id=int(current_user.id),
-        mode=body.mode,
-        positive_prompt=body.positive_prompt,
-        negative_prompt=body.negative_prompt,
-        width=int(body.width),
-        height=int(body.height),
-        quantity=int(body.quantity),
-        idempotency_key=body.idempotency_key,
-        provider=body.provider,
-        template_id=body.template_id,
-        reference_asset_id=body.reference_asset_id,
-        reference_bytes=reference_bytes,
-        fail_indexes=set(body.fail_indexes),
-    )
+    try:
+        task = await service.submit_generation(
+            tenant_id=int(tenant_ctx.tenant_id),
+            owner_account_id=int(current_user.id),
+            mode=body.mode,
+            positive_prompt=body.positive_prompt,
+            negative_prompt=body.negative_prompt,
+            width=int(body.width),
+            height=int(body.height),
+            quantity=int(body.quantity),
+            idempotency_key=body.idempotency_key,
+            provider=body.provider,
+            template_id=body.template_id,
+            reference_asset_id=body.reference_asset_id,
+            reference_bytes=reference_bytes,
+            fail_indexes=set(body.fail_indexes),
+        )
+    except BusinessError as exc:
+        if exc.code in {"PRE_REVIEW_REJECTED", "PRE_REVIEW_FAILED"}:
+            await db.commit()
+        raise
+    trace = getattr(task, "supplier_trace", None)
     await db.commit()
     items = await service.list_generation_items(tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id))
     return SuccessResponse(
         data={
             "id": str(int(task.id)),
             "provider": task.provider,
+            "supplier": trace,
             "items": [
                 {
                     "index": int(item.item_index),
@@ -209,6 +216,7 @@ async def create_optimization(
         provider=body.provider,
         succeed=bool(body.succeed),
     )
+    trace = getattr(row, "supplier_trace", None)
     await db.commit()
     return SuccessResponse(
         data={
@@ -217,6 +225,7 @@ async def create_optimization(
             "originalText": row.original_text,
             "optimizedText": row.optimized_text,
             "confirmed": bool(row.confirmed),
+            "supplier": trace,
         }
     )
 

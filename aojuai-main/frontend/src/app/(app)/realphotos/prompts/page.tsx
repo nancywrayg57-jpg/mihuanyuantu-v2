@@ -11,6 +11,8 @@ export default function RealphotosPromptsPage() {
   const [name, setName] = useState('')
   const [prompt, setPrompt] = useState('')
   const [message, setMessage] = useState('')
+  const [originalText, setOriginalText] = useState('')
+  const [optimizedText, setOptimizedText] = useState('')
 
   async function reload() {
     const data = await apiFetch<{ items: Template[] }>('/api/v1/realphotos/prompt-templates')
@@ -36,11 +38,16 @@ export default function RealphotosPromptsPage() {
 
   async function optimize() {
     try {
-      await apiFetch('/api/v1/realphotos/prompt-optimizations', {
-        method: 'POST',
-        body: JSON.stringify({ originalText: prompt }),
-      })
-      setMessage('优化完成')
+      const data = await apiFetch<{ status: string; originalText: string; optimizedText: string }>(
+        '/api/v1/realphotos/prompt-optimizations',
+        {
+          method: 'POST',
+          body: JSON.stringify({ originalText: prompt }),
+        },
+      )
+      setOriginalText(data.originalText)
+      setOptimizedText(data.optimizedText)
+      setMessage(data.status === 'succeeded' ? '优化完成' : '优化失败，未扣积分')
     } catch (error: unknown) {
       setMessage(error instanceof ApiError ? error.message : '优化失败')
     }
@@ -60,6 +67,8 @@ export default function RealphotosPromptsPage() {
           正向提示词
           <input className="mt-1 block w-full max-w-md border px-2 py-1" value={prompt} onChange={(event) => setPrompt(event.target.value)} />
         </label>
+        <p className="text-sm">原文：{originalText}</p>
+        <p className="text-sm">优化文：{optimizedText}</p>
         <div className="space-x-2">
           <button className="border px-3 py-1 text-sm" type="button" onClick={() => void save()}>
             保存模板

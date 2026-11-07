@@ -7,13 +7,13 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-06 CST（Asia/Shanghai） |
-| branch | `cursor/s5-growth-9973`（从 `d8345ca` 继续；`origin/main` 是 `dae37a3`） |
+| branch | `cursor/s6-ops-9973`（从 S5 `3f8358e` 继续；未提交；`origin/main` 是 `dae37a3`） |
 | HEAD | 本文件随 S4 提交写入。推送该分支，不合并 |
 | 文档态 | PRD **2.10**；架构 **1.7**；物料清单 **1.32**；端测自治见 `DEV_INSTRUCTIONS` §6.1 / `AGENTS.md` §5 |
-| 代码态 | S0–S4 的文件树已在 `origin/main` `dae37a3`。S5 在 `cursor/s5-growth-9973`，退出未齐。不是生产收费已开放 |
-| 验证态 | 真实小样只认 `/tmp/s3-pg-e2e.log` 的 `S3_PG_SAMPLE_READONLY task_id=29 detector=gemini-3.1-pro-preview noise=45 depthOfField=40 lighting=35 colorRealism=50 overallRealism=35 total_score=38 passed=false has_jpeg=true output_bytes=30982 reservation=released total_is_not_dimension_average=true dimension_average=41.0`。S4 证据是 `/tmp/s4-pg-e2e.log` 的 `S4_PG_E2E_PASS`：任务 40 `detector=fixture` 消费 10，任务 41 前置失败释放 10，两张通过消费 20，任务 44 技术失败保持冻结。这不是新的 Gemini 小样。pytest `tests/capabilities/realphotos` 25 passed |
-| 当前阶段 | S4 开发机证据已齐。这不是对外「检测通过」，也不是生产收费已开放 |
-| 下一步 | S5 在 `cursor/s5-growth-9973`，未标完成。证据 `/tmp/s5-pg-e2e.log` 含 `S5_PG_E2E_PASS i2i_temp_not_stored=true prompt_fail_no_charge=true json_file_100=SERVICE_NOT_CONFIGURED json_file_101=INPUT_INVALID business_key_issued_via_http=true query_status=DELIVERED supplier_connected=false production_billing=false` |
+| 代码态 | S0–S4 的文件树已在 `origin/main` `dae37a3`。S5 在 PR #23，未标完成。S6 与供应商合同在 `cursor/s6-ops-9973`，未提交。不是生产收费已开放 |
+| 验证态 | 真实小样只认 `/tmp/s3-pg-e2e.log` 的 `S3_PG_SAMPLE_READONLY task_id=29 detector=gemini-3.1-pro-preview noise=45 depthOfField=40 lighting=35 colorRealism=50 overallRealism=35 total_score=38 passed=false has_jpeg=true output_bytes=30982 reservation=released total_is_not_dimension_average=true dimension_average=41.0`。S4 证据是 `/tmp/s4-pg-e2e.log` 的 `S4_PG_E2E_PASS`。供应商证据是 `/tmp/supplier-live-e2e.log`：文生图 `b64_json`，提示词优化有正文，预审拒绝未扣处理积分，导入未接通。本机不是最终中国大陆节点 |
+| 当前阶段 | 管理员 2026-11-06 说明 S6 已结束。`s6_exited` 未靠重跑改写。供应商补测不是 S7，也不是对外「检测通过」或生产收费已开放 |
+| 下一步 | S5 PR https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/23 未合并，未标完成。当前改动未提交、未推送。不得开 S7 |
 
 ## 1. 仓库与文档基线
 

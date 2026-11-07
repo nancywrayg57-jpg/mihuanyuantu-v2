@@ -72,6 +72,15 @@ phase_confirmation:
     - date: "2026-11-06"
       change: "PostgreSQL 补上图生图临时参考、优化失败不扣、JSON 100/101 与文件入口、登录态签发业务 Key、查询 DELIVERED。不标 S5 完成"
       reason: "/tmp/s5-pg-e2e.log 含 S5_PG_E2E_PASS；s5_exited=false；supplier_connected=false；production_billing=false"
+    - date: "2026-11-06"
+      change: "S6 tasks / exit_evidence / forbidden 写入 DEV_INSTRUCTIONS §10.8。不授权开工，不实现"
+      reason: "管理员要求推送 S5 并开 PR 后再写 S6 清单。该清单还在本地，不在 PR #23"
+    - date: "2026-11-06"
+      change: "管理员授权 S6。cursor/s6-ops-9973 实现预审、冻号、技术客服释放、用户管理、系统日志、预设启停和运营指标。未标完成，未开 S7"
+      reason: "/tmp/s6-pg-e2e.log 含 S6_PG_E2E_PASS；supplier_connected=false；production_billing=false；s5_exited=false"
+    - date: "2026-11-06"
+      change: "管理员结束 S6 后补供应商合同。文生图与提示词优化有真实响应；预审有真实拒绝；导入保持未配置。不写 S7"
+      reason: "/tmp/supplier-live-e2e.log 含 SUPPLIER_LIVE_E2E_RECORDED；import_connected=false；production_billing=false；final_mainland_china_node=no"
 
 knowledge_assets:
   wiki: wiki.md

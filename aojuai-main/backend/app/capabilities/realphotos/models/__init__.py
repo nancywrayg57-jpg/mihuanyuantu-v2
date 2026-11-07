@@ -24,9 +24,26 @@ from .s5_growth import (
     RealphotosPromptOptimization,
     RealphotosPromptTemplate,
 )
+from .s6_ops import (
+    RealphotosAccountLog,
+    RealphotosContentReview,
+    RealphotosDevicePreset,
+    RealphotosImageLock,
+    RealphotosPresetVersion,
+    RealphotosReviewStreak,
+    RealphotosSupportTicket,
+)
+from .supplier_contract import RealphotosProviderContract
 
 __all__ = [
+    "RealphotosAccountLog",
     "RealphotosAsset",
+    "RealphotosContentReview",
+    "RealphotosDevicePreset",
+    "RealphotosImageLock",
+    "RealphotosPresetVersion",
+    "RealphotosReviewStreak",
+    "RealphotosSupportTicket",
     "RealphotosAuthChallenge",
     "RealphotosAuthGuard",
     "RealphotosBatch",
@@ -44,6 +61,7 @@ __all__ = [
     "RealphotosOutbox",
     "RealphotosPromptOptimization",
     "RealphotosPromptTemplate",
+    "RealphotosProviderContract",
     "RealphotosRechargeOrder",
     "RealphotosRedoSetting",
     "RealphotosStageResult",
