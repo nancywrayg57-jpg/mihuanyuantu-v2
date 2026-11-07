@@ -91,6 +91,9 @@ async def _role_codes(db: DBSession, user_id: int, tenant_id: int) -> set[str]:
 
 
 def _task_payload(task) -> dict[str, Any]:
+    mode = str(getattr(task, "pre_review_mode", "") or "")
+    # Audit label: pass on task = fixture_test_only (admin/copy); live; never silent fixture for customers.
+    audit = "fixture_test_only" if mode == "pass" else (mode or "unconfigured")
     return {
         "id": str(int(task.id)),
         "tenantId": str(int(task.tenant_id)),
@@ -106,6 +109,8 @@ def _task_payload(task) -> dict[str, Any]:
         "pipelineVersion": task.pipeline_version,
         "copiedFrom": str(int(task.copied_from_task_id)) if task.copied_from_task_id else None,
         "billingMode": str(getattr(task, "billing_mode", "normal") or "normal"),
+        "preReviewMode": mode,
+        "preReviewAudit": audit,
     }
 
 
@@ -213,20 +218,40 @@ async def submit_task(
         asset_id=int(body.asset_id),
         preset_code=body.preset_code,
         idempotency_key=body.idempotency_key,
-        pre_review_mode=await _customer_pre_review(db, body.pre_review_mode),
+        pre_review_mode=await _customer_pre_review(db, body.pre_review_mode, roles),
         detection_mode=body.detection_mode,
     )
     await db.commit()
     return SuccessResponse(data=_task_payload(task))
 
 
-async def _customer_pre_review(db: DBSession, explicit: str | None) -> str:
-    if explicit:
-        return explicit
-    from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
+async def _customer_pre_review(db: DBSession, explicit: str | None, roles: set[str]) -> str:
+    """Customer default = enabled pre_review contract → live; else honest unconfigured.
 
+    Fixture pass/reject only for admin inject. Copy ND-025 keeps service-level pass
+    outside this HTTP helper.
+    """
+    from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
+    from app.core.exceptions import BusinessError
+
+    admin = ROLE_ADMIN in roles or "admin" in roles
+    mode = str(explicit or "").strip() or None
+    if admin and mode in {"pass", "reject", "live"}:
+        return mode
+    if mode in {"pass", "reject"}:
+        raise BusinessError(
+            message="客户路径不可使用预审夹具；请启用预审合同后走 live",
+            code="SERVICE_NOT_CONFIGURED",
+            details={"preReviewMode": "unconfigured", "requested": mode},
+        )
     row = await RealphotosSupplierConfigService(db).enabled("pre_review")
-    return "live" if row is not None else "pass"
+    if row is None:
+        raise BusinessError(
+            message="缺少预审供应商合同与接口证据",
+            code="SERVICE_NOT_CONFIGURED",
+            details={"preReviewMode": "unconfigured"},
+        )
+    return "live"
 
 
 def _actor_roles(roles: set[str]) -> set[str]:
@@ -252,7 +277,7 @@ async def submit_batch(
         asset_ids=list(body.asset_ids),
         preset_code=body.preset_code,
         idempotency_key=body.idempotency_key,
-        pre_review_mode=await _customer_pre_review(db, body.pre_review_mode),
+        pre_review_mode=await _customer_pre_review(db, body.pre_review_mode, roles),
         detection_mode=body.detection_mode,
     )
     await db.commit()

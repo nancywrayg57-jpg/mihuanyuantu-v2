@@ -24,10 +24,12 @@ from app.capabilities.realphotos.models import (
     RealphotosDetectionResult,
     RealphotosDevicePreset,
     RealphotosExecutionJob,
+    RealphotosGenerationItem,
     RealphotosImageLock,
     RealphotosImageTask,
     RealphotosMerchantProfile,
     RealphotosPresetVersion,
+    RealphotosPromptOptimization,
     RealphotosReviewStreak,
     RealphotosSupportTicket,
 )
@@ -440,13 +442,12 @@ class RealphotosOpsService:
         current = await self.enabled_preset(code) if enabled else None
         catalog = next((dict(item) for item in S1_ENABLED_PRESETS if item["code"] == code), None)
         base = current or catalog
-        if base is None and not enabled:
+        if base is None:
+            # Disabled admin presets are not in enabled_preset/catalog; still must re-enable.
             row = await self._preset_row(code)
             if row is None:
                 raise BusinessError(message="预设不存在", code="NOT_FOUND")
             base = self._preset_dict(row)
-        if base is None:
-            raise BusinessError(message="预设不存在", code="NOT_FOUND")
         return await self.save_preset(
             actor_role_codes=actor_role_codes,
             code=code,
@@ -455,6 +456,11 @@ class RealphotosOpsService:
             model_name=str(base.get("model") or ""),
             gps_mode=str(base.get("gpsMode") or "none"),
             enabled=bool(enabled),
+            iso=base.get("iso"),
+            shutter=base.get("shutter"),
+            aperture=base.get("aperture"),
+            focal_length=base.get("focalLength"),
+            gps_config=base.get("gpsConfig") if isinstance(base.get("gpsConfig"), dict) else None,
         )
 
     async def create_user(
@@ -694,7 +700,11 @@ class RealphotosOpsService:
     async def metrics(self, *, actor_role_codes: set[str]) -> dict[str, Any]:
         if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
             raise ForbiddenError(message="运营指标只对平台管理员开放")
-        available = await self.db.scalar(select(func.coalesce(func.sum(RealphotosAsset.byte_size), 0)))
+        storage_bytes = await self.db.scalar(
+            select(func.coalesce(func.sum(RealphotosAsset.byte_size), 0)).where(
+                RealphotosAsset.deleted_at.is_(None)
+            )
+        )
         queued = await self.db.scalar(
             select(func.count())
             .select_from(RealphotosExecutionJob)
@@ -728,15 +738,37 @@ class RealphotosOpsService:
         )
         balance = await self.db.scalar(select(func.coalesce(func.sum(RealphotosCreditAccount.available_integer), 0)))
         reserved = await self.db.scalar(select(func.coalesce(func.sum(RealphotosCreditAccount.reserved_integer), 0)))
+        reviews = int(await self.db.scalar(select(func.count()).select_from(RealphotosContentReview)) or 0)
+        generations = int(
+            await self.db.scalar(
+                select(func.count())
+                .select_from(RealphotosGenerationItem)
+                .where(RealphotosGenerationItem.deleted_at.is_(None))
+            )
+            or 0
+        )
+        prompt_opts = int(
+            await self.db.scalar(
+                select(func.count())
+                .select_from(RealphotosPromptOptimization)
+                .where(RealphotosPromptOptimization.deleted_at.is_(None))
+            )
+            or 0
+        )
+        model_calls = reviews + generations + prompt_opts
         return {
             "availableInteger": int(balance or 0),
             "reservedInteger": int(reserved or 0),
             "queueDepth": int(queued or 0),
             "failureRate": None if tasks == 0 else failed / tasks,
             "detectionPassRate": None if detected == 0 else passed / detected,
+            # No upstream invoice ledger in v1 — honest empty, not a fake 0.
             "cost": None,
-            "modelCalls": None,
-            "storageBytes": int(available or 0),
+            "costReason": "no_upstream_invoice_ledger_v1",
+            "modelCalls": int(model_calls),
+            "modelCallsSource": "content_review+generation_item+prompt_optimization",
+            "storageBytes": int(storage_bytes or 0),
+            "storageBytesSource": "sum(cap_realphotos_asset.byte_size where deleted_at is null)",
             "merchantCards": False,
         }
 

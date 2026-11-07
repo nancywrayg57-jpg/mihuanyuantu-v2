@@ -50,10 +50,10 @@
 ## 5. 下一步（摘要；以 progress 为准）
 
 - **main 基线**：`origin/main` 已含 S0–S6 + IA-PAGE（#25 squash `ad9ebf5`）。不是生产收费就绪。
-- **待合入 PR**：https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/27 （`cursor/blocking-fix-9973`，工单 `BLOCKING-FIX-2026-11-07` A–G）。合入仅非作者账号 squash。
-- **阻断修复证据**：`/tmp/blocking-fix-e2e.log` 含 `BLOCKING_FIX_E2E_PASS`，且 `production_billing=false`；URL 导入仍 `SERVICE_NOT_CONFIGURED`。
-- **要点**：复制免冻门闩；GPS `fixed`/`random_by_scene` 可写回读；资源文件名按字段拼接；种子合同不支持则拒绝不伪造；请求/实际尺寸双字段；图生图真路径成功入库；Gemini 启用识别名 `gemini-3.1-pro-preview`。
-- **S6**：管理员已结束；证据 `/tmp/s6-pg-e2e.log`。不重跑当验收。
+- **待合入 PR**：https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/28 （`cursor/partial-align-9973`，依赖 #27 若未合）。工单 `PARTIAL-ALIGN-2026-11-07` A–F。
+- **部分对齐证据**：`/tmp/partial-align-e2e.log` 含 `PARTIAL_ALIGN_E2E_PASS`；浏览器 `/tmp/partial-align-browser.txt`；`production_billing=false`；URL 导入仍未接通。
+- **要点**：客户预审默认 live / 无合同 `SERVICE_NOT_CONFIGURED`；运营指标真实聚合（cost 诚实空态）；批量下载优先目录选择器并降级；405 导入浏览（MakerNote 不伪造成功）；三 GPS 模式运营可见；`s5_exited=true`；菜单缓存同进程 bump（IA_C6=fixed）。
+- **阻断级**：仍在祖先提交；证据 `/tmp/blocking-fix-e2e.log`；PR #27 待/或已合。
 - **不得开 S7**；技术失败积分仍 `held_until_tech_support`。
 - **协作**：见 `AGENTS.md` §7（功能分支 `-9973`、仅 PR squash 合入 `main`、不得自评自合）。
 
@@ -64,7 +64,7 @@
 - 租户共用积分是现行产品选择；账号隔离 ≠ 余额隔离。
 - 首版 LocalDisk；不要按「必须先买 OSS」开工。
 - 客户业务 API ≠ 上游模型 Key 自助 ≠ 外部平台代发；能力名 scope 外接口必须拒绝。
-- 菜单 reconcile 后若 live uvicorn 仍吐旧侧栏，需重启 API（见 progress `IA_C6_MENU_CACHE_STALE`）。
+- 菜单缓存：同进程 bump 已修；多 worker 无共享 Redis 仍需 Redis 或重启（见 progress `IA_C6_MENU_CACHE_STALE`）。
 - `docs/architecture_decisions/`、`docs/archive/`、待决策清单正文不作为开发指令依据路径；ND-017 现行口径以 PRD **2.10** 为准。
 
 ## 7. 新会话粘贴提示词（复制即用）

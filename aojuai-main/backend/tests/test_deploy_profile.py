@@ -25,12 +25,19 @@ def test_redis_defaults_off_for_lite_and_on_for_standard(monkeypatch) -> None:
 
 async def test_disabled_redis_cache_is_a_silent_miss(monkeypatch) -> None:
     monkeypatch.setattr(settings, "REDIS_ENABLED", False)
+    from app.infrastructure.cache import redis as redis_mod
     from app.infrastructure.cache import runtime_cache
     from app.infrastructure.cache.redis import RedisJsonCache
 
+    redis_mod._LOCAL_INTS.clear()
     cache = RedisJsonCache()
     assert cache._client is None
+    # JSON payloads stay silent-miss when Redis is off.
     assert await cache.get_json("k") is None
-    assert await cache.incr("k") == 0
+    # Version keys use process-local counters so menu bump works without Redis (IA_C6).
+    assert await cache.incr("menu-ver") == 1
+    assert await cache.get_int("menu-ver") == 1
+    assert await cache.incr("menu-ver") == 2
+    # Untouched keys still return the caller default (not a fake shared zero).
     assert await cache.get_ints(["a", "b"], default=7) == [7, 7]
     assert await runtime_cache._get_redis_client() is None

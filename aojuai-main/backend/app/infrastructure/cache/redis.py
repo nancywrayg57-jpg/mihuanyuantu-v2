@@ -20,13 +20,18 @@ from app.core.logger import get_logger
 
 logger = get_logger(__name__)
 
+# Process-local integer versions when Redis is off. Same-process /menus/routes can
+# invalidate after reconcile without a blind restart. Multi-worker without Redis
+# still needs shared Redis or a process restart (ops note, not auto-consistent).
+_LOCAL_INTS: dict[str, int] = {}
+
 
 class RedisJsonCache:
     """Small async Redis helper focused on JSON + integer version keys."""
 
     def __init__(self) -> None:
         if not settings.REDIS_ENABLED_EFFECTIVE:
-            # 轻量档：Redis 关闭，所有操作按"未命中"处理（get→None / incr→0），不发起连接
+            # 轻量档：JSON 仍按未命中；版本键改走进程内计数，避免 bump 恒为 0。
             self._client = None
             return
         self._client = Redis.from_url(
@@ -73,7 +78,7 @@ class RedisJsonCache:
 
     async def get_int(self, key: str, *, default: int = 0) -> int:
         if self._client is None:
-            return int(default)
+            return int(_LOCAL_INTS.get(self._ns(key), default))
         key = self._ns(key)
         try:
             value = await self._client.get(key)
@@ -92,7 +97,7 @@ class RedisJsonCache:
 
     async def get_ints(self, keys: list[str], *, default: int = 0) -> list[int]:
         if self._client is None:
-            return [int(default) for _ in keys]
+            return [int(_LOCAL_INTS.get(self._ns(key), default)) for key in keys]
         if not keys:
             return []
 
@@ -117,7 +122,9 @@ class RedisJsonCache:
 
     async def incr(self, key: str) -> int:
         if self._client is None:
-            return 0
+            namespaced = self._ns(key)
+            _LOCAL_INTS[namespaced] = int(_LOCAL_INTS.get(namespaced, 0)) + 1
+            return int(_LOCAL_INTS[namespaced])
         key = self._ns(key)
         try:
             value = await self._client.incr(key)

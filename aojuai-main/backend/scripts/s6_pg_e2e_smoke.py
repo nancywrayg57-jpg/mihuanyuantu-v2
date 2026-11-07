@@ -382,13 +382,19 @@ async def _main() -> int:
             )
             assert enabled.status_code == 200
         imports = await client.get("/api/v1/realphotos/device-preset-imports", headers=admin)
-        assert imports.status_code == 200 and imports.json()["data"]["importedBrands"] == []
+        assert imports.status_code == 200
+        import_body = imports.json()["data"]
+        assert import_body["importedBrands"] == []
+        assert isinstance(import_body.get("items"), list)
         assert "gps" not in BatchBody.model_fields
         metrics = await client.get("/api/v1/realphotos/ops-metrics", headers=admin)
         assert metrics.status_code == 200
         body = metrics.json()["data"]
         assert body["merchantCards"] is False
-        assert body["cost"] is None and body["modelCalls"] is None
+        assert body["cost"] is None
+        assert body.get("costReason") == "no_upstream_invoice_ledger_v1"
+        assert isinstance(body["modelCalls"], int)
+        assert isinstance(body["storageBytes"], int)
         assert "一条任务链" not in metrics.text
         tech_metrics = await client.get("/api/v1/realphotos/ops-metrics", headers=tech)
         assert tech_metrics.status_code == 403
@@ -440,8 +446,10 @@ async def _main() -> int:
         "password_lock_kept=true tech_release=released_tech_audit support_release=403 merchant_release=403 "
         "ledger_integer=true user_admin=true password_not_in_log=true merchant_users=403 support_users=403 "
         "log_page_size=20 user_page_size=10 preset_disabled_hidden=true preset_reenabled=true "
-        "customer_preset=403 gps_not_on_batch=true imports_empty=true metrics_no_merchant_cards=true "
-        "cost_empty=true model_calls_empty=true tech_metrics=403 "
+        "customer_preset=403 gps_not_on_batch=true imported_brands_empty=true "
+        f"import_items={len(import_body.get('items') or [])} metrics_no_merchant_cards=true "
+        "cost_empty=true cost_reason=no_upstream_invoice_ledger_v1 "
+        f"model_calls={body['modelCalls']} storage_bytes={body['storageBytes']} tech_metrics=403 "
         "supplier_connected=false production_billing=false"
     )
     return 0

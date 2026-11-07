@@ -37,7 +37,7 @@ vibe_coding:
     visible_output: "生图页、提示词页、URL 导入页和管理员模型合同表"
     verify: "/tmp/supplier-live-e2e.log 含 SUPPLIER_LIVE_E2E_RECORDED；导入仍未接通；production_billing=false"
     status: supplier_live_recorded_not_production
-    next_user_action: "BLOCKING-FIX A–G 已落地并有 /tmp/blocking-fix-e2e.log PASS。待 Owner 审阅 cursor/blocking-fix-9973 PR 合入。不得开 S7。"
+    next_user_action: "PARTIAL-ALIGN A–F 已落地；/tmp/partial-align-e2e.log PARTIAL_ALIGN_E2E_PASS；s5_exited=true。待 Owner 审阅 cursor/partial-align-9973（依赖 #27）。不得开 S7。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -189,6 +189,9 @@ known_conflicts:
   - id: PR27_OPENER_ACCOUNT
     status: recorded
     detail: "提交作者为 Collaborator 身份 xtzhou247；PR #27 由本机当前 gh 登录账号 nancywrayg57-jpg 创建。合入仍须非自评自合：若 PR 作者账号与审合账号相同则换 Collaborator 账号审合或按 AGENTS §7 处理。"
+  - id: PR28_OPENER_ACCOUNT
+    status: recorded
+    detail: "PARTIAL-ALIGN 提交作者 xtzhou247；PR #28 由 nancywrayg57-jpg 创建。合入仍须非自评自合。"
   - id: DEVHOST_SSH_AUTONOMY
     status: recorded
     detail: "管理员授权：每里程碑后 Agent 自行 SSH 开发机端测，无需人工代跑。口令在同级 生产物料/；清单与 DEV_INSTRUCTIONS §6.1 / AGENTS.md §5 已写。"
@@ -201,10 +204,24 @@ known_conflicts:
 
 next_action:
   owner: owner
-  action: "审阅 cursor/blocking-fix-9973 PR（BLOCKING-FIX A–G）；仅经非本人作者账号 squash 合入 main。不得开 S7。合入后更新本文件与 checkpoint §0。"
-  work_order: "BLOCKING-FIX-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-阻断级修复工单.md"
-  branch: cursor/blocking-fix-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/27"
+  action: "审阅 cursor/partial-align-9973 PR（PARTIAL-ALIGN A–F；依赖 blocking-fix #27 若尚未合入须先/一并处理）。仅经非本人作者账号 squash 合入 main。不得开 S7。"
+  work_order: "PARTIAL-ALIGN-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-部分对齐修复工单.md"
+  branch: cursor/partial-align-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/28"
+  depends_on_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/27"
+  partial_align_status:
+    A_pre_review_honesty: done
+    B_ops_metrics: done
+    C_directory_picker: done
+    D_preset_imports_gps_ops: done
+    E_s5_exit: done
+    F_browser_menu_cache: done
+    e2e_log: "/tmp/partial-align-e2e.log"
+    e2e_mark: PARTIAL_ALIGN_E2E_PASS
+    browser_evidence: "/tmp/partial-align-browser.txt"
+    production_billing: false
+    url_import_connected: false
+    s7_started: false
   blocking_fix_status:
     A_copy_latch: done
     B_gps_write: done
@@ -218,6 +235,7 @@ next_action:
     production_billing: false
     url_import_connected: false
     s7_started: false
+    pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/27"
   ia_page_status:
     A_workspace: done
     B_library: done
@@ -248,7 +266,17 @@ next_action:
       status: superseded_push_authorized_2026_11_07
       detail: "工单头曾禁止提交推送；管理员 2026-11-07 授权「推送并开PR」。合并仍仅 Owner、非自评自合。"
     - id: IA_C6_MENU_CACHE_STALE
-      detail: "reconcile 后 bump_menu_structure_cache_version 返回 0（缓存后端疑似未真正 incr）。live uvicorn 会继续吐旧侧栏，需重启 API 进程后 /menus/routes 才与 DB 一致。ASGI TestClient 同库立即正确。记录为运维注意，不扩需求。"
+      status: fixed_process_local_2026_11_07
+      detail: "PARTIAL-ALIGN F：Redis 关闭时版本键改走进程内计数，同进程 bump 后 /menus/routes 可变新。多 worker 无共享 Redis 仍需 Redis 或重启；端测 ops_note 已写。IA_C6=fixed。"
+  - id: PARTIAL_ALIGN_BASE
+      status: recorded
+      detail: "PARTIAL-ALIGN 开分支时 #27 未确认合入（gh sandbox Forbidden）；按工单从 cursor/blocking-fix-9973 tip d58a86a 开 cursor/partial-align-9973，PR 须声明依赖阻断级。"
+  - id: PARTIAL_ALIGN_COPY_PASS_VS_A
+      status: kept_nd025_exception
+      detail: "条目 A 要求客户默认 live/unconfigured；ND-025 复制仍 service 层 pre_review_mode=pass 免再次完整预审。客户 HTTP 不可选夹具 pass。"
+  - id: DEV_INSTRUCTIONS_S5_HEADER_STALE
+      status: resolved_2026_11_07
+      detail: "§10.7 exit_evidence 原标题写「未齐」但条目已全勾且 /tmp/s5-pg-e2e.log PASS。PARTIAL-ALIGN E 已改标题为已齐并收口 s5_exited。"
     - id: IA_C7_ORDER_SUPPORT_MESSAGES_GRANT
       status: decided_2026_11_06
       detail: "管理员裁决：订单客服要有顶栏铃铛/消息中心；列表只展示商家充值订单通知。侧栏不因消息膨胀。工作台入口另授；不授予业务原图/模板/系统管理。"
@@ -275,8 +303,9 @@ next_action:
     s4_exited: true
     s4_production_billing: false
     s5_opened: true
-    s5_checklist: authorized_exit_incomplete
-    s5_exited: false
+    s5_checklist: exit_evidence_complete_2026_11_07
+    s5_exited: true
+    s5_exit_evidence: "/tmp/s5-pg-e2e.log S5_PG_E2E_PASS；DEV_INSTRUCTIONS §10.7 已齐；PARTIAL-ALIGN E 核对"
     s5_production_billing: false
     s5_supplier_connected: false
     s5_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/23"

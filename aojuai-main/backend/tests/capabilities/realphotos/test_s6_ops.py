@@ -426,5 +426,8 @@ async def test_user_admin_log_preset_and_metrics(db):
     metrics = await ctx["ops"].metrics(actor_role_codes={ROLE_ADMIN})
     assert metrics["merchantCards"] is False
     assert metrics["cost"] is None
-    assert metrics["modelCalls"] is None
+    assert metrics["costReason"] == "no_upstream_invoice_ledger_v1"
+    assert isinstance(metrics["modelCalls"], int)
+    assert metrics["modelCalls"] >= 0
+    assert isinstance(metrics["storageBytes"], int)
     assert "gps" not in BatchBody.model_fields

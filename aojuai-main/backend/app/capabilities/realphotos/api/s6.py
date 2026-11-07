@@ -391,12 +391,16 @@ async def list_preset_imports(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
+    page: int = 1,
+    page_size: int = 20,
     _: None = Depends(PermissionChecker([ADMIN_READ])),
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     if ROLE_ADMIN not in roles and "admin" not in roles:
         raise ForbiddenError(message="只有平台管理员可以浏览导入记录")
-    return SuccessResponse(data={"items": [], "importedBrands": []})
+    from app.capabilities.realphotos.services.legacy_preset_imports import browse_legacy_imports
+
+    return SuccessResponse(data=browse_legacy_imports(page=page, page_size=page_size))
 
 
 @router.get("/device-presets")

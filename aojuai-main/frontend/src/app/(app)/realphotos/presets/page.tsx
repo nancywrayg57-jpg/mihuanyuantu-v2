@@ -24,6 +24,18 @@ type VersionRow = {
   createdAt?: string | null
 }
 
+type ImportRow = {
+  sourceId?: number | string | null
+  templateRef?: string | null
+  deviceDisplay?: string | null
+  legacyCategory?: string | null
+  visibility?: string | null
+  activationStatus?: string | null
+  reviewBucket?: string | null
+  makerNoteImported?: boolean
+  runtimeActivated?: boolean
+}
+
 export default function RealphotosPresetsPage() {
   const [items, setItems] = useState<Preset[]>([])
   const [code, setCode] = useState('')
@@ -40,17 +52,28 @@ export default function RealphotosPresetsPage() {
   const [altitude, setAltitude] = useState('')
   const [sceneRule, setSceneRule] = useState('')
   const [message, setMessage] = useState('')
-  const [imports, setImports] = useState<string[]>([])
+  const [importRows, setImportRows] = useState<ImportRow[]>([])
+  const [importTotal, setImportTotal] = useState(0)
+  const [importNote, setImportNote] = useState('')
   const [versions, setVersions] = useState<VersionRow[]>([])
   const [versionCode, setVersionCode] = useState('')
 
   async function load() {
     const data = await apiFetch<{ items: Preset[] }>('/api/v1/realphotos/device-presets')
-    const imported = await apiFetch<{ importedBrands: string[]; items?: unknown[] }>(
-      '/api/v1/realphotos/device-preset-imports',
-    )
+    const imported = await apiFetch<{
+      importedBrands: string[]
+      items?: ImportRow[]
+      total?: number
+      note?: string
+    }>('/api/v1/realphotos/device-preset-imports')
     setItems(data.items)
-    setImports(imported.importedBrands || [])
+    setImportRows(imported.items || [])
+    setImportTotal(Number(imported.total || 0))
+    setImportNote(
+      imported.importedBrands?.length
+        ? `已导入品牌：${imported.importedBrands.join(', ')}`
+        : imported.note || '未把未授权品牌 MakerNote 写成已导入成功',
+    )
   }
 
   useEffect(() => {
@@ -130,30 +153,37 @@ export default function RealphotosPresetsPage() {
     <main className="space-y-4 p-6">
       <h1 className="text-lg font-medium">设备预设</h1>
       <p className="text-sm text-muted-foreground">
-        GPS 只配在预设上。处理页不提供单独选点。不含作者/版权、IP-GEO。导入记录空态诚实展示。
+        GPS 只配在预设上。处理页不提供单独选点。不含作者/版权、IP-GEO。导入为浏览旧版记录，不伪造 MakerNote 已导入。
       </p>
       <p className="text-sm">{message}</p>
       <section className="space-y-2">
-        <h2 className="text-sm font-medium">导入记录</h2>
+        <h2 className="text-sm font-medium">导入记录 · 共 {importTotal} 条</h2>
+        <p className="text-xs text-muted-foreground">{importNote}</p>
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr>
-              <th className="border px-2 py-1 text-left">品牌</th>
-              <th className="border px-2 py-1 text-left">说明</th>
+              <th className="border px-2 py-1 text-left">来源 ID</th>
+              <th className="border px-2 py-1 text-left">设备</th>
+              <th className="border px-2 py-1 text-left">可见性</th>
+              <th className="border px-2 py-1 text-left">激活</th>
+              <th className="border px-2 py-1 text-left">复核</th>
             </tr>
           </thead>
           <tbody>
-            {imports.length === 0 ? (
+            {importRows.length === 0 ? (
               <tr>
-                <td className="border px-2 py-1" colSpan={2}>
-                  尚无导入记录（不伪造已导入品牌）
+                <td className="border px-2 py-1" colSpan={5}>
+                  尚无导入记录（与数据事实一致，不伪造已导入品牌）
                 </td>
               </tr>
             ) : (
-              imports.map((brandName) => (
-                <tr key={brandName}>
-                  <td className="border px-2 py-1">{brandName}</td>
-                  <td className="border px-2 py-1">已登记</td>
+              importRows.map((row, index) => (
+                <tr key={`${row.templateRef || row.sourceId || 'row'}-${index}`}>
+                  <td className="border px-2 py-1">{row.sourceId ?? ''}</td>
+                  <td className="border px-2 py-1">{row.deviceDisplay || row.templateRef || ''}</td>
+                  <td className="border px-2 py-1">{row.visibility || ''}</td>
+                  <td className="border px-2 py-1">{row.activationStatus || ''}</td>
+                  <td className="border px-2 py-1">{row.reviewBucket || ''}</td>
                 </tr>
               ))
             )}
@@ -240,7 +270,7 @@ export default function RealphotosPresetsPage() {
                 value={altitude}
                 onChange={(event) => setAltitude(event.target.value)}
               />
-              <p className="mt-1 text-xs text-muted-foreground">写入未接通：可保存配置，处理结果不得静默假装已写入 GPS。</p>
+              <p className="mt-1 text-xs text-muted-foreground">fixed：处理任务会按配置写入 EXIF GPS，并可回读核对。</p>
             </div>
           ) : null}
           {gpsMode === 'random_by_scene' ? (
@@ -251,7 +281,7 @@ export default function RealphotosPresetsPage() {
                 value={sceneRule}
                 onChange={(event) => setSceneRule(event.target.value)}
               />
-              <p className="mt-1 text-xs text-muted-foreground">写入未接通：可保存配置，处理结果须标明未写入。</p>
+              <p className="mt-1 text-xs text-muted-foreground">random_by_scene：按场景规则抽样坐标写入 EXIF；none 明确不写。</p>
             </div>
           ) : null}
         </div>

@@ -63,8 +63,8 @@ type WorkspacePayload = {
   }>
 }
 
-function cell(value: number | string | null | undefined) {
-  if (value === null || value === undefined || value === '') return '空'
+function cell(value: number | string | null | undefined, emptyLabel = '暂无数据') {
+  if (value === null || value === undefined || value === '') return emptyLabel
   return String(value)
 }
 

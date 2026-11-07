@@ -373,7 +373,7 @@
 | T-033 | 无会话处理主路径与 OpenAPI | 有效 Key 可完成上传、提交处理、查询终态、下载，无需浏览器会话。扣费和冻结记绑定账号。生图、提示词优化、URL 导入、客服、管理、上游模型配置即使持有 Key 也拒绝。跨租户拒绝。OpenAPI 写明鉴权头、`image_processing` 路径集合和错误码，并与实现一致。下载仍逐张，无 ZIP，无裸路径 |
 | T-034 | 开发机端到端测试 | 下列 `exit_evidence` 全勾。缺供应商证据的路径不得外呼。计费替身只证明入库与扣费，不代替供应商小样 |
 
-**exit_evidence**（未齐。不得标 S5 完成）
+**exit_evidence**（已齐。证据 `/tmp/s5-pg-e2e.log` 含 `S5_PG_E2E_PASS`；`production_billing=false`；`supplier_connected=false`。PARTIAL-ALIGN E 于 2026-11-07 核对后收口 `s5_exited`。）
 
 - [x] 开发机 PostgreSQL 上，文生图成功结果在现有资源表，且没有自动生成处理任务。图生图用一张 1024×768 临时参考成功后，资源只多结果那一条，且没有处理任务。证据：`/tmp/s5-pg-e2e.log` 含 `processing_tasks_for_asset=0 i2i_temp_not_stored=true i2i_processing_tasks=0`。
 - [x] 生图账本没有 `RESERVED`。多张成功时每张各扣 10，失败张不扣。余额小于 `数量 × 10` 时整单拒绝且不建生图任务。数量 11 整单拒绝且不入库。同一幂等键重放不二次扣费。扣费当时可用额不够时只失败该张、不入库，成功张仍扣 10。证据：`/tmp/s5-pg-e2e.log` 含 `reservation_delta=0 two_success_consumed=20 stored_credits=10 failed_credits=0 insufficient=rejected_no_generation eleventh=INPUT_INVALID idempotent_replay_no_second_charge=true charge_time_insufficient_one_image=true`。第二租户可用额为 0，没有改它的余额。扣费中途那次把可用额临时改小，断言后按流水恢复到只保留成功张的 10 积分。
