@@ -181,69 +181,71 @@ onMounted(load)
 <template>
   <div class="min-h-screen pb-28">
     <header class="border-b border-clay bg-parchment/90 backdrop-blur sticky top-0 z-40">
-      <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
         <div class="min-w-0 flex-1">
           <h1 class="hidden sm:block font-song text-lg sm:text-xl truncate" data-testid="home-brand">
             黄志松家族记忆档案馆
           </h1>
-          <p class="text-ink sm:text-mute text-base sm:text-sm truncate" data-testid="home-welcome">
+          <p class="text-ink sm:text-mute text-lg sm:text-sm font-medium sm:font-normal truncate" data-testid="home-welcome">
             欢迎 {{ auth.displayName }}<span class="hidden sm:inline">{{ auth.isAdmin ? '（管理员）' : '' }}</span>
           </p>
         </div>
-        <button
-          v-if="auth.isAdmin"
-          type="button"
-          class="min-h-tap px-3 border border-clay inline-flex items-center gap-1"
-          @click="router.push('/members')"
-        >
-          <Users class="w-5 h-5" /> <span class="hidden sm:inline">家族成员管理</span>
-        </button>
-        <button
-          type="button"
-          class="min-h-tap px-3 border border-clay inline-flex items-center gap-1"
-          data-testid="a11y-font"
-          title="放大字号"
-          @click="a11y.cycleFont()"
-        >
-          <Type class="w-5 h-5" /> <span class="hidden sm:inline">字号</span>
-        </button>
-        <button
-          type="button"
-          class="min-h-tap px-3 border border-clay inline-flex items-center gap-1"
-          data-testid="a11y-tap"
-          :title="a11y.largeTap ? '标准按钮' : '大按钮'"
-          :aria-pressed="a11y.largeTap"
-          @click="a11y.largeTap = !a11y.largeTap"
-        >
-          <Maximize2 class="w-5 h-5" :class="a11y.largeTap ? 'text-cinnabar' : ''" />
-          <span class="sr-only">{{ a11y.largeTap ? '标准按钮' : '大按钮' }}</span>
-        </button>
-        <button
-          v-if="auth.isAdmin"
-          type="button"
-          class="min-h-tap px-3 border border-clay inline-flex items-center gap-1 disabled:opacity-60"
-          data-testid="export-backup"
-          :disabled="exporting"
-          :title="exporting ? '正在打包…' : '一键导出全部档案与文件（ZIP）'"
-          @click="doExport"
-        >
-          <Download class="w-5 h-5" />
-          <span class="hidden sm:inline">{{ exporting ? '打包中…' : '备份导出' }}</span>
-        </button>
-        <button
-          type="button"
-          class="min-h-tap px-3 border border-clay inline-flex items-center gap-1"
-          @click="pwdOpen = true"
-        >
-          <KeyRound class="w-5 h-5" /> <span class="hidden sm:inline">修改密码</span>
-        </button>
-        <button
-          type="button"
-          class="min-h-tap px-3 border border-clay inline-flex items-center gap-1"
-          @click="logout"
-        >
-          <LogOut class="w-5 h-5" /> <span class="hidden sm:inline">退出</span>
-        </button>
+        <div class="flex items-center gap-2 overflow-x-auto shrink-0">
+          <button
+            v-if="auth.isAdmin"
+            type="button"
+            class="min-h-tap px-3 border border-clay inline-flex items-center gap-1 shrink-0"
+            @click="router.push('/members')"
+          >
+            <Users class="w-5 h-5" /> <span class="hidden sm:inline">家族成员管理</span>
+          </button>
+          <button
+            type="button"
+            class="min-h-tap px-3 border border-clay inline-flex items-center gap-1 shrink-0"
+            data-testid="a11y-font"
+            title="放大字号"
+            @click="a11y.cycleFont()"
+          >
+            <Type class="w-5 h-5" /> <span class="hidden sm:inline">字号</span>
+          </button>
+          <button
+            type="button"
+            class="min-h-tap px-3 border border-clay inline-flex items-center gap-1 shrink-0"
+            data-testid="a11y-tap"
+            :title="a11y.largeTap ? '标准按钮' : '大按钮'"
+            :aria-pressed="a11y.largeTap"
+            @click="a11y.largeTap = !a11y.largeTap"
+          >
+            <Maximize2 class="w-5 h-5" :class="a11y.largeTap ? 'text-cinnabar' : ''" />
+            <span class="sr-only">{{ a11y.largeTap ? '标准按钮' : '大按钮' }}</span>
+          </button>
+          <button
+            v-if="auth.isAdmin"
+            type="button"
+            class="min-h-tap px-3 border border-clay inline-flex items-center gap-1 shrink-0 disabled:opacity-60"
+            data-testid="export-backup"
+            :disabled="exporting"
+            :title="exporting ? '正在打包…' : '一键导出全部档案与文件（ZIP）'"
+            @click="doExport"
+          >
+            <Download class="w-5 h-5" />
+            <span class="hidden sm:inline">{{ exporting ? '打包中…' : '备份导出' }}</span>
+          </button>
+          <button
+            type="button"
+            class="min-h-tap px-3 border border-clay inline-flex items-center gap-1 shrink-0"
+            @click="pwdOpen = true"
+          >
+            <KeyRound class="w-5 h-5" /> <span class="hidden sm:inline">修改密码</span>
+          </button>
+          <button
+            type="button"
+            class="min-h-tap px-3 border border-clay inline-flex items-center gap-1 shrink-0"
+            @click="logout"
+          >
+            <LogOut class="w-5 h-5" /> <span class="hidden sm:inline">退出</span>
+          </button>
+        </div>
       </div>
       <p v-if="exportMsg" class="max-w-6xl mx-auto px-4 pb-2 text-sm text-celadon">{{ exportMsg }}</p>
     </header>
