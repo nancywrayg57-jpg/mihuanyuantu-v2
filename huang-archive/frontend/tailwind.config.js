@@ -14,6 +14,7 @@ export default {
       },
       fontFamily: {
         song: ['"Songti SC"', '"Noto Serif SC"', 'STSong', 'SimSun', 'serif'],
+        lishu: ['"LinHai LiShu"', '"STLiti"', 'LiSu', '"Noto Serif SC"', 'serif'],
         sans: ['"Noto Sans SC"', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
       },
       minHeight: {

@@ -183,8 +183,12 @@ onMounted(load)
     <header class="border-b border-clay bg-parchment/90 backdrop-blur sticky top-0 z-40">
       <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
         <div class="min-w-0 flex-1">
-          <h1 class="font-song text-lg sm:text-xl truncate">黄志松家族记忆档案馆</h1>
-          <p class="text-mute text-sm truncate">欢迎，{{ auth.displayName }}{{ auth.isAdmin ? '（管理员）' : '' }}</p>
+          <h1 class="hidden sm:block font-song text-lg sm:text-xl truncate" data-testid="home-brand">
+            黄志松家族记忆档案馆
+          </h1>
+          <p class="text-ink sm:text-mute text-base sm:text-sm truncate" data-testid="home-welcome">
+            欢迎 {{ auth.displayName }}<span class="hidden sm:inline">{{ auth.isAdmin ? '（管理员）' : '' }}</span>
+          </p>
         </div>
         <button
           v-if="auth.isAdmin"
