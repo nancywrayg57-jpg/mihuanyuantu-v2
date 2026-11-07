@@ -13,7 +13,7 @@
 | 代码态 | `origin/main` 已含 S0–S5。本分支另含 S6 运营/供应商合同控制 + IA-PAGE（分角色工作台、侧栏清除生图/URL、订单客服充值铃铛等）。不是生产收费已开放 |
 | 验证态 | S3 小样只认 `/tmp/s3-pg-e2e.log` 任务 29。S4 `/tmp/s4-pg-e2e.log` `S4_PG_E2E_PASS`。S6 `/tmp/s6-pg-e2e.log` `S6_PG_E2E_PASS`（`supplier_connected=false`）。供应商 `/tmp/supplier-live-e2e.log`。IA `/tmp/ia-page-smoke-c2c3c7.txt`。本机不是最终中国大陆节点 |
 | 当前阶段 | S6 管理员已结束（不重跑改写 `s6_exited`）。IA-PAGE 代码与裁决已落地，待 Owner 审 PR / 浏览器冒烟。不得开 S7 |
-| 下一步 | 审阅并 squash 合入 `cursor/ia-page-fix-9973` 的 PR；浏览器冒烟；不得开 S7；S5 清单项未全部标完成不等于可宣称生产收费 |
+| 下一步 | 审阅 https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/25 ；浏览器冒烟；squash 合入须非作者账号；不得开 S7 |
 
 ## 1. 仓库与文档基线
 

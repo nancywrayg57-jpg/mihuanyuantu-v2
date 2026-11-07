@@ -195,6 +195,7 @@ next_action:
   action: "审阅 cursor/ia-page-fix-9973 PR（含 S6 + IA-PAGE）；浏览器冒烟；仅经非本人作者账号 squash 合入 main。不得开 S7。合入后更新本文件与 checkpoint §0。"
   work_order: "IA-PAGE-2026-11-06 /home/hbs/Desktop/蜜獾原图-v2-页面与信息架构-修复工单.md"
   branch: cursor/ia-page-fix-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/25"
   ia_page_status:
     A_workspace: done
     B_library: done_degraded_filename

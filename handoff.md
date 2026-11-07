@@ -50,7 +50,7 @@
 ## 5. 下一步（摘要；以 progress 为准）
 
 - **main 基线**：`origin/main` 已含 S0–S5（S5 squash `d6f4b5d` / #23）。不是生产收费就绪。
-- **待合入 PR**：`cursor/ia-page-fix-9973`（含未合入的 S6 运营控制 + 工单 IA-PAGE-2026-11-06 页面/信息架构修复）。PR URL 以 GitHub 当前页为准；合入仅 Owner、非本人作者账号。
+- **待合入 PR**：https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/25 （`cursor/ia-page-fix-9973`，含 S6 运营控制 + IA-PAGE）。合入仅 Owner、且非本人作者账号（本 PR 作者为 Owner 账号时须换 Collaborator 重开或换账号审合）。
 - **IA 裁决已落地**：IA_C2 订单/技术客服分角色工作台；IA_C3 生图/URL 仅资源页入口、侧栏清除；IA_C7 订单客服铃铛仅充值通知。冒烟 `/tmp/ia-page-smoke-c2c3c7.txt`。
 - **S6**：管理员已结束；证据 `/tmp/s6-pg-e2e.log`；`supplier_connected=false`，`production_billing=false`。不重跑当验收。
 - **供应商补测**：`/tmp/supplier-live-e2e.log`；导入未接通；不是生产节点、不是对外检测通过。
