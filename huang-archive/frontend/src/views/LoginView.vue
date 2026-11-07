@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { FAMILY_ROSTER } from '../lib/roster'
@@ -13,12 +13,28 @@ const name = ref('')
 const password = ref('')
 const showPicker = ref(false)
 const localError = ref('')
+const roster = ref([...FAMILY_ROSTER])
 
 const filtered = computed(() => {
   const q = name.value.trim()
-  if (!q) return FAMILY_ROSTER
-  return FAMILY_ROSTER.filter((p) => p.display_name.includes(q))
+  if (!q) return roster.value
+  return roster.value.filter((p) => p.display_name.includes(q))
 })
+
+async function loadNames() {
+  try {
+    const res = await fetch('/api/hz/member-names')
+    if (!res.ok) return
+    const data = await res.json()
+    if (Array.isArray(data.items) && data.items.length) {
+      roster.value = data.items.map((p) => ({
+        display_name: p.display_name,
+        role: p.role,
+        email: p.display_name,
+      }))
+    }
+  } catch (_) {}
+}
 
 function pick(person) {
   name.value = person.display_name
@@ -34,6 +50,8 @@ async function onSubmit() {
     localError.value = auth.error || zhError(e, '登录失败：姓名或密码不正确')
   }
 }
+
+onMounted(loadNames)
 </script>
 
 <template>
@@ -70,7 +88,7 @@ async function onSubmit() {
           >
             <button
               v-for="p in filtered"
-              :key="p.email"
+              :key="p.display_name"
               type="button"
               class="w-full text-left px-4 min-h-tap hover:bg-clay/40"
               @click="pick(p)"

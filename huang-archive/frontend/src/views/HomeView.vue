@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { LogOut, KeyRound, Upload } from 'lucide-vue-next'
+import { LogOut, KeyRound, Upload, Users } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
@@ -24,7 +24,9 @@ const confirmPwd = ref('')
 const pwdMsg = ref('')
 const pwdErr = ref('')
 
-const uploadLabel = computed(() => uploadLabelFor(auth.displayName))
+const uploadLabel = computed(() =>
+  uploadLabelFor(auth.displayName, auth.user?.relation || ''),
+)
 
 const filtered = computed(() => {
   if (tab.value === 'all') return archives.value
@@ -108,6 +110,14 @@ onMounted(load)
           <h1 class="font-song text-lg sm:text-xl truncate">黄志松家族记忆档案馆</h1>
           <p class="text-mute text-sm truncate">欢迎，{{ auth.displayName }}{{ auth.isAdmin ? '（管理员）' : '' }}</p>
         </div>
+        <button
+          v-if="auth.isAdmin"
+          type="button"
+          class="min-h-tap px-3 border border-clay inline-flex items-center gap-1"
+          @click="router.push('/members')"
+        >
+          <Users class="w-5 h-5" /> <span class="hidden sm:inline">家族成员管理</span>
+        </button>
         <button
           type="button"
           class="min-h-tap px-3 border border-clay inline-flex items-center gap-1"

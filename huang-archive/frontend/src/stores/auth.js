@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import pb from '../lib/pb'
-import { normalizePassword, resolveIdentity } from '../lib/roster'
+import { normalizePassword, normalizePersonName, resolveIdentity } from '../lib/roster'
 import { zhError } from '../lib/errors'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -23,13 +23,38 @@ export const useAuthStore = defineStore('auth', () => {
     return pb.collection('users').authWithPassword(identity, password)
   }
 
+  async function resolveDynamicIdentity(nameOrEmail) {
+    const raw = normalizePersonName(nameOrEmail)
+    if (!raw || raw.includes('@')) return null
+    try {
+      const res = await fetch(`/api/hz/resolve-name?name=${encodeURIComponent(raw)}`)
+      if (!res.ok) return null
+      return await res.json()
+    } catch {
+      return null
+    }
+  }
+
   async function login(nameOrEmail, password) {
     loading.value = true
     error.value = ''
     try {
-      const identity = resolveIdentity(nameOrEmail)
+      let identity = resolveIdentity(nameOrEmail)
       const pwd = normalizePassword(password)
       if (!pwd) throw new Error('请输入密码')
+
+      // Dynamic members not in static roster
+      if (!identity?.email) {
+        const dyn = await resolveDynamicIdentity(nameOrEmail)
+        if (dyn?.email) {
+          identity = {
+            display_name: dyn.display_name,
+            email: dyn.email,
+            username: dyn.username,
+            role: dyn.role,
+          }
+        }
+      }
 
       const candidates = []
       if (identity?.email) candidates.push(identity.email)
@@ -38,8 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       if (!candidates.length) throw new Error('请输入或点选家族姓名')
 
-      // Unknown Chinese name (not in roster) cannot auth against PocketBase identity fields
-      if (!identity?.email && !identity?.username?.includes('@') && /[\u4e00-\u9fff]/.test(candidates[0])) {
+      if (!identity?.email && /[\u4e00-\u9fff]/.test(candidates[0] || '')) {
         throw new Error('未找到该家族姓名，请点选列表中的姓名')
       }
 

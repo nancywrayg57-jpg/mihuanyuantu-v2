@@ -1,3 +1,5 @@
+import { uploadLabelFromRelation } from './relations'
+
 /** Family login roster: Chinese display names map to PocketBase identity (email/username). */
 export const FAMILY_ROSTER = [
   { display_name: '黄祥财', email: 'huangxiangcai@huangzhisong.com', username: 'huangxiangcai', role: 'admin' },
@@ -40,7 +42,9 @@ const UPLOAD_GRANDFATHER = new Set([
 ])
 const UPLOAD_MATERNAL_GRANDFATHER = new Set(['张惠', '张建华', '吴玲玲', '吴泽强'])
 
-export function uploadLabelFor(displayName) {
+export function uploadLabelFor(displayName, relation = '') {
+  const fromRel = uploadLabelFromRelation(relation, displayName)
+  if (fromRel) return fromRel
   const name = normalizePersonName(displayName)
   if (UPLOAD_FATHER.has(name)) return '上传父亲的资料'
   if (UPLOAD_FATHER_IN_LAW.has(name)) return '上传岳父的资料'
