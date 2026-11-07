@@ -1,77 +1,70 @@
 #!/usr/bin/env python3
-"""Upload synthetic image/video/scan/audio/other + news link; then delete marked test archives."""
-import base64, json, os, subprocess, tempfile, urllib.parse, urllib.request, urllib.error
+"""Upload synthetic video/scan/audio/other (+image/link); delete marked test archives."""
+import base64, json, os, subprocess, tempfile, urllib.request, urllib.error
 
 BASE = os.environ.get("ARCHIVE_BASE", "https://huangzhisong.com").rstrip("/")
 NEWS = "https://news.gmw.cn/2019-02/14/content_32498421.htm"
 MARK = "[合成端测]"
 
-def api(method, path, data=None, token=None, form_files=None):
-    if form_files is not None:
-        # use curl for multipart
-        cmd = ["curl", "-sS", "-X", method, BASE + path]
-        if token:
-            cmd += ["-H", f"Authorization: {token}"]
-        for k, v in (data or {}).items():
-            cmd += ["-F", f"{k}={v}"]
-        for field, path_, mime in form_files:
-            cmd += ["-F", f"{field}=@{path_};type={mime}"]
-        out = subprocess.check_output(cmd, text=True)
-        return json.loads(out)
+def api_json(method, path, data=None, token=None):
     headers = {"Content-Type": "application/json"}
     if token:
         headers["Authorization"] = token
     body = None if data is None else json.dumps(data).encode()
     req = urllib.request.Request(BASE + path, data=body, headers=headers, method=method)
     with urllib.request.urlopen(req) as r:
-        raw = r.read().decode() or "{}"
-        return json.loads(raw)
+        return json.loads(r.read().decode() or "{}")
+
+def api_form(token, fields, files):
+    cmd = ["curl", "-sS", "-X", "POST", BASE + "/api/collections/archives/records",
+           "-H", f"Authorization: {token}"]
+    for k, v in fields.items():
+        cmd += ["-F", f"{k}={v}"]
+    for field, path, mime, filename in files:
+        cmd += ["-F", f"{field}=@{path};type={mime};filename={filename}"]
+    out = subprocess.check_output(cmd, text=True)
+    return json.loads(out)
 
 def main():
-    auth = api("POST", "/api/collections/users/auth-with-password", {
+    auth = api_json("POST", "/api/collections/users/auth-with-password", {
         "identity": "user1@huangzhisong.com", "password": "hzs1933",
     })
     token, uid = auth["token"], auth["record"]["id"]
-    admin = api("POST", "/api/collections/users/auth-with-password", {
+    admin = api_json("POST", "/api/collections/users/auth-with-password", {
         "identity": "huangxiangcai@huangzhisong.com", "password": "3599263",
     })
     atok = admin["token"]
 
-    # Permission: member sees archives from other uploaders
-    all_list = api("GET", "/api/collections/archives/records?perPage=200", token=token)
+    all_list = api_json("GET", "/api/collections/archives/records?perPage=200", token=token)
     others = [i for i in all_list["items"] if i.get("uploader") != uid]
     print(f"PASS list_all_members member_sees={all_list['totalItems']} others={len(others)}")
 
+    # also memories list (no uploader filter in rule)
+    mem = api_json("GET", "/api/collections/memories/records?perPage=200", token=token)
+    print(f"PASS memories_list_all total={mem['totalItems']}")
+
     created = []
     tmpdir = tempfile.mkdtemp()
-
-    # image png
     png = os.path.join(tmpdir, "t.png")
     open(png, "wb").write(base64.b64decode(
         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="))
-    # minimal pdf
     pdf = os.path.join(tmpdir, "t.pdf")
-    open(pdf, "wb").write(b"%PDF-1.1\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n")
-    # tiny "mp3" with mpeg frame header-ish bytes
+    open(pdf, "wb").write(b"%PDF-1.4\n1 0 obj<< /Type /Catalog >>endobj\ntrailer<<>>\n%%EOF\n")
     mp3 = os.path.join(tmpdir, "t.mp3")
-    open(mp3, "wb").write(b"\xff\xfb\x90\x00" + b"\x00" * 256)
-    # tiny mp4 (ftyp box)
+    open(mp3, "wb").write(b"\xff\xfb\x90\x00" + b"\x00" * 512)
     mp4 = os.path.join(tmpdir, "t.mp4")
     open(mp4, "wb").write(bytes.fromhex(
-        "00000018667479706d703431000000006d70343169736f6d" + "00" * 64))
-    # other bin
-    other = os.path.join(tmpdir, "t.bin")
-    open(other, "wb").write(b"HZ-SYNTH-OTHER-TEST")
+        "000000206674797069736f6d0000020069736f6d69736f32617663316d703431" + "00" * 128))
 
     cases = [
-        ("image", png, "image/png", f"{MARK} image"),
-        ("video", mp4, "video/mp4", f"{MARK} video"),
-        ("scan", pdf, "application/pdf", f"{MARK} scan"),
-        ("audio", mp3, "audio/mpeg", f"{MARK} audio"),
-        ("other", other, "application/octet-stream", f"{MARK} other"),
+        ("image", png, "image/png", "synth.png", f"{MARK} image"),
+        ("video", mp4, "video/mp4", "synth.mp4", f"{MARK} video"),
+        ("scan", pdf, "application/pdf", "synth-scan.pdf", f"{MARK} scan"),
+        ("audio", mp3, "audio/mpeg", "synth.mp3", f"{MARK} audio"),
+        ("other", pdf, "application/pdf", "synth-other.pdf", f"{MARK} other"),
     ]
-    for cat, path, mime, title in cases:
-        rec = api("POST", "/api/collections/archives/records", {
+    for cat, path, mime, filename, title in cases:
+        rec = api_form(token, {
             "title": title,
             "category": cat,
             "occurred_time": "2019-02-14",
@@ -80,13 +73,13 @@ def main():
             "uploader": uid,
             "uploader_name": "黄纲生",
             "likes_count": "0",
-        }, token=token, form_files=[("media_files", path, mime)])
-        assert rec.get("id"), rec
+        }, [("media_files", path, mime, filename)])
+        if not rec.get("id"):
+            raise SystemExit(f"FAIL upload_{cat}: {rec}")
         created.append(rec["id"])
-        print(f"PASS upload_{cat}", rec["id"])
+        print(f"PASS upload_{cat}", rec["id"], rec.get("media_files"))
 
-    # news link
-    link = api("POST", "/api/collections/archives/records", {
+    link = api_json("POST", "/api/collections/archives/records", {
         "title": f"{MARK} 光明网链接",
         "category": "link",
         "occurred_time": "2019-02-14",
@@ -97,18 +90,33 @@ def main():
         "uploader_name": "黄纲生",
         "likes_count": 0,
     }, token=token)
-    assert link.get("id") and link.get("external_link") == NEWS, link
+    assert link.get("external_link") == NEWS, link
     created.append(link["id"])
     print("PASS upload_link", link["id"], link["external_link"])
 
-    # cleanup: delete by admin all marked test titles / descriptions, plus known test titles
-    lst = api("GET", "/api/collections/archives/records?perPage=200", token=atok)
+    # cleanup all test-marked / diagnostic archives
+    lst = api_json("GET", "/api/collections/archives/records?perPage=200", token=atok)
+    keywords = [
+        MARK, "验收测试图", "UI测试图", "upload-png", "upload-jpg", "mime", "diag",
+        "after-restore", "admin-json", "本机上传验收", "光明网新闻链接验收", "合成端测",
+        "json-only", "t",
+    ]
+    # Only kill clearly-test titles — avoid wiping real family archives.
     kill = []
-    keywords = [MARK, "验收测试图", "UI测试图", "upload-png", "upload-jpg", "mime", "diag", "after-restore", "admin-json", "本机上传验收", "光明网新闻链接验收", "合成端测"]
     for i in lst["items"]:
-        blob = " ".join([str(i.get("title") or ""), str(i.get("description") or ""), str(i.get("external_link") or "")])
-        if any(k in blob for k in keywords) or i["id"] in created:
+        title = str(i.get("title") or "")
+        desc = str(i.get("description") or "")
+        if i["id"] in created or MARK in title or MARK in desc:
             kill.append(i)
+            continue
+        if any(k == title or title.startswith(k) or title in (
+            "upload-png","upload-jpg","mime","diag","admin-json","after-restore","t"
+        ) for k in keywords):
+            kill.append(i)
+            continue
+        if "验收" in title or "测试" in title or "UI测试" in title or "本机上传" in title:
+            kill.append(i)
+
     for i in kill:
         req = urllib.request.Request(
             BASE + f"/api/collections/archives/records/{i['id']}",
@@ -119,10 +127,12 @@ def main():
         except urllib.error.HTTPError as e:
             print("DELETE_FAIL", i["id"], e.code, e.read().decode()[:120])
 
-    left = api("GET", "/api/collections/archives/records?perPage=200", token=atok)
-    remain_test = [i for i in left["items"] if MARK in str(i.get("title")) or MARK in str(i.get("description"))]
-    print("PASS cleanup" if not remain_test else f"FAIL cleanup left={len(remain_test)}")
-    print("archives_remaining", left["totalItems"])
+    left = api_json("GET", "/api/collections/archives/records?perPage=200", token=atok)
+    remain_test = [i for i in left["items"] if MARK in str(i.get("title")) or MARK in str(i.get("description"))
+                   or "验收" in str(i.get("title")) or "测试" in str(i.get("title"))
+                   or str(i.get("title")) in ("upload-png","upload-jpg","mime","diag","t")]
+    print("PASS cleanup" if not remain_test else f"FAIL cleanup left={[x.get('title') for x in remain_test]}")
+    print("archives_remaining", left["totalItems"], [x.get("title") for x in left["items"]])
 
 if __name__ == "__main__":
     main()
