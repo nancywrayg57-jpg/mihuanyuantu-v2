@@ -200,6 +200,9 @@ class RealphotosS1Service:
         preset = await RealphotosOpsService(self.db).enabled_preset(preset_code)
         if preset is None:
             raise BusinessError(message="预设未启用或不存在", code="PRESET_REJECTED")
+        from app.capabilities.realphotos.services.gps_write import assert_preset_gps_ready
+
+        assert_preset_gps_ready(preset)
         review = pre_review_mode if pre_review_mode in {"pass", PRE_REVIEW_REJECT, "live"} else "pass"
         if detection_mode == DETECT_GEMINI:
             detect = DETECT_GEMINI
@@ -310,6 +313,9 @@ class RealphotosS1Service:
         preset = await RealphotosOpsService(self.db).enabled_preset(preset_code)
         if preset is None:
             raise BusinessError(message="预设未启用或不存在", code="PRESET_REJECTED")
+        from app.capabilities.realphotos.services.gps_write import assert_preset_gps_ready
+
+        assert_preset_gps_ready(preset)
         review = pre_review_mode if pre_review_mode in {"pass", PRE_REVIEW_REJECT, "live"} else "pass"
         if detection_mode == DETECT_GEMINI:
             detect = DETECT_GEMINI

@@ -1218,7 +1218,11 @@ class RealphotosOpsService:
         return dict(raw) if isinstance(raw, dict) else None
 
     async def fixed_gps_missing_coords_count(self) -> int:
-        """Count enabled/disabled presets with gpsMode=fixed but no usable coords."""
+        """Count presets with gpsMode=fixed but no usable lat/lng in latest snapshot.
+
+        Runtime may still process them (GPS skipped, legacy-aligned); this count is
+        for ops visibility of incomplete fixed configs.
+        """
         rows = (
             await self.db.execute(
                 select(RealphotosDevicePreset).where(RealphotosDevicePreset.deleted_at.is_(None))
@@ -1228,9 +1232,14 @@ class RealphotosOpsService:
         for row in rows:
             if str(row.gps_mode or "") != "fixed":
                 continue
-            config = await self._latest_gps_config(row.code)
-            writable = self._preset_dict(row, gps_config=config)
-            if not writable.get("gpsWritable"):
+            config = await self._latest_gps_config(row.code) or {}
+            try:
+                lat = float(config.get("latitude"))
+                lon = float(config.get("longitude"))
+            except (TypeError, ValueError):
+                missing += 1
+                continue
+            if not (-90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0):
                 missing += 1
         return missing
 

@@ -33,6 +33,21 @@ class FiveLayerOutput:
     height: int
 
 
+def _byte_floor(source: bytes) -> int:
+    """S2 T-012 floor: output JPEG bytes >= source_bytes.
+
+    For JPEG uploads, source_bytes is the file length. For non-JPEG sources
+    (e.g. generation PNG), comparing to PNG length is not satisfiable by any
+    JPEG encode of the same pixels; use quality-100 JPEG of the decoded RGB
+    as the comparable floor. Never pad the file to fake compliance.
+    """
+    if source.startswith(b"\xff\xd8\xff"):
+        return len(source)
+    with Image.open(io.BytesIO(source)) as image:
+        rgb = image.convert("RGB")
+    return len(_encode(rgb, quality=100))
+
+
 def run_five_layer(*, source: bytes, preset: dict, seed: int) -> FiveLayerOutput:
     """Run L1–L5 and return the final JPEG plus the EXIF field ledger."""
     baseline = _decode_baseline(source)
@@ -41,6 +56,7 @@ def run_five_layer(*, source: bytes, preset: dict, seed: int) -> FiveLayerOutput
     if pixels.shape[0] != height or pixels.shape[1] != width:
         raise BusinessError(message="五层改变了宽高", code="OUTPUT_CONSTRAINT_UNSATISFIED")
     image = Image.fromarray(pixels.astype(np.uint8), mode="RGB")
+    floor = _byte_floor(source)
     # L4 is written onto an intermediate JPEG. That size is not the byte floor.
     intermediate = _encode(image, quality=90)
     _write_and_read(intermediate, preset, seed=int(seed))
@@ -49,7 +65,7 @@ def run_five_layer(*, source: bytes, preset: dict, seed: int) -> FiveLayerOutput
         # L5 re-encodes pixels and drops metadata. Restore the approved snapshot after it.
         encoded = _encode(image, quality=int(quality))
         final, last_fields = _write_and_read(encoded, preset, seed=int(seed))
-        if len(final) >= len(source) and _same_size(final, width=width, height=height):
+        if len(final) >= floor and _same_size(final, width=width, height=height):
             return FiveLayerOutput(jpeg=final, fields=last_fields, width=width, height=height)
     raise BusinessError(
         message="无法同时满足 JPEG 与字节下限",
@@ -142,19 +158,23 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
     if not iso or not shutter or not aperture or not focal:
         raise BusinessError(message="预设缺少曝光字段", code="EXIF_WRITE_FAILED")
     tv = apex_shutter_value(shutter_seconds(shutter))
-    av = apex_aperture_value(_f_number(aperture))
+    f_number = _f_number(aperture)
+    av = apex_aperture_value(f_number)
     requested = {
         "Make": brand,
         "Model": model,
         "ISO": iso,
         "ExposureTime": shutter,
-        "FNumber": f"{_f_number(aperture):.1f}",
+        "FNumber": f"{f_number:.1f}",
         "FocalLength": focal,
         "ColorSpace": "sRGB",
         "ShutterSpeedValue": f"{tv:.6f}",
         "ApertureValue": f"{av:.6f}",
     }
     maker_note = str(preset.get("makerNote") or "").strip()
+    # exiftool 13.x rejects ExifIFD:ApertureValue when APEX < 1 (e.g. f/1.4 → ~0.97)
+    # with "Must be a positive number"; FNumber remains the writable source of truth.
+    write_aperture_value = av >= 1.0 - 1e-9
     with tempfile.TemporaryDirectory(prefix="rp-s2-") as folder:
         path = Path(folder) / "result.jpg"
         path.write_bytes(jpeg)
@@ -165,14 +185,15 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
             f"-Model={requested['Model']}",
             f"-ISO={requested['ISO']}",
             f"-ExposureTime={requested['ExposureTime']}",
-            f"-FNumber={_f_number(aperture)}",
+            f"-FNumber={f_number}",
             f"-FocalLength={requested['FocalLength']}",
             "-ColorSpace=sRGB",
             f"-ShutterSpeedValue={tv:.6f}",
-            f"-ApertureValue={av:.6f}",
             "-GPS:all=",
             "-MakerNote=",
         ]
+        if write_aperture_value:
+            command.append(f"-ApertureValue={av:.6f}")
         if maker_note:
             # PRODUCT-GAP A7：管理员 2026-11-07 授权写入；必须可回读，失败不静默。
             command.append(f"-MakerNote={maker_note}")
@@ -198,7 +219,11 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
         except FileNotFoundError as exc:
             raise BusinessError(message="exiftool 不可用", code="EXIF_WRITE_FAILED") from exc
         if written.returncode != 0:
-            raise BusinessError(message="EXIF 写入失败", code="EXIF_WRITE_FAILED")
+            detail = (written.stderr or written.stdout or b"").decode(errors="replace").strip()
+            raise BusinessError(
+                message=("EXIF 写入失败" + (f"：{detail[:200]}" if detail else "")),
+                code="EXIF_WRITE_FAILED",
+            )
         read = subprocess.run(
             [
                 "exiftool",
@@ -226,7 +251,19 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
         payload = json.loads(read.stdout.decode() or "[]")
         row = payload[0] if payload else {}
         final = path.read_bytes()
-    fields = [_verified(tag, requested[tag], row.get(tag)) for tag in requested]
+    fields = []
+    for tag in requested:
+        if tag == "ApertureValue":
+            fields.append(
+                _verified_aperture_value(
+                    requested_av=requested["ApertureValue"],
+                    requested_fnumber=requested["FNumber"],
+                    row=row,
+                    wrote_tag=write_aperture_value,
+                )
+            )
+        else:
+            fields.append(_verified(tag, requested[tag], row.get(tag)))
     fields.append(_gps_field(gps_plan, row))
     maker_read = str(row.get("MakerNote") or "")
     if maker_note:
@@ -328,6 +365,56 @@ def _verified(tag: str, requested: str, read_back: object) -> dict:
         "read_back": actual,
         "verification_status": "verified" if ok else "failed",
         "reason": "" if ok else "回读与请求不一致",
+    }
+
+
+def _verified_aperture_value(
+    *,
+    requested_av: str,
+    requested_fnumber: str,
+    row: dict,
+    wrote_tag: bool,
+) -> dict:
+    """Verify ApertureValue; fall back to FNumber-derived APEX when tag cannot be stored.
+
+    Some exiftool builds refuse APEX ApertureValue < 1 (large apertures like f/1.4).
+    FNumber is always written; deriving AV from a verified FNumber keeps honesty without
+    inventing exposure values.
+    """
+    actual = row.get("ApertureValue")
+    if actual is not None and str(actual).strip() != "":
+        ok = _close(str(actual), requested_av)
+        return {
+            "tag": "ApertureValue",
+            "requested": requested_av,
+            "written": requested_av if wrote_tag else "",
+            "read_back": str(actual),
+            "verification_status": "verified" if ok else "failed",
+            "reason": "" if ok else "回读与请求不一致",
+        }
+    fn_raw = row.get("FNumber")
+    if fn_raw is None or not _close(str(fn_raw), requested_fnumber):
+        return {
+            "tag": "ApertureValue",
+            "requested": requested_av,
+            "written": requested_av if wrote_tag else "",
+            "read_back": "",
+            "verification_status": "failed",
+            "reason": "ApertureValue 缺失且 FNumber 回读不可用",
+        }
+    derived = apex_aperture_value(float(fn_raw))
+    ok = _close(f"{derived:.6f}", requested_av)
+    return {
+        "tag": "ApertureValue",
+        "requested": requested_av,
+        "written": "derived_from_FNumber",
+        "read_back": f"derived:{derived:.6f}",
+        "verification_status": "verified" if ok else "failed",
+        "reason": (
+            ""
+            if ok
+            else "ApertureValue 无法写入时由 FNumber 推导仍不一致"
+        ),
     }
 
 

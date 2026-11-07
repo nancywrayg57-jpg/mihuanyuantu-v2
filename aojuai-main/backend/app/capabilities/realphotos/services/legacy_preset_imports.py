@@ -204,10 +204,15 @@ def _resolve_gps(
         "gpsWriteNote": None,
     }
     gps_config: dict[str, Any] | None = None
-    # Only attach coords if present in legacy payload (rare); do not invent.
+    # Fixed coords: only when present in legacy payload; never invent (DO_NOT_INHERIT).
+    # random_by_scene: old runtime used scene_type → GPS_REGIONS; map that into sceneRule.
     lat = legacy_parameters.get("gps_latitude") or legacy_parameters.get("latitude")
     lng = legacy_parameters.get("gps_longitude") or legacy_parameters.get("longitude")
-    scene = legacy_parameters.get("gps_scene_rule") or legacy_parameters.get("scene_rule")
+    scene = (
+        legacy_parameters.get("gps_scene_rule")
+        or legacy_parameters.get("scene_rule")
+        or legacy_parameters.get("scene_type")
+    )
     forbid = "DO_NOT_INHERIT" in str(overrides.get("gps") or "").upper()
     if column_mode == "fixed" and lat not in (None, "") and lng not in (None, "") and not forbid:
         gps_config = {"latitude": lat, "longitude": lng}
@@ -215,13 +220,16 @@ def _resolve_gps(
         if alt not in (None, ""):
             gps_config["altitude"] = alt
         meta["gpsCoordsInherited"] = True
-    elif column_mode == "random_by_scene" and scene not in (None, "") and not forbid:
-        gps_config = {"sceneRule": scene}
+    elif column_mode == "random_by_scene" and scene not in (None, ""):
+        gps_config = {"sceneRule": str(scene).strip().lower()}
         meta["gpsCoordsInherited"] = True
-    elif column_mode in {"fixed", "random_by_scene"}:
+        meta["gpsWriteNote"] = "random_by_scene 继承 scene_type 为 sceneRule（对齐旧版按场景随机）"
+    elif column_mode == "fixed":
         meta["gpsWriteNote"] = (
-            "源模式已保留；无可用坐标/场景或旧版声明不继承固定坐标，EXIF 写入须诚实失败而非伪装成功"
+            "源模式 fixed 已保留；无可用坐标且不伪造；运行时跳过 GPS 写入（对齐旧版 silent skip）"
         )
+    elif column_mode == "random_by_scene":
+        meta["gpsWriteNote"] = "源模式 random_by_scene 已保留；无 scene_type/sceneRule 时运行时跳过 GPS"
     return column_mode, gps_config, meta
 
 
