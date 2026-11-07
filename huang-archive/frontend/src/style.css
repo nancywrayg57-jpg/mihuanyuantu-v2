@@ -41,22 +41,6 @@ select {
   font: inherit;
 }
 
-.seal {
-  width: 56px;
-  height: 56px;
-  border: 2px solid var(--cinnabar);
-  color: var(--cinnabar);
-  display: grid;
-  place-items: center;
-  font-family: "Songti SC", "Noto Serif SC", "STSong", "SimSun", serif;
-  font-size: 13px;
-  line-height: 1.15;
-  letter-spacing: 0.08em;
-  transform: rotate(-8deg);
-  background: rgba(158, 42, 43, 0.04);
-  box-shadow: inset 0 0 0 1px rgba(158, 42, 43, 0.25);
-}
-
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.25s ease, transform 0.25s ease;

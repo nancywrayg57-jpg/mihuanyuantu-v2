@@ -4,7 +4,7 @@ import { LogOut, KeyRound, Upload } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
-import { CATEGORY_TABS } from '../lib/roster'
+import { CATEGORY_TABS, uploadLabelFor } from '../lib/roster'
 import ArchiveCard from '../components/ArchiveCard.vue'
 import UploadModal from '../components/UploadModal.vue'
 
@@ -22,6 +22,8 @@ const newPwd = ref('')
 const confirmPwd = ref('')
 const pwdMsg = ref('')
 const pwdErr = ref('')
+
+const uploadLabel = computed(() => uploadLabelFor(auth.displayName))
 
 const filtered = computed(() => {
   if (tab.value === 'all') return archives.value
@@ -102,9 +104,8 @@ onMounted(load)
   <div class="min-h-screen pb-28">
     <header class="border-b border-clay bg-parchment/90 backdrop-blur sticky top-0 z-40">
       <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
-        <div class="seal scale-75 origin-left shrink-0" aria-hidden="true">黄<br />志松<br />印</div>
         <div class="min-w-0 flex-1">
-          <h1 class="font-song text-lg sm:text-xl truncate">黄志松先生艺术与家族记忆档案馆</h1>
+          <h1 class="font-song text-lg sm:text-xl truncate">黄志松家族记忆档案馆</h1>
           <p class="text-mute text-sm truncate">欢迎，{{ auth.displayName }}{{ auth.isAdmin ? '（管理员）' : '' }}</p>
         </div>
         <button
@@ -126,11 +127,10 @@ onMounted(load)
 
     <section class="max-w-6xl mx-auto px-4 py-6">
       <div class="border border-clay bg-parchment p-5 sm:p-7 relative overflow-hidden">
-        <div class="absolute right-4 top-4 seal opacity-80 hidden sm:grid">黄<br />志<br />松<br />印</div>
         <p class="text-celadon tracking-[0.2em] text-sm mb-2">艺术生平铭牌</p>
-        <h2 class="font-song text-2xl sm:text-3xl mb-3">黄志松先生</h2>
+        <h2 class="font-song text-2xl sm:text-3xl mb-3">黄志松</h2>
         <p class="text-ink/90 max-w-3xl leading-relaxed">
-          黄志松先生一生耕耘艺术与乡土记忆，作品与影像铭刻家族脉络。本馆由家人共同守护，汇集图片、录像、扫描件、新闻与口述录音，
+          本馆由家人共同守护，汇集图片、录像、扫描件、新闻与口述录音，
           使后辈得以回望他的风骨与温度。此处仅为家族内部珍藏空间——每一帧、每一段声音，皆是不可复刻的传承。
         </p>
       </div>
@@ -179,10 +179,10 @@ onMounted(load)
       class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 min-h-tap px-6 bg-cinnabar text-parchment shadow-lg inline-flex items-center gap-2"
       @click="uploadOpen = true"
     >
-      <Upload class="w-5 h-5" /> 上传爷爷的资料
+      <Upload class="w-5 h-5" /> {{ uploadLabel }}
     </button>
 
-    <UploadModal :open="uploadOpen" @close="uploadOpen = false" @uploaded="onUploaded" />
+    <UploadModal :open="uploadOpen" :title="uploadLabel" @close="uploadOpen = false" @uploaded="onUploaded" />
 
     <div
       v-if="pwdOpen"

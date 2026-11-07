@@ -25,7 +25,29 @@ export const FAMILY_ROSTER = [
   { display_name: '黄媛媛', email: 'user22@huangzhisong.com', role: 'member' },
   { display_name: '黄晓芳', email: 'user23@huangzhisong.com', role: 'member' },
   { display_name: '黄嘉颖', email: 'user24@huangzhisong.com', role: 'member' },
+  { display_name: '张建华', email: 'user25@huangzhisong.com', role: 'member' },
+  { display_name: '吴泽强', email: 'user26@huangzhisong.com', role: 'member' },
 ]
+
+/** Upload CTA by kinship group (display_name → label). */
+const UPLOAD_FATHER = new Set([
+  '黄纲生', '黄成生', '黄爱眉', '黄爱秀', '黄纲富', '黄纲兴', '黄纲财', '黄纲平',
+])
+const UPLOAD_FATHER_IN_LAW = new Set(['张银财', '吴雨齐'])
+const UPLOAD_GRANDFATHER = new Set([
+  '黄祥财', '黄祥贵', '黄祥文', '黄祥明', '黄祥健', '黄祥鑫', '黄祥琳', '黄祥瑞',
+  '黄祥伟', '黄祥妹', '黄媛媛', '黄晓芳', '黄嘉颖',
+])
+const UPLOAD_MATERNAL_GRANDFATHER = new Set(['张惠', '张建华', '吴玲玲', '吴泽强'])
+
+export function uploadLabelFor(displayName) {
+  const name = String(displayName || '').trim()
+  if (UPLOAD_FATHER.has(name)) return '上传父亲的资料'
+  if (UPLOAD_FATHER_IN_LAW.has(name)) return '上传岳父的资料'
+  if (UPLOAD_GRANDFATHER.has(name)) return '上传爷爷的资料'
+  if (UPLOAD_MATERNAL_GRANDFATHER.has(name)) return '上传外公的资料'
+  return '上传资料'
+}
 
 export function resolveIdentity(nameOrEmail) {
   const raw = String(nameOrEmail || '').trim()

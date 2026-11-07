@@ -6,6 +6,7 @@ import { useAuthStore } from '../stores/auth'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
+  title: { type: String, default: '上传资料' },
 })
 const emit = defineEmits(['close', 'uploaded'])
 
@@ -108,7 +109,7 @@ function close() {
     >
       <div class="w-full max-w-xl max-h-[92vh] overflow-auto bg-parchment border border-clay">
         <div class="sticky top-0 flex items-center justify-between px-5 py-4 border-b border-clay bg-parchment">
-          <h2 class="font-song text-xl">上传爷爷的资料</h2>
+          <h2 class="font-song text-xl">{{ title }}</h2>
           <button type="button" class="min-h-tap min-w-[48px] grid place-items-center" @click="close">
             <X class="w-6 h-6" />
           </button>

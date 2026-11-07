@@ -38,14 +38,11 @@ async function onSubmit() {
 <template>
   <div class="min-h-screen px-4 py-10 flex items-center justify-center">
     <div class="w-full max-w-md">
-      <div class="flex items-start gap-4 mb-8">
-        <div class="seal shrink-0" aria-hidden="true">黄<br />志<br />松<br />印</div>
-        <div>
-          <h1 class="font-song text-2xl sm:text-3xl text-ink leading-snug">
-            黄志松先生艺术与家族记忆档案馆
-          </h1>
-          <p class="mt-2 text-mute text-base">家族内部珍藏 · 请使用中文姓名登录</p>
-        </div>
+      <div class="mb-8">
+        <h1 class="font-song text-2xl sm:text-3xl text-ink leading-snug">
+          黄志松家族记忆档案馆
+        </h1>
+        <p class="mt-2 text-mute text-base">家族内部珍藏 · 请使用中文姓名登录</p>
       </div>
 
       <form class="bg-parchment border border-clay p-6 space-y-5" @submit.prevent="onSubmit">

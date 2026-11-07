@@ -1,4 +1,4 @@
-# 黄志松先生艺术与家族记忆档案馆
+# 黄志松家族记忆档案馆
 
 Vue 3 + PocketBase + Caddy，部署于 `huangzhisong.com`。
 
