@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { shouldUseChunked, uploadDirect, uploadFileChunked, abortSession } from '../lib/chunkedUpload'
+import {
+  shouldUseChunked,
+  uploadDirect,
+  uploadFileChunked,
+  abortSession,
+  patchMediaMeta,
+} from '../lib/chunkedUpload'
 import { validateUploadFiles } from '../lib/uploadLimits'
 import { useAuthStore } from './auth'
 
@@ -24,6 +30,8 @@ export const useUploadQueueStore = defineStore('uploadQueue', () => {
       title: job.title,
       category: job.category,
       files: job.files || [],
+      coverFile: job.coverFile || null,
+      durationSec: job.durationSec || 0,
       fields: job.fields,
       record: null,
       sessionId: '',
@@ -58,36 +66,32 @@ export const useUploadQueueStore = defineStore('uploadQueue', () => {
       }
 
       let record
+      const metaFields = {
+        ...baseFields,
+        category: next.category,
+        title: next.title,
+        occurred_time: next.fields.occurred_time,
+        related_persons: next.fields.related_persons,
+        description: next.fields.description || '',
+        external_link: next.fields.external_link || '',
+        duration_sec: next.durationSec ? String(next.durationSec) : next.fields.duration_sec || '',
+      }
       if (next.category === 'link' || !next.files.length) {
-        record = await uploadDirect([], {
-          ...baseFields,
-          category: next.category,
-          title: next.title,
-        })
+        record = await uploadDirect([], metaFields)
       } else if (next.files.length === 1 && shouldUseChunked(next.files[0])) {
-        record = await uploadFileChunked(next.files[0], {
-          ...baseFields,
-          category: next.category,
-          title: next.title,
-          occurred_time: next.fields.occurred_time,
-          related_persons: next.fields.related_persons,
-          description: next.fields.description || '',
-        }, {
+        record = await uploadFileChunked(next.files[0], metaFields, {
           onProgress: ({ percent }) => {
             next.progress = Math.max(2, Math.min(99, percent))
           },
         })
+        if (record?.id && (next.coverFile || next.durationSec)) {
+          record = (await patchMediaMeta(record.id, {
+            coverFile: next.coverFile,
+            durationSec: next.durationSec,
+          })) || record
+        }
       } else {
-        // Multiple small files: direct multipart
-        record = await uploadDirect(next.files, {
-          ...baseFields,
-          category: next.category,
-          title: next.title,
-          occurred_time: next.fields.occurred_time,
-          related_persons: next.fields.related_persons,
-          description: next.fields.description || '',
-          external_link: next.fields.external_link || '',
-        })
+        record = await uploadDirect(next.files, metaFields, { coverFile: next.coverFile })
       }
       next.record = record
       next.status = 'done'

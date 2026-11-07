@@ -201,7 +201,7 @@ function playbackFieldsFor(category, files) {
 }
 
 /** Direct (non-chunked) create via PocketBase SDK — for small files / links. */
-export async function uploadDirect(files, fields) {
+export async function uploadDirect(files, fields, { coverFile } = {}) {
   const form = new FormData()
   const merged = { ...fields, ...playbackFieldsFor(fields.category, files) }
   Object.entries(merged).forEach(([k, v]) => {
@@ -210,5 +210,18 @@ export async function uploadDirect(files, fields) {
   for (const f of files || []) {
     form.append('media_files', f, f.name || `upload-${Date.now()}`)
   }
+  if (coverFile) {
+    form.append('cover_file', coverFile, coverFile.name || 'cover.jpg')
+  }
   return pb.collection('archives').create(form, { requestKey: null })
+}
+
+/** Attach cover/duration after chunked create (complete API may not take files). */
+export async function patchMediaMeta(recordId, { coverFile, durationSec } = {}) {
+  if (!recordId) return null
+  if (!coverFile && (durationSec == null || durationSec === '')) return null
+  const form = new FormData()
+  if (durationSec != null && durationSec !== '') form.append('duration_sec', String(durationSec))
+  if (coverFile) form.append('cover_file', coverFile, coverFile.name || 'cover.jpg')
+  return pb.collection('archives').update(recordId, form, { requestKey: null })
 }

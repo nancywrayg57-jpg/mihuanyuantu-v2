@@ -7,6 +7,7 @@ import { zhError } from '../lib/errors'
 import VoiceRecorder from './VoiceRecorder.vue'
 import EditArchiveModal from './EditArchiveModal.vue'
 import VideoPlayer from './VideoPlayer.vue'
+import { coverOrThumbUrl, formatDuration } from '../lib/mediaPrepare'
 
 const props = defineProps({
   archive: { type: Object, required: true },
@@ -47,13 +48,19 @@ const firstFile = computed(() => files.value[0] || '')
 const fileUrl = computed(() =>
   firstFile.value ? pb.files.getUrl(props.archive, firstFile.value) : '',
 )
-// Prefer full file URL; thumb sizes are optional (upload no longer requires generated thumbs)
-const thumbUrl = computed(() => (firstFile.value ? fileUrl.value : ''))
+const listCoverUrl = computed(() => coverOrThumbUrl(pb, props.archive))
+const durationLabel = computed(() => {
+  const d = Number(props.archive.duration_sec || 0)
+  return d > 0 ? formatDuration(d) : ''
+})
 const isPdf = computed(() => String(firstFile.value).toLowerCase().endsWith('.pdf'))
 const isVideo = computed(() => props.archive.category === 'video')
 const isAudio = computed(() => props.archive.category === 'audio')
 const isImageLike = computed(() => ['image', 'scan'].includes(props.archive.category))
 const isLink = computed(() => props.archive.category === 'link')
+const showListCover = computed(
+  () => isImageLike.value || (isVideo.value && !!listCoverUrl.value) || (isAudio.value && !!listCoverUrl.value),
+)
 
 async function checkLiked() {
   try {
@@ -198,16 +205,39 @@ function voiceUrl(m) {
         </a>
       </template>
       <template v-else-if="isVideo">
-        <VideoPlayer :archive="archive" />
+        <div class="absolute inset-0">
+          <VideoPlayer :archive="archive" />
+          <span
+            v-if="durationLabel"
+            class="absolute bottom-2 left-2 z-10 text-xs bg-ink/70 text-parchment px-1.5 py-0.5"
+            data-testid="video-duration"
+          >{{ durationLabel }}</span>
+        </div>
       </template>
       <template v-else-if="isAudio && fileUrl">
         <div class="absolute inset-0 flex flex-col justify-end p-4 gap-3">
-          <div class="vinyl-bar h-16 rounded-sm opacity-90" />
-          <audio :src="fileUrl" controls class="w-full" />
+          <img
+            v-if="listCoverUrl"
+            :src="listCoverUrl"
+            alt=""
+            class="absolute inset-0 w-full h-full object-cover opacity-40"
+          />
+          <div class="vinyl-bar h-16 rounded-sm opacity-90 relative" />
+          <audio :src="fileUrl" controls class="w-full relative" />
+          <span
+            v-if="durationLabel"
+            class="absolute top-2 right-2 text-xs bg-ink/70 text-parchment px-1.5 py-0.5"
+          >{{ durationLabel }}</span>
         </div>
       </template>
-      <template v-else-if="isImageLike && (thumbUrl || fileUrl)">
-        <img :src="thumbUrl || fileUrl" :alt="archive.title" class="w-full h-full object-cover" loading="lazy" />
+      <template v-else-if="isImageLike && (listCoverUrl || fileUrl)">
+        <img
+          :src="listCoverUrl || fileUrl"
+          :alt="archive.title"
+          class="w-full h-full object-cover"
+          loading="lazy"
+          data-testid="archive-thumb"
+        />
       </template>
       <template v-else>
         <div class="absolute inset-0 grid place-items-center text-mute">暂无预览</div>

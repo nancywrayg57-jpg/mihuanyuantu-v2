@@ -5,6 +5,7 @@ import { useAuthStore } from '../stores/auth'
 import { useUploadQueueStore } from '../stores/uploadQueue'
 import { FILE_ACCEPT, UPLOAD_LIMIT_LABELS, validateUploadFiles } from '../lib/uploadLimits'
 import { shouldUseChunked } from '../lib/chunkedUpload'
+import { formatDuration, prepareUploadFiles } from '../lib/mediaPrepare'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -31,13 +32,19 @@ const relatedPersons = ref('')
 const description = ref('')
 const externalLink = ref('')
 const files = ref([])
+const previews = ref([]) // { url, name, size }
+const coverPreview = ref('')
+const coverFile = ref(null)
+const durationSec = ref(0)
+const prepNotes = ref([])
+const preparing = ref(false)
 const error = ref('')
 
 const isLink = computed(() => category.value === 'link')
 const sizeHint = computed(() => {
-  if (category.value === 'video') return UPLOAD_LIMIT_LABELS.video + '；大文件自动分片续传'
-  if (category.value === 'image') return UPLOAD_LIMIT_LABELS.image
-  if (category.value === 'scan') return '扫描图片不超过 30MB；PDF 等不超过 100MB'
+  if (category.value === 'video') return UPLOAD_LIMIT_LABELS.video + '；自动提取封面与时长'
+  if (category.value === 'image') return UPLOAD_LIMIT_LABELS.image + '；上传前自动压缩'
+  if (category.value === 'scan') return '扫描图片自动压缩（≤30MB）；PDF 等不超过 100MB'
   if (isLink.value) return '填写可访问的 https 链接即可'
   return UPLOAD_LIMIT_LABELS.other + '；超过 1MB 自动分片'
 })
@@ -47,10 +54,49 @@ const chunkHint = computed(() => {
   return ''
 })
 
-function onFileChange(e) {
-  files.value = Array.from(e.target.files || []).slice(0, 9)
-  const msg = validateUploadFiles(files.value, category.value)
-  error.value = msg || ''
+function revokePreviews() {
+  for (const p of previews.value) {
+    if (p.url) URL.revokeObjectURL(p.url)
+  }
+  if (coverPreview.value) URL.revokeObjectURL(coverPreview.value)
+  previews.value = []
+  coverPreview.value = ''
+}
+
+async function onFileChange(e) {
+  error.value = ''
+  prepNotes.value = []
+  revokePreviews()
+  coverFile.value = null
+  durationSec.value = 0
+  const raw = Array.from(e.target.files || []).slice(0, 9)
+  if (!raw.length) {
+    files.value = []
+    return
+  }
+  preparing.value = true
+  try {
+    const prepared = await prepareUploadFiles(raw, category.value)
+    files.value = prepared.files
+    coverFile.value = prepared.coverFile
+    durationSec.value = prepared.durationSec || 0
+    prepNotes.value = prepared.notes || []
+    previews.value = prepared.files.map((f) => ({
+      name: f.name,
+      size: f.size,
+      url: String(f.type).startsWith('image/') ? URL.createObjectURL(f) : '',
+    }))
+    if (prepared.coverFile) {
+      coverPreview.value = URL.createObjectURL(prepared.coverFile)
+    }
+    const msg = validateUploadFiles(files.value, category.value)
+    error.value = msg || ''
+  } catch (err) {
+    error.value = err?.message || '文件预处理失败'
+    files.value = raw
+  } finally {
+    preparing.value = false
+  }
 }
 
 function submit() {
@@ -84,6 +130,8 @@ function submit() {
     title: archiveTitle.value.trim(),
     category: category.value,
     files: isLink.value ? [] : [...files.value],
+    coverFile: coverFile.value,
+    durationSec: durationSec.value,
     fields: {
       title: archiveTitle.value.trim(),
       category: category.value,
@@ -94,6 +142,7 @@ function submit() {
       uploader: auth.user.id,
       uploader_name: auth.displayName,
       likes_count: '0',
+      duration_sec: durationSec.value ? String(durationSec.value) : '',
     },
   })
   emit('queued', entry)
@@ -108,12 +157,26 @@ function reset() {
   description.value = ''
   externalLink.value = ''
   files.value = []
+  revokePreviews()
+  coverFile.value = null
+  durationSec.value = 0
+  prepNotes.value = []
   error.value = ''
   category.value = 'image'
 }
 
 function close() {
   emit('close')
+}
+
+function onCategory(key) {
+  category.value = key
+  error.value = ''
+  files.value = []
+  revokePreviews()
+  coverFile.value = null
+  durationSec.value = 0
+  prepNotes.value = []
 }
 </script>
 
@@ -140,7 +203,7 @@ function close() {
               type="button"
               class="min-h-tap border px-2 py-3 flex flex-col items-center gap-1"
               :class="category === c.key ? 'border-cinnabar bg-cinnabar/5 text-cinnabar' : 'border-clay'"
-              @click="category = c.key; error = ''; files = []"
+              @click="onCategory(c.key)"
             >
               <component :is="c.icon" class="w-6 h-6" />
               <span class="text-sm">{{ c.label }}</span>
@@ -189,19 +252,45 @@ function close() {
               multiple
               :accept="FILE_ACCEPT"
               class="mt-1 w-full min-h-tap px-3 py-2 border border-clay bg-rice"
+              data-testid="upload-files"
               @change="onFileChange"
             />
             <p class="text-mute text-sm mt-1">{{ sizeHint }}</p>
+            <p v-if="preparing" class="text-celadon text-sm mt-1">正在压缩/提取封面…</p>
             <p v-if="chunkHint" class="text-celadon text-sm mt-1">{{ chunkHint }}</p>
-            <p v-if="files.length" class="text-mute text-sm mt-1">已选 {{ files.length }} 个文件</p>
+            <ul v-if="prepNotes.length" class="text-mute text-sm mt-1 space-y-0.5" data-testid="prep-notes">
+              <li v-for="(n, i) in prepNotes" :key="i">{{ n }}</li>
+            </ul>
           </label>
+
+          <div
+            v-if="coverPreview || previews.length"
+            class="grid grid-cols-3 gap-2"
+            data-testid="upload-previews"
+          >
+            <div v-if="coverPreview" class="relative aspect-square border border-clay bg-rice overflow-hidden">
+              <img :src="coverPreview" alt="封面" class="w-full h-full object-cover" />
+              <span class="absolute bottom-1 left-1 text-xs bg-ink/70 text-parchment px-1">
+                封面{{ durationSec ? ` · ${formatDuration(durationSec)}` : '' }}
+              </span>
+            </div>
+            <div
+              v-for="(p, i) in previews"
+              :key="i"
+              class="relative aspect-square border border-clay bg-rice overflow-hidden flex items-center justify-center text-mute text-xs p-1"
+            >
+              <img v-if="p.url" :src="p.url" :alt="p.name" class="w-full h-full object-cover" />
+              <span v-else class="text-center break-all">{{ p.name }}</span>
+            </div>
+          </div>
 
           <p v-if="error" class="text-cinnabar" data-testid="upload-error">{{ error }}</p>
 
           <button
             type="button"
-            class="w-full min-h-tap bg-cinnabar text-parchment"
+            class="w-full min-h-tap bg-cinnabar text-parchment disabled:opacity-60"
             data-testid="upload-submit"
+            :disabled="preparing"
             @click="submit"
           >
             加入上传队列
