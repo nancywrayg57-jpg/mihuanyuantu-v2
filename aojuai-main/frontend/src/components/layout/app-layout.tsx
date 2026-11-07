@@ -34,6 +34,7 @@ import {
   ScrollText,
 } from 'lucide-react'
 
+import { InboxBell } from '@/components/layout/inbox-bell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -460,6 +461,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 {t('system.layout.demoMode')}
               </Badge>
             ) : null}
+
+            <InboxBell />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

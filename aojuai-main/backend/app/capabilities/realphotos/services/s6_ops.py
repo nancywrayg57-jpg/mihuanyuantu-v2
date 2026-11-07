@@ -189,10 +189,100 @@ class RealphotosOpsService:
                     "ticketType": row.ticket_type,
                     "status": row.status,
                     "reason": row.reason,
+                    "createdAt": row.created_at.isoformat() if row.created_at else None,
                 }
                 for row in rows
             ]
         }
+
+    async def create_ticket(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        ticket_type: str,
+        reason: str,
+        actor_role_codes: set[str] | None = None,
+    ) -> dict[str, Any]:
+        kind = str(ticket_type or "").strip()
+        if kind not in {"order", "image_appeal", "account_freeze"}:
+            raise BusinessError(message="工单类型无效", code="INPUT_INVALID")
+        text = str(reason or "").strip()
+        if not text:
+            raise BusinessError(message="原因必填", code="INPUT_INVALID")
+        # 商家仅可创建申诉；解冻类仅技术/管理员可建（通常由系统建）
+        if kind == "account_freeze":
+            self._require_tech_or_admin(actor_role_codes or set())
+        row = RealphotosSupportTicket(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(owner_account_id),
+            ticket_type=kind,
+            status="open",
+            reason=text,
+        )
+        self.db.add(row)
+        await self.db.flush()
+        return {
+            "id": int(row.id),
+            "tenantId": int(row.tenant_id),
+            "ownerAccountId": int(row.owner_account_id),
+            "ticketType": row.ticket_type,
+            "status": row.status,
+            "reason": row.reason,
+            "createdAt": row.created_at.isoformat() if row.created_at else None,
+        }
+
+    async def list_merchant_tickets(
+        self, *, tenant_id: int, owner_account_id: int
+    ) -> dict[str, Any]:
+        rows = (
+            await self.db.execute(
+                select(RealphotosSupportTicket)
+                .where(
+                    RealphotosSupportTicket.tenant_id == int(tenant_id),
+                    RealphotosSupportTicket.owner_account_id == int(owner_account_id),
+                    RealphotosSupportTicket.deleted_at.is_(None),
+                )
+                .order_by(RealphotosSupportTicket.id.desc())
+            )
+        ).scalars().all()
+        return {
+            "items": [
+                {
+                    "id": int(row.id),
+                    "tenantId": int(row.tenant_id),
+                    "ownerAccountId": int(row.owner_account_id),
+                    "ticketType": row.ticket_type,
+                    "status": row.status,
+                    "reason": row.reason,
+                    "createdAt": row.created_at.isoformat() if row.created_at else None,
+                }
+                for row in rows
+            ]
+        }
+
+    async def list_preset_versions(self, *, actor_role_codes: set[str], code: str) -> list[dict]:
+        if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
+            raise ForbiddenError(message="只有平台管理员可以浏览预设版本")
+        rows = (
+            await self.db.execute(
+                select(RealphotosPresetVersion)
+                .where(
+                    RealphotosPresetVersion.preset_code == str(code),
+                    RealphotosPresetVersion.deleted_at.is_(None),
+                )
+                .order_by(RealphotosPresetVersion.version_no.desc())
+            )
+        ).scalars().all()
+        return [
+            {
+                "presetCode": row.preset_code,
+                "versionNo": int(row.version_no),
+                "snapshot": dict(row.snapshot or {}),
+                "createdAt": row.created_at.isoformat() if row.created_at else None,
+            }
+            for row in rows
+        ]
 
     async def enabled_preset(self, code: str) -> dict | None:
         row = await self._preset_row(code)
@@ -261,6 +351,11 @@ class RealphotosOpsService:
         maker_note: str | None = None,
         author: str | None = None,
         ip_geo: str | None = None,
+        iso: str | None = None,
+        shutter: str | None = None,
+        aperture: str | None = None,
+        focal_length: str | None = None,
+        gps_config: dict | None = None,
     ) -> dict[str, Any]:
         if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
             raise ForbiddenError(message="只有平台管理员可以维护设备预设")
@@ -293,17 +388,33 @@ class RealphotosOpsService:
             row.gps_mode = mode
             row.enabled = bool(enabled)
             row.version_no = int(row.version_no) + 1
+        if iso is not None:
+            row.iso = str(iso)
+        if shutter is not None:
+            row.shutter = str(shutter)
+        if aperture is not None:
+            row.aperture = str(aperture)
+        if focal_length is not None:
+            row.focal_length = str(focal_length)
         await self.db.flush()
+        snapshot = self._preset_dict(row)
+        if gps_config:
+            snapshot["gpsConfig"] = dict(gps_config)
+            snapshot["gpsWriteConnected"] = False
         self.db.add(
             RealphotosPresetVersion(
                 tenant_id=int(row.tenant_id or 0),
                 preset_code=row.code,
                 version_no=int(row.version_no),
-                snapshot=self._preset_dict(row),
+                snapshot=snapshot,
             )
         )
         await self.db.flush()
-        return self._preset_dict(row)
+        payload = self._preset_dict(row)
+        if gps_config:
+            payload["gpsConfig"] = dict(gps_config)
+            payload["gpsWriteConnected"] = False
+        return payload
 
     async def set_preset_enabled(
         self, *, actor_role_codes: set[str], code: str, enabled: bool

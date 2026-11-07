@@ -2,13 +2,27 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.capabilities.realphotos.models import RealphotosRechargeOrder
+from app.capabilities.realphotos.constants import INBOX_TTL_DAYS
+from app.capabilities.realphotos.models import RealphotosInboxMessage, RealphotosRechargeOrder
+from app.capabilities.realphotos.permissions import ROLE_ORDER_SUPPORT
 from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
 from app.capabilities.realphotos.services.s1_catalog import credits_for_tier_yuan, price_formula
 from app.core.exceptions import BusinessError, NotFoundError
+from app.domain.roles.models import Role
+from app.domain.users.models import UserRole
+
+
+def is_recharge_inbox_event(event_key: str | None, title: str | None = None) -> bool:
+    key = str(event_key or "")
+    if key.startswith("recharge:"):
+        return True
+    # 补发副本 event_key=resend:{id}:{ts}，用标题识别充值通知
+    return "充值" in str(title or "")
 
 
 class RealphotosRechargeService:
@@ -54,7 +68,50 @@ class RealphotosRechargeService:
         )
         self.db.add(order)
         await self.db.flush()
+        await self._notify_order_support_pending(order)
         return order
+
+    async def _notify_order_support_pending(self, order: RealphotosRechargeOrder) -> None:
+        """站内通知订单客服：仅充值待确认类（IA_C7）。"""
+        recipients = (
+            await self.db.execute(
+                select(UserRole.user_id, UserRole.tenant_id)
+                .join(Role, Role.id == UserRole.role_id)
+                .where(
+                    Role.code == ROLE_ORDER_SUPPORT,
+                    Role.deleted_at.is_(None),
+                )
+            )
+        ).all()
+        now = datetime.now(UTC)
+        expires = now + timedelta(days=INBOX_TTL_DAYS)
+        for user_id, recipient_tenant_id in recipients:
+            event_key = f"recharge:{int(order.id)}:pending:user:{int(user_id)}"
+            exists = (
+                await self.db.execute(
+                    select(RealphotosInboxMessage.id).where(
+                        RealphotosInboxMessage.tenant_id == int(recipient_tenant_id),
+                        RealphotosInboxMessage.event_key == event_key,
+                        RealphotosInboxMessage.deleted_at.is_(None),
+                    )
+                )
+            ).scalar_one_or_none()
+            if exists is not None:
+                continue
+            self.db.add(
+                RealphotosInboxMessage(
+                    tenant_id=int(recipient_tenant_id),
+                    recipient_user_id=int(user_id),
+                    event_key=event_key,
+                    title="商家充值待确认",
+                    body=(
+                        f"租户 {int(order.tenant_id)} 申请 {int(order.tier_yuan)} 元"
+                        f" / {int(order.credit_points)} 积分，请确认或拒单。"
+                    ),
+                    expires_at=expires,
+                )
+            )
+        await self.db.flush()
 
     async def list_pending(self, *, limit: int = 50) -> list[RealphotosRechargeOrder]:
         """订单客服跨租户看待处理单。不含原图。"""

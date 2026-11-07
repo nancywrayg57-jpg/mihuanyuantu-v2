@@ -161,6 +161,7 @@ export const esES: Record<string, string> = {
   'menu.图片资源': 'Biblioteca',
   'menu.生图入库': 'Generación',
   'menu.提示词模板': 'Plantillas',
+  'menu.AI 提示词模板': 'Plantillas de prompt IA',
   'menu.URL 导入': 'Importación URL',
   'menu.业务 API': 'API de negocio',
   'menu.任务详情': 'Detalle de tareas',

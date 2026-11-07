@@ -82,8 +82,9 @@
 | 7-s3-loop | 真实 Gemini、自动重做、主动重处理、技术重试 | `/tmp/s3-pg-e2e.log` + `/tmp/s3-pg-e2e-controls.log` | devhost_passed | S4 |
 | 8-s4-loop | 1–10 张按张冻结、部分成功、勾选下载 | `/tmp/s4-pg-e2e.log` | devhost_passed | S5 已授权，退出未齐 |
 | 9-s5-loop | 生图只入库、未配置导入、image_processing Key | `/tmp/s5-pg-e2e.log` | pr_23_open | 未标 S5 完成；未合并 |
-| 10-s6-list | 运营完备 | `/tmp/s6-pg-e2e.log` | admin_closed_not_rerun | 不重跑，不开 S7 |
-| 11-supplier-live | 生图、提示词优化、预审真实请求；导入未配置 | `/tmp/supplier-live-e2e.log` | recorded_not_production | 未提交，不开 S7 |
+| 10-s6-list | 运营完备 | `/tmp/s6-pg-e2e.log` | admin_closed_not_rerun | 随 ia-page 分支待合入；不重跑；不开 S7 |
+| 11-supplier-live | 生图、提示词优化、预审真实请求；导入未配置 | `/tmp/supplier-live-e2e.log` | recorded_not_production | 不是生产节点；不开 S7 |
+| 12-ia-page | 分角色工作台、侧栏、铃铛、任务双 Tab 等 | `/tmp/ia-page-smoke-c2c3c7.txt` | coded_pr_pending | Owner 审 PR / 浏览器冒烟 |
 
 ## Risks and Watchpoints
 - Risk: 把文档齐全或 CI 绿当成后端已交付。
@@ -92,5 +93,5 @@
 - Mitigation: 架构 1.7 §9.2.1 改造义务；S5 验收 AC-024。
 
 ## Backlog Knowledge
-- Next: FR-033 仍归 S5/R3，清单已写入 §10.7，未授权开工。技术失败冻结留到技术客服。
-- Deferred: CI Python/pnpm 版本与架构推荐对齐（非 S0 阻塞）；前端 realphotos 菜单 i18n 键。
+- Next: 合入 `cursor/ia-page-fix-9973`；Owner 浏览器冒烟；不得开 S7。技术失败冻结留到技术客服。
+- Deferred: CI Python/pnpm 版本与架构推荐对齐（非阻塞）；菜单缓存 bump 可能不生效须重启 API（IA_C6）。

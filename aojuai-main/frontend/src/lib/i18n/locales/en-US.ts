@@ -161,6 +161,7 @@ export const enUS: Record<string, string> = {
   'menu.图片资源': 'Image library',
   'menu.生图入库': 'Generation inbox',
   'menu.提示词模板': 'Prompt templates',
+  'menu.AI 提示词模板': 'AI prompt templates',
   'menu.URL 导入': 'URL import',
   'menu.业务 API': 'Business API',
   'menu.任务详情': 'Task detail',

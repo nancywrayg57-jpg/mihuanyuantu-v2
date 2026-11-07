@@ -5,7 +5,7 @@ from __future__ import annotations
 import secrets
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -431,6 +431,101 @@ class RealphotosS1Service:
         if not rows:
             raise NotFoundError(message="任务不存在")
         return list(rows)
+
+    async def list_processing_tasks(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        page: int = 1,
+        page_size: int = 10,
+        status: str | None = None,
+    ) -> tuple[list[RealphotosImageTask], int]:
+        page_no = max(1, int(page or 1))
+        size = min(50, max(1, int(page_size or 10)))
+        filters = [
+            RealphotosImageTask.tenant_id == int(tenant_id),
+            RealphotosImageTask.owner_account_id == int(owner_account_id),
+            RealphotosImageTask.deleted_at.is_(None),
+        ]
+        if status and str(status).strip() and str(status).strip() != "all":
+            filters.append(RealphotosImageTask.status == str(status).strip())
+        total = int(
+            await self.db.scalar(select(func.count()).select_from(RealphotosImageTask).where(*filters))
+            or 0
+        )
+        rows = (
+            await self.db.execute(
+                select(RealphotosImageTask)
+                .where(*filters)
+                .order_by(RealphotosImageTask.id.desc())
+                .offset((page_no - 1) * size)
+                .limit(size)
+            )
+        ).scalars().all()
+        return list(rows), total
+
+    async def mark_inbox_read(
+        self, *, tenant_id: int, recipient_user_id: int, message_id: int
+    ) -> RealphotosInboxMessage:
+        row = (
+            await self.db.execute(
+                select(RealphotosInboxMessage).where(
+                    RealphotosInboxMessage.id == int(message_id),
+                    RealphotosInboxMessage.tenant_id == int(tenant_id),
+                    RealphotosInboxMessage.recipient_user_id == int(recipient_user_id),
+                    RealphotosInboxMessage.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if row is None:
+            raise NotFoundError(message="消息不存在")
+        if row.read_at is None:
+            row.read_at = _utcnow()
+            await self.db.flush()
+        return row
+
+    async def mark_inbox_all_read(self, *, tenant_id: int, recipient_user_id: int) -> int:
+        now = _utcnow()
+        rows = await self.list_inbox(tenant_id=tenant_id, recipient_user_id=recipient_user_id)
+        changed = 0
+        for row in rows:
+            if row.read_at is None:
+                row.read_at = now
+                changed += 1
+        if changed:
+            await self.db.flush()
+        return changed
+
+    async def resend_inbox(
+        self, *, tenant_id: int, recipient_user_id: int, message_id: int
+    ) -> RealphotosInboxMessage:
+        """补发站内通知：不重跑任务、不重复扣费。"""
+        source = (
+            await self.db.execute(
+                select(RealphotosInboxMessage).where(
+                    RealphotosInboxMessage.id == int(message_id),
+                    RealphotosInboxMessage.tenant_id == int(tenant_id),
+                    RealphotosInboxMessage.recipient_user_id == int(recipient_user_id),
+                    RealphotosInboxMessage.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if source is None:
+            raise NotFoundError(message="消息不存在")
+        now = _utcnow()
+        copy = RealphotosInboxMessage(
+            tenant_id=int(tenant_id),
+            recipient_user_id=int(recipient_user_id),
+            event_key=f"resend:{int(source.id)}:{int(now.timestamp())}",
+            title=source.title,
+            body=source.body,
+            expires_at=now + timedelta(days=30),
+            read_at=None,
+        )
+        self.db.add(copy)
+        await self.db.flush()
+        return copy
 
     async def selected_download_items(
         self,

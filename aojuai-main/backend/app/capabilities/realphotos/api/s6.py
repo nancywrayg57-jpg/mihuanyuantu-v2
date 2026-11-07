@@ -89,6 +89,18 @@ class PresetBody(BaseModel):
     maker_note: str | None = Field(default=None, alias="makerNote")
     author: str | None = None
     ip_geo: str | None = Field(default=None, alias="ipGeo")
+    iso: str | None = None
+    shutter: str | None = None
+    aperture: str | None = None
+    focal_length: str | None = Field(default=None, alias="focalLength")
+    gps_config: dict | None = Field(default=None, alias="gpsConfig")
+
+
+class TicketCreateBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    ticket_type: str = Field(alias="ticketType")
+    reason: str
 
 
 class PresetEnabledBody(BaseModel):
@@ -186,6 +198,40 @@ async def list_tickets(
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     payload = await RealphotosOpsService(db).list_tickets(actor_role_codes=roles)
+    return SuccessResponse(data=payload)
+
+
+@router.get("/my-support-tickets")
+async def list_my_tickets(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([WORKSPACE_READ])),
+) -> dict[str, Any]:
+    payload = await RealphotosOpsService(db).list_merchant_tickets(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+    )
+    return SuccessResponse(data=payload)
+
+
+@router.post("/support-tickets")
+async def create_ticket(
+    body: TicketCreateBody,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([WORKSPACE_READ, TECH_DESK_READ])),
+) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosOpsService(db).create_ticket(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        ticket_type=body.ticket_type,
+        reason=body.reason,
+        actor_role_codes=roles,
+    )
+    await db.commit()
     return SuccessResponse(data=payload)
 
 
@@ -385,9 +431,27 @@ async def save_preset(
         maker_note=body.maker_note,
         author=body.author,
         ip_geo=body.ip_geo,
+        iso=body.iso,
+        shutter=body.shutter,
+        aperture=body.aperture,
+        focal_length=body.focal_length,
+        gps_config=body.gps_config,
     )
     await db.commit()
     return SuccessResponse(data=payload)
+
+
+@router.get("/device-presets/{code}/versions")
+async def list_preset_versions(
+    code: str,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
+) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    items = await RealphotosOpsService(db).list_preset_versions(actor_role_codes=roles, code=code)
+    return SuccessResponse(data={"items": items})
 
 
 @router.post("/device-presets/{code}/enabled")

@@ -37,7 +37,7 @@ vibe_coding:
     visible_output: "生图页、提示词页、URL 导入页和管理员模型合同表"
     verify: "/tmp/supplier-live-e2e.log 含 SUPPLIER_LIVE_E2E_RECORDED；导入仍未接通；production_billing=false"
     status: supplier_live_recorded_not_production
-    next_user_action: "S6 已由管理员结束，不重跑。供应商证据在 /tmp/supplier-live-e2e.log。未提交、未推送、未开 S7。S5 仍未标完成。"
+    next_user_action: "S6 已结束不重跑；IA-PAGE 已推 PR（cursor/ia-page-fix-9973）。待 Owner 审阅合入与浏览器冒烟。不得开 S7。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -191,8 +191,43 @@ known_conflicts:
     detail: "前置校验用库内资产的软删、不属于提交账号或入库字节再次 inspect 失败，发生在按张冻结之后。PostgreSQL 部分成功的可下载张使用 detection_mode=pass，detector=fixture，任务 40 消费 10、任务 41 释放 10。这不是新的 Gemini 小样，也不代替任务 29。SQLite 单测没有代替 /tmp/s4-pg-e2e.log。"
 
 next_action:
-  owner: user
-  action: "管理员 2026-11-06：S6 已结束，不重跑。供应商真实请求记在 /tmp/supplier-live-e2e.log。文生图和提示词优化有响应小样；预审有真实拒绝；导入未接通。production_billing=false。未提交、未推送、未开 S7。"
+  owner: owner
+  action: "审阅 cursor/ia-page-fix-9973 PR（含 S6 + IA-PAGE）；浏览器冒烟；仅经非本人作者账号 squash 合入 main。不得开 S7。合入后更新本文件与 checkpoint §0。"
+  work_order: "IA-PAGE-2026-11-06 /home/hbs/Desktop/蜜獾原图-v2-页面与信息架构-修复工单.md"
+  branch: cursor/ia-page-fix-9973
+  ia_page_status:
+    A_workspace: done
+    B_library: done_degraded_filename
+    C_batch: done
+    D_tasks_dual_tabs: done
+    E_presets_form: done_gps_write_honestly_unconnected
+    F_tickets: done_merchant_appeal_on_workspace
+    G_system: done
+    H_messages: done_topbar_bell
+    I_prompt_confirm: done_on_generate
+    J_templates: done
+    smoke_api: "/tmp/ia-page-smoke.txt"
+    smoke_c2_c3_c7: "/tmp/ia-page-smoke-c2c3c7.txt"
+  conflicts_recorded:
+    - id: IA_C1_PG_VISIBLE_VS_MATRIX
+      status: kept_with_C2_C7_exception
+      detail: "§5「全部」vs §7：除工作台（IA_C2）与充值消息铃铛（IA_C7）外，订单客服仍不授批量原图/资源/模板/系统管理等业务入口。"
+    - id: IA_C2_KEFU_FOUR_CARDS
+      status: decided_2026_11_06
+      detail: "管理员裁决：订单客服与技术客服都需工作台，分别展示各自真实业务数据（如待处理充值单、待处理工单等），不是商家四卡/业务原图历史。商家仍四卡；管理员仍运营指标。"
+    - id: IA_C3_GENERATE_TOP_NAV
+      status: decided_2026_11_06
+      detail: "管理员裁决：「生图入库」「URL 导入」只保留图片资源页内入口；侧栏菜单节点与 RoleGrant 清除，不再挂隐藏一级路由授权。"
+    - id: IA_C4_MONTHLY_DONE_PROTOTYPE
+      detail: "原型「本月已完成」为演示常量 42。工单禁止演示数字。处理：用本账号本月 DELIVERED 真实计数；缺数据时空态。"
+    - id: IA_C5_NO_COMMIT_IN_TICKET
+      status: superseded_push_authorized_2026_11_07
+      detail: "工单头曾禁止提交推送；管理员 2026-11-07 授权「推送并开PR」。合并仍仅 Owner、非自评自合。"
+    - id: IA_C6_MENU_CACHE_STALE
+      detail: "reconcile 后 bump_menu_structure_cache_version 返回 0（缓存后端疑似未真正 incr）。live uvicorn 会继续吐旧侧栏，需重启 API 进程后 /menus/routes 才与 DB 一致。ASGI TestClient 同库立即正确。记录为运维注意，不扩需求。"
+    - id: IA_C7_ORDER_SUPPORT_MESSAGES_GRANT
+      status: decided_2026_11_06
+      detail: "管理员裁决：订单客服要有顶栏铃铛/消息中心；列表只展示商家充值订单通知。侧栏不因消息膨胀。工作台入口另授；不授予业务原图/模板/系统管理。"
   notes:
     s1_authorized: user_2026-11-05
     s2_authorized: user_2026-11-06

@@ -15,15 +15,25 @@ from app.capabilities.realphotos.permissions import (
     JOBS_ENQUEUE,
     ORDER_SUPPORT_READ,
     ROLE_ADMIN,
+    ROLE_ORDER_SUPPORT,
+    TECH_DESK_READ,
     WALLET_READ,
+    WORKSPACE_READ,
 )
 from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
-from app.capabilities.realphotos.services.s1_recharge import RealphotosRechargeService
+from app.capabilities.realphotos.services.s1_recharge import (
+    RealphotosRechargeService,
+    is_recharge_inbox_event,
+)
 from app.core.response import SuccessResponse
 from app.domain.roles.models import Role
 from app.domain.users.models import UserRole
 
 router = APIRouter()
+
+
+def _order_support_only(roles: set[str]) -> bool:
+    return ROLE_ORDER_SUPPORT in roles and ROLE_ADMIN not in roles and "admin" not in roles
 
 
 class SubmitBody(BaseModel):
@@ -100,7 +110,7 @@ def _task_payload(task) -> dict[str, Any]:
 @router.get("/presets")
 async def list_presets(
     db: DBSession,
-    _: None = Depends(PermissionChecker([WALLET_READ])),
+    _: None = Depends(PermissionChecker([WALLET_READ, WORKSPACE_READ, ADMIN_READ])),
 ) -> dict[str, Any]:
     from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
 
@@ -208,6 +218,42 @@ async def submit_batch(
     )
 
 
+@router.get("/processing-tasks")
+async def list_processing_tasks(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    page: int = 1,
+    page_size: int = 10,
+    status: str | None = None,
+    _: None = Depends(PermissionChecker([JOBS_ENQUEUE])),
+) -> dict[str, Any]:
+    service = RealphotosS1Service(db)
+    rows, total = await service.list_processing_tasks(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        page=page,
+        page_size=page_size,
+        status=status,
+    )
+    payloads = []
+    for task in rows:
+        payload = _task_payload(task)
+        payload["detection"] = await service.detection_payload(
+            tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id)
+        )
+        payload["createdAt"] = task.created_at.isoformat() if task.created_at else None
+        payloads.append(payload)
+    return SuccessResponse(
+        data={
+            "items": payloads,
+            "page": max(1, int(page or 1)),
+            "pageSize": min(50, max(1, int(page_size or 10))),
+            "total": total,
+        }
+    )
+
+
 @router.get("/processing-batches/{batch_id}")
 async def get_batch(
     batch_id: int,
@@ -289,18 +335,141 @@ async def inbox(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
-    _: None = Depends(PermissionChecker([WALLET_READ])),
+    _: None = Depends(
+        PermissionChecker([WALLET_READ, WORKSPACE_READ, ORDER_SUPPORT_READ, TECH_DESK_READ, ADMIN_READ])
+    ),
 ) -> dict[str, Any]:
     rows = await RealphotosS1Service(db).list_inbox(
         tenant_id=int(tenant_ctx.tenant_id),
         recipient_user_id=int(current_user.id),
     )
+    roles = await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    if _order_support_only(roles):
+        rows = [row for row in rows if is_recharge_inbox_event(row.event_key, row.title)]
+    unread = sum(1 for row in rows if row.read_at is None)
     return SuccessResponse(
         data={
             "items": [
-                {"id": str(int(row.id)), "title": row.title, "body": row.body}
+                {
+                    "id": str(int(row.id)),
+                    "title": row.title,
+                    "body": row.body,
+                    "readAt": row.read_at.isoformat() if row.read_at else None,
+                    "createdAt": row.created_at.isoformat() if row.created_at else None,
+                    "eventKey": row.event_key,
+                }
                 for row in rows
-            ]
+            ],
+            "unreadCount": unread,
+            "scope": "recharge_only" if _order_support_only(roles) else "all",
+        }
+    )
+
+
+@router.post("/inbox/mark-all-read")
+async def mark_inbox_all_read(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(
+        PermissionChecker([WALLET_READ, WORKSPACE_READ, ORDER_SUPPORT_READ, TECH_DESK_READ, ADMIN_READ])
+    ),
+) -> dict[str, Any]:
+    service = RealphotosS1Service(db)
+    roles = await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    if _order_support_only(roles):
+        rows = await service.list_inbox(
+            tenant_id=int(tenant_ctx.tenant_id),
+            recipient_user_id=int(current_user.id),
+        )
+        changed = 0
+        for row in rows:
+            if not is_recharge_inbox_event(row.event_key, row.title):
+                continue
+            if row.read_at is None:
+                await service.mark_inbox_read(
+                    tenant_id=int(tenant_ctx.tenant_id),
+                    recipient_user_id=int(current_user.id),
+                    message_id=int(row.id),
+                )
+                changed += 1
+        await db.commit()
+        return SuccessResponse(data={"marked": int(changed)})
+    changed = await service.mark_inbox_all_read(
+        tenant_id=int(tenant_ctx.tenant_id),
+        recipient_user_id=int(current_user.id),
+    )
+    await db.commit()
+    return SuccessResponse(data={"marked": int(changed)})
+
+
+@router.post("/inbox/{message_id}/read")
+async def mark_inbox_read(
+    message_id: int,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(
+        PermissionChecker([WALLET_READ, WORKSPACE_READ, ORDER_SUPPORT_READ, TECH_DESK_READ, ADMIN_READ])
+    ),
+) -> dict[str, Any]:
+    service = RealphotosS1Service(db)
+    roles = await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    if _order_support_only(roles):
+        rows = await service.list_inbox(
+            tenant_id=int(tenant_ctx.tenant_id),
+            recipient_user_id=int(current_user.id),
+        )
+        target = next((row for row in rows if int(row.id) == int(message_id)), None)
+        if target is None or not is_recharge_inbox_event(target.event_key, target.title):
+            from app.core.exceptions import ForbiddenError
+
+            raise ForbiddenError(message="订单客服只能操作充值类通知")
+    row = await service.mark_inbox_read(
+        tenant_id=int(tenant_ctx.tenant_id),
+        recipient_user_id=int(current_user.id),
+        message_id=int(message_id),
+    )
+    await db.commit()
+    return SuccessResponse(
+        data={"id": str(int(row.id)), "readAt": row.read_at.isoformat() if row.read_at else None}
+    )
+
+
+@router.post("/inbox/{message_id}/resend")
+async def resend_inbox(
+    message_id: int,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(
+        PermissionChecker([WALLET_READ, WORKSPACE_READ, ORDER_SUPPORT_READ, TECH_DESK_READ, ADMIN_READ])
+    ),
+) -> dict[str, Any]:
+    service = RealphotosS1Service(db)
+    roles = await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    if _order_support_only(roles):
+        rows = await service.list_inbox(
+            tenant_id=int(tenant_ctx.tenant_id),
+            recipient_user_id=int(current_user.id),
+        )
+        target = next((row for row in rows if int(row.id) == int(message_id)), None)
+        if target is None or not is_recharge_inbox_event(target.event_key, target.title):
+            from app.core.exceptions import ForbiddenError
+
+            raise ForbiddenError(message="订单客服只能补发充值类通知")
+    row = await service.resend_inbox(
+        tenant_id=int(tenant_ctx.tenant_id),
+        recipient_user_id=int(current_user.id),
+        message_id=int(message_id),
+    )
+    await db.commit()
+    return SuccessResponse(
+        data={
+            "id": str(int(row.id)),
+            "title": row.title,
+            "body": row.body,
+            "readAt": None,
         }
     )
 
@@ -409,7 +578,7 @@ class ReprocessBody(BaseModel):
 async def get_redo(
     tenant_ctx: TenantCtx,
     db: DBSession,
-    _: None = Depends(PermissionChecker([WALLET_READ])),
+    _: None = Depends(PermissionChecker([WALLET_READ, WORKSPACE_READ])),
 ) -> dict[str, Any]:
     row = await RealphotosS1Service(db).get_redo_setting(tenant_id=int(tenant_ctx.tenant_id))
     await db.commit()
@@ -427,7 +596,7 @@ async def put_redo(
     body: RedoBody,
     tenant_ctx: TenantCtx,
     db: DBSession,
-    _: None = Depends(PermissionChecker([WALLET_READ])),
+    _: None = Depends(PermissionChecker([WALLET_READ, WORKSPACE_READ])),
 ) -> dict[str, Any]:
     row = await RealphotosS1Service(db).save_redo_setting(
         tenant_id=int(tenant_ctx.tenant_id),

@@ -1,18 +1,30 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { ApiError, apiFetch } from '@/lib/api'
 
-type Template = { id: string; name: string; mode: string; scope: string; positivePrompt: string }
+type Template = {
+  id: string
+  name: string
+  mode: string
+  scope: string
+  positivePrompt: string
+  negativePrompt?: string
+}
+
+const PAGE_SIZE = 10
 
 export default function RealphotosPromptsPage() {
   const [items, setItems] = useState<Template[]>([])
   const [name, setName] = useState('')
+  const [mode, setMode] = useState('general')
   const [prompt, setPrompt] = useState('')
+  const [negative, setNegative] = useState('')
+  const [scope, setScope] = useState('tenant')
   const [message, setMessage] = useState('')
-  const [originalText, setOriginalText] = useState('')
-  const [optimizedText, setOptimizedText] = useState('')
+  const [page, setPage] = useState(1)
+  const [roleHint, setRoleHint] = useState('')
 
   async function reload() {
     const data = await apiFetch<{ items: Template[] }>('/api/v1/realphotos/prompt-templates')
@@ -21,41 +33,45 @@ export default function RealphotosPromptsPage() {
 
   useEffect(() => {
     void reload().catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '模板加载失败'))
+    void apiFetch<{ roleCodes?: string[] }>('/api/v1/realphotos/me')
+      .then((data) => {
+        const roles = data.roleCodes || []
+        setRoleHint(roles.join(','))
+        if (roles.includes('rp_admin') || roles.includes('admin')) setScope('platform')
+        else setScope('tenant')
+      })
+      .catch(() => undefined)
   }, [])
+
+  const pageCount = Math.max(1, Math.ceil(items.length / PAGE_SIZE))
+  const pageItems = useMemo(() => items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [items, page])
+  const isAdmin = roleHint.includes('rp_admin') || roleHint.includes('admin')
 
   async function save() {
     try {
       await apiFetch('/api/v1/realphotos/prompt-templates', {
         method: 'POST',
-        body: JSON.stringify({ name, mode: 'general', positivePrompt: prompt, scope: 'tenant' }),
+        body: JSON.stringify({
+          name,
+          mode,
+          positivePrompt: prompt,
+          negativePrompt: negative,
+          scope: isAdmin ? scope : 'tenant',
+        }),
       })
-      setMessage('已保存模板。选用不扣积分。')
+      setMessage('已保存模板。选用不扣积分。优化主路径在生图表单。')
       await reload()
     } catch (error: unknown) {
       setMessage(error instanceof ApiError ? error.message : '保存失败')
     }
   }
 
-  async function optimize() {
-    try {
-      const data = await apiFetch<{ status: string; originalText: string; optimizedText: string }>(
-        '/api/v1/realphotos/prompt-optimizations',
-        {
-          method: 'POST',
-          body: JSON.stringify({ originalText: prompt }),
-        },
-      )
-      setOriginalText(data.originalText)
-      setOptimizedText(data.optimizedText)
-      setMessage(data.status === 'succeeded' ? '优化完成' : '优化失败，未扣积分')
-    } catch (error: unknown) {
-      setMessage(error instanceof ApiError ? error.message : '优化失败')
-    }
-  }
-
   return (
     <main className="space-y-6 p-6">
-      <h1 className="text-xl font-medium">提示词模板</h1>
+      <h1 className="text-xl font-medium">AI 提示词模板</h1>
+      <p className="text-sm text-muted-foreground">
+        列表默认 10 条/页。平台模板仅管理员可改；商家维护本租户。订单客服不可见本菜单。
+      </p>
       <p className="text-sm">{message}</p>
       <section className="space-y-3">
         <h2 className="text-sm font-medium">新建</h2>
@@ -64,46 +80,75 @@ export default function RealphotosPromptsPage() {
           <input className="mt-1 block w-full max-w-md border px-2 py-1" value={name} onChange={(event) => setName(event.target.value)} />
         </label>
         <label className="block text-sm">
-          正向提示词
-          <input className="mt-1 block w-full max-w-md border px-2 py-1" value={prompt} onChange={(event) => setPrompt(event.target.value)} />
+          适用模式
+          <select className="mt-1 block border px-2 py-1" value={mode} onChange={(event) => setMode(event.target.value)}>
+            <option value="general">通用</option>
+            <option value="text_to_image">文生图</option>
+            <option value="image_to_image">图生图</option>
+          </select>
         </label>
-        <p className="text-sm">原文：{originalText}</p>
-        <p className="text-sm">优化文：{optimizedText}</p>
-        <div className="space-x-2">
-          <button className="border px-3 py-1 text-sm" type="button" onClick={() => void save()}>
-            保存模板
+        {isAdmin ? (
+          <label className="block text-sm">
+            范围
+            <select className="mt-1 block border px-2 py-1" value={scope} onChange={(event) => setScope(event.target.value)}>
+              <option value="tenant">租户</option>
+              <option value="platform">平台</option>
+            </select>
+          </label>
+        ) : null}
+        <label className="block text-sm">
+          正向提示词
+          <textarea className="mt-1 block w-full max-w-md border px-2 py-1" rows={2} value={prompt} onChange={(event) => setPrompt(event.target.value)} />
+        </label>
+        <label className="block text-sm">
+          负向提示词
+          <textarea className="mt-1 block w-full max-w-md border px-2 py-1" rows={2} value={negative} onChange={(event) => setNegative(event.target.value)} />
+        </label>
+        <button className="border px-3 py-1 text-sm" type="button" onClick={() => void save()}>
+          保存模板
+        </button>
+      </section>
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <span>
+            第 {page} / {pageCount} 页 · 共 {items.length}
+          </span>
+          <button className="border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+            上一页
           </button>
-          <button className="border px-3 py-1 text-sm" type="button" onClick={() => void optimize()}>
-            提示词优化
+          <button className="border px-2 py-1" type="button" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>
+            下一页
           </button>
         </div>
-      </section>
-      <table className="w-full text-sm">
-        <thead>
-          <tr>
-            <th className="text-left">名称</th>
-            <th className="text-left">模式</th>
-            <th className="text-left">范围</th>
-            <th className="text-left">正向</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.length === 0 ? (
+        <table className="w-full text-sm">
+          <thead>
             <tr>
-              <td colSpan={4}>暂无模板</td>
+              <th className="text-left">名称</th>
+              <th className="text-left">适用模式</th>
+              <th className="text-left">正向</th>
+              <th className="text-left">负向</th>
+              <th className="text-left">范围</th>
             </tr>
-          ) : (
-            items.map((item) => (
-              <tr key={item.id}>
-                <td>{item.name}</td>
-                <td>{item.mode}</td>
-                <td>{item.scope}</td>
-                <td>{item.positivePrompt}</td>
+          </thead>
+          <tbody>
+            {pageItems.length === 0 ? (
+              <tr>
+                <td colSpan={5}>暂无模板</td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              pageItems.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.name}</td>
+                  <td>{item.mode}</td>
+                  <td className="max-w-xs truncate">{item.positivePrompt}</td>
+                  <td className="max-w-xs truncate">{item.negativePrompt || ''}</td>
+                  <td>{item.scope}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </section>
     </main>
   )
 }
