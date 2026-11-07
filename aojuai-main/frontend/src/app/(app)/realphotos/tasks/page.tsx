@@ -157,7 +157,7 @@ export default function RealphotosTasksPage() {
   async function downloadChecked() {
     const ids = selected.filter((item) => item.outputObjectKey).map((item) => Number(item.id))
     if (ids.length < 1) {
-      setDownloadNote('没有勾选可下载的结果')
+      setDownloadNote('没有勾选可下载的结果；未勾选时不会默认下载全部')
       return
     }
     try {
@@ -165,15 +165,80 @@ export default function RealphotosTasksPage() {
         '/api/v1/realphotos/processing-tasks/selected-downloads',
         { method: 'POST', body: JSON.stringify({ taskIds: ids, pack: 'files' }) },
       )
+      const files = listed.items.filter((item) => item.pack === 'file')
+      if (files.length < 1) {
+        setDownloadNote('勾选的任务还没有可下载结果')
+        return
+      }
+
+      type DirHandle = {
+        getFileHandle: (
+          name: string,
+          opts?: { create?: boolean },
+        ) => Promise<{ createWritable: () => Promise<{ write: (data: Blob) => Promise<void>; close: () => Promise<void> }> }>
+      }
+      const picker = (
+        window as Window & {
+          showDirectoryPicker?: (opts?: { mode?: string }) => Promise<DirHandle>
+        }
+      ).showDirectoryPicker
+
+      let dir: DirHandle | null = null
+      let mode: 'directory' | 'fallback' = 'fallback'
+      let fallbackReason = ''
+      if (typeof picker === 'function') {
+        try {
+          dir = await picker({ mode: 'readwrite' })
+          mode = 'directory'
+        } catch (error: unknown) {
+          const name = error instanceof DOMException ? error.name : ''
+          fallbackReason =
+            name === 'AbortError'
+              ? '用户取消了目录授权'
+              : '当前浏览器无法使用目录选择器'
+          dir = null
+          mode = 'fallback'
+        }
+      } else {
+        fallbackReason = '浏览器不支持 showDirectoryPicker'
+      }
+
+      const usedNames = new Map<string, number>()
       const notes: string[] = []
-      for (const item of listed.items) {
-        if (item.pack !== 'file') continue
+      for (const item of files) {
         const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${item.objectKey}`)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const jpeg = bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff
-        notes.push(`${item.taskId}:${bytes.length}${jpeg ? '' : ':非JPEG'}`)
+        const base = `${item.taskId}.jpg`
+        const seen = usedNames.get(base) || 0
+        usedNames.set(base, seen + 1)
+        const fileName = seen === 0 ? base : `${item.taskId}-${seen}.jpg`
+        if (dir) {
+          const handle = await dir.getFileHandle(fileName, { create: true })
+          const writable = await handle.createWritable()
+          await writable.write(blob)
+          await writable.close()
+          notes.push(`${fileName}:${bytes.length}${jpeg ? '' : ':非JPEG'}`)
+        } else {
+          const url = URL.createObjectURL(blob)
+          const anchor = document.createElement('a')
+          anchor.href = url
+          anchor.download = fileName
+          anchor.rel = 'noopener'
+          document.body.appendChild(anchor)
+          anchor.click()
+          anchor.remove()
+          URL.revokeObjectURL(url)
+          notes.push(`${fileName}:${bytes.length}${jpeg ? '' : ':非JPEG'}`)
+        }
       }
-      setDownloadNote(notes.length ? `逐张下载 ${notes.join(' ')}` : '勾选的任务还没有可下载结果')
+      if (mode === 'directory') {
+        setDownloadNote(`已写入选定目录 ${notes.join(' ')}`)
+      } else {
+        setDownloadNote(
+          `已降级为逐文件下载（${fallbackReason || '目录选择器不可用'}；不生成 ZIP）${notes.join(' ')}`,
+        )
+      }
     } catch (error: unknown) {
       setDownloadNote(error instanceof ApiError ? error.message : '下载失败')
     }
