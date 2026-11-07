@@ -14,6 +14,13 @@ type Asset = {
   height: number
   byteSize: number
   objectKey?: string
+  displayName?: string
+  downloadBasename?: string
+  degraded?: boolean
+  requestedWidth?: number | null
+  requestedHeight?: number | null
+  actualWidth?: number
+  actualHeight?: number
 }
 
 const PAGE_SIZE = 20
@@ -105,7 +112,7 @@ export default function RealphotosLibraryPage() {
       const url = URL.createObjectURL(blob)
       const anchor = document.createElement('a')
       anchor.href = url
-      anchor.download = `${item.originKind}_${item.width}x${item.height}_${item.id}.jpg`
+      anchor.download = `${item.downloadBasename || item.displayName || `${item.originKind}_${item.id}`}.jpg`
       anchor.click()
       URL.revokeObjectURL(url)
     } catch (error: unknown) {
@@ -266,7 +273,11 @@ export default function RealphotosLibraryPage() {
                   )}
                 </td>
                 <td>
-                  {item.originKind}_{item.width}x{item.height}_{item.id}
+                  {item.displayName || `${item.originKind}_${item.id}`}
+                  {item.degraded ? '（降级）' : ''}
+                  {item.requestedWidth && item.actualWidth && item.requestedWidth !== item.actualWidth
+                    ? ` · 请求${item.requestedWidth}×${item.requestedHeight} / 实际${item.actualWidth}×${item.actualHeight}`
+                    : ''}
                 </td>
                 <td>{item.originKind}</td>
                 <td>

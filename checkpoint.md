@@ -7,13 +7,13 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-07 CST（Asia/Shanghai） |
-| branch | `cursor/ia-page-fix-9973`（含 S6 提交 + IA-PAGE 页面/信息架构；相对 `origin/main` `d6f4b5d`） |
+| branch | `cursor/blocking-fix-9973`（相对已含 #25 的 `origin/main` `ad9ebf5`） |
 | HEAD | 以推送后该分支 tip 为准；合入仅经 PR squash，禁止直推 `main` |
 | 文档态 | PRD **2.10**；架构 **1.7**；物料清单现行版；端测自治见 `DEV_INSTRUCTIONS` §6.1 / `AGENTS.md` §5 |
-| 代码态 | `origin/main` 已含 S0–S5。本分支另含 S6 运营/供应商合同控制 + IA-PAGE（分角色工作台、侧栏清除生图/URL、订单客服充值铃铛等）。不是生产收费已开放 |
-| 验证态 | S3 小样只认 `/tmp/s3-pg-e2e.log` 任务 29。S4 `/tmp/s4-pg-e2e.log` `S4_PG_E2E_PASS`。S6 `/tmp/s6-pg-e2e.log` `S6_PG_E2E_PASS`（`supplier_connected=false`）。供应商 `/tmp/supplier-live-e2e.log`。IA `/tmp/ia-page-smoke-c2c3c7.txt`。本机不是最终中国大陆节点 |
-| 当前阶段 | S6 管理员已结束（不重跑改写 `s6_exited`）。IA-PAGE 代码与裁决已落地，待 Owner 审 PR / 浏览器冒烟。不得开 S7 |
-| 下一步 | 审阅 https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/25 ；浏览器冒烟；squash 合入须非作者账号；不得开 S7 |
+| 代码态 | `origin/main` 已含 S0–S6 + IA-PAGE（#25）。本分支另含 BLOCKING-FIX A–G（复制免冻、GPS 写入、文件名拼接、种子诚实拒绝、尺寸诚实字段、图生图真路径、Gemini 识别名收口）。不是生产收费已开放 |
+| 验证态 | BLOCKING `/tmp/blocking-fix-e2e.log` `BLOCKING_FIX_E2E_PASS` 且 `production_billing=false`。S3 小样仍只认任务 29。S4/S6/供应商日志仍有效。URL 导入仍未接通。本机不是最终中国大陆节点 |
+| 当前阶段 | S6 管理员已结束。IA-PAGE 已合入 main。BLOCKING-FIX 开发机端测已通过，待 Owner 审 PR。不得开 S7 |
+| 下一步 | 审阅 https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/27 并 squash 合入（非作者账号）；不得开 S7 |
 
 ## 1. 仓库与文档基线
 

@@ -30,3 +30,7 @@ class RealphotosMerchantProfile(TenantBaseModel):
         Boolean, nullable=False, default=False, server_default="false"
     )
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+    copy_latch_batch_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    copy_latch_active: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )

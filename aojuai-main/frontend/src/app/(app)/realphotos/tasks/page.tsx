@@ -27,6 +27,13 @@ type ProcessingTask = {
   failureClass?: string | null
   createdAt?: string | null
   detection?: Detection | null
+  copiedFrom?: string | null
+  billingMode?: string | null
+  gpsWrite?: {
+    written?: boolean
+    reason?: string
+    actualGps?: { latitude?: number; longitude?: number; altitude?: number } | null
+  } | null
 }
 
 type GenerationItem = {
@@ -206,6 +213,30 @@ export default function RealphotosTasksPage() {
     }
   }
 
+  async function copyProcessing() {
+    const current = selected[0]
+    if (!current) {
+      setNotice('请先勾选一条处理任务再复制')
+      return
+    }
+    try {
+      const data = await apiFetch<{ id: string; copiedFrom?: string; billingMode?: string }>(
+        `/api/v1/realphotos/processing-tasks/${current.id}/copy`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            idempotencyKey: `copy-${current.id}-${Date.now()}`,
+            detectionMode: 'pass',
+          }),
+        },
+      )
+      setNotice(`已复制为任务 ${data.id}（copiedFrom=${data.copiedFrom || current.id}，免冻）`)
+      await loadProcessing()
+    } catch (error: unknown) {
+      setNotice(error instanceof ApiError ? error.message : '复制失败')
+    }
+  }
+
   async function downloadGenAssets(task: GenerationTask) {
     const notes: string[] = []
     for (const item of task.items) {
@@ -305,6 +336,14 @@ export default function RealphotosTasksPage() {
               onClick={() => void reprocessTask()}
             >
               主动重处理
+            </button>
+            <button
+              className="border px-2 py-1 disabled:opacity-40"
+              type="button"
+              disabled={selected.length !== 1}
+              onClick={() => void copyProcessing()}
+            >
+              复制（免冻）
             </button>
           </div>
           <table className="w-full text-sm">

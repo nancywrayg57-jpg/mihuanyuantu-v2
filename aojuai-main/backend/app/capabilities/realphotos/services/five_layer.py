@@ -43,12 +43,12 @@ def run_five_layer(*, source: bytes, preset: dict, seed: int) -> FiveLayerOutput
     image = Image.fromarray(pixels.astype(np.uint8), mode="RGB")
     # L4 is written onto an intermediate JPEG. That size is not the byte floor.
     intermediate = _encode(image, quality=90)
-    _write_and_read(intermediate, preset)
+    _write_and_read(intermediate, preset, seed=int(seed))
     last_fields: list[dict] = []
     for quality in _QUALITIES:
         # L5 re-encodes pixels and drops metadata. Restore the approved snapshot after it.
         encoded = _encode(image, quality=int(quality))
-        final, last_fields = _write_and_read(encoded, preset)
+        final, last_fields = _write_and_read(encoded, preset, seed=int(seed))
         if len(final) >= len(source) and _same_size(final, width=width, height=height):
             return FiveLayerOutput(jpeg=final, fields=last_fields, width=width, height=height)
     raise BusinessError(
@@ -125,16 +125,16 @@ def _f_number(aperture: str) -> float:
     return float(str(aperture).strip().removeprefix("f/").removeprefix("F/"))
 
 
-def _write_and_read(jpeg: bytes, preset: dict) -> tuple[bytes, list[dict]]:
+def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes, list[dict]]:
+    from app.capabilities.realphotos.services.gps_write import resolve_gps
+
     brand = str(preset.get("brand") or "")
     model = str(preset.get("model") or "")
     if not brand or not model:
         raise BusinessError(message="预设缺少品牌或型号", code="EXIF_WRITE_FAILED")
-    gps_mode = str(preset.get("gpsMode") or "none")
-    if gps_mode in {"fixed", "random_by_scene"}:
-        raise BusinessError(message="S2 预设未提供可写入的 GPS 坐标", code="EXIF_WRITE_FAILED")
-    if gps_mode != "none":
-        raise BusinessError(message="未知 gpsMode", code="EXIF_WRITE_FAILED")
+    gps_plan = resolve_gps(preset=preset, seed=int(seed))
+    if gps_plan.get("action") == "fail":
+        raise BusinessError(message=str(gps_plan.get("reason") or "GPS 写入失败"), code="EXIF_WRITE_FAILED")
     iso = str(preset.get("iso") or "")
     shutter = str(preset.get("shutter") or "")
     aperture = str(preset.get("aperture") or "")
@@ -170,8 +170,24 @@ def _write_and_read(jpeg: bytes, preset: dict) -> tuple[bytes, list[dict]]:
             f"-ShutterSpeedValue={tv:.6f}",
             f"-ApertureValue={av:.6f}",
             "-GPS:all=",
-            str(path),
         ]
+        if gps_plan.get("action") == "write":
+            lat = float(gps_plan["latitude"])
+            lon = float(gps_plan["longitude"])
+            alt = float(gps_plan["altitude"])
+            lat_ref = "N" if lat >= 0 else "S"
+            lon_ref = "E" if lon >= 0 else "W"
+            command.extend(
+                [
+                    f"-GPSLatitude={abs(lat)}",
+                    f"-GPSLatitudeRef={lat_ref}",
+                    f"-GPSLongitude={abs(lon)}",
+                    f"-GPSLongitudeRef={lon_ref}",
+                    f"-GPSAltitude={abs(alt)}",
+                    f"-GPSAltitudeRef={'0' if alt >= 0 else '1'}",
+                ]
+            )
+        command.append(str(path))
         try:
             written = subprocess.run(command, check=False, capture_output=True)
         except FileNotFoundError as exc:
@@ -191,7 +207,9 @@ def _write_and_read(jpeg: bytes, preset: dict) -> tuple[bytes, list[dict]]:
                 "-ColorSpace",
                 "-ShutterSpeedValue#",
                 "-ApertureValue#",
-                "-GPSLatitude",
+                "-GPSLatitude#",
+                "-GPSLongitude#",
+                "-GPSAltitude#",
                 "-MakerNote",
                 str(path),
             ],
@@ -204,16 +222,7 @@ def _write_and_read(jpeg: bytes, preset: dict) -> tuple[bytes, list[dict]]:
         row = payload[0] if payload else {}
         final = path.read_bytes()
     fields = [_verified(tag, requested[tag], row.get(tag)) for tag in requested]
-    fields.append(
-        {
-            "tag": "GPSLatitude",
-            "requested": "",
-            "written": "",
-            "read_back": str(row.get("GPSLatitude") or ""),
-            "verification_status": "skipped",
-            "reason": "gpsMode=none 不写入 GPS",
-        }
-    )
+    fields.append(_gps_field(gps_plan, row))
     fields.append(
         {
             "tag": "MakerNote",
@@ -225,15 +234,59 @@ def _write_and_read(jpeg: bytes, preset: dict) -> tuple[bytes, list[dict]]:
         }
     )
     for field in fields:
-        if field["tag"] == "GPSLatitude" and field["read_back"]:
-            raise BusinessError(message="gpsMode=none 不应写入 GPS", code="EXIF_WRITE_FAILED")
+        if field["tag"] == "GPSLatitude" and field.get("verification_status") == "failed":
+            raise BusinessError(message="GPS 回读与请求不一致", code="EXIF_WRITE_FAILED")
+        if field["tag"] == "GPSLatitude" and gps_plan.get("action") == "skip" and field["read_back"]:
+            raise BusinessError(message="gpsMode 不应写入 GPS", code="EXIF_WRITE_FAILED")
         if field["tag"] == "MakerNote" and field["read_back"]:
             raise BusinessError(message="结果含未批准的 MakerNote", code="EXIF_WRITE_FAILED")
-        if field["verification_status"] == "failed":
+        if field["verification_status"] == "failed" and field["tag"] != "GPSLatitude":
             raise BusinessError(message=f"{field['tag']} 回读与预设不一致", code="EXIF_WRITE_FAILED")
     if not final.startswith(b"\xff\xd8\xff"):
         raise BusinessError(message="最终文件不是 JPEG", code="OUTPUT_CONSTRAINT_UNSATISFIED")
     return final, fields
+
+
+def _gps_field(plan: dict, row: dict) -> dict:
+    read_lat = row.get("GPSLatitude")
+    read_lon = row.get("GPSLongitude")
+    read_alt = row.get("GPSAltitude")
+    read_back = ""
+    if read_lat not in (None, "") or read_lon not in (None, ""):
+        read_back = f"{read_lat},{read_lon},{read_alt}"
+    if plan.get("action") == "skip":
+        return {
+            "tag": "GPSLatitude",
+            "requested": "",
+            "written": "",
+            "read_back": read_back,
+            "verification_status": "skipped",
+            "reason": str(plan.get("reason") or "未写入 GPS"),
+            "gpsMode": plan.get("mode"),
+        }
+    requested = f"{float(plan['latitude']):.6f},{float(plan['longitude']):.6f},{float(plan['altitude']):.2f}"
+    ok = False
+    try:
+        ok = (
+            abs(float(read_lat) - float(plan["latitude"])) < 0.0005
+            and abs(float(read_lon) - float(plan["longitude"])) < 0.0005
+        )
+    except (TypeError, ValueError):
+        ok = False
+    return {
+        "tag": "GPSLatitude",
+        "requested": requested,
+        "written": requested,
+        "read_back": read_back,
+        "verification_status": "verified" if ok else "failed",
+        "reason": "" if ok else "GPS 回读与请求不一致",
+        "gpsMode": plan.get("mode"),
+        "actualGps": {
+            "latitude": float(plan["latitude"]),
+            "longitude": float(plan["longitude"]),
+            "altitude": float(plan["altitude"]),
+        },
+    }
 
 
 def _verified(tag: str, requested: str, read_back: object) -> dict:

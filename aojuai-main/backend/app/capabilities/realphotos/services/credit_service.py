@@ -150,6 +150,9 @@ class RealphotosCreditService:
         event_key: str,
         reference: dict | None = None,
     ) -> dict:
+        await self._reject_if_copy_latch(
+            tenant_id=int(tenant_id), operator_user_id=int(operator_user_id)
+        )
         return await self._move(
             tenant_id=tenant_id,
             delta_available=-int(amount),
@@ -169,8 +172,13 @@ class RealphotosCreditService:
         operator_user_id: int,
         event_key: str,
         reference: dict | None = None,
+        allow_during_copy_latch: bool = False,
     ) -> dict:
         """生图成功入库后从可用余额扣减。不写预留，也不动 reserved。"""
+        if not allow_during_copy_latch:
+            await self._reject_if_copy_latch(
+                tenant_id=int(tenant_id), operator_user_id=int(operator_user_id)
+            )
         return await self._move(
             tenant_id=tenant_id,
             delta_available=-int(amount),
@@ -181,6 +189,24 @@ class RealphotosCreditService:
             reference=reference,
             require_available=int(amount),
         )
+
+    async def _reject_if_copy_latch(self, *, tenant_id: int, operator_user_id: int) -> None:
+        from app.capabilities.realphotos.models import RealphotosMerchantProfile
+
+        profile = (
+            await self.db.execute(
+                select(RealphotosMerchantProfile).where(
+                    RealphotosMerchantProfile.tenant_id == int(tenant_id),
+                    RealphotosMerchantProfile.user_id == int(operator_user_id),
+                    RealphotosMerchantProfile.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if profile is not None and bool(profile.copy_latch_active):
+            raise BusinessError(
+                message="复制处理任务执行中，暂缓本账号其他扣分与冻结；充值可用",
+                code="COPY_LATCH_ACTIVE",
+            )
 
     async def consume_reserved(
         self,

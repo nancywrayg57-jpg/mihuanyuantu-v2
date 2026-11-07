@@ -85,6 +85,7 @@ class RealphotosGrowthService:
         reference_asset_id: int | None = None,
         reference_bytes: bytes | None = None,
         fail_indexes: set[int] | None = None,
+        seed: str | int | None = None,
     ) -> RealphotosGenerationTask:
         kind = str(mode or "").strip()
         if kind not in {"text_to_image", "image_to_image"}:
@@ -107,6 +108,7 @@ class RealphotosGrowthService:
         existing = await self._generation_by_key(tenant_id=tenant_id, idempotency_key=key)
         if existing is not None:
             return existing
+        requested_seed = None if seed is None or str(seed).strip() == "" else str(seed).strip()
         from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
 
         await RealphotosOpsService(self.db).assert_can_create_task(
@@ -131,6 +133,12 @@ class RealphotosGrowthService:
                     message="缺少供应商合同与接口证据",
                     code="SERVICE_NOT_CONFIGURED",
                 )
+            seed_cap = str((contract.capabilities or {}).get("seed") or "")
+            if requested_seed is not None and seed_cap in {"", "gap-not-sent", "unsupported", "false"}:
+                raise BusinessError(
+                    message="当前生图合同不支持随机种子，请清空种子后再提交；系统不会伪造已应用种子",
+                    code="SEED_UNSUPPORTED",
+                )
             return await self._submit_live_generation(
                 tenant_id=tenant_id,
                 owner_account_id=owner_account_id,
@@ -145,11 +153,17 @@ class RealphotosGrowthService:
                 reference_asset_id=reference_asset_id,
                 reference_bytes=reference_bytes,
                 model_id=contract.model_id,
+                requested_seed=requested_seed,
             )
         if chosen != FIXTURE_PROVIDER:
             raise BusinessError(
                 message="缺少供应商合同与接口证据",
                 code="SERVICE_NOT_CONFIGURED",
+            )
+        if requested_seed is not None:
+            raise BusinessError(
+                message="当前生图合同不支持随机种子，请清空种子后再提交；系统不会伪造已应用种子",
+                code="SEED_UNSUPPORTED",
             )
 
         credits = RealphotosCreditService(self.db)
@@ -169,6 +183,14 @@ class RealphotosGrowthService:
             provider=FIXTURE_PROVIDER,
             idempotency_key=key,
             template_id=int(template_id) if template_id else None,
+            requested_seed=None,
+            supplier_trace={
+                "requestedSize": f"{edge_w}x{edge_h}",
+                "seedRequested": None,
+                "seedSent": False,
+                "supplierSeedEcho": None,
+                "seedNote": "未发送",
+            },
         )
         self.db.add(task)
         await self.db.flush()
@@ -215,6 +237,8 @@ class RealphotosGrowthService:
                 height=edge_h,
                 origin_kind=kind,
                 token=f"{int(task.id)}-{index}",
+                requested_width=edge_w,
+                requested_height=edge_h,
             )
             self.db.add(asset)
             await self.db.flush()
@@ -226,6 +250,8 @@ class RealphotosGrowthService:
                     status="stored",
                     asset_id=int(asset.id),
                     credits_consumed=GENERATION_UNIT_CREDITS,
+                    actual_width=edge_w,
+                    actual_height=edge_h,
                 )
             )
         await self.db.flush()
@@ -480,11 +506,13 @@ class RealphotosGrowthService:
         reference_asset_id: int | None,
         reference_bytes: bytes | None,
         model_id: str,
+        requested_seed: str | None = None,
     ) -> RealphotosGenerationTask:
         from app.capabilities.realphotos.services.supplier_clients import (
             SupplierCallError,
             generate_images,
             image_size,
+            prepare_reference_jpeg,
         )
         from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
 
@@ -500,11 +528,13 @@ class RealphotosGrowthService:
                 reference_asset_id=reference_asset_id,
                 reference_bytes=reference_bytes,
             )
+            # Hard check on original bytes; supplier transport uses compressed JPEG.
             await self._review_reference(
                 tenant_id=tenant_id,
                 owner_account_id=owner_account_id,
                 data=reference,
             )
+            reference = prepare_reference_jpeg(reference)
         try:
             outcome = await generate_images(
                 model_id=model_id,
@@ -513,6 +543,7 @@ class RealphotosGrowthService:
                 height=edge_h,
                 quantity=count,
                 reference=reference,
+                seed=None,
             )
         except SupplierCallError as exc:
             raise BusinessError(
@@ -544,6 +575,7 @@ class RealphotosGrowthService:
             provider="aoju",
             idempotency_key=key,
             template_id=int(template_id) if template_id else None,
+            requested_seed=requested_seed,
         )
         self.db.add(task)
         await self.db.flush()
@@ -590,6 +622,8 @@ class RealphotosGrowthService:
                 height=height,
                 origin_kind=kind,
                 token=f"{int(task.id)}-{index}",
+                requested_width=edge_w,
+                requested_height=edge_h,
             )
             self.db.add(asset)
             await self.db.flush()
@@ -601,6 +635,8 @@ class RealphotosGrowthService:
                     status="stored",
                     asset_id=int(asset.id),
                     credits_consumed=GENERATION_UNIT_CREDITS,
+                    actual_width=int(width),
+                    actual_height=int(height),
                 )
             )
         await self.db.flush()
@@ -609,7 +645,16 @@ class RealphotosGrowthService:
             "contentType": outcome.get("content_type"),
             "modelId": outcome.get("model_id"),
             "requestedSize": outcome.get("requested_size"),
+            "actualSizes": [
+                {"index": int(item.item_index), "width": item.actual_width, "height": item.actual_height}
+                for item in await self.list_generation_items(tenant_id=tenant_id, task_id=int(task.id))
+                if item.status == "stored"
+            ],
+            "sizeRemappedByAdapter": False,
+            "seedRequested": requested_seed,
             "seedSent": False,
+            "supplierSeedEcho": None,
+            "seedNote": "未发送" if requested_seed is None else "合同不支持，已拒绝",
             "resultKinds": sorted({str(item.get("kind")) for item in images}),
             "referenceReview": getattr(self, "_reference_review", None),
         }
@@ -617,15 +662,21 @@ class RealphotosGrowthService:
 
     async def _review_reference(self, *, tenant_id: int, owner_account_id: int, data: bytes) -> None:
         from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
-        from app.capabilities.realphotos.services.supplier_clients import SupplierCallError, review_image
+        from app.capabilities.realphotos.services.supplier_clients import (
+            SupplierCallError,
+            prepare_reference_jpeg,
+            review_image,
+        )
         from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
 
         contract = await RealphotosSupplierConfigService(self.db).enabled("pre_review")
         if contract is None:
             raise BusinessError(message="缺少预审供应商合同与接口证据", code="SERVICE_NOT_CONFIGURED")
-        mime = "image/png" if data.startswith(b"\x89PNG") else "image/jpeg"
+        # Keep FR-003–FR-006 hard check on caller; compress only the supplier payload.
+        review_bytes = prepare_reference_jpeg(data)
+        mime = "image/jpeg"
         try:
-            outcome = await review_image(model_id=contract.model_id, data=data, mime=mime)
+            outcome = await review_image(model_id=contract.model_id, data=review_bytes, mime=mime)
         except SupplierCallError as exc:
             raise BusinessError(
                 message="预审请求失败，未生图也未扣积分",
@@ -763,6 +814,8 @@ class RealphotosGrowthService:
         height: int,
         origin_kind: str,
         token: str,
+        requested_width: int | None = None,
+        requested_height: int | None = None,
     ) -> RealphotosAsset:
         content_type = "image/png" if raw.startswith(b"\x89PNG") else "image/jpeg"
         suffix = "png" if content_type == "image/png" else "jpg"
@@ -778,6 +831,8 @@ class RealphotosGrowthService:
             height=int(height),
             sha256=hashlib.sha256(raw).hexdigest(),
             origin_kind=origin_kind,
+            requested_width=int(requested_width) if requested_width is not None else None,
+            requested_height=int(requested_height) if requested_height is not None else None,
         )
 
     async def _check_reference(
@@ -811,6 +866,8 @@ class RealphotosGrowthService:
         height: int,
         origin_kind: str,
         token: str,
+        requested_width: int | None = None,
+        requested_height: int | None = None,
     ) -> RealphotosAsset:
         buf = io.BytesIO()
         Image.new("RGB", (int(width), int(height)), (24, 36, 48)).save(buf, format="JPEG", quality=85)
@@ -827,6 +884,8 @@ class RealphotosGrowthService:
             height=int(height),
             sha256=hashlib.sha256(raw).hexdigest(),
             origin_kind=origin_kind,
+            requested_width=int(requested_width) if requested_width is not None else int(width),
+            requested_height=int(requested_height) if requested_height is not None else int(height),
         )
 
     async def _generation_by_key(

@@ -35,6 +35,7 @@ class GenerationBody(BaseModel):
     template_id: int | None = Field(default=None, alias="templateId")
     reference_asset_id: int | None = Field(default=None, alias="referenceAssetId")
     fail_indexes: list[int] = Field(default_factory=list, alias="failIndexes")
+    seed: str | None = None
 
 
 class OptimizeBody(BaseModel):
@@ -103,21 +104,40 @@ async def list_assets(
         tenant_id=int(tenant_ctx.tenant_id),
         owner_account_id=int(current_user.id),
     )
-    return SuccessResponse(
-        data={
-            "items": [
-                {
-                    "id": str(int(row.id)),
-                    "originKind": row.origin_kind,
-                    "width": int(row.width),
-                    "height": int(row.height),
-                    "byteSize": int(row.byte_size),
-                    "objectKey": row.object_key,
-                }
-                for row in rows
-            ]
-        }
+    from app.capabilities.realphotos.services.asset_naming import (
+        compose_download_basename,
+        compose_list_filename,
+        meta_from_asset,
     )
+
+    items = []
+    for row in rows:
+        meta = meta_from_asset(row)
+        naming = compose_list_filename(
+            meta=meta, asset_id=int(row.id), origin_kind=str(row.origin_kind)
+        )
+        items.append(
+            {
+                "id": str(int(row.id)),
+                "originKind": row.origin_kind,
+                "width": int(row.width),
+                "height": int(row.height),
+                "byteSize": int(row.byte_size),
+                "objectKey": row.object_key,
+                "displayName": naming["displayName"],
+                "displayNameSource": naming["displayNameSource"],
+                "degraded": naming["degraded"] == "true",
+                "downloadBasename": compose_download_basename(
+                    meta=meta, asset_id=int(row.id), origin_kind=str(row.origin_kind)
+                ),
+                "meta": meta,
+                "requestedWidth": int(row.requested_width) if row.requested_width is not None else None,
+                "requestedHeight": int(row.requested_height) if row.requested_height is not None else None,
+                "actualWidth": int(row.width),
+                "actualHeight": int(row.height),
+            }
+        )
+    return SuccessResponse(data={"items": items})
 
 
 async def _generation_body(request: Request) -> tuple[GenerationBody, bytes | None]:
@@ -143,6 +163,7 @@ async def _generation_body(request: Request) -> tuple[GenerationBody, bytes | No
                     "templateId": int(str(raw_template)) if raw_template else None,
                     "referenceAssetId": int(str(raw_asset)) if raw_asset else None,
                     "failIndexes": [int(item) for item in fail_raw.split(",") if item.strip()],
+                    "seed": form.get("seed") or None,
                 }
             ),
             reference_bytes or None,
@@ -231,6 +252,7 @@ async def create_generation(
             reference_asset_id=body.reference_asset_id,
             reference_bytes=reference_bytes,
             fail_indexes=set(body.fail_indexes),
+            seed=body.seed,
         )
     except BusinessError as exc:
         if exc.code in {"PRE_REVIEW_REJECTED", "PRE_REVIEW_FAILED"}:
@@ -244,12 +266,17 @@ async def create_generation(
             "id": str(int(task.id)),
             "provider": task.provider,
             "supplier": trace,
+            "requestedWidth": int(task.width),
+            "requestedHeight": int(task.height),
+            "requestedSeed": task.requested_seed,
             "items": [
                 {
                     "index": int(item.item_index),
                     "status": item.status,
                     "assetId": str(int(item.asset_id)) if item.asset_id else None,
                     "creditsConsumed": int(item.credits_consumed),
+                    "actualWidth": int(item.actual_width) if item.actual_width is not None else None,
+                    "actualHeight": int(item.actual_height) if item.actual_height is not None else None,
                 }
                 for item in items
             ],

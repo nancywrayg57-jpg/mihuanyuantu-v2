@@ -37,7 +37,7 @@ vibe_coding:
     visible_output: "生图页、提示词页、URL 导入页和管理员模型合同表"
     verify: "/tmp/supplier-live-e2e.log 含 SUPPLIER_LIVE_E2E_RECORDED；导入仍未接通；production_billing=false"
     status: supplier_live_recorded_not_production
-    next_user_action: "S6 已结束不重跑；IA-PAGE 已推 PR（cursor/ia-page-fix-9973）。待 Owner 审阅合入与浏览器冒烟。不得开 S7。"
+    next_user_action: "BLOCKING-FIX A–G 已落地并有 /tmp/blocking-fix-e2e.log PASS。待 Owner 审阅 cursor/blocking-fix-9973 PR 合入。不得开 S7。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -178,8 +178,17 @@ known_conflicts:
     status: mitigated_in_pack
     detail: "底座 JWT_REFRESH_TOKEN_EXPIRE_DAYS 默认 7；realphotos /auth/login 路径单独签发 30 天 refresh（架构 §10.1）。核心 /api/v1/auth/login 未改。"
   - id: GEMINI_MODEL_ALIAS
+    status: resolved_blocking_fix_2026_11_07
+    detail: "BLOCKING-FIX G：代码默认、supplier final_detection 合同与本机可用型号统一为 gemini-3.1-pro-preview；不再默认 gemini-2.5-pro。密钥仍只在本机 .env/物料。"
+  - id: MAIN_IA_PR25_STALE_DOCS
+    status: resolved_recorded
+    detail: "origin/main 已含 #25 squash ad9ebf5；旧 progress/handoff「待合入 #25」滞后已由本轮 next_action 改写为 blocking-fix。"
+  - id: BLOCKING_FIX_SCOPE
     status: recorded
-    detail: "Gemini 方案默认识别名 gemini-2.5-pro，并写明以模型 API 实际配置为准。本机密钥调用 gemini-2.5-pro 返回 404 NOT_FOUND，供应商提示改用 gemini-3.1-pro-preview。代码默认值未改；本机 .env 的 GEMINI_MODEL 使用供应商给出的型号。真实小样检测器为 gemini-3.1-pro-preview，不是 fixture。"
+    detail: "工单明确排除 URL 真导入与中国大陆/上线门槛/S7。种子合同仍 gap-not-sent：带种子提交返回 SEED_UNSUPPORTED，不伪造。"
+  - id: PR27_OPENER_ACCOUNT
+    status: recorded
+    detail: "提交作者为 Collaborator 身份 xtzhou247；PR #27 由本机当前 gh 登录账号 nancywrayg57-jpg 创建。合入仍须非自评自合：若 PR 作者账号与审合账号相同则换 Collaborator 账号审合或按 AGENTS §7 处理。"
   - id: DEVHOST_SSH_AUTONOMY
     status: recorded
     detail: "管理员授权：每里程碑后 Agent 自行 SSH 开发机端测，无需人工代跑。口令在同级 生产物料/；清单与 DEV_INSTRUCTIONS §6.1 / AGENTS.md §5 已写。"
@@ -192,16 +201,29 @@ known_conflicts:
 
 next_action:
   owner: owner
-  action: "审阅 cursor/ia-page-fix-9973 PR（含 S6 + IA-PAGE）；浏览器冒烟；仅经非本人作者账号 squash 合入 main。不得开 S7。合入后更新本文件与 checkpoint §0。"
-  work_order: "IA-PAGE-2026-11-06 /home/hbs/Desktop/蜜獾原图-v2-页面与信息架构-修复工单.md"
-  branch: cursor/ia-page-fix-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/25"
+  action: "审阅 cursor/blocking-fix-9973 PR（BLOCKING-FIX A–G）；仅经非本人作者账号 squash 合入 main。不得开 S7。合入后更新本文件与 checkpoint §0。"
+  work_order: "BLOCKING-FIX-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-阻断级修复工单.md"
+  branch: cursor/blocking-fix-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/27"
+  blocking_fix_status:
+    A_copy_latch: done
+    B_gps_write: done
+    C_filename_compose: done
+    D_seed_honesty: done_gap_rejects
+    E_size_honesty: done
+    F_image_to_image_live: done
+    G_gemini_model_id: done
+    e2e_log: "/tmp/blocking-fix-e2e.log"
+    e2e_mark: BLOCKING_FIX_E2E_PASS
+    production_billing: false
+    url_import_connected: false
+    s7_started: false
   ia_page_status:
     A_workspace: done
-    B_library: done_degraded_filename
+    B_library: done
     C_batch: done
     D_tasks_dual_tabs: done
-    E_presets_form: done_gps_write_honestly_unconnected
+    E_presets_form: done_gps_write_connected
     F_tickets: done_merchant_appeal_on_workspace
     G_system: done
     H_messages: done_topbar_bell
@@ -209,6 +231,7 @@ next_action:
     J_templates: done
     smoke_api: "/tmp/ia-page-smoke.txt"
     smoke_c2_c3_c7: "/tmp/ia-page-smoke-c2c3c7.txt"
+    note: "IA-PAGE 已随 #25 squash 合入 origin/main（ad9ebf5）；本轮不再待合入。"
   conflicts_recorded:
     - id: IA_C1_PG_VISIBLE_VS_MATRIX
       status: kept_with_C2_C7_exception

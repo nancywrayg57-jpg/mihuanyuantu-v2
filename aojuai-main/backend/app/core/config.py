@@ -330,7 +330,7 @@ class Settings(BaseSettings):
     REALPHOTOS_SUPPLIER_LIVE: str = ""
     REALPHOTOS_STORAGE_ROOT: str = ""
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.5-pro"
+    GEMINI_MODEL: str = "gemini-3.1-pro-preview"
     GEMINI_API_BASE: str = "https://generativelanguage.googleapis.com/v1beta"
 
     # 各 worker 的并发度，形如 "code:2,other_code:4"。

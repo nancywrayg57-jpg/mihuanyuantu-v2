@@ -289,7 +289,24 @@ class RealphotosOpsService:
         if row is not None:
             if not row.enabled:
                 return None
-            return self._preset_dict(row)
+            payload = self._preset_dict(row)
+            latest = (
+                await self.db.execute(
+                    select(RealphotosPresetVersion)
+                    .where(
+                        RealphotosPresetVersion.preset_code == row.code,
+                        RealphotosPresetVersion.deleted_at.is_(None),
+                    )
+                    .order_by(RealphotosPresetVersion.version_no.desc())
+                )
+            ).scalars().first()
+            if latest is not None:
+                snap = dict(latest.snapshot or {})
+                if snap.get("gpsConfig"):
+                    payload["gpsConfig"] = dict(snap["gpsConfig"])
+                if "gpsWriteConnected" in snap:
+                    payload["gpsWriteConnected"] = bool(snap["gpsWriteConnected"])
+            return payload
         for item in S1_ENABLED_PRESETS:
             if item["code"] == code:
                 return dict(item)
@@ -400,7 +417,8 @@ class RealphotosOpsService:
         snapshot = self._preset_dict(row)
         if gps_config:
             snapshot["gpsConfig"] = dict(gps_config)
-            snapshot["gpsWriteConnected"] = False
+        # B: fixed / random_by_scene 已接入五层 EXIF 写入；none 仍明确不写。
+        snapshot["gpsWriteConnected"] = True
         self.db.add(
             RealphotosPresetVersion(
                 tenant_id=int(row.tenant_id or 0),
@@ -413,7 +431,7 @@ class RealphotosOpsService:
         payload = self._preset_dict(row)
         if gps_config:
             payload["gpsConfig"] = dict(gps_config)
-            payload["gpsWriteConnected"] = False
+        payload["gpsWriteConnected"] = True
         return payload
 
     async def set_preset_enabled(

@@ -111,11 +111,47 @@ class RealphotosS1Service:
         tenant_id: int,
         owner_account_id: int,
         data: bytes,
+        meta_name: str | None = None,
+        meta_seller: str | None = None,
+        meta_sku: str | None = None,
+        meta_asn: str | None = None,
+        meta_price: str | None = None,
+        meta_website: str | None = None,
+        meta_url: str | None = None,
     ) -> RealphotosAsset:
+        from app.capabilities.realphotos.services.asset_naming import ensure_sku
+
         meta = inspect_upload(data)
         token = secrets.token_hex(8)
         key = f"tenant/{int(tenant_id)}/upload/{token}.{meta['extension']}"
         get_storage_adapter().put_bytes(key, bytes(data), content_type=meta["content_type"])
+        fields = {
+            "name": str(meta_name or "").strip(),
+            "seller": str(meta_seller or "").strip(),
+            "sku": str(meta_sku or "").strip(),
+            "asn": str(meta_asn or "").strip(),
+            "price": str(meta_price or "").strip(),
+            "website": str(meta_website or "").strip(),
+            "url": str(meta_url or "").strip(),
+        }
+        if any(fields.values()) and not fields["sku"]:
+            fields["sku"] = ensure_sku(meta=fields)
+        # sku uniqueness among undeleted assets in tenant
+        if fields["sku"]:
+            clash = (
+                await self.db.execute(
+                    select(RealphotosAsset).where(
+                        RealphotosAsset.tenant_id == int(tenant_id),
+                        RealphotosAsset.meta_sku == fields["sku"],
+                        RealphotosAsset.deleted_at.is_(None),
+                    )
+                )
+            ).scalar_one_or_none()
+            if clash is not None:
+                if fields["asn"]:
+                    fields["sku"] = f"{fields['sku']}_{fields['asn']}"
+                else:
+                    fields["sku"] = ensure_sku(meta={})
         asset = RealphotosAsset(
             tenant_id=int(tenant_id),
             owner_account_id=int(owner_account_id),
@@ -126,6 +162,13 @@ class RealphotosS1Service:
             height=int(meta["height"]),
             sha256=meta["sha256"],
             origin_kind="local_upload",
+            meta_name=fields["name"] or None,
+            meta_seller=fields["seller"] or None,
+            meta_sku=fields["sku"] or None,
+            meta_asn=fields["asn"] or None,
+            meta_price=fields["price"] or None,
+            meta_website=fields["website"] or None,
+            meta_url=fields["url"] or None,
         )
         self.db.add(asset)
         await self.db.flush()
@@ -636,16 +679,20 @@ class RealphotosS1Service:
         if task.detection_mode == DETECT_TECHNICAL:
             # 管理员 2026-11-06：技术失败保持冻结，等到开发技术客服时再释放。
             reservation = await self._chain_reservation(task)
-            if reservation.state == "reserved":
+            if reservation is not None and reservation.state == "reserved":
                 reservation.state = "held"
             task.status = TASK_FAILED
             task.failure_class = "technical"
-            task.credit_disposition = "held_until_tech_support"
+            if str(getattr(task, "billing_mode", "normal") or "normal") == "copy_no_reserve":
+                task.credit_disposition = "copy_no_reserve_technical"
+            else:
+                task.credit_disposition = "held_until_tech_support"
             await self._notify(
                 task,
                 title="技术异常",
                 body="规则替身技术异常。积分保持冻结，待技术客服阶段处理，本次未扣费。",
             )
+            await self._maybe_clear_copy_latch(task)
             await self.db.flush()
             return task
         try:
@@ -654,12 +701,16 @@ class RealphotosS1Service:
             if exc.code not in {"OUTPUT_CONSTRAINT_UNSATISFIED", "EXIF_WRITE_FAILED"}:
                 raise
             reservation = await self._chain_reservation(task)
-            if reservation.state == "reserved":
+            if reservation is not None and reservation.state == "reserved":
                 reservation.state = "held"
             task.status = TASK_FAILED
             task.failure_class = exc.code
-            task.credit_disposition = "held_until_tech_support"
+            if str(getattr(task, "billing_mode", "normal") or "normal") == "copy_no_reserve":
+                task.credit_disposition = "copy_no_reserve_technical"
+            else:
+                task.credit_disposition = "held_until_tech_support"
             await self._notify(task, title="技术异常", body=exc.message)
+            await self._maybe_clear_copy_latch(task)
             await self.db.flush()
             return task
         for stage in _STAGES:
@@ -811,6 +862,39 @@ class RealphotosS1Service:
             "reason": row.reason,
             "detector": row.detector,
         }
+
+    async def gps_write_summary(self, *, tenant_id: int, task_id: int) -> dict | None:
+        rows = (
+            await self.db.execute(
+                select(RealphotosTaskSnapshot).where(
+                    RealphotosTaskSnapshot.tenant_id == int(tenant_id),
+                    RealphotosTaskSnapshot.task_id == int(task_id),
+                    RealphotosTaskSnapshot.deleted_at.is_(None),
+                )
+            )
+        ).scalars().all()
+        for row in reversed(list(rows)):
+            snap = row.snapshot if isinstance(row.snapshot, dict) else {}
+            if snap.get("kind") != "s2_exif_field_ledger":
+                continue
+            for field in list(snap.get("fields") or []):
+                if not isinstance(field, dict) or field.get("tag") != "GPSLatitude":
+                    continue
+                status = str(field.get("verification_status") or "")
+                if status == "verified" and field.get("actualGps"):
+                    return {
+                        "written": True,
+                        "actualGps": dict(field["actualGps"]),
+                        "gpsMode": field.get("gpsMode"),
+                        "reason": "",
+                    }
+                return {
+                    "written": False,
+                    "actualGps": None,
+                    "gpsMode": field.get("gpsMode"),
+                    "reason": str(field.get("reason") or "未写入 GPS"),
+                }
+        return None
 
     async def _five_layer_jpeg(self, task: RealphotosImageTask) -> bytes:
         from app.capabilities.realphotos.services.five_layer import run_five_layer
@@ -991,14 +1075,136 @@ class RealphotosS1Service:
 
     async def _hold_technical(self, task: RealphotosImageTask, *, code: str, message: str) -> None:
         reservation = await self._chain_reservation(task)
-        if reservation.state == "reserved":
+        if reservation is not None and reservation.state == "reserved":
             reservation.state = "held"
         task.status = TASK_FAILED
         task.failure_class = code
-        task.credit_disposition = "held_until_tech_support"
+        if str(getattr(task, "billing_mode", "normal") or "normal") == "copy_no_reserve":
+            task.credit_disposition = "copy_no_reserve_technical"
+        else:
+            task.credit_disposition = "held_until_tech_support"
         task.output_object_key = None
         await self._notify(task, title="技术异常", body=message)
+        await self._maybe_clear_copy_latch(task)
         await self.db.flush()
+
+    async def copy_processing_task(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        source_task_id: int,
+        idempotency_key: str,
+        detection_mode: str = DETECT_PASS,
+    ) -> RealphotosImageTask:
+        """ND-025 / FR-013: copy processing task without re-freeze or full pre-review."""
+        from app.capabilities.realphotos.models import RealphotosMerchantProfile
+
+        key = str(idempotency_key or "").strip()
+        if not key:
+            raise BusinessError(message="缺少幂等键", code="INPUT_INVALID")
+        existing = await self._task_by_idempotency(tenant_id=tenant_id, idempotency_key=key)
+        if existing is not None:
+            return existing
+        source = await self.get_task(
+            tenant_id=int(tenant_id),
+            task_id=int(source_task_id),
+            owner_account_id=int(owner_account_id),
+        )
+        wallet = await self.credits.get_wallet(tenant_id=int(tenant_id))
+        if int(wallet["availableInteger"]) < 0:
+            raise BusinessError(message="余额为负，拒绝复制", code="BALANCE_NEGATIVE")
+        preset = dict(source.preset_snapshot or {})
+        if not preset:
+            enabled = await RealphotosOpsService(self.db).enabled_preset(source.preset_code)
+            if enabled is None:
+                raise BusinessError(message="预设未启用或不存在", code="PRESET_REJECTED")
+            preset = enabled
+        asset = await self._asset(tenant_id=tenant_id, asset_id=int(source.asset_id))
+        if asset.deleted_at is not None:
+            raise NotFoundError(message="资源不存在")
+        profile = (
+            await self.db.execute(
+                select(RealphotosMerchantProfile).where(
+                    RealphotosMerchantProfile.tenant_id == int(tenant_id),
+                    RealphotosMerchantProfile.user_id == int(owner_account_id),
+                    RealphotosMerchantProfile.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if profile is None:
+            profile = RealphotosMerchantProfile(
+                tenant_id=int(tenant_id),
+                user_id=int(owner_account_id),
+                display_name="",
+            )
+            self.db.add(profile)
+            await self.db.flush()
+        if bool(profile.copy_latch_active):
+            raise BusinessError(
+                message="复制处理任务执行中，暂缓本账号其他扣分与冻结；充值可用",
+                code="COPY_LATCH_ACTIVE",
+            )
+        if detection_mode == DETECT_GEMINI:
+            detect = DETECT_GEMINI
+        elif detection_mode in {DETECT_PASS, DETECT_NOT_PASSED, DETECT_TECHNICAL}:
+            detect = detection_mode
+        else:
+            detect = DETECT_PASS
+        batch = RealphotosBatch(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(owner_account_id),
+            image_count=1,
+            preset_code=str(source.preset_code),
+        )
+        self.db.add(batch)
+        await self.db.flush()
+        chain = RealphotosTaskChain(tenant_id=int(tenant_id), batch_id=int(batch.id), round_no=1)
+        self.db.add(chain)
+        await self.db.flush()
+        task = RealphotosImageTask(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(owner_account_id),
+            batch_id=int(batch.id),
+            chain_id=int(chain.id),
+            asset_id=int(asset.id),
+            status=TASK_SUBMITTED,
+            preset_code=str(source.preset_code),
+            preset_snapshot=preset,
+            pre_review_mode="pass",
+            detection_mode=detect,
+            idempotency_key=key,
+            pipeline_version=_PIPELINE,
+            copied_from_task_id=int(source.id),
+            billing_mode="copy_no_reserve",
+        )
+        self.db.add(task)
+        await self.db.flush()
+        self.db.add(
+            RealphotosTaskSnapshot(tenant_id=int(tenant_id), task_id=int(task.id), snapshot=preset)
+        )
+        setting = await self.get_redo_setting(tenant_id=int(tenant_id))
+        self.db.add(
+            RealphotosChainPolicy(
+                tenant_id=int(tenant_id),
+                chain_id=int(chain.id),
+                enabled=bool(setting.enabled),
+                score_threshold=int(setting.score_threshold),
+                extra_rounds=int(setting.extra_rounds),
+                execution_count=1,
+                origin="copy",
+            )
+        )
+        profile.copy_latch_active = True
+        profile.copy_latch_batch_id = int(batch.id)
+        profile.version = int(profile.version or 1) + 1
+        await self.jobs.enqueue_process(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(owner_account_id),
+            payload={"task_id": int(task.id)},
+        )
+        await self.db.flush()
+        return task
 
     async def _enqueue_redo(self, task: RealphotosImageTask) -> None:
         nxt = int(await self._prior_rounds(task)) + 2
@@ -1065,7 +1271,9 @@ class RealphotosS1Service:
         ).all()
         return max(len(rows) - 1, 0)
 
-    async def _chain_reservation(self, task: RealphotosImageTask) -> RealphotosCreditReservation:
+    async def _chain_reservation(self, task: RealphotosImageTask) -> RealphotosCreditReservation | None:
+        if str(getattr(task, "billing_mode", "normal") or "normal") == "copy_no_reserve":
+            return None
         first_id = (
             await self.db.execute(
                 select(RealphotosImageTask.id)
@@ -1073,19 +1281,23 @@ class RealphotosS1Service:
                 .order_by(RealphotosImageTask.id.asc())
             )
         ).scalars().first()
-        found = (
+        if first_id is None:
+            return None
+        return (
             await self.db.execute(
                 select(RealphotosCreditReservation).where(
                     RealphotosCreditReservation.task_id == int(first_id),
                     RealphotosCreditReservation.deleted_at.is_(None),
                 )
             )
-        ).scalar_one()
-        return found
+        ).scalar_one_or_none()
 
     async def _consume_chain(self, task: RealphotosImageTask, *, disposition: str) -> None:
+        if str(getattr(task, "billing_mode", "normal") or "normal") == "copy_no_reserve":
+            await self._consume_copy(task, disposition=disposition)
+            return
         reservation = await self._chain_reservation(task)
-        if reservation.state != "reserved":
+        if reservation is None or reservation.state != "reserved":
             return
         await self.credits.consume_reserved(
             tenant_id=int(task.tenant_id),
@@ -1098,8 +1310,12 @@ class RealphotosS1Service:
         task.credit_disposition = disposition
 
     async def _release_chain(self, task: RealphotosImageTask, *, disposition: str) -> None:
+        if str(getattr(task, "billing_mode", "normal") or "normal") == "copy_no_reserve":
+            task.credit_disposition = disposition
+            await self._maybe_clear_copy_latch(task)
+            return
         reservation = await self._chain_reservation(task)
-        if reservation.state != "reserved":
+        if reservation is None or reservation.state != "reserved":
             return
         await self.credits.release_reserved(
             tenant_id=int(task.tenant_id),
@@ -1112,8 +1328,12 @@ class RealphotosS1Service:
         task.credit_disposition = disposition
 
     async def _release(self, task: RealphotosImageTask, *, disposition: str) -> None:
+        if str(getattr(task, "billing_mode", "normal") or "normal") == "copy_no_reserve":
+            task.credit_disposition = disposition
+            await self._maybe_clear_copy_latch(task)
+            return
         reservation = await self._reservation(task)
-        if reservation.state != "reserved":
+        if reservation is None or reservation.state != "reserved":
             return
         await self.credits.release_reserved(
             tenant_id=int(task.tenant_id),
@@ -1126,8 +1346,11 @@ class RealphotosS1Service:
         task.credit_disposition = disposition
 
     async def _consume(self, task: RealphotosImageTask, *, disposition: str) -> None:
+        if str(getattr(task, "billing_mode", "normal") or "normal") == "copy_no_reserve":
+            await self._consume_copy(task, disposition=disposition)
+            return
         reservation = await self._reservation(task)
-        if reservation.state != "reserved":
+        if reservation is None or reservation.state != "reserved":
             return
         await self.credits.consume_reserved(
             tenant_id=int(task.tenant_id),
@@ -1138,6 +1361,54 @@ class RealphotosS1Service:
         )
         reservation.state = "consumed"
         task.credit_disposition = disposition
+
+    async def _consume_copy(self, task: RealphotosImageTask, *, disposition: str) -> None:
+        wallet = await self.credits.get_wallet(tenant_id=int(task.tenant_id))
+        if int(wallet["availableInteger"]) < PROCESS_UNIT_CREDITS:
+            raise BusinessError(message="余额不足，复制结算失败", code="INSUFFICIENT_CREDITS")
+        await self.credits.consume_available(
+            tenant_id=int(task.tenant_id),
+            amount=PROCESS_UNIT_CREDITS,
+            operator_user_id=int(task.owner_account_id),
+            event_key=f"consume:copy:{int(task.id)}",
+            reference={"taskId": int(task.id), "disposition": disposition, "copiedFrom": task.copied_from_task_id},
+            allow_during_copy_latch=True,
+        )
+        task.credit_disposition = disposition
+        await self._maybe_clear_copy_latch(task)
+
+    async def _maybe_clear_copy_latch(self, task: RealphotosImageTask) -> None:
+        from app.capabilities.realphotos.models import RealphotosMerchantProfile
+
+        if str(getattr(task, "billing_mode", "normal") or "normal") != "copy_no_reserve":
+            return
+        siblings = (
+            await self.db.execute(
+                select(RealphotosImageTask).where(
+                    RealphotosImageTask.batch_id == int(task.batch_id),
+                    RealphotosImageTask.deleted_at.is_(None),
+                )
+            )
+        ).scalars().all()
+        terminal = {TASK_DELIVERED, TASK_FAILED, TASK_PRE_REVIEW_FAILED}
+        if any(str(row.status) not in terminal for row in siblings):
+            return
+        profile = (
+            await self.db.execute(
+                select(RealphotosMerchantProfile).where(
+                    RealphotosMerchantProfile.tenant_id == int(task.tenant_id),
+                    RealphotosMerchantProfile.user_id == int(task.owner_account_id),
+                    RealphotosMerchantProfile.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if profile is None:
+            return
+        if int(profile.copy_latch_batch_id or 0) == int(task.batch_id):
+            profile.copy_latch_active = False
+            profile.copy_latch_batch_id = None
+            profile.version = int(profile.version or 1) + 1
+            await self.db.flush()
 
     async def _notify(self, task: RealphotosImageTask, *, title: str, body: str) -> None:
         policy = await self._policy(task)
@@ -1164,8 +1435,10 @@ class RealphotosS1Service:
             )
         )
 
-    async def _reservation(self, task: RealphotosImageTask) -> RealphotosCreditReservation:
-        row = (
+    async def _reservation(self, task: RealphotosImageTask) -> RealphotosCreditReservation | None:
+        if str(getattr(task, "billing_mode", "normal") or "normal") == "copy_no_reserve":
+            return None
+        return (
             await self.db.execute(
                 select(RealphotosCreditReservation).where(
                     RealphotosCreditReservation.tenant_id == int(task.tenant_id),
@@ -1174,9 +1447,6 @@ class RealphotosS1Service:
                 )
             )
         ).scalar_one_or_none()
-        if row is None:
-            raise BusinessError(message="缺少冻结记录", code="RESERVATION_MISSING")
-        return row
 
     async def _batch_row(self, *, tenant_id: int, batch_id: int) -> RealphotosBatch:
         row = (
