@@ -69,10 +69,10 @@ async def _main() -> int:
     note("product_gap_a_e2e start")
     note("production_billing=false s7_started=false url_import_connected=false a5_cost=deferred")
 
-    import app.capabilities.realphotos.models  # noqa: F401
-    import app.domain  # noqa: F401
     from sqlalchemy import select
 
+    import app.capabilities.realphotos.models  # noqa: F401
+    import app.domain  # noqa: F401
     from app.capabilities.realphotos.models import RealphotosInboxMessage, RealphotosMerchantProfile
     from app.capabilities.realphotos.permissions import ROLE_ADMIN, ROLE_MERCHANT
     from app.capabilities.realphotos.seed import reconcile
