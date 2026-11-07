@@ -22,11 +22,34 @@ _SCENE_BOXES: dict[str, tuple[float, float, float, float, float, float]] = {
 _SKIP_SCENES = {"indoor", "studio"}
 
 
+def gps_writability(*, gps_mode: str, gps_config: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Ops-facing GPS writability without mutating mode (ALIGN-GAP G6).
+
+    Never rewrites gpsMode=fixed → none. Returns gpsWritable + Chinese reason.
+    """
+    mode = str(gps_mode or "none").strip() or "none"
+    plan = resolve_gps(preset={"gpsMode": mode, "gpsConfig": dict(gps_config or {})}, seed=0)
+    action = str(plan.get("action") or "")
+    if action == "write":
+        return {"gpsWritable": True, "gpsWritableReason": "", "gpsMode": mode}
+    if action == "skip":
+        return {
+            "gpsWritable": True,
+            "gpsWritableReason": str(plan.get("reason") or "按规则跳过写入"),
+            "gpsMode": mode,
+        }
+    return {
+        "gpsWritable": False,
+        "gpsWritableReason": str(plan.get("reason") or "GPS 不可写入"),
+        "gpsMode": mode,
+    }
+
+
 def resolve_gps(*, preset: dict[str, Any], seed: int) -> dict[str, Any]:
     """Return write plan for EXIF GPS.
 
     Keys:
-      action: write | skip
+      action: write | skip | fail
       reason: human-readable Chinese reason when skip/fail context
       latitude/longitude/altitude: floats when action=write
       mode: none | fixed | random_by_scene

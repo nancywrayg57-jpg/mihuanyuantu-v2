@@ -425,6 +425,23 @@ async def cleanup_expired_inbox(
     return SuccessResponse(data=payload)
 
 
+@router.post("/outputs/cleanup-expired")
+async def cleanup_expired_outputs(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
+) -> dict[str, Any]:
+    roles = await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    if ROLE_ADMIN not in roles and "admin" not in roles:
+        from app.core.exceptions import ForbiddenError
+
+        raise ForbiddenError(message="只有平台管理员可以清理过期处理结果")
+    payload = await RealphotosS1Service(db).cleanup_expired_outputs()
+    await db.commit()
+    return SuccessResponse(data=payload)
+
+
 @router.get("/inbox")
 async def inbox(
     current_user: CurrentUser,

@@ -57,6 +57,7 @@ INBOX_TTL_DAYS = 30
 DEVICE_TYPES = ("phone", "dslr", "mirrorless", "action")
 DEVICE_TYPE_ALIASES = {"camera": "dslr"}  # 历史错误值诚实映射，禁止静默冒充未说明的第三套名
 JOB_KIND_INBOX_CLEANUP = "inbox_cleanup"
+JOB_KIND_OUTPUT_CLEANUP = "output_cleanup"
 
 # SM-001 名称。S1 不进入自动重做 / 主动重处理 / 技术重试链。
 TASK_SUBMITTED = "SUBMITTED"

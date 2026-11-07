@@ -96,5 +96,6 @@
 - Mitigation: 架构 1.7 §9.2.1 改造义务；S5 验收 AC-024。
 
 ## Backlog Knowledge
-- Next: 合入 `cursor/preset-bulk-import-9973`（叠 #29）；不得开 S7；不得接通 URL 真导入。
-- Deferred: A5 运营成本真实聚合（无账本物料）；CI Python/pnpm 版本与架构推荐对齐（非阻塞）；多 worker 菜单缓存仍需 Redis/重启（IA_C6）。
+- Next: 获准后推送 `cursor/align-gap-a5bc-9973` 并开 PR；不得开 S7；不得接通 URL 真导入。
+- Closed this loop: ALIGN-GAP-A5BC G1–G8（`/tmp/align-gap-a5bc-e2e.log` `ALIGN_GAP_A5BC_E2E_PASS`）；`nd020_021_archived=true` 仍 `production_billing=false`；OpenAPI 离线制品 `aojuai-main/backend/contracts/realphotos_image_processing.openapi.json`；geocoder=reserved；G5 `version_align=accepted_risk`（CI 3.11/pnpm9 vs 架构 3.12/pnpm10）。
+- Deferred: A5 运营成本真实聚合（无账本物料）；CI 升至架构推荐 3.12/pnpm10（accepted_risk，待 Owner 锁文件验证）；多 worker 菜单缓存无 Redis 时仍须滚动重启（IA_C6=mitigated_with_ops_note）。

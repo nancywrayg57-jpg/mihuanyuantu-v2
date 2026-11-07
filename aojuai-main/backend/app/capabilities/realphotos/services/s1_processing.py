@@ -849,6 +849,52 @@ class RealphotosS1Service:
         await self.db.flush()
         return {"inbox_cleanup": cleaned, "kept": kept, "status": "ok"}
 
+    async def cleanup_expired_outputs(self) -> dict[str, int | str | bool]:
+        """Delete LocalDisk processing outputs past OUTPUT_TTL. Idempotent.
+
+        Does not touch ledger rows, detection summaries, upload library assets,
+        or permanent task identity fields. Clears output_object_key after delete
+        so gateway and download refuse the object.
+        """
+        now = _utcnow()
+        storage = get_storage_adapter()
+        rows = (
+            await self.db.execute(
+                select(RealphotosImageTask).where(
+                    RealphotosImageTask.deleted_at.is_(None),
+                    RealphotosImageTask.output_expires_at.is_not(None),
+                    RealphotosImageTask.output_object_key.is_not(None),
+                )
+            )
+        ).scalars().all()
+        cleaned = 0
+        already_gone = 0
+        kept = 0
+        for task in rows:
+            expires = task.output_expires_at
+            if expires is None or _as_utc(expires) > now:
+                kept += 1
+                continue
+            key = str(task.output_object_key or "").strip()
+            if not key:
+                kept += 1
+                continue
+            removed = storage.delete(key)
+            if removed:
+                cleaned += 1
+            else:
+                already_gone += 1
+            task.output_object_key = None
+        await self.db.flush()
+        return {
+            "output_cleanup": cleaned,
+            "already_gone": already_gone,
+            "kept": kept,
+            "status": "ok",
+            "ledger_intact": True,
+            "library_intact": True,
+        }
+
     async def get_task(
         self, *, tenant_id: int, task_id: int, owner_account_id: int
     ) -> RealphotosImageTask:

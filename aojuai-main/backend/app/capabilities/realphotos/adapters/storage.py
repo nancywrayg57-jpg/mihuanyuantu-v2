@@ -36,6 +36,8 @@ class StorageAdapter(Protocol):
 
     def exists(self, object_key: str) -> bool: ...
 
+    def delete(self, object_key: str) -> bool: ...
+
     def ensure_seed_file(self) -> StoredObject: ...
 
 
@@ -78,6 +80,17 @@ class LocalDiskStorageAdapter:
             return self._resolve(object_key).is_file()
         except BusinessError:
             return False
+
+    def delete(self, object_key: str) -> bool:
+        """Remove object if present. Idempotent; missing key → False."""
+        try:
+            path = self._resolve(object_key)
+        except BusinessError:
+            return False
+        if not path.is_file():
+            return False
+        path.unlink()
+        return True
 
     def ensure_seed_file(self) -> StoredObject:
         """grill Q6：开发种子文件（非客户数据）供网关取证。"""

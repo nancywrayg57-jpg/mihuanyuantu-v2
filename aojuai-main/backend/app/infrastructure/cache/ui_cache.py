@@ -11,7 +11,11 @@ from __future__ import annotations
 
 from urllib.parse import quote
 
+from app.core.config import settings
+from app.core.logger import get_logger
 from app.infrastructure.cache.redis import get_redis_cache
+
+logger = get_logger(__name__)
 
 MENU_TREE_OPTIONS_TTL_SECONDS = 300
 MENU_ROUTES_TTL_SECONDS = 300
@@ -85,9 +89,27 @@ async def get_site_public_config_cache_version() -> int:
     return await cache.get_int(SITE_PUBLIC_CONFIG_VERSION_KEY, default=0)
 
 
+def menu_structure_cache_mode() -> str:
+    """Honest IA_C6 mode label for ops / e2e (not a claim of multi-worker consistency)."""
+    if settings.REDIS_ENABLED_EFFECTIVE:
+        return "shared_redis"
+    return "process_local"
+
+
 async def bump_menu_structure_cache_version() -> int:
     cache = get_redis_cache()
-    return await cache.incr(MENU_STRUCTURE_VERSION_KEY)
+    value = await cache.incr(MENU_STRUCTURE_VERSION_KEY)
+    mode = menu_structure_cache_mode()
+    if mode == "process_local":
+        logger.info(
+            "menu_structure_version_bumped",
+            menu_version=int(value),
+            mode=mode,
+            ops_note="multi_worker_requires_rolling_restart_or_shared_redis",
+        )
+    else:
+        logger.info("menu_structure_version_bumped", menu_version=int(value), mode=mode)
+    return int(value)
 
 
 async def bump_tenant_ui_config_cache_version(tenant_id: int) -> int:
