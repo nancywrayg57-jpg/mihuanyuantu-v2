@@ -8,6 +8,7 @@ import {
   patchMediaMeta,
 } from '../lib/chunkedUpload'
 import { validateUploadFiles } from '../lib/uploadLimits'
+import { zhError } from '../lib/errors'
 import { useAuthStore } from './auth'
 
 let seq = 1
@@ -58,37 +59,48 @@ export const useUploadQueueStore = defineStore('uploadQueue', () => {
     next.progress = 2
     try {
       const auth = useAuthStore()
-      const baseFields = {
-        ...next.fields,
-        uploader: auth.user.id,
-        uploader_name: auth.displayName,
-        likes_count: '0',
+      if (!auth.user?.id) throw new Error('登录已失效，请重新登录')
+
+      const title = String(next.title || next.fields?.title || '').trim()
+      const occurred_time = String(next.fields?.occurred_time || '').trim()
+      const related_persons = String(next.fields?.related_persons || '').trim()
+      if (!title || !occurred_time || !related_persons) {
+        throw new Error('请填写标题、发生时间与关系人')
       }
 
       let record
       const metaFields = {
-        ...baseFields,
+        title,
         category: next.category,
-        title: next.title,
-        occurred_time: next.fields.occurred_time,
-        related_persons: next.fields.related_persons,
-        description: next.fields.description || '',
-        external_link: next.fields.external_link || '',
-        duration_sec: next.durationSec ? String(next.durationSec) : next.fields.duration_sec || '',
+        occurred_time,
+        related_persons,
+        description: String(next.fields?.description || '').trim(),
+        external_link: String(next.fields?.external_link || '').trim(),
+        uploader: auth.user.id,
+        uploader_name: auth.displayName || auth.user.display_name || '',
+        likes_count: '0',
+        duration_sec: next.durationSec ? String(next.durationSec) : '',
       }
       if (next.category === 'link' || !next.files.length) {
         record = await uploadDirect([], metaFields)
       } else if (next.files.length === 1 && shouldUseChunked(next.files[0])) {
+        next.sessionId = ''
         record = await uploadFileChunked(next.files[0], metaFields, {
-          onProgress: ({ percent }) => {
+          onProgress: ({ percent, sessionId }) => {
+            if (sessionId) next.sessionId = sessionId
             next.progress = Math.max(2, Math.min(99, percent))
           },
         })
         if (record?.id && (next.coverFile || next.durationSec)) {
-          record = (await patchMediaMeta(record.id, {
-            coverFile: next.coverFile,
-            durationSec: next.durationSec,
-          })) || record
+          try {
+            record = (await patchMediaMeta(record.id, {
+              coverFile: next.coverFile,
+              durationSec: next.durationSec,
+            })) || record
+          } catch (patchErr) {
+            // Record already created — surface cover/duration patch failure without losing the archive.
+            console.warn('patchMediaMeta', patchErr)
+          }
         }
       } else {
         record = await uploadDirect(next.files, metaFields, { coverFile: next.coverFile })
@@ -98,7 +110,7 @@ export const useUploadQueueStore = defineStore('uploadQueue', () => {
       next.progress = 100
     } catch (e) {
       next.status = 'error'
-      next.error = e?.message || '上传失败'
+      next.error = zhError(e, '上传失败，请检查文件与填写内容后重试')
     } finally {
       active -= 1
       pump()
