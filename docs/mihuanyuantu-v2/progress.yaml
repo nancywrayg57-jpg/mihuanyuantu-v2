@@ -37,7 +37,7 @@ vibe_coding:
     visible_output: "生图页、提示词页、URL 导入页和管理员模型合同表"
     verify: "/tmp/supplier-live-e2e.log 含 SUPPLIER_LIVE_E2E_RECORDED；导入仍未接通；production_billing=false"
     status: supplier_live_recorded_not_production
-    next_user_action: "PARTIAL-ALIGN A–F 已落地；/tmp/partial-align-e2e.log PARTIAL_ALIGN_E2E_PASS；s5_exited=true。待 Owner 审阅 cursor/partial-align-9973（依赖 #27）。不得开 S7。"
+    next_user_action: "PRODUCT-GAP-A A2–A4/A6–A8 已落地；A5 延后；/tmp/product-gap-a-e2e.log PRODUCT_GAP_A_E2E_PASS；浏览器 /tmp/product-gap-a-browser.txt PRODUCT_GAP_A_BROWSER_PASS。待 Owner 审阅 cursor/product-gap-a-9973。不得开 S7；不得接通 URL 真导入。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -204,11 +204,28 @@ known_conflicts:
 
 next_action:
   owner: owner
-  action: "审阅 cursor/partial-align-9973 PR（PARTIAL-ALIGN A–F；依赖 blocking-fix #27 若尚未合入须先/一并处理）。仅经非本人作者账号 squash 合入 main。不得开 S7。"
-  work_order: "PARTIAL-ALIGN-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-部分对齐修复工单.md"
-  branch: cursor/partial-align-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/28"
-  depends_on_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/27"
+  action: "审阅 cursor/product-gap-a-9973 PR（PRODUCT-GAP-A A2–A4/A6–A8；A5 延后）。仅经非本人作者账号 squash 合入 main。不得开 S7；不得接通 URL 真导入；不得用演示数字填成本。"
+  work_order: "PRODUCT-GAP-A-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-产品行为缺口修复工单.md"
+  branch: cursor/product-gap-a-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/29"
+  baseline_main: "922ef06 (#28 PARTIAL-ALIGN squash already on origin/main)"
+  product_gap_a_status:
+    A1_url_import: skipped_admin
+    A2_seed_honesty: done_SEED_UNSUPPORTED
+    A3_ai_prompts: done
+    A4_device_types: done_phone_dslr_mirrorless_action
+    A5_ops_cost: deferred_null
+    A6_inbox_cleanup: done
+    A7_legacy_import_makernote: done_admin_allow_2026_11_07
+    A8_browser_smoke: done_true_DOM
+    e2e_log: "/tmp/product-gap-a-e2e.log"
+    e2e_mark: PRODUCT_GAP_A_E2E_PASS
+    browser_evidence: "/tmp/product-gap-a-browser.txt"
+    browser_mark: PRODUCT_GAP_A_BROWSER_PASS
+    browser_shots: "/tmp/product-gap-a-browser-shots/"
+    production_billing: false
+    url_import_connected: false
+    s7_started: false
   partial_align_status:
     A_pre_review_honesty: done
     B_ops_metrics: done
@@ -222,6 +239,8 @@ next_action:
     production_billing: false
     url_import_connected: false
     s7_started: false
+    pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/28"
+    merged_main: "922ef06"
   blocking_fix_status:
     A_copy_latch: done
     B_gps_write: done
@@ -268,18 +287,27 @@ next_action:
     - id: IA_C6_MENU_CACHE_STALE
       status: fixed_process_local_2026_11_07
       detail: "PARTIAL-ALIGN F：Redis 关闭时版本键改走进程内计数，同进程 bump 后 /menus/routes 可变新。多 worker 无共享 Redis 仍需 Redis 或重启；端测 ops_note 已写。IA_C6=fixed。"
-  - id: PARTIAL_ALIGN_BASE
+    - id: PARTIAL_ALIGN_BASE
       status: recorded
-      detail: "PARTIAL-ALIGN 开分支时 #27 未确认合入（gh sandbox Forbidden）；按工单从 cursor/blocking-fix-9973 tip d58a86a 开 cursor/partial-align-9973，PR 须声明依赖阻断级。"
-  - id: PARTIAL_ALIGN_COPY_PASS_VS_A
+      detail: "PARTIAL-ALIGN 开分支时 #27 未确认合入（gh sandbox Forbidden）；按工单从 cursor/blocking-fix-9973 tip d58a86a 开 cursor/partial-align-9973，PR 须声明依赖阻断级。现 #27/#28 已合入 origin/main=922ef06。"
+    - id: PARTIAL_ALIGN_COPY_PASS_VS_A
       status: kept_nd025_exception
       detail: "条目 A 要求客户默认 live/unconfigured；ND-025 复制仍 service 层 pre_review_mode=pass 免再次完整预审。客户 HTTP 不可选夹具 pass。"
-  - id: DEV_INSTRUCTIONS_S5_HEADER_STALE
+    - id: DEV_INSTRUCTIONS_S5_HEADER_STALE
       status: resolved_2026_11_07
       detail: "§10.7 exit_evidence 原标题写「未齐」但条目已全勾且 /tmp/s5-pg-e2e.log PASS。PARTIAL-ALIGN E 已改标题为已齐并收口 s5_exited。"
     - id: IA_C7_ORDER_SUPPORT_MESSAGES_GRANT
       status: decided_2026_11_06
       detail: "管理员裁决：订单客服要有顶栏铃铛/消息中心；列表只展示商家充值订单通知。侧栏不因消息膨胀。工作台入口另授；不授予业务原图/模板/系统管理。"
+    - id: PRODUCT_GAP_A_MAKERNOTE_OVERRIDE
+      status: admin_override_2026_11_07
+      detail: "历史实现曾写第一版不接收 MakerNote；本工单以管理员 2026-11-07「全部允许写入」覆盖。若与 PRD 其他条款冲突须停问；本轮按工单执行并端测回读。"
+    - id: PRODUCT_GAP_A_MATERIALS_PATH
+      status: recorded
+      detail: "工单/AGENTS 写同级 ../生产物料/；本机仅有仓库内 gitignored 生产物料/，同级路径缺失。A8 因 hostname -I 含 192.168.19.128 且服务已在本机 3000/38000，改同机真浏览器 DOM，未再 SSH。"
+    - id: PRODUCT_GAP_A_PR_AUTHOR_ACCOUNT
+      status: recorded
+      detail: "提交作者期望 Collaborator xtzhou247；本机会话 gh 活跃账号为 Owner nancywrayg57-jpg（同 #28 模式）。合入仍须非自评自合：Owner 不得合并本人创建的 PR。"
   notes:
     s1_authorized: user_2026-11-05
     s2_authorized: user_2026-11-06

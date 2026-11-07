@@ -94,6 +94,8 @@ class PresetBody(BaseModel):
     aperture: str | None = None
     focal_length: str | None = Field(default=None, alias="focalLength")
     gps_config: dict | None = Field(default=None, alias="gpsConfig")
+    ai_positive_prompt: str | None = Field(default=None, alias="aiPositivePrompt")
+    ai_negative_prompt: str | None = Field(default=None, alias="aiNegativePrompt")
 
 
 class TicketCreateBody(BaseModel):
@@ -105,6 +107,13 @@ class TicketCreateBody(BaseModel):
 
 class PresetEnabledBody(BaseModel):
     enabled: bool
+
+
+class ActivateImportBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    template_ref: str = Field(alias="templateRef")
+    enabled: bool = True
 
 
 async def _roles(db: DBSession, user_id: int, tenant_id: int) -> set[str]:
@@ -400,7 +409,30 @@ async def list_preset_imports(
         raise ForbiddenError(message="只有平台管理员可以浏览导入记录")
     from app.capabilities.realphotos.services.legacy_preset_imports import browse_legacy_imports
 
-    return SuccessResponse(data=browse_legacy_imports(page=page, page_size=page_size))
+    return SuccessResponse(data=await browse_legacy_imports(db, page=page, page_size=page_size))
+
+
+@router.post("/device-preset-imports/activate")
+async def activate_preset_import(
+    body: ActivateImportBody,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
+) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    if ROLE_ADMIN not in roles and "admin" not in roles:
+        raise ForbiddenError(message="只有平台管理员可以激活旧版导入")
+    from app.capabilities.realphotos.services.legacy_preset_imports import activate_legacy_template
+
+    payload = await activate_legacy_template(
+        db,
+        actor_role_codes=roles,
+        template_ref=body.template_ref,
+        enabled=bool(body.enabled),
+    )
+    await db.commit()
+    return SuccessResponse(data=payload)
 
 
 @router.get("/device-presets")
@@ -440,6 +472,8 @@ async def save_preset(
         aperture=body.aperture,
         focal_length=body.focal_length,
         gps_config=body.gps_config,
+        ai_positive_prompt=body.ai_positive_prompt,
+        ai_negative_prompt=body.ai_negative_prompt,
     )
     await db.commit()
     return SuccessResponse(data=payload)

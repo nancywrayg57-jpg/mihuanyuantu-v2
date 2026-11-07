@@ -154,6 +154,7 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
         "ShutterSpeedValue": f"{tv:.6f}",
         "ApertureValue": f"{av:.6f}",
     }
+    maker_note = str(preset.get("makerNote") or "").strip()
     with tempfile.TemporaryDirectory(prefix="rp-s2-") as folder:
         path = Path(folder) / "result.jpg"
         path.write_bytes(jpeg)
@@ -170,7 +171,11 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
             f"-ShutterSpeedValue={tv:.6f}",
             f"-ApertureValue={av:.6f}",
             "-GPS:all=",
+            "-MakerNote=",
         ]
+        if maker_note:
+            # PRODUCT-GAP A7：管理员 2026-11-07 授权写入；必须可回读，失败不静默。
+            command.append(f"-MakerNote={maker_note}")
         if gps_plan.get("action") == "write":
             lat = float(gps_plan["latitude"])
             lon = float(gps_plan["longitude"])
@@ -223,24 +228,41 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
         final = path.read_bytes()
     fields = [_verified(tag, requested[tag], row.get(tag)) for tag in requested]
     fields.append(_gps_field(gps_plan, row))
-    fields.append(
-        {
-            "tag": "MakerNote",
-            "requested": "",
-            "written": "",
-            "read_back": str(row.get("MakerNote") or ""),
-            "verification_status": "disabled",
-            "reason": "不伪造品牌 MakerNote",
-        }
-    )
+    maker_read = str(row.get("MakerNote") or "")
+    if maker_note:
+        maker_ok = maker_note in maker_read or maker_read.strip() == maker_note
+        fields.append(
+            {
+                "tag": "MakerNote",
+                "requested": maker_note,
+                "written": maker_note,
+                "read_back": maker_read,
+                "verification_status": "verified" if maker_ok else "failed",
+                "reason": "" if maker_ok else "MakerNote 回读与请求不一致",
+            }
+        )
+    else:
+        fields.append(
+            {
+                "tag": "MakerNote",
+                "requested": "",
+                "written": "",
+                "read_back": maker_read,
+                "verification_status": "skipped" if not maker_read else "failed",
+                "reason": "" if not maker_read else "未授权预设却出现 MakerNote",
+            }
+        )
     for field in fields:
         if field["tag"] == "GPSLatitude" and field.get("verification_status") == "failed":
             raise BusinessError(message="GPS 回读与请求不一致", code="EXIF_WRITE_FAILED")
         if field["tag"] == "GPSLatitude" and gps_plan.get("action") == "skip" and field["read_back"]:
             raise BusinessError(message="gpsMode 不应写入 GPS", code="EXIF_WRITE_FAILED")
-        if field["tag"] == "MakerNote" and field["read_back"]:
-            raise BusinessError(message="结果含未批准的 MakerNote", code="EXIF_WRITE_FAILED")
-        if field["verification_status"] == "failed" and field["tag"] != "GPSLatitude":
+        if field["tag"] == "MakerNote" and field.get("verification_status") == "failed":
+            raise BusinessError(
+                message=str(field.get("reason") or "MakerNote 写入或回读失败"),
+                code="MAKERNOTE_WRITE_FAILED",
+            )
+        if field["verification_status"] == "failed" and field["tag"] not in {"GPSLatitude", "MakerNote"}:
             raise BusinessError(message=f"{field['tag']} 回读与预设不一致", code="EXIF_WRITE_FAILED")
     if not final.startswith(b"\xff\xd8\xff"):
         raise BusinessError(message="最终文件不是 JPEG", code="OUTPUT_CONSTRAINT_UNSATISFIED")

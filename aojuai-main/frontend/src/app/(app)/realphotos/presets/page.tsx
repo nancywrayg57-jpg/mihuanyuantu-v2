@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 
 import { ApiError, apiFetch } from '@/lib/api'
 
+const DEVICE_TYPES = ['phone', 'dslr', 'mirrorless', 'action'] as const
+
 type Preset = {
   code: string
   deviceType: string
@@ -15,6 +17,9 @@ type Preset = {
   shutter?: string
   aperture?: string
   focalLength?: string
+  aiPositivePrompt?: string
+  aiNegativePrompt?: string
+  makerNote?: string
 }
 
 type VersionRow = {
@@ -51,6 +56,9 @@ export default function RealphotosPresetsPage() {
   const [lng, setLng] = useState('')
   const [altitude, setAltitude] = useState('')
   const [sceneRule, setSceneRule] = useState('')
+  const [aiPositive, setAiPositive] = useState('')
+  const [aiNegative, setAiNegative] = useState('')
+  const [makerNote, setMakerNote] = useState('')
   const [message, setMessage] = useState('')
   const [importRows, setImportRows] = useState<ImportRow[]>([])
   const [importTotal, setImportTotal] = useState(0)
@@ -71,8 +79,8 @@ export default function RealphotosPresetsPage() {
     setImportTotal(Number(imported.total || 0))
     setImportNote(
       imported.importedBrands?.length
-        ? `已导入品牌：${imported.importedBrands.join(', ')}`
-        : imported.note || '未把未授权品牌 MakerNote 写成已导入成功',
+        ? `已激活导入品牌：${imported.importedBrands.join(', ')}`
+        : imported.note || '尚无激活导入品牌（不伪造 MakerNote 已导入）',
     )
   }
 
@@ -102,6 +110,9 @@ export default function RealphotosPresetsPage() {
     setShutter(item.shutter || '')
     setAperture(item.aperture || '')
     setFocalLength(item.focalLength || '')
+    setAiPositive(item.aiPositivePrompt || '')
+    setAiNegative(item.aiNegativePrompt || '')
+    setMakerNote(item.makerNote || '')
   }
 
   async function savePreset() {
@@ -126,6 +137,9 @@ export default function RealphotosPresetsPage() {
           aperture,
           focalLength,
           gpsConfig,
+          aiPositivePrompt: aiPositive,
+          aiNegativePrompt: aiNegative,
+          makerNote,
         }),
       })
       setMessage(
@@ -136,6 +150,19 @@ export default function RealphotosPresetsPage() {
       await load()
     } catch (error: unknown) {
       setMessage(error instanceof ApiError ? error.message : '保存失败')
+    }
+  }
+
+  async function activateImport(templateRef: string) {
+    try {
+      await apiFetch('/api/v1/realphotos/device-preset-imports/activate', {
+        method: 'POST',
+        body: JSON.stringify({ templateRef, enabled: true }),
+      })
+      setMessage(`已激活旧版导入 ${templateRef}`)
+      await load()
+    } catch (error: unknown) {
+      setMessage(error instanceof ApiError ? error.message : '激活失败')
     }
   }
 
@@ -165,14 +192,15 @@ export default function RealphotosPresetsPage() {
               <th className="border px-2 py-1 text-left">来源 ID</th>
               <th className="border px-2 py-1 text-left">设备</th>
               <th className="border px-2 py-1 text-left">可见性</th>
-              <th className="border px-2 py-1 text-left">激活</th>
+              <th className="border px-2 py-1 text-left">激活状态</th>
               <th className="border px-2 py-1 text-left">复核</th>
+              <th className="border px-2 py-1 text-left">操作</th>
             </tr>
           </thead>
           <tbody>
             {importRows.length === 0 ? (
               <tr>
-                <td className="border px-2 py-1" colSpan={5}>
+                <td className="border px-2 py-1" colSpan={6}>
                   尚无导入记录（与数据事实一致，不伪造已导入品牌）
                 </td>
               </tr>
@@ -184,6 +212,20 @@ export default function RealphotosPresetsPage() {
                   <td className="border px-2 py-1">{row.visibility || ''}</td>
                   <td className="border px-2 py-1">{row.activationStatus || ''}</td>
                   <td className="border px-2 py-1">{row.reviewBucket || ''}</td>
+                  <td className="border px-2 py-1">
+                    {row.runtimeActivated ? (
+                      '已启用'
+                    ) : (
+                      <button
+                        className="border px-2 py-1"
+                        type="button"
+                        disabled={!row.templateRef}
+                        onClick={() => row.templateRef && void activateImport(row.templateRef)}
+                      >
+                        激活
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))
             )}
@@ -232,8 +274,11 @@ export default function RealphotosPresetsPage() {
           <h3 className="text-xs font-medium">基本信息</h3>
           <input className="border px-2 py-1 text-sm" placeholder="编号" value={code} onChange={(event) => setCode(event.target.value)} />
           <select className="ml-2 border px-2 py-1 text-sm" value={deviceType} onChange={(event) => setDeviceType(event.target.value)}>
-            <option value="phone">phone</option>
-            <option value="camera">camera</option>
+            {DEVICE_TYPES.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
           </select>
           <input className="ml-2 border px-2 py-1 text-sm" placeholder="品牌" value={brand} onChange={(event) => setBrand(event.target.value)} />
           <input className="ml-2 border px-2 py-1 text-sm" placeholder="型号" value={model} onChange={(event) => setModel(event.target.value)} />
@@ -254,7 +299,30 @@ export default function RealphotosPresetsPage() {
           />
         </div>
         <div className="space-y-2">
+          <h3 className="text-xs font-medium">AI 提示词（可空）</h3>
+          <textarea
+            className="w-full max-w-2xl border px-2 py-1 text-sm"
+            rows={3}
+            placeholder="正向提示词"
+            value={aiPositive}
+            onChange={(event) => setAiPositive(event.target.value)}
+          />
+          <textarea
+            className="w-full max-w-2xl border px-2 py-1 text-sm"
+            rows={2}
+            placeholder="负向提示词"
+            value={aiNegative}
+            onChange={(event) => setAiNegative(event.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
           <h3 className="text-xs font-medium">EXIF / GPS</h3>
+          <input
+            className="mb-2 w-full max-w-md border px-2 py-1 text-sm"
+            placeholder="MakerNote（可空；写入须可回读）"
+            value={makerNote}
+            onChange={(event) => setMakerNote(event.target.value)}
+          />
           <select className="border px-2 py-1 text-sm" value={gpsMode} onChange={(event) => setGpsMode(event.target.value)}>
             <option value="none">none</option>
             <option value="fixed">fixed</option>

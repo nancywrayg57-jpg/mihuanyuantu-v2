@@ -121,6 +121,14 @@ class RealphotosDevicePreset(TenantBaseModel):
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     version_no: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     source: Mapped[str] = mapped_column(String(16), nullable=False, default="admin")
+    # PRODUCT-GAP A3 / A7 — prompts + MakerNote (admin 2026-11-07 authorized write).
+    ai_positive_prompt: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    ai_negative_prompt: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    maker_note: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    legacy_source_id: Mapped[str] = mapped_column(String(64), nullable=False, default="")
+    legacy_template_ref: Mapped[str] = mapped_column(String(120), nullable=False, default="")
+    legacy_visibility: Mapped[str] = mapped_column(String(32), nullable=False, default="")
+    legacy_review_bucket: Mapped[str] = mapped_column(String(64), nullable=False, default="")
 
 
 class RealphotosPresetVersion(TenantBaseModel):

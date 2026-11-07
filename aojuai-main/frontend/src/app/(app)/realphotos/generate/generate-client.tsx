@@ -256,9 +256,12 @@ export function RealphotosGenerateClient() {
               className="ml-1 border px-2 py-1 w-40"
               value={seed}
               onChange={(e) => setSeed(e.target.value)}
-              placeholder="合同不支持时会拒绝"
+              placeholder="留空则不传"
             />
           </label>
+          <p className="w-full text-xs text-muted-foreground">
+            当前渠道不支持种子：填写后会返回明确拒绝，不会假装已发送。
+          </p>
         </div>
         {lastSizes ? <p className="text-xs text-muted-foreground">{lastSizes}</p> : null}
         <div className="space-y-2 text-sm">

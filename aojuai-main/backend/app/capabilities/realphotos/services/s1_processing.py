@@ -830,6 +830,25 @@ class RealphotosS1Service:
         ).scalars().all()
         return [row for row in rows if _as_utc(row.expires_at) > now]
 
+    async def cleanup_expired_inbox(self) -> dict[str, int | str]:
+        """Soft-delete expired inbox rows. Idempotent; does not touch ledger/tasks."""
+        now = _utcnow()
+        rows = (
+            await self.db.execute(
+                select(RealphotosInboxMessage).where(RealphotosInboxMessage.deleted_at.is_(None))
+            )
+        ).scalars().all()
+        cleaned = 0
+        kept = 0
+        for row in rows:
+            if _as_utc(row.expires_at) <= now:
+                row.deleted_at = now
+                cleaned += 1
+            else:
+                kept += 1
+        await self.db.flush()
+        return {"inbox_cleanup": cleaned, "kept": kept, "status": "ok"}
+
     async def get_task(
         self, *, tenant_id: int, task_id: int, owner_account_id: int
     ) -> RealphotosImageTask:
