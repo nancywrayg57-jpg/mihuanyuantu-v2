@@ -86,9 +86,13 @@ async function onSubmit() {
             v-model="password"
             type="password"
             autocomplete="current-password"
+            lang="en"
+            inputmode="latin"
+            spellcheck="false"
             class="w-full min-h-tap px-4 border border-clay bg-rice outline-none focus:border-cinnabar"
-            placeholder="请输入密码"
+            placeholder="半角密码，成员默认 hzs1933"
           />
+          <p class="mt-2 text-mute text-sm">密码请使用半角英文与数字；中文输入法下注意切换到英文。</p>
         </div>
 
         <p v-if="localError" class="text-cinnabar">{{ localError }}</p>

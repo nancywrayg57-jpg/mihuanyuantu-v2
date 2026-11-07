@@ -68,4 +68,7 @@ for i in $(seq 1 36); do
   fi
 done
 
+echo "==> Resetting member passwords (idempotent)"
+ARCHIVE_BASE="http://${HOST}" python3 "$ROOT/scripts/reset_member_passwords.py"
+
 echo "Deploy complete: https://huangzhisong.com  /  http://${HOST}"
