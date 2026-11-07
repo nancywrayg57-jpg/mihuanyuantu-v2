@@ -45,8 +45,45 @@ def gps_writability(*, gps_mode: str, gps_config: dict[str, Any] | None = None) 
     }
 
 
+def assert_preset_gps_ready(preset: dict[str, Any]) -> None:
+    """Reject submit only when EXIF GPS would hard-fail (unknown mode / bad range).
+
+    Skip paths match legacy exifWriter: none、fixed 无坐标、random 缺场景时不写 GPS，
+    任务仍可成功；不把 gpsMode 静默改成 none。
+    """
+    from app.core.exceptions import BusinessError
+
+    plan = resolve_gps(preset=preset, seed=0)
+    if plan.get("action") == "fail":
+        raise BusinessError(
+            message=str(plan.get("reason") or "预设 GPS 配置不可用，无法提交处理"),
+            code="PRESET_GPS_UNUSABLE",
+        )
+
+
+def _scene_rule_from_preset(preset: dict[str, Any], config: dict[str, Any]) -> str:
+    """Legacy used scene_type for random_by_scene; accept that plus gpsConfig keys."""
+    legacy = preset.get("legacyParameters") if isinstance(preset.get("legacyParameters"), dict) else {}
+    # Prefer English scene_type keys (urban/landscape/…); ignore Chinese scene_mode labels.
+    raw = (
+        config.get("sceneRule")
+        or config.get("scene")
+        or config.get("sceneType")
+        or preset.get("scene_type")
+        or preset.get("sceneType")
+        or (legacy or {}).get("scene_type")
+        or ""
+    )
+    return str(raw).strip().lower()
+
+
 def resolve_gps(*, preset: dict[str, Any], seed: int) -> dict[str, Any]:
     """Return write plan for EXIF GPS.
+
+    Legacy-aligned behavior (exifWriter.ts):
+      none → skip
+      fixed + coords → write; fixed without coords → skip (do not invent, do not fail)
+      random_by_scene → write from scene box (sceneRule / scene_type); missing → skip
 
     Keys:
       action: write | skip | fail
@@ -64,10 +101,11 @@ def resolve_gps(*, preset: dict[str, Any], seed: int) -> dict[str, Any]:
             lon = float(config.get("longitude"))
             alt = float(config.get("altitude") if config.get("altitude") not in (None, "") else 0.0)
         except (TypeError, ValueError):
+            # Old runtime: fixed 无坐标则不生成 GPS，任务仍成功；模式保持 fixed。
             return {
-                "action": "fail",
+                "action": "skip",
                 "mode": mode,
-                "reason": "fixed 模式缺少可用的纬度/经度",
+                "reason": "fixed 模式缺少可用的纬度/经度，跳过 GPS 写入（不伪造坐标）",
             }
         if not (-90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0):
             return {"action": "fail", "mode": mode, "reason": "fixed 坐标超出合法范围"}
@@ -80,9 +118,13 @@ def resolve_gps(*, preset: dict[str, Any], seed: int) -> dict[str, Any]:
             "reason": "",
         }
     if mode == "random_by_scene":
-        rule = str(config.get("sceneRule") or config.get("scene") or "").strip().lower()
+        rule = _scene_rule_from_preset(preset, config)
         if not rule:
-            return {"action": "fail", "mode": mode, "reason": "random_by_scene 缺少 sceneRule"}
+            return {
+                "action": "skip",
+                "mode": mode,
+                "reason": "random_by_scene 缺少 sceneRule/scene_type，跳过 GPS 写入（不伪造坐标）",
+            }
         rng = random.Random(int(seed) ^ (hash(rule) & 0xFFFFFFFF))
         if rule in _SKIP_SCENES:
             if rng.random() < 0.5:

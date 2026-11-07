@@ -100,6 +100,40 @@ def test_gps_random_by_scene_writes_or_skips_with_reason() -> None:
     assert gps_field["verification_status"] in {"verified", "skipped"}
 
 
+def test_generation_png_with_legacy_random_gps_processes() -> None:
+    """Reproduce merchant generation→process: PNG + random_by_scene without sceneRule."""
+    rng = np.random.default_rng(9)
+    pixels = rng.integers(0, 255, size=(512, 768, 3), dtype=np.uint8)
+    png_buf = io.BytesIO()
+    Image.fromarray(pixels, mode="RGB").save(png_buf, format="PNG")
+    source = png_buf.getvalue()
+    assert source.startswith(b"\x89PNG")
+    preset = dict(S1_ENABLED_PRESETS[0])
+    preset["gpsMode"] = "random_by_scene"
+    preset["gpsConfig"] = {}
+    out = run_five_layer(source=source, preset=preset, seed=101)
+    assert out.jpeg.startswith(b"\xff\xd8\xff")
+    assert out.width == 768 and out.height == 512
+    gps_field = next(f for f in out.fields if f["tag"] == "GPSLatitude")
+    assert gps_field["verification_status"] == "skipped"
+
+
+def test_aperture_f14_does_not_fail_apex_write() -> None:
+    """f/1.4 → ApertureValue APEX < 1; exiftool may refuse the tag — FNumber must still pass."""
+    source = _jpeg(width=640, height=480)
+    preset = dict(S1_ENABLED_PRESETS[0])
+    preset["aperture"] = "f/1.4"
+    preset["gpsMode"] = "none"
+    preset["makerNote"] = "Huawei"
+    out = run_five_layer(source=source, preset=preset, seed=106)
+    assert out.jpeg.startswith(b"\xff\xd8\xff")
+    fn = next(f for f in out.fields if f["tag"] == "FNumber")
+    av = next(f for f in out.fields if f["tag"] == "ApertureValue")
+    assert fn["verification_status"] == "verified"
+    assert av["verification_status"] == "verified"
+    assert "1.4" in str(fn["read_back"]) or float(fn["read_back"]) == 1.4
+
+
 @pytest.mark.asyncio
 async def test_copy_no_reserve_and_latch(db):
     summary = await bootstrap_s0_accounts(db)
