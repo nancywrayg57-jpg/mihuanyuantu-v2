@@ -6,6 +6,7 @@ import { useUploadQueueStore } from '../stores/uploadQueue'
 import { FILE_ACCEPT, UPLOAD_LIMIT_LABELS, validateUploadFiles } from '../lib/uploadLimits'
 import { shouldUseChunked } from '../lib/chunkedUpload'
 import { formatDuration, prepareUploadFiles } from '../lib/mediaPrepare'
+import { zhError } from '../lib/errors'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -92,7 +93,7 @@ async function onFileChange(e) {
     const msg = validateUploadFiles(files.value, category.value)
     error.value = msg || ''
   } catch (err) {
-    error.value = err?.message || '文件预处理失败'
+    error.value = zhError(err, '文件预处理失败')
     files.value = raw
   } finally {
     preparing.value = false

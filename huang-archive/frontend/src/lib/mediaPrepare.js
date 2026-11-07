@@ -43,7 +43,7 @@ export async function compressImageFile(file, { maxEdge = IMAGE_MAX_EDGE, qualit
   if (type.includes('heic') || type.includes('heif') || /\.(heic|heif)$/.test(name)) {
     return { file, compressed: false, skipped: 'heic' }
   }
-  if (!type.startsWith('image/') && !/\.(jpe?g|png|webp|bmp)$/.test(name)) {
+  if (!type.startsWith('image/') && !/\.(jpe?g|png|webp|bmp|tiff?)$/.test(name)) {
     return { file, compressed: false, skipped: 'not-image' }
   }
 

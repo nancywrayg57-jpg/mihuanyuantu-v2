@@ -21,7 +21,7 @@ routerAdd("POST", "/api/hz/upload/init", (c) => {
     const t = mime.toLowerCase()
     let kind = "other"
     if (category === "video" || t.startsWith("video/") || /\.(mp4|mov|webm|m4v|avi|mkv|3gp|mpeg|mpg)$/.test(n)) kind = "video"
-    else if (category === "image" || t.startsWith("image/") || /\.(jpe?g|png|gif|webp|heic|heif|avif)$/.test(n)) kind = "image"
+    else if (category === "image" || t.startsWith("image/") || /\.(jpe?g|png|gif|webp|heic|heif|avif|bmp|tiff?)$/.test(n)) kind = "image"
 
     const limits = { image: 30 * 1024 * 1024, video: 600 * 1024 * 1024, other: 100 * 1024 * 1024 }
     const max = limits[kind]
@@ -146,6 +146,7 @@ routerAdd("POST", "/api/hz/upload/complete/:sessionId", (c) => {
     if (body.occurred_time) meta.occurred_time = String(body.occurred_time)
     if (body.related_persons) meta.related_persons = String(body.related_persons)
     if (body.description != null) meta.description = String(body.description)
+    if (body.external_link != null) meta.external_link = String(body.external_link)
     if (!meta.title || !meta.occurred_time || !meta.related_persons) {
       return c.json(400, { message: "请填写标题、发生时间与关系人" })
     }
@@ -185,26 +186,51 @@ routerAdd("POST", "/api/hz/upload/complete/:sessionId", (c) => {
     }
     const outFile = dir + "/create_result.json"
     const mime = meta.mime || "application/octet-stream"
-    const sh =
-      'curl -fsS -X POST "http://127.0.0.1:8090/api/collections/archives/records" ' +
-      '-H "Authorization: ' + authHeader.replace(/"/g, "") + '" ' +
-      '-F "title=' + meta.title.replace(/"/g, "") + '" ' +
-      '-F "category=' + meta.category + '" ' +
-      '-F "occurred_time=' + meta.occurred_time + '" ' +
-      '-F "related_persons=' + meta.related_persons.replace(/"/g, "") + '" ' +
-      '-F "description=' + String(meta.description || "").replace(/"/g, "") + '" ' +
-      '-F "uploader=' + meta.userId + '" ' +
-      '-F "uploader_name=' + String(meta.userName || "").replace(/"/g, "") + '" ' +
-      '-F "likes_count=0" ' +
-      '-F "playback_status=' + playbackStatus + '" ' +
-      '-F "playback_note=' + playbackNote.replace(/"/g, "") + '" ' +
-      (meta.external_link ? '-F "external_link=' + meta.external_link + '" ' : "") +
-      '-F "media_files=@' + named + ';type=' + mime + ';filename=' + safeName + '" ' +
-      '> "' + outFile + '"'
+    const linkVal = String(meta.external_link || "")
+
+    // argv + --form-string: Chinese / quotes / $ never pass through a shell.
     try {
-      $os.cmd("sh", "-c", sh).run()
+      if (linkVal) {
+        $os.cmd(
+          "curl", "-sS", "-X", "POST",
+          "http://127.0.0.1:8090/api/collections/archives/records",
+          "-H", "Authorization: " + String(authHeader || ""),
+          "--form-string", "title=" + String(meta.title || ""),
+          "--form-string", "category=" + String(meta.category || "other"),
+          "--form-string", "occurred_time=" + String(meta.occurred_time || ""),
+          "--form-string", "related_persons=" + String(meta.related_persons || ""),
+          "--form-string", "description=" + String(meta.description || ""),
+          "--form-string", "external_link=" + linkVal,
+          "--form-string", "uploader=" + String(meta.userId || ""),
+          "--form-string", "uploader_name=" + String(meta.userName || ""),
+          "--form-string", "likes_count=0",
+          "--form-string", "playback_status=" + playbackStatus,
+          "--form-string", "playback_note=" + playbackNote,
+          "-F", "media_files=@" + named + ";type=" + mime + ";filename=" + safeName,
+          "-o", outFile,
+        ).run()
+      } else {
+        $os.cmd(
+          "curl", "-sS", "-X", "POST",
+          "http://127.0.0.1:8090/api/collections/archives/records",
+          "-H", "Authorization: " + String(authHeader || ""),
+          "--form-string", "title=" + String(meta.title || ""),
+          "--form-string", "category=" + String(meta.category || "other"),
+          "--form-string", "occurred_time=" + String(meta.occurred_time || ""),
+          "--form-string", "related_persons=" + String(meta.related_persons || ""),
+          "--form-string", "description=" + String(meta.description || ""),
+          "--form-string", "uploader=" + String(meta.userId || ""),
+          "--form-string", "uploader_name=" + String(meta.userName || ""),
+          "--form-string", "likes_count=0",
+          "--form-string", "playback_status=" + playbackStatus,
+          "--form-string", "playback_note=" + playbackNote,
+          "-F", "media_files=@" + named + ";type=" + mime + ";filename=" + safeName,
+          "-o", outFile,
+        ).run()
+      }
     } catch (e) {
-      return c.json(500, { message: "创建档案失败: " + ((e && e.message) || "") })
+      // curl may exit non-zero on some setups; still parse body below
+      console.log("upload complete curl:", e)
     }
 
     let created
@@ -214,7 +240,12 @@ routerAdd("POST", "/api/hz/upload/complete/:sessionId", (c) => {
       return c.json(500, { message: "创建档案响应无效" })
     }
     if (!created || !created.id) {
-      return c.json(500, { message: (created && created.message) || "创建档案失败" })
+      let msg = (created && created.message) || "创建档案失败"
+      if (/failed to create/i.test(String(msg))) msg = "创建失败，请检查填写内容与文件格式"
+      if (/something went wrong/i.test(String(msg))) msg = "创建失败，请稍后重试"
+      if (/mime type must be/i.test(String(msg))) msg = "文件格式不支持，请换 JPEG/PNG/PDF 等常见格式"
+      const data = (created && created.data) || {}
+      return c.json(400, { message: msg, data: data })
     }
 
     try {

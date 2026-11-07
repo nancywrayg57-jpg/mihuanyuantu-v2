@@ -1,8 +1,38 @@
 import pb from './pb'
+import { zhError } from './errors'
 
 const CHUNK_THRESHOLD = 1 * 1024 * 1024 // use chunked path above 1MB
 const DEFAULT_CHUNK = 2 * 1024 * 1024
 const RESUME_KEY = 'hz_upload_sessions_v1'
+
+const EXT_MIME = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  bmp: 'image/bmp',
+  tif: 'image/tiff',
+  tiff: 'image/tiff',
+  heic: 'image/heic',
+  heif: 'image/heif',
+  avif: 'image/avif',
+  mp4: 'video/mp4',
+  m4v: 'video/x-m4v',
+  mov: 'video/quicktime',
+  webm: 'video/webm',
+  avi: 'video/x-msvideo',
+  mkv: 'video/x-matroska',
+  '3gp': 'video/3gpp',
+  mpeg: 'video/mpeg',
+  mpg: 'video/mpeg',
+  pdf: 'application/pdf',
+  mp3: 'audio/mpeg',
+  m4a: 'audio/mp4',
+  aac: 'audio/aac',
+  wav: 'audio/wav',
+  ogg: 'audio/ogg',
+}
 
 function loadResumeMap() {
   try {
@@ -24,11 +54,47 @@ export function shouldUseChunked(file) {
   return file && file.size > CHUNK_THRESHOLD
 }
 
+function guessMime(file) {
+  const typed = String(file?.type || '').trim().toLowerCase()
+  if (typed && typed !== 'application/octet-stream') {
+    if (typed === 'image/jpg' || typed === 'image/pjpeg') return 'image/jpeg'
+    if (typed === 'image/x-png') return 'image/png'
+    if (typed === 'image/x-ms-bmp') return 'image/bmp'
+    if (typed === 'audio/mp3') return 'audio/mpeg'
+    return typed
+  }
+  const name = String(file?.name || '')
+  const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : ''
+  return EXT_MIME[ext] || 'application/octet-stream'
+}
+
+/** Ensure File has a PocketBase-accepted MIME (extension fallback). */
+export function normalizeUploadFile(file) {
+  if (!file) return file
+  const mime = guessMime(file)
+  if (file.type === mime && file.name) return file
+  try {
+    return new File([file], file.name || `upload-${Date.now()}`, {
+      type: mime,
+      lastModified: file.lastModified || Date.now(),
+    })
+  } catch {
+    return file
+  }
+}
+
 async function authHeaders() {
   const token = pb.authStore.token
   return {
     Authorization: token,
   }
+}
+
+function throwApiError(data, fallback) {
+  const err = new Error(data?.message || fallback)
+  err.data = data
+  err.response = { data }
+  throw err
 }
 
 export async function initSession(meta) {
@@ -52,7 +118,7 @@ export async function initSession(meta) {
     }),
   })
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.message || '初始化分片上传失败')
+  if (!res.ok) throwApiError(data, '初始化分片上传失败')
   return data
 }
 
@@ -61,7 +127,7 @@ export async function getStatus(sessionId) {
     headers: await authHeaders(),
   })
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.message || '查询上传状态失败')
+  if (!res.ok) throwApiError(data, '查询上传状态失败')
   return data
 }
 
@@ -78,7 +144,7 @@ export async function uploadChunk(sessionId, index, blob, onRetry) {
         body: form,
       })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.message || `分片 ${index} 上传失败`)
+      if (!res.ok) throwApiError(data, `分片 ${index} 上传失败`)
       return data
     } catch (e) {
       lastErr = e
@@ -99,7 +165,7 @@ export async function completeSession(sessionId, fields = {}) {
     body: JSON.stringify(fields),
   })
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.message || '合并上传失败')
+  if (!res.ok) throwApiError(data, '合并上传失败')
   return data
 }
 
@@ -117,7 +183,8 @@ export async function abortSession(sessionId) {
  * @returns {Promise<object>} archive record
  */
 export async function uploadFileChunked(file, fields, { onProgress, signal } = {}) {
-  const key = fileKey(file)
+  const normalized = normalizeUploadFile(file)
+  const key = fileKey(normalized)
   const resumeMap = loadResumeMap()
   let sessionId = resumeMap[key]?.sessionId || ''
   let chunkSize = resumeMap[key]?.chunkSize || DEFAULT_CHUNK
@@ -137,9 +204,9 @@ export async function uploadFileChunked(file, fields, { onProgress, signal } = {
 
   if (!sessionId) {
     const init = await initSession({
-      filename: file.name,
-      size: file.size,
-      mime: file.type || 'application/octet-stream',
+      filename: normalized.name,
+      size: normalized.size,
+      mime: guessMime(normalized),
       category: fields.category,
       chunkSize: DEFAULT_CHUNK,
       ...fields,
@@ -149,6 +216,8 @@ export async function uploadFileChunked(file, fields, { onProgress, signal } = {
     totalChunks = init.totalChunks
     received = new Set()
   }
+
+  onProgress?.({ received: received.size, totalChunks, percent: 1, sessionId })
 
   resumeMap[key] = {
     sessionId,
@@ -162,12 +231,17 @@ export async function uploadFileChunked(file, fields, { onProgress, signal } = {
   for (let i = 0; i < totalChunks; i++) {
     if (signal?.aborted) throw new Error('已取消上传')
     if (received.has(i)) {
-      onProgress?.({ received: received.size, totalChunks, percent: Math.round((received.size / totalChunks) * 100) })
+      onProgress?.({
+        received: received.size,
+        totalChunks,
+        percent: Math.round((received.size / totalChunks) * 100),
+        sessionId,
+      })
       continue
     }
     const start = i * chunkSize
-    const end = Math.min(file.size, start + chunkSize)
-    const blob = file.slice(start, end)
+    const end = Math.min(normalized.size, start + chunkSize)
+    const blob = normalized.slice(start, end)
     await uploadChunk(sessionId, i, blob)
     received.add(i)
     resumeMap[key] = {
@@ -182,6 +256,7 @@ export async function uploadFileChunked(file, fields, { onProgress, signal } = {
       received: received.size,
       totalChunks,
       percent: Math.round((received.size / totalChunks) * 100),
+      sessionId,
     })
   }
 
@@ -200,20 +275,49 @@ function playbackFieldsFor(category, files) {
   return { playback_status: 'pending', playback_note: '正在转码为微信友好 MP4，请稍候…' }
 }
 
+const ALLOWED_FIELD_KEYS = new Set([
+  'title',
+  'category',
+  'occurred_time',
+  'related_persons',
+  'description',
+  'external_link',
+  'uploader',
+  'uploader_name',
+  'likes_count',
+  'playback_status',
+  'playback_note',
+  'duration_sec',
+])
+
 /** Direct (non-chunked) create via PocketBase SDK — for small files / links. */
 export async function uploadDirect(files, fields, { coverFile } = {}) {
   const form = new FormData()
   const merged = { ...fields, ...playbackFieldsFor(fields.category, files) }
   Object.entries(merged).forEach(([k, v]) => {
-    if (v != null && v !== '') form.append(k, String(v))
+    if (!ALLOWED_FIELD_KEYS.has(k)) return
+    if (v == null || v === '') return
+    form.append(k, String(v))
   })
   for (const f of files || []) {
-    form.append('media_files', f, f.name || `upload-${Date.now()}`)
+    const nf = normalizeUploadFile(f)
+    form.append('media_files', nf, nf.name || `upload-${Date.now()}`)
   }
   if (coverFile) {
-    form.append('cover_file', coverFile, coverFile.name || 'cover.jpg')
+    const cf = normalizeUploadFile(coverFile)
+    form.append('cover_file', cf, cf.name || 'cover.jpg')
   }
-  return pb.collection('archives').create(form, { requestKey: null })
+  try {
+    return await pb.collection('archives').create(form, { requestKey: null })
+  } catch (e) {
+    const msg = zhError(e, '创建档案失败，请检查文件与填写内容')
+    const err = new Error(msg)
+    err.cause = e
+    err.data = e?.data || e?.response
+    err.response = e?.response
+    err.status = e?.status
+    throw err
+  }
 }
 
 /** Attach cover/duration after chunked create (complete API may not take files). */
@@ -222,6 +326,17 @@ export async function patchMediaMeta(recordId, { coverFile, durationSec } = {}) 
   if (!coverFile && (durationSec == null || durationSec === '')) return null
   const form = new FormData()
   if (durationSec != null && durationSec !== '') form.append('duration_sec', String(durationSec))
-  if (coverFile) form.append('cover_file', coverFile, coverFile.name || 'cover.jpg')
-  return pb.collection('archives').update(recordId, form, { requestKey: null })
+  if (coverFile) {
+    const cf = normalizeUploadFile(coverFile)
+    form.append('cover_file', cf, cf.name || 'cover.jpg')
+  }
+  try {
+    return await pb.collection('archives').update(recordId, form, { requestKey: null })
+  } catch (e) {
+    const msg = zhError(e, '保存封面或时长失败')
+    const err = new Error(msg)
+    err.cause = e
+    err.data = e?.data || e?.response
+    throw err
+  }
 }
