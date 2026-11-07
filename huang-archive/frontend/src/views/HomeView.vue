@@ -76,6 +76,10 @@ async function load() {
 
 const exporting = ref(false)
 async function doExport() {
+  if (!auth.isAdmin) {
+    exportMsg.value = '仅管理员可导出备份'
+    return
+  }
   if (exporting.value) return
   exportMsg.value = ''
   exporting.value = true
@@ -104,9 +108,11 @@ function onUpdated(rec) {
 
 function onMemory(rec) {
   const id = rec.archive_id
+  if (!id) return
+  const delta = rec._deleted ? -1 : 1
   memoryCounts.value = {
     ...memoryCounts.value,
-    [id]: (memoryCounts.value[id] || 0) + 1,
+    [id]: Math.max(0, (memoryCounts.value[id] || 0) + delta),
   }
 }
 
@@ -190,6 +196,7 @@ onMounted(load)
           {{ a11y.largeTap ? '标准按钮' : '大按钮' }}
         </button>
         <button
+          v-if="auth.isAdmin"
           type="button"
           class="min-h-tap px-3 border border-clay inline-flex items-center gap-1 disabled:opacity-60"
           data-testid="export-backup"

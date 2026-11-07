@@ -39,7 +39,7 @@ function downloadBlob(blob, filename) {
 
 async function fetchFileBytes(record, filename) {
   if (!record || !filename) return null
-  const url = pb.files.getUrl(record, filename)
+  const url = pb.files.getURL(record, filename)
   const headers = {}
   if (pb.authStore.token) headers.Authorization = pb.authStore.token
   const res = await fetch(url, { headers })

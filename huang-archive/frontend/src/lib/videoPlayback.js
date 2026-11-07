@@ -16,12 +16,12 @@ export function resolvePlayUrl(pb, archive) {
   const note = archive.playback_note || ''
   const files = archive.media_files || []
   const first = files[0] || ''
-  const original = first ? pb.files.getUrl(archive, first) : ''
+  const original = first ? pb.files.getURL(archive, first) : ''
   const playFile = archive.playback_file
   const playName = Array.isArray(playFile) ? playFile[0] : playFile
 
   if (status === 'ready' && playName) {
-    return { url: pb.files.getUrl(archive, playName), mode: 'ready', note, original }
+    return { url: pb.files.getURL(archive, playName), mode: 'ready', note, original }
   }
   if ((status === 'native' || !status || status === 'none') && first && isNativeVideoName(first)) {
     return { url: original, mode: 'native', note: note || '浏览器可直接播放原文件', original }
