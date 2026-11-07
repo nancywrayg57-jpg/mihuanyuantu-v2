@@ -191,10 +191,20 @@ export async function uploadFileChunked(file, fields, { onProgress, signal } = {
   return record
 }
 
+function playbackFieldsFor(category, files) {
+  if (category !== 'video') return { playback_status: 'none', playback_note: '' }
+  const name = files?.[0]?.name || ''
+  if (/\.(mp4|m4v|webm)$/i.test(name)) {
+    return { playback_status: 'native', playback_note: '浏览器可直接播放原文件' }
+  }
+  return { playback_status: 'pending', playback_note: '正在转码为微信友好 MP4，请稍候…' }
+}
+
 /** Direct (non-chunked) create via PocketBase SDK — for small files / links. */
 export async function uploadDirect(files, fields) {
   const form = new FormData()
-  Object.entries(fields).forEach(([k, v]) => {
+  const merged = { ...fields, ...playbackFieldsFor(fields.category, files) }
+  Object.entries(merged).forEach(([k, v]) => {
     if (v != null && v !== '') form.append(k, String(v))
   })
   for (const f of files || []) {

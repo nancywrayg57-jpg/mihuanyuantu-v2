@@ -56,6 +56,8 @@ def main():
         "uploader": uid,
         "uploader_name": "黄纲生",
         "likes_count": "0",
+        "playback_status": "native",
+        "playback_note": "浏览器可直接播放原文件",
     }, token=token, form_files=[("media_files", mp4, "video/mp4", "a1.mp4")])
     assert rec_mp4.get("id"), rec_mp4
     created.append(rec_mp4["id"])
@@ -74,6 +76,8 @@ def main():
         "uploader": uid,
         "uploader_name": "黄纲生",
         "likes_count": "0",
+        "playback_status": "pending",
+        "playback_note": "正在转码为微信友好 MP4，请稍候…",
     }, token=token, form_files=[("media_files", mov, "video/quicktime", "a1.mov")])
     assert rec_mov.get("id"), rec_mov
     created.append(rec_mov["id"])
