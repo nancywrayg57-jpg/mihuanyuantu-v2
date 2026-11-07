@@ -9,7 +9,6 @@ from __future__ import annotations
 import asyncio
 import io
 import json
-import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -78,8 +77,6 @@ async def _main() -> int:
         RealphotosAsset,
         RealphotosCreditLedgerEntry,
         RealphotosCreditReservation,
-        RealphotosImageTask,
-        RealphotosProviderContract,
     )
     from app.capabilities.realphotos.permissions import ROLE_ADMIN
     from app.capabilities.realphotos.seed import reconcile
