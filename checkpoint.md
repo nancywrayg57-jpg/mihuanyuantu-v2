@@ -7,13 +7,13 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-07 CST（Asia/Shanghai） |
-| branch | `cursor/preset-bulk-import-9973`（基线 `cursor/product-gap-a-9973` / 父工单 A7；依赖 #29 合入顺序） |
-| HEAD | 以推送后该分支 tip 为准；合入仅经 PR squash，禁止直推 `main` |
-| 文档态 | PRD **2.10**；架构 **1.7**；`s5_exited=true`；S7 未开；对照表 `docs/mihuanyuantu-v2/legacy-preset-parameter-map.md` |
-| 代码态 | PRESET-BULK-IMPORT：B1 停注入/清占位；B2 405 全量激活；B3 55 键快照完整。PRODUCT-GAP-A 能力仍在祖先分支。未接通 URL 真导入；非生产收费 |
-| 验证态 | `/tmp/preset-bulk-import-e2e.log` `PRESET_BULK_IMPORT_E2E_PASS`；`legacy_activated_count=405`；`placeholder_presets_removed=true`；`legacy_param_keys_complete=true`；`production_billing=false`；`url_import_connected=false` |
-| 当前阶段 | PRODUCT-GAP-A 待合入 #29；本补丁端测已通过，待 Owner 审 PR |
-| 下一步 | 审阅 https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/30 （依赖/叠入 #29）；仅非作者账号 squash；不得开 S7 |
+| branch | `cursor/align-gap-a5bc-9973`（基线 `origin/main`=`7017443`，已含 #29/#30） |
+| HEAD | `61e3a8a` 已推送；PR #31 待审合 |
+| 文档态 | PRD **2.10**；架构 **1.7**；`s5_exited=true`；`nd020_021_archived=true`；S7 未开 |
+| 代码态 | ALIGN-GAP-A5BC G1–G8：五层归档、输出到期清理、OpenAPI 离线制品、geocoder 预留、版本矩阵 accepted_risk、fixed GPS 诚实、生图尺寸审计、IA_C6 方案 B。未接通 URL 真导入；非生产收费 |
+| 验证态 | `/tmp/align-gap-a5bc-e2e.log` `ALIGN_GAP_A5BC_E2E_PASS`；`ND020_021_ARCHIVE_PASS`；`output_cleanup=ok`；`geocoder_mode=reserved`；`version_align=accepted_risk`；`honesty=no_silent_none`；`size_audit=ok`；`IA_C6=mitigated_with_ops_note`；`production_billing=false` |
+| 当前阶段 | ALIGN-GAP-A5BC 已开 PR #31，待非作者 Owner squash |
+| 下一步 | Owner 审合 #31；不得开 S7 |
 
 ## 1. 仓库与文档基线
 
@@ -30,11 +30,10 @@
 
 | 阶段 | 状态 |
 | --- | --- |
-| S0–S4 | 开发机证据在案；非生产收费 |
-| S5 | **`s5_exited=true`** |
-| S6 | 管理员结束 |
-| PRODUCT-GAP-A | PR #29 待合入 |
-| PRESET-BULK-IMPORT | B1–B3 端测 PASS；待 PR 合入 |
+| S0–S6 | 既有证据；非生产收费 |
+| PRODUCT-GAP-A / PRESET-BULK | 已合入 `origin/main`（#29/#30） |
+| OPS-QUALITY-D | D1 已吸收进 ALIGN G8；D2 本地 PASS |
+| ALIGN-GAP-A5BC | G1–G8 本地 PASS；**未推送** |
 | S7 | **须管理员确认** |
 
 过程进度：`docs/mihuanyuantu-v2/progress.yaml`。

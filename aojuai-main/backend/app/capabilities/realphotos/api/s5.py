@@ -135,6 +135,14 @@ async def list_assets(
                 "requestedHeight": int(row.requested_height) if row.requested_height is not None else None,
                 "actualWidth": int(row.width),
                 "actualHeight": int(row.height),
+                "sizeMismatch": bool(
+                    row.requested_width is not None
+                    and row.requested_height is not None
+                    and (
+                        int(row.width) != int(row.requested_width)
+                        or int(row.height) != int(row.requested_height)
+                    )
+                ),
             }
         )
     return SuccessResponse(data={"items": items})
@@ -277,9 +285,27 @@ async def create_generation(
                     "creditsConsumed": int(item.credits_consumed),
                     "actualWidth": int(item.actual_width) if item.actual_width is not None else None,
                     "actualHeight": int(item.actual_height) if item.actual_height is not None else None,
+                    "sizeMismatch": bool(
+                        item.actual_width is not None
+                        and item.actual_height is not None
+                        and (
+                            int(item.actual_width) != int(task.width)
+                            or int(item.actual_height) != int(task.height)
+                        )
+                    ),
                 }
                 for item in items
             ],
+            "sizeMismatch": any(
+                item.actual_width is not None
+                and item.actual_height is not None
+                and (
+                    int(item.actual_width) != int(task.width)
+                    or int(item.actual_height) != int(task.height)
+                )
+                for item in items
+                if item.status == "stored"
+            ),
         }
     )
 

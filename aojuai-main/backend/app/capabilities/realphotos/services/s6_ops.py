@@ -308,7 +308,6 @@ class RealphotosOpsService:
         if row is not None:
             if not row.enabled:
                 return None
-            payload = self._preset_dict(row)
             latest = (
                 await self.db.execute(
                     select(RealphotosPresetVersion)
@@ -319,22 +318,37 @@ class RealphotosOpsService:
                     .order_by(RealphotosPresetVersion.version_no.desc())
                 )
             ).scalars().first()
+            gps_config = None
+            extra: dict = {}
             if latest is not None:
                 snap = dict(latest.snapshot or {})
                 if snap.get("gpsConfig"):
-                    payload["gpsConfig"] = dict(snap["gpsConfig"])
+                    gps_config = dict(snap["gpsConfig"])
                 if "gpsWriteConnected" in snap:
-                    payload["gpsWriteConnected"] = bool(snap["gpsWriteConnected"])
+                    extra["gpsWriteConnected"] = bool(snap["gpsWriteConnected"])
                 if isinstance(snap.get("legacyParameters"), dict):
-                    payload["legacyParameters"] = dict(snap["legacyParameters"])
+                    extra["legacyParameters"] = dict(snap["legacyParameters"])
                 if isinstance(snap.get("legacyGpsMeta"), dict):
-                    payload["legacyGpsMeta"] = dict(snap["legacyGpsMeta"])
+                    extra["legacyGpsMeta"] = dict(snap["legacyGpsMeta"])
+            payload = self._preset_dict(row, gps_config=gps_config)
+            payload.update(extra)
             return payload
         # B1: catalog placeholders are no longer auto-enabled for processing preview.
         if INJECT_S1_CATALOG_INTO_ENABLED:
             for item in S1_ENABLED_PRESETS:
                 if item["code"] == code:
-                    return dict(item)
+                    from app.capabilities.realphotos.services.gps_write import gps_writability
+
+                    payload = dict(item)
+                    writable = gps_writability(
+                        gps_mode=str(payload.get("gpsMode") or "none"),
+                        gps_config=payload.get("gpsConfig")
+                        if isinstance(payload.get("gpsConfig"), dict)
+                        else None,
+                    )
+                    payload["gpsWritable"] = bool(writable["gpsWritable"])
+                    payload["gpsWritableReason"] = str(writable["gpsWritableReason"] or "")
+                    return payload
         return None
 
     async def list_admin_presets(self, *, actor_role_codes: set[str]) -> list[dict]:
@@ -349,7 +363,8 @@ class RealphotosOpsService:
         seen: set[str] = set()
         # Do not invent enabled Honeybadger catalog rows; only show DB truth.
         for code, row in rows.items():
-            items.append(self._preset_dict(row))
+            gps_config = await self._latest_gps_config(code)
+            items.append(self._preset_dict(row, gps_config=gps_config))
             seen.add(code)
         if INJECT_S1_CATALOG_INTO_ENABLED:
             for item in S1_ENABLED_PRESETS:
@@ -392,7 +407,8 @@ class RealphotosOpsService:
             if row.brand == "Honeybadger" and str(row.source) == "admin" and str(row.code).startswith("s1-"):
                 continue
             if row.code not in seen:
-                items.append(self._preset_dict(row))
+                gps_config = await self._latest_gps_config(row.code)
+                items.append(self._preset_dict(row, gps_config=gps_config))
         return items
 
     async def save_preset(
@@ -480,11 +496,9 @@ class RealphotosOpsService:
         if legacy_review_bucket is not None:
             row.legacy_review_bucket = str(legacy_review_bucket)
         await self.db.flush()
-        snapshot = self._preset_dict(row)
+        snapshot = self._preset_dict(row, gps_config=gps_config)
         if mapped_from:
             snapshot["deviceTypeMappedFrom"] = mapped_from
-        if gps_config:
-            snapshot["gpsConfig"] = dict(gps_config)
         if snapshot_extra:
             for key, value in dict(snapshot_extra).items():
                 snapshot[key] = value
@@ -499,11 +513,9 @@ class RealphotosOpsService:
             )
         )
         await self.db.flush()
-        payload = self._preset_dict(row)
+        payload = self._preset_dict(row, gps_config=gps_config)
         if mapped_from:
             payload["deviceTypeMappedFrom"] = mapped_from
-        if gps_config:
-            payload["gpsConfig"] = dict(gps_config)
         if snapshot_extra:
             for key, value in dict(snapshot_extra).items():
                 payload[key] = value
@@ -1044,7 +1056,13 @@ class RealphotosOpsService:
         }
 
     @staticmethod
-    def _preset_dict(row: RealphotosDevicePreset) -> dict:
+    def _preset_dict(
+        row: RealphotosDevicePreset,
+        *,
+        gps_config: dict | None = None,
+    ) -> dict:
+        from app.capabilities.realphotos.services.gps_write import gps_writability
+
         dtype = str(row.device_type or "")
         mapped_from = None
         if dtype in DEVICE_TYPE_ALIASES:
@@ -1053,7 +1071,10 @@ class RealphotosOpsService:
         elif dtype not in DEVICE_TYPES:
             # Undocumented historical value: keep visible but mark disabled for honesty.
             mapped_from = dtype
-        return {
+        mode = str(row.gps_mode or "none")
+        config = dict(gps_config or {})
+        writable = gps_writability(gps_mode=mode, gps_config=config)
+        payload = {
             "code": row.code,
             "deviceType": dtype if dtype in DEVICE_TYPES else str(row.device_type or ""),
             "brand": row.brand,
@@ -1062,7 +1083,7 @@ class RealphotosOpsService:
             "shutter": row.shutter,
             "aperture": row.aperture,
             "focalLength": row.focal_length,
-            "gpsMode": row.gps_mode,
+            "gpsMode": mode,
             "enabled": bool(row.enabled),
             "source": row.source,
             "aiPositivePrompt": getattr(row, "ai_positive_prompt", "") or "",
@@ -1074,7 +1095,46 @@ class RealphotosOpsService:
             "legacyReviewBucket": getattr(row, "legacy_review_bucket", "") or "",
             "deviceTypeMappedFrom": mapped_from,
             "deviceTypeUnsupported": bool(dtype not in DEVICE_TYPES and mapped_from),
+            "gpsWritable": bool(writable["gpsWritable"]),
+            "gpsWritableReason": str(writable["gpsWritableReason"] or ""),
         }
+        if config:
+            payload["gpsConfig"] = config
+        return payload
+
+    async def _latest_gps_config(self, code: str) -> dict | None:
+        latest = (
+            await self.db.execute(
+                select(RealphotosPresetVersion)
+                .where(
+                    RealphotosPresetVersion.preset_code == str(code),
+                    RealphotosPresetVersion.deleted_at.is_(None),
+                )
+                .order_by(RealphotosPresetVersion.version_no.desc())
+            )
+        ).scalars().first()
+        if latest is None:
+            return None
+        snap = dict(latest.snapshot or {})
+        raw = snap.get("gpsConfig")
+        return dict(raw) if isinstance(raw, dict) else None
+
+    async def fixed_gps_missing_coords_count(self) -> int:
+        """Count enabled/disabled presets with gpsMode=fixed but no usable coords."""
+        rows = (
+            await self.db.execute(
+                select(RealphotosDevicePreset).where(RealphotosDevicePreset.deleted_at.is_(None))
+            )
+        ).scalars().all()
+        missing = 0
+        for row in rows:
+            if str(row.gps_mode or "") != "fixed":
+                continue
+            config = await self._latest_gps_config(row.code)
+            writable = self._preset_dict(row, gps_config=config)
+            if not writable.get("gpsWritable"):
+                missing += 1
+        return missing
 
 
 def login_lock_untouched(guard: RealphotosAuthGuard | None, previous: object) -> bool:

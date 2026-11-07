@@ -79,6 +79,22 @@ async def lifespan(app: FastAPI):
         except Exception:
             logger.exception("Plugin after-scheduler hook failed")
 
+    # OPS-QUALITY D1 / IA_C6：无共享 Redis 时菜单版本仅为进程内计数，避免误判为多 worker 已自动一致。
+    if settings.REDIS_ENABLED_EFFECTIVE:
+        logger.info(
+            "REDIS_ENABLED menu_version=shared_redis",
+            redis_enabled=True,
+        )
+    else:
+        logger.info(
+            "REDIS_DISABLED menu_version=process_local",
+            redis_enabled=False,
+            ops_note=(
+                "菜单 reconcile / 授权变更后须滚动重启全部 API worker；"
+                "同进程 bump 可变新，多 worker 无共享 Redis 不自动跨进程一致"
+            ),
+        )
+
     yield
 
     # Shutdown
