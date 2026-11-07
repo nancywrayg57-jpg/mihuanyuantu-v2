@@ -140,8 +140,8 @@ function submit() {
       related_persons: relatedPersons.value.trim(),
       description: description.value.trim(),
       external_link: externalLink.value.trim(),
-      uploader: auth.user.id,
-      uploader_name: auth.displayName,
+      // uploader is set from auth in the upload queue / server hook — do not pass objects
+      uploader_name: auth.displayName || '',
       likes_count: '0',
       duration_sec: durationSec.value ? String(durationSec.value) : '',
     },
