@@ -37,7 +37,7 @@ vibe_coding:
     visible_output: "生图页、提示词页、URL 导入页和管理员模型合同表"
     verify: "/tmp/supplier-live-e2e.log 含 SUPPLIER_LIVE_E2E_RECORDED；导入仍未接通；production_billing=false"
     status: supplier_live_recorded_not_production
-    next_user_action: "ALIGN-GAP-A5BC G1–G8 本地落地并通过端测（暂未提交推送）；/tmp/align-gap-a5bc-e2e.log ALIGN_GAP_A5BC_E2E_PASS；production_billing=false。分支 cursor/align-gap-a5bc-9973。待授权后再 commit/push/PR。不得开 S7。"
+    next_user_action: "ALIGN-GAP-A5BC 已推送并开 PR #31；/tmp/align-gap-a5bc-e2e.log ALIGN_GAP_A5BC_E2E_PASS；production_billing=false。待非作者 Owner squash。不得开 S7。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -204,10 +204,10 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "ALIGN-GAP-A5BC G1–G8 代码与端测已齐（本地未 commit/push，遵管理员本轮指示）。获准后推送 cursor/align-gap-a5bc-9973 并开 PR；合入仅非作者账号 squash。不得开 S7；不得接通 URL 真导入。"
+  action: "ALIGN-GAP-A5BC PR #31 已开；合入仅非作者 Owner 账号 squash。不得开 S7；不得接通 URL 真导入。"
   work_order: "ALIGN-GAP-A5BC-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-合同缺口A5BC闭合工单.md"
   branch: cursor/align-gap-a5bc-9973
-  pr: "not_pushed_yet"
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/31"
   baseline_main: "7017443 (#30 PRESET-BULK-IMPORT already on origin/main)"
   align_gap_a5bc_status:
     G1_nd020_021_archive: done
@@ -230,7 +230,7 @@ next_action:
     production_billing: false
     url_import_connected: false
     s7_started: false
-    git_commit_push: deferred_by_admin_instruction
+    git_commit_push: pushed_pr_31
   ops_quality_d_status:
     D1_menu_cache: absorbed_into_align_gap_G8
     D2_tech_hold_release: done_prior_local
@@ -253,8 +253,11 @@ next_action:
       status: recorded
       detail: "管理员本轮明确「暂不提交推送」；证据与本地改动已齐，等待后续授权再 commit/push/PR。"
     - id: ALIGN_GAP_A5BC_NO_PUSH
+      status: closed_pushed
+      detail: "管理员已授权提交推送；PR https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/31 。合入仍须非自评自合。"
+    - id: PR31_OPENER_ACCOUNT
       status: recorded
-      detail: "管理员指示在上一轮分支继续、暂不提交推送；ALIGN_GAP_A5BC_E2E_PASS 已齐。"
+      detail: "提交作者 Collaborator xtzhou247；PR #31 由本机 gh 登录账号创建。合入仅非作者 Owner 账号 squash。"
     - id: ALIGN_GAP_G5_VERSION_ACCEPTED_RISK
       status: accepted_risk
       detail: "架构推荐 Python 3.12 / pnpm 10；CI 钉 3.11 / pnpm 9 与 requires-python>=3.11 一致。未静默升 CI，避免全仓红；Owner 可另批锁文件验证后再升。"

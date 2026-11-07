@@ -8,12 +8,12 @@
 | --- | --- |
 | updated | 2026-11-07 CST（Asia/Shanghai） |
 | branch | `cursor/align-gap-a5bc-9973`（基线 `origin/main`=`7017443`，已含 #29/#30） |
-| HEAD | 本地有未提交改动；**管理员指示暂不 commit/push** |
+| HEAD | `61e3a8a` 已推送；PR #31 待审合 |
 | 文档态 | PRD **2.10**；架构 **1.7**；`s5_exited=true`；`nd020_021_archived=true`；S7 未开 |
 | 代码态 | ALIGN-GAP-A5BC G1–G8：五层归档、输出到期清理、OpenAPI 离线制品、geocoder 预留、版本矩阵 accepted_risk、fixed GPS 诚实、生图尺寸审计、IA_C6 方案 B。未接通 URL 真导入；非生产收费 |
 | 验证态 | `/tmp/align-gap-a5bc-e2e.log` `ALIGN_GAP_A5BC_E2E_PASS`；`ND020_021_ARCHIVE_PASS`；`output_cleanup=ok`；`geocoder_mode=reserved`；`version_align=accepted_risk`；`honesty=no_silent_none`；`size_audit=ok`；`IA_C6=mitigated_with_ops_note`；`production_billing=false` |
-| 当前阶段 | ALIGN-GAP-A5BC 本地端测通过，待授权提交推送 |
-| 下一步 | 获准后 commit/push 并开 PR；仅非作者账号 squash；不得开 S7 |
+| 当前阶段 | ALIGN-GAP-A5BC 已开 PR #31，待非作者 Owner squash |
+| 下一步 | Owner 审合 #31；不得开 S7 |
 
 ## 1. 仓库与文档基线
 
