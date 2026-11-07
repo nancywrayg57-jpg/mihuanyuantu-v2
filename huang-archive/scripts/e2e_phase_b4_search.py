@@ -73,7 +73,8 @@ def main():
     mine = [a for a in lst if MARK in str(a.get("title"))]
     assert len(mine) >= 2
     assert len([a for a in mine if match(a, q="春游")]) == 1
-    assert len([a for a in mine if match(a, person="黄纲生")]) == 1
+    assert len([a for a in mine if match(a, person="黄志松")]) == 1  # only spring photo
+    assert len([a for a in mine if match(a, person="黄纲生")]) == 2  # uploader on both
     assert len([a for a in mine if match(a, date_from="1988-01-01")]) == 1
     assert len([a for a in mine if match(a, category="video")]) == 1
     print("PASS filter_logic")
