@@ -50,7 +50,7 @@
 ## 5. 下一步（摘要；以 progress 为准）
 
 - **main 基线**：`origin/main`=`922ef06`（已含阻断级 #27、部分对齐 #28）。不是生产收费就绪。
-- **待合入**：`cursor/product-gap-a-9973`（工单 `PRODUCT-GAP-A-2026-11-07`）。PR URL 以 `progress.yaml` `next_action.pr` 为准（推送后回填）。
+- **待合入 PR**：https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/29 （`cursor/product-gap-a-9973`，工单 `PRODUCT-GAP-A-2026-11-07`）。
 - **本轮证据**：`/tmp/product-gap-a-e2e.log` 含 `PRODUCT_GAP_A_E2E_PASS`；浏览器 `/tmp/product-gap-a-browser.txt` 含 `PRODUCT_GAP_A_BROWSER_PASS`；截图 `/tmp/product-gap-a-browser-shots/`；`production_billing=false`；`url_import_connected=false`。
 - **要点**：A2 种子仍 `SEED_UNSUPPORTED`；A3 预设 AI 提示词；A4 设备类型四枚举；A5 成本延后空态；A6 消息清理；A7 旧预设激活+MakerNote 回读；A8 订单/技术客服/商家真浏览器 DOM。
 - **冲突已登记**：MakerNote 管理员覆盖；生产物料同级路径缺失→同机浏览器；PR 创建账号可能为 Owner（同 #28），合入不得自评自合。

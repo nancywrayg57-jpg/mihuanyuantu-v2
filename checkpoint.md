@@ -13,7 +13,7 @@
 | 代码态 | PRODUCT-GAP-A：A2 `SEED_UNSUPPORTED`；A3 预设 AI 正/负向提示词；A4 `phone/dslr/mirrorless/action`（`camera`→`dslr`）；A5 延后 `cost=null`；A6 站内信 30 天清理；A7 旧预设激活+MakerNote（管理员 2026-11-07 允许写入）；A8 开发机真浏览器 DOM。未接通 URL 真导入；非生产收费 |
 | 验证态 | `/tmp/product-gap-a-e2e.log` `PRODUCT_GAP_A_E2E_PASS` 且 `production_billing=false` `url_import_connected=false`；浏览器 `/tmp/product-gap-a-browser.txt` `PRODUCT_GAP_A_BROWSER_PASS`；截图 `/tmp/product-gap-a-browser-shots/`；不得开 S7 |
 | 当前阶段 | S5 已退出收口；S6 管理员已结束；PRODUCT-GAP-A 开发机端测+浏览器冒烟已通过，待 Owner 审 PR |
-| 下一步 | 审阅 product-gap-a PR（推送后 URL 写入 progress）；仅非作者账号 squash；不得开 S7；A5 仍延后 |
+| 下一步 | 审阅 https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/29 ；仅非作者账号 squash；不得开 S7；A5 仍延后 |
 
 ## 1. 仓库与文档基线
 

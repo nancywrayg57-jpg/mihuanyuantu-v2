@@ -207,7 +207,7 @@ next_action:
   action: "审阅 cursor/product-gap-a-9973 PR（PRODUCT-GAP-A A2–A4/A6–A8；A5 延后）。仅经非本人作者账号 squash 合入 main。不得开 S7；不得接通 URL 真导入；不得用演示数字填成本。"
   work_order: "PRODUCT-GAP-A-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-产品行为缺口修复工单.md"
   branch: cursor/product-gap-a-9973
-  pr: "pending_push"
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/29"
   baseline_main: "922ef06 (#28 PARTIAL-ALIGN squash already on origin/main)"
   product_gap_a_status:
     A1_url_import: skipped_admin
