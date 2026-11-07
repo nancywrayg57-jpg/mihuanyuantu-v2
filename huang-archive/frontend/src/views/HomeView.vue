@@ -127,8 +127,9 @@ onMounted(load)
 
     <section class="max-w-6xl mx-auto px-4 py-6">
       <div class="border border-clay bg-parchment p-5 sm:p-7 relative overflow-hidden">
-        <p class="text-celadon tracking-[0.2em] text-sm mb-2">艺术生平铭牌</p>
-        <h2 class="font-song text-2xl sm:text-3xl mb-3">黄志松</h2>
+        <h2 class="font-song text-xl sm:text-2xl mb-3 leading-relaxed">
+          抟土化金，九秩风霜承勤俭，祥开五世享期颐
+        </h2>
         <p class="text-ink/90 max-w-3xl leading-relaxed">
           本馆由家人共同守护，汇集图片、录像、扫描件、新闻与口述录音，
           使后辈得以回望他的风骨与温度。此处仅为家族内部珍藏空间——每一帧、每一段声音，皆是不可复刻的传承。
