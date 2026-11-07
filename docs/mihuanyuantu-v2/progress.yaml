@@ -207,7 +207,7 @@ next_action:
   action: "审阅 cursor/preset-bulk-import-9973 PR（PRESET-BULK-IMPORT B1–B3；依赖/叠入 PRODUCT-GAP-A #29）。仅经非本人作者账号 squash 合入 main。不得开 S7；不得接通 URL 真导入。"
   work_order: "PRESET-BULK-IMPORT-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-设备预设全量导入补丁工单.md"
   branch: cursor/preset-bulk-import-9973
-  pr: "pending_push"
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/30"
   depends_on_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/29"
   baseline_branch: "cursor/product-gap-a-9973 (A7 parent; #29 not yet on main at open)"
   preset_bulk_import_status:

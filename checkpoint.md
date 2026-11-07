@@ -13,7 +13,7 @@
 | 代码态 | PRESET-BULK-IMPORT：B1 停注入/清占位；B2 405 全量激活；B3 55 键快照完整。PRODUCT-GAP-A 能力仍在祖先分支。未接通 URL 真导入；非生产收费 |
 | 验证态 | `/tmp/preset-bulk-import-e2e.log` `PRESET_BULK_IMPORT_E2E_PASS`；`legacy_activated_count=405`；`placeholder_presets_removed=true`；`legacy_param_keys_complete=true`；`production_billing=false`；`url_import_connected=false` |
 | 当前阶段 | PRODUCT-GAP-A 待合入 #29；本补丁端测已通过，待 Owner 审 PR |
-| 下一步 | 审阅 preset-bulk-import PR（依赖/叠入 #29）；仅非作者账号 squash；不得开 S7 |
+| 下一步 | 审阅 https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/30 （依赖/叠入 #29）；仅非作者账号 squash；不得开 S7 |
 
 ## 1. 仓库与文档基线
 

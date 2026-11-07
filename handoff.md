@@ -43,7 +43,7 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **待合入**：`cursor/preset-bulk-import-9973`（工单 `PRESET-BULK-IMPORT-2026-11-07`），依赖/叠入 PRODUCT-GAP-A https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/29 。
+- **待合入 PR**：https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/30 （`cursor/preset-bulk-import-9973`，工单 `PRESET-BULK-IMPORT-2026-11-07`），依赖/叠入 PRODUCT-GAP-A #29。
 - **证据**：`/tmp/preset-bulk-import-e2e.log` 含 `PRESET_BULK_IMPORT_E2E_PASS`；`legacy_activated_count=405`；`placeholder_presets_removed=true`；`legacy_param_keys_complete=true`；`production_billing=false`。
 - **要点**：先清 Honeybadger/s1 占位；405 全量启用；快照含完整 `legacyParameters`；GPS 源模式保留、不伪造坐标。
 - **不得开 S7**；不得接通 URL 真导入；不得自评自合。
