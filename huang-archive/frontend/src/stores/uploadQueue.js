@@ -1,11 +1,9 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import {
-  shouldUseChunked,
   uploadDirect,
-  uploadFileChunked,
+  uploadManyAsOneArchive,
   abortSession,
-  patchMediaMeta,
   resolveRecordId,
 } from '../lib/chunkedUpload'
 import { validateUploadFiles } from '../lib/uploadLimits'
@@ -86,27 +84,16 @@ export const useUploadQueueStore = defineStore('uploadQueue', () => {
       }
       if (next.category === 'link' || !next.files.length) {
         record = await uploadDirect([], metaFields)
-      } else if (next.files.length === 1 && shouldUseChunked(next.files[0])) {
+      } else {
+        // One archive keeps ALL selected files (unique names + multi media_files).
         next.sessionId = ''
-        record = await uploadFileChunked(next.files[0], metaFields, {
+        record = await uploadManyAsOneArchive(next.files, metaFields, {
+          coverFile: next.coverFile,
           onProgress: ({ percent, sessionId }) => {
             if (sessionId) next.sessionId = sessionId
-            next.progress = Math.max(2, Math.min(99, percent))
+            next.progress = Math.max(2, Math.min(99, percent || 0))
           },
         })
-        if (record?.id && (next.coverFile || next.durationSec)) {
-          try {
-            record = (await patchMediaMeta(record.id, {
-              coverFile: next.coverFile,
-              durationSec: next.durationSec,
-            })) || record
-          } catch (patchErr) {
-            // Record already created — surface cover/duration patch failure without losing the archive.
-            console.warn('patchMediaMeta', patchErr)
-          }
-        }
-      } else {
-        record = await uploadDirect(next.files, metaFields, { coverFile: next.coverFile })
       }
       next.record = record
       next.status = 'done'

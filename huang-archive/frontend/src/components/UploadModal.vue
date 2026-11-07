@@ -82,6 +82,12 @@ async function onFileChange(e) {
     coverFile.value = prepared.coverFile
     durationSec.value = prepared.durationSec || 0
     prepNotes.value = prepared.notes || []
+    if (prepared.files.length > 1) {
+      prepNotes.value = [
+        `已选择 ${prepared.files.length} 个文件，将保存为一条档案（可在卡片中左右翻看）`,
+        ...prepNotes.value,
+      ]
+    }
     previews.value = prepared.files.map((f) => ({
       name: f.name,
       size: f.size,
