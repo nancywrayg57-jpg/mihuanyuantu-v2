@@ -189,6 +189,9 @@ known_conflicts:
   - id: PR27_OPENER_ACCOUNT
     status: recorded
     detail: "提交作者为 Collaborator 身份 xtzhou247；PR #27 由本机当前 gh 登录账号 nancywrayg57-jpg 创建。合入仍须非自评自合：若 PR 作者账号与审合账号相同则换 Collaborator 账号审合或按 AGENTS §7 处理。"
+  - id: PR28_OPENER_ACCOUNT
+    status: recorded
+    detail: "PARTIAL-ALIGN 提交作者 xtzhou247；PR #28 由 nancywrayg57-jpg 创建。合入仍须非自评自合。"
   - id: DEVHOST_SSH_AUTONOMY
     status: recorded
     detail: "管理员授权：每里程碑后 Agent 自行 SSH 开发机端测，无需人工代跑。口令在同级 生产物料/；清单与 DEV_INSTRUCTIONS §6.1 / AGENTS.md §5 已写。"
