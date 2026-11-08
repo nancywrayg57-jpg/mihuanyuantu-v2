@@ -25,7 +25,7 @@ function bindMediaSession() {
   try {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: props.archive.title || '家族影像',
-      artist: props.archive.uploader_name || '黄志松家族记忆档案馆',
+      artist: props.archive.uploader_name || '黄志松人生纪念馆',
       album: '家族记忆',
     })
     navigator.mediaSession.setActionHandler('play', () => videoEl.value?.play())

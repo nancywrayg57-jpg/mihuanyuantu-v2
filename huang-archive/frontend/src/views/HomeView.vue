@@ -184,7 +184,7 @@ onMounted(load)
       <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
         <div class="min-w-0 flex-1">
           <h1 class="hidden sm:block font-song text-lg sm:text-xl truncate" data-testid="home-brand">
-            黄志松家族记忆档案馆
+            黄志松人生纪念馆
           </h1>
           <p class="text-ink sm:text-mute text-lg sm:text-sm font-medium sm:font-normal truncate" data-testid="home-welcome">
             欢迎 {{ auth.displayName }}<span class="hidden sm:inline">{{ auth.isAdmin ? '（管理员）' : '' }}</span>

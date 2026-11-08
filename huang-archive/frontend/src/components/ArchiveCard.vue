@@ -48,15 +48,40 @@ const files = computed(() => {
   return Array.isArray(raw) ? raw.filter(Boolean) : raw ? [raw] : []
 })
 const slide = ref(0)
+const lightboxOpen = ref(false)
+const lightboxIndex = ref(0)
 watch(
   () => props.archive.id,
   () => {
     slide.value = 0
+    lightboxOpen.value = false
+    lightboxIndex.value = 0
   },
 )
 watch(files, (list) => {
   if (slide.value >= list.length) slide.value = Math.max(0, list.length - 1)
+  if (lightboxIndex.value >= list.length) lightboxIndex.value = Math.max(0, list.length - 1)
 })
+
+function openLightbox(index = slide.value) {
+  const i = Math.max(0, Math.min(Number(index) || 0, Math.max(0, imageUrls.value.length - 1)))
+  lightboxIndex.value = i
+  slide.value = i
+  lightboxOpen.value = true
+}
+function closeLightbox() {
+  lightboxOpen.value = false
+}
+function lightboxPrev() {
+  if (!imageUrls.value.length) return
+  lightboxIndex.value = (lightboxIndex.value - 1 + imageUrls.value.length) % imageUrls.value.length
+  slide.value = lightboxIndex.value
+}
+function lightboxNext() {
+  if (!imageUrls.value.length) return
+  lightboxIndex.value = (lightboxIndex.value + 1) % imageUrls.value.length
+  slide.value = lightboxIndex.value
+}
 const firstFile = computed(() => files.value[0] || '')
 const activeFile = computed(() => files.value[slide.value] || firstFile.value || '')
 const fileUrl = computed(() =>
@@ -212,6 +237,7 @@ function voiceUrl(m) {
   return name ? pb.files.getURL(m, name) : ''
 }
 
+/** Admin: any; member/guest: own comments only. */
 function canDeleteMemory(m) {
   if (!auth.user?.id) return false
   if (auth.isAdmin) return true
@@ -286,21 +312,20 @@ async function deleteMemory(m) {
         </div>
       </template>
       <template v-else-if="isImageLike && imageUrls.length">
-        <a
-          :href="imageUrls[slide]?.full || fileUrl"
-          target="_blank"
-          rel="noopener"
-          class="block w-full h-full"
+        <button
+          type="button"
+          class="block w-full h-full p-0 border-0 cursor-zoom-in"
           data-testid="archive-thumb-link"
+          @click="openLightbox(slide)"
         >
           <img
             :src="imageUrls[slide]?.url || listCoverUrl || fileUrl"
             :alt="`${archive.title}（${slide + 1}/${imageUrls.length}）`"
-            class="w-full h-full object-cover"
+            class="w-full h-full object-cover pointer-events-none"
             loading="lazy"
             data-testid="archive-thumb"
           />
-        </a>
+        </button>
         <div
           v-if="multiCount > 1"
           class="absolute top-2 right-2 z-10 text-xs bg-ink/75 text-parchment px-2 py-0.5"
@@ -314,7 +339,7 @@ async function deleteMemory(m) {
             class="pointer-events-auto min-h-tap min-w-[44px] grid place-items-center bg-ink/45 text-parchment"
             data-testid="archive-prev"
             aria-label="上一张"
-            @click.prevent="prevSlide"
+            @click.stop="prevSlide"
           >
             <ChevronLeft class="w-6 h-6" />
           </button>
@@ -323,7 +348,7 @@ async function deleteMemory(m) {
             class="pointer-events-auto min-h-tap min-w-[44px] grid place-items-center bg-ink/45 text-parchment"
             data-testid="archive-next"
             aria-label="下一张"
-            @click.prevent="nextSlide"
+            @click.stop="nextSlide"
           >
             <ChevronRight class="w-6 h-6" />
           </button>
@@ -339,7 +364,7 @@ async function deleteMemory(m) {
             type="button"
             class="shrink-0 w-10 h-10 border-2 overflow-hidden"
             :class="i === slide ? 'border-cinnabar' : 'border-parchment/80'"
-            @click.prevent="slide = i"
+            @click.stop="slide = i"
           >
             <img :src="img.url" :alt="`缩略图 ${i + 1}`" class="w-full h-full object-cover" />
           </button>
@@ -455,6 +480,53 @@ async function deleteMemory(m) {
             确认删除
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- In-app lightbox: opens at the clicked slide; prev/next flip without off-by-one jump -->
+    <div
+      v-if="lightboxOpen && imageUrls.length"
+      class="fixed inset-0 z-[70] bg-ink/90 flex flex-col"
+      data-testid="image-lightbox"
+      @click.self="closeLightbox"
+    >
+      <div class="flex items-center justify-between px-4 py-3 text-parchment">
+        <span data-testid="lightbox-index">{{ lightboxIndex + 1 }} / {{ imageUrls.length }}</span>
+        <button
+          type="button"
+          class="min-h-tap px-4 border border-parchment/40"
+          data-testid="lightbox-close"
+          @click="closeLightbox"
+        >关闭</button>
+      </div>
+      <div class="flex-1 relative flex items-center justify-center px-12 pb-6">
+        <button
+          v-if="imageUrls.length > 1"
+          type="button"
+          class="absolute left-2 z-10 min-h-tap min-w-[48px] grid place-items-center bg-parchment/15 text-parchment"
+          data-testid="lightbox-prev"
+          aria-label="上一张"
+          @click.stop="lightboxPrev"
+        >
+          <ChevronLeft class="w-8 h-8" />
+        </button>
+        <img
+          :src="imageUrls[lightboxIndex]?.full || imageUrls[lightboxIndex]?.url"
+          :alt="`${archive.title} 大图 ${lightboxIndex + 1}`"
+          class="max-h-full max-w-full object-contain"
+          data-testid="lightbox-image"
+          @click.stop
+        />
+        <button
+          v-if="imageUrls.length > 1"
+          type="button"
+          class="absolute right-2 z-10 min-h-tap min-w-[48px] grid place-items-center bg-parchment/15 text-parchment"
+          data-testid="lightbox-next"
+          aria-label="下一张"
+          @click.stop="lightboxNext"
+        >
+          <ChevronRight class="w-8 h-8" />
+        </button>
       </div>
     </div>
   </article>

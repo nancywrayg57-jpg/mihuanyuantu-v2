@@ -38,11 +38,19 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function loginAsGuest() {
+  async function loginAsGuest(opts = {}) {
     loading.value = true
     error.value = ''
     try {
-      const res = await fetch('/api/hz/guest-login', { method: 'POST' })
+      const res = await fetch('/api/hz/guest-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ticket: opts.ticket || undefined,
+          captcha_id: opts.captcha_id || undefined,
+          captcha_code: opts.captcha_code || undefined,
+        }),
+      })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
         throw new Error(data?.message || '吊唁贵宾登录失败')
@@ -62,13 +70,40 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function login(nameOrEmail, password) {
+  async function loginViaApi(nameOrEmail, password, opts = {}) {
+    const res = await fetch('/api/hz/member-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: String(nameOrEmail || '').trim(),
+        password: normalizePassword(password),
+        ticket: opts.ticket || undefined,
+        captcha_id: opts.captcha_id || undefined,
+        captcha_code: opts.captcha_code || undefined,
+      }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(data?.message || '登录失败：姓名或密码不正确')
+    if (!data?.token || !data?.record) throw new Error('登录失败')
+    pb.authStore.save(data.token, data.record)
+    user.value = data.record
+    token.value = data.token
+    return data.record
+  }
+
+  async function login(nameOrEmail, password, opts = {}) {
     loading.value = true
     error.value = ''
     try {
-      let identity = resolveIdentity(nameOrEmail)
       const pwd = normalizePassword(password)
       if (!pwd) throw new Error('请输入密码')
+
+      // Prefer gated API when captcha ticket/codes provided, or always for consistency
+      if (opts.ticket || opts.captcha_id || opts.useApi) {
+        return await loginViaApi(nameOrEmail, password, opts)
+      }
+
+      let identity = resolveIdentity(nameOrEmail)
 
       // Dynamic members not in static roster
       if (!identity?.email) {

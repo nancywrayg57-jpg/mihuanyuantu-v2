@@ -1,10 +1,11 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ChevronDown } from 'lucide-vue-next'
+import { ChevronDown, RefreshCw } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { FAMILY_ROSTER } from '../lib/roster'
 import { GUEST_DISPLAY_NAME, isGuestName } from '../lib/guest'
+import { fetchCaptcha, fetchSiteSettings, SITE_TITLE, verifyCaptcha } from '../lib/siteSettings'
 import { zhError } from '../lib/errors'
 
 const auth = useAuthStore()
@@ -20,13 +21,57 @@ const localError = ref('')
 const roster = ref([...FAMILY_ROSTER])
 const pwdInput = ref(null)
 
+const guestPasswordless = ref(true)
+const loginCaptcha = ref(false)
+const captchaId = ref('')
+const captchaSvg = ref('')
+const captchaCode = ref('')
+const captchaImg = ref('')
+
 const isGuestSelected = computed(() => isGuestName(name.value))
 
 const stepHint = computed(() => {
-  if (step.value === 1) return isGuestSelected.value ? '吊唁贵宾' : '选择姓名'
+  if (step.value === 1) return isGuestSelected.value ? GUEST_DISPLAY_NAME : '选择姓名'
   if (step.value === 2) return '输入密码'
   return '进入纪念馆'
 })
+
+async function loadSettings() {
+  try {
+    const s = await fetchSiteSettings()
+    guestPasswordless.value = s.guest_passwordless !== false
+    loginCaptcha.value = !!s.login_captcha
+    if (!guestPasswordless.value && isGuestSelected.value) {
+      name.value = ''
+    } else if (guestPasswordless.value && !name.value) {
+      name.value = GUEST_DISPLAY_NAME
+    }
+  } catch (_) {
+    guestPasswordless.value = true
+    loginCaptcha.value = false
+  }
+}
+
+async function loadCaptcha() {
+  if (!loginCaptcha.value) return
+  try {
+    const c = await fetchCaptcha()
+    captchaId.value = c.id
+    captchaSvg.value = c.svg || ''
+    captchaCode.value = ''
+    captchaImg.value = c.svg
+      ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(c.svg)}`
+      : ''
+  } catch (e) {
+    localError.value = zhError(e, '验证码加载失败')
+  }
+}
+
+async function ensureCaptchaTicket() {
+  if (!loginCaptcha.value) return undefined
+  if (!captchaCode.value.trim()) throw new Error('请输入验证码')
+  return verifyCaptcha(captchaId.value, captchaCode.value.trim())
+}
 
 async function loadNames() {
   try {
@@ -51,10 +96,9 @@ function openPicker(e) {
   showPicker.value = true
 }
 
-/** Default guest chip → go straight to enter (no password). */
 function onIdentityClick() {
   localError.value = ''
-  if (isGuestSelected.value) {
+  if (isGuestSelected.value && guestPasswordless.value) {
     step.value = 3
     return
   }
@@ -62,6 +106,10 @@ function onIdentityClick() {
 }
 
 function pickGuest() {
+  if (!guestPasswordless.value) {
+    localError.value = '吊唁免登录模式已关闭，请选择家族成员并输入密码'
+    return
+  }
   name.value = GUEST_DISPLAY_NAME
   password.value = ''
   localError.value = ''
@@ -74,7 +122,7 @@ function pick(person) {
   showPicker.value = false
   password.value = ''
   localError.value = ''
-  if (isGuestName(person.display_name) || person.role === 'guest') {
+  if ((isGuestName(person.display_name) || person.role === 'guest') && guestPasswordless.value) {
     step.value = 3
     return
   }
@@ -106,19 +154,27 @@ async function onEnter() {
     return
   }
   try {
+    const ticket = await ensureCaptchaTicket()
     if (isGuestSelected.value) {
-      await auth.loginAsGuest()
+      if (!guestPasswordless.value) {
+        throw new Error('吊唁免登录模式已关闭，请使用家族姓名与密码登录')
+      }
+      await auth.loginAsGuest({ ticket })
     } else {
       if (!password.value.trim()) {
         localError.value = '请输入密码'
         step.value = 2
         return
       }
-      await auth.login(name.value, password.value)
+      await auth.login(name.value, password.value, {
+        ticket,
+        useApi: !!loginCaptcha.value,
+      })
     }
     router.replace(route.query.redirect || '/')
   } catch (e) {
     localError.value = auth.error || zhError(e, '登录失败')
+    if (loginCaptcha.value) await loadCaptcha()
     step.value = isGuestSelected.value ? 1 : 2
   }
 }
@@ -127,7 +183,14 @@ watch(showPicker, (open) => {
   document.documentElement.classList.toggle('overflow-hidden', open)
 })
 
-onMounted(loadNames)
+watch(loginCaptcha, (on) => {
+  if (on) loadCaptcha()
+})
+
+onMounted(async () => {
+  await Promise.all([loadNames(), loadSettings()])
+  if (loginCaptcha.value) await loadCaptcha()
+})
 </script>
 
 <template>
@@ -148,7 +211,7 @@ onMounted(loadNames)
           class="font-lishu text-[2.35rem] sm:text-5xl md:text-6xl leading-tight tracking-wide drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)]"
           data-testid="login-title"
         >
-          黄志松家族纪念馆
+          {{ SITE_TITLE }}
         </h1>
         <p
           class="mt-3 text-base sm:text-lg tracking-[0.2em] text-white/90 font-sans"
@@ -176,7 +239,6 @@ onMounted(loadNames)
           {{ localError }}
         </p>
 
-        <!-- Step 1: default 吊唁贵宾; tap → enter; chevron → family list -->
         <div
           v-if="step === 1"
           class="login-field w-full min-h-[52px] rounded-2xl inline-flex items-stretch overflow-hidden"
@@ -184,7 +246,8 @@ onMounted(loadNames)
         >
           <button
             type="button"
-            class="flex-1 min-h-[52px] px-4 text-left text-white"
+            class="flex-1 min-h-[52px] px-4 text-left"
+            :class="name ? 'text-white' : 'text-white/55'"
             data-testid="login-pick-name"
             @click="onIdentityClick"
           >
@@ -202,7 +265,6 @@ onMounted(loadNames)
           </button>
         </div>
 
-        <!-- Step 2: password (family only) -->
         <form v-else-if="step === 2" @submit.prevent="goEnterStep">
           <input
             ref="pwdInput"
@@ -218,17 +280,49 @@ onMounted(loadNames)
           />
         </form>
 
-        <!-- Step 3: enter memorial -->
-        <button
-          v-else
-          type="button"
-          class="w-full min-h-[52px] rounded-2xl bg-cinnabar text-parchment text-lg tracking-widest font-medium disabled:opacity-60 shadow-lg shadow-black/30"
-          data-testid="login-submit"
-          :disabled="auth.loading"
-          @click="onEnter"
-        >
-          {{ auth.loading ? '进入中…' : '进入纪念馆' }}
-        </button>
+        <template v-else>
+          <div
+            v-if="loginCaptcha"
+            class="space-y-2"
+            data-testid="login-captcha"
+          >
+            <div class="flex items-center gap-2">
+              <img
+                v-if="captchaImg"
+                :src="captchaImg"
+                alt="验证码"
+                class="h-[52px] w-[160px] rounded-xl bg-parchment object-contain"
+                data-testid="captcha-image"
+              />
+              <button
+                type="button"
+                class="min-h-[52px] px-3 login-field rounded-2xl"
+                title="刷新验证码"
+                data-testid="captcha-refresh"
+                @click="loadCaptcha"
+              >
+                <RefreshCw class="w-5 h-5" />
+              </button>
+            </div>
+            <input
+              v-model="captchaCode"
+              type="text"
+              autocomplete="off"
+              class="login-field w-full min-h-[52px] px-4 rounded-2xl outline-none text-white placeholder:text-white/55 uppercase tracking-widest"
+              placeholder="输入验证码"
+              data-testid="captcha-input"
+            />
+          </div>
+          <button
+            type="button"
+            class="w-full min-h-[52px] rounded-2xl bg-cinnabar text-parchment text-lg tracking-widest font-medium disabled:opacity-60 shadow-lg shadow-black/30"
+            data-testid="login-submit"
+            :disabled="auth.loading"
+            @click="onEnter"
+          >
+            {{ auth.loading ? '进入中…' : '进入纪念馆' }}
+          </button>
+        </template>
 
         <p class="sr-only">步骤 {{ step }} / 3 · {{ stepHint }}</p>
       </div>
@@ -247,6 +341,7 @@ onMounted(loadNames)
         </div>
         <div class="overflow-y-auto divide-y divide-white/10">
           <button
+            v-if="guestPasswordless"
             type="button"
             class="w-full text-left px-5 min-h-tap text-white hover:bg-white/10"
             data-testid="login-pick-guest"

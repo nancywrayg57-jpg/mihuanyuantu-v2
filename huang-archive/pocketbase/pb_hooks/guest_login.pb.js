@@ -1,8 +1,76 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-// Passwordless entry for the shared 吊唁贵宾 account.
+function hzLoadSettings() {
+  try {
+    const row = $app.dao().findFirstRecordByFilter("site_settings", "key = {:k}", { k: "global" })
+    return {
+      guest_passwordless: !!row.get("guest_passwordless"),
+      login_captcha: !!row.get("login_captcha"),
+    }
+  } catch (_) {
+    return { guest_passwordless: true, login_captcha: false }
+  }
+}
+
+function hzToString(v) {
+  if (v == null) return ""
+  if (typeof v === "string") return v
+  try {
+    return Array.prototype.slice.call(v).map((b) => String.fromCharCode(b)).join("")
+  } catch (_) {
+    return String(v)
+  }
+}
+
+function hzConsumeTicket(ticket) {
+  if (!ticket) return false
+  const path = "/pb/pb_data/captcha_sessions/ticket_" + ticket + ".json"
+  try {
+    const raw = hzToString($os.readFile(path))
+    try { $os.remove(path) } catch (_) {}
+    const data = JSON.parse(raw || "{}")
+    if (!data || data.used) return false
+    if (Date.now() > Number(data.exp || 0)) return false
+    return true
+  } catch (_) {
+    return false
+  }
+}
+
+function hzConsumeCaptcha(id, code) {
+  if (!id || !code) return false
+  const path = "/pb/pb_data/captcha_sessions/" + id + ".json"
+  try {
+    const raw = hzToString($os.readFile(path))
+    try { $os.remove(path) } catch (_) {}
+    const data = JSON.parse(raw || "{}")
+    if (!data || !data.code || !data.exp) return false
+    if (Date.now() > Number(data.exp)) return false
+    return String(code).trim().toUpperCase() === String(data.code).toUpperCase()
+  } catch (_) {
+    return false
+  }
+}
+
+function hzRequireCaptcha(body, settings) {
+  if (!settings.login_captcha) return null
+  if (body && body.ticket && hzConsumeTicket(body.ticket)) return null
+  if (body && hzConsumeCaptcha(body.captcha_id || body.id, body.captcha_code || body.code)) return null
+  return "请先完成图形验证码"
+}
+
+// Passwordless entry for the shared 吊唁贵宾 account (when enabled).
 routerAdd("POST", "/api/hz/guest-login", (c) => {
   try {
+    const settings = hzLoadSettings()
+    if (!settings.guest_passwordless) {
+      return c.json(403, { message: "吊唁免登录模式已关闭，请使用家族姓名与密码登录" })
+    }
+    const info = $apis.requestInfo(c)
+    const body = (info && info.data) || {}
+    const captchaErr = hzRequireCaptcha(body, settings)
+    if (captchaErr) return c.json(400, { message: captchaErr })
+
     const record = $app.dao().findFirstRecordByFilter(
       "users",
       'role = {:role} && display_name = {:name}',
@@ -13,11 +81,9 @@ routerAdd("POST", "/api/hz/guest-login", (c) => {
         return c.json(403, { message: "吊唁贵宾入口暂不可用" })
       }
     } catch (_) {}
-    // PB 0.22 JSVM binds the Go func as-is: (app, c, record, meta)
     return $apis.recordAuthResponse($app, c, record, null)
   } catch (e) {
     console.log("guest-login error:", e)
-    // Fallback: mint token manually if response helper binding differs
     try {
       const record2 = $app.dao().findFirstRecordByFilter(
         "users",
@@ -43,4 +109,3 @@ routerAdd("POST", "/api/hz/guest-login", (c) => {
     }
   }
 })
-
