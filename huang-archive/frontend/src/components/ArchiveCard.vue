@@ -543,51 +543,53 @@ async function deleteMemory(m) {
       </div>
     </div>
 
-    <!-- Lightbox: swipe L/R on touch; no arrow buttons; red bordered X above image -->
-    <div
-      v-if="lightboxOpen && imageUrls.length"
-      class="fixed inset-0 z-[70] bg-ink/92 flex flex-col touch-pan-y"
-      data-testid="image-lightbox"
-      @click.self="closeLightbox"
-      @touchstart.passive="onLightboxTouchStart"
-      @touchmove="onLightboxTouchMove"
-      @touchend="onLightboxTouchEnd"
-      @touchcancel="onLightboxTouchEnd"
-    >
-      <div class="shrink-0 flex flex-col items-center gap-2 pt-[max(0.75rem,env(safe-area-inset-top))] px-4">
-        <button
-          type="button"
-          class="lightbox-close-x min-h-tap min-w-[48px] grid place-items-center bg-parchment text-cinnabar border-[3px] border-cinnabar shadow-md"
-          data-testid="lightbox-close"
-          aria-label="关闭"
-          title="关闭"
-          @click.stop="closeLightbox"
-        >
-          <X class="w-7 h-7 stroke-[2.5]" />
-        </button>
-        <span class="text-parchment/80 text-sm" data-testid="lightbox-index">
-          {{ lightboxIndex + 1 }} / {{ imageUrls.length }}
-        </span>
-      </div>
-      <div
-        class="flex-1 relative min-h-0 flex items-center justify-center overflow-hidden px-2 pb-[max(1rem,env(safe-area-inset-bottom))]"
-        data-testid="lightbox-stage"
-      >
-        <img
-          :src="imageUrls[lightboxIndex]?.full || imageUrls[lightboxIndex]?.url"
-          :alt="`${archive.title} 大图 ${lightboxIndex + 1}`"
-          class="lightbox-img select-none"
-          :class="lightboxOrient === 'landscape' ? 'lightbox-img--landscape' : 'lightbox-img--portrait'"
-          :style="swipeDeltaX ? { transform: `translateX(${swipeDeltaX}px)`, transition: 'none' } : undefined"
-          data-testid="lightbox-image"
-          draggable="false"
-          @load="onLightboxImgLoad"
-          @click.stop
-        />
-      </div>
-      <!-- Arrow buttons intentionally removed — swipe (touch) / ←→ keys (desktop) -->
-    </div>
   </article>
+
+    <!-- Teleport so fixed overlay is not clipped by card stacking contexts -->
+    <Teleport to="body">
+      <div
+        v-if="lightboxOpen && imageUrls.length"
+        class="fixed inset-0 z-[80] bg-ink/95 flex flex-col touch-pan-y"
+        data-testid="image-lightbox"
+        @click.self="closeLightbox"
+        @touchstart.passive="onLightboxTouchStart"
+        @touchmove="onLightboxTouchMove"
+        @touchend="onLightboxTouchEnd"
+        @touchcancel="onLightboxTouchEnd"
+      >
+        <div class="shrink-0 flex flex-col items-center gap-2 pt-[max(0.75rem,env(safe-area-inset-top))] px-4 pb-2">
+          <button
+            type="button"
+            class="lightbox-close-x min-h-tap min-w-[48px] grid place-items-center bg-parchment text-cinnabar border-[3px] border-cinnabar shadow-md"
+            data-testid="lightbox-close"
+            aria-label="关闭"
+            title="关闭"
+            @click.stop="closeLightbox"
+          >
+            <X class="w-7 h-7 stroke-[2.5]" />
+          </button>
+          <span class="text-parchment/80 text-sm" data-testid="lightbox-index">
+            {{ lightboxIndex + 1 }} / {{ imageUrls.length }}
+          </span>
+        </div>
+        <div
+          class="flex-1 relative min-h-0 flex items-center justify-center overflow-hidden px-2 pb-[max(1rem,env(safe-area-inset-bottom))]"
+          data-testid="lightbox-stage"
+        >
+          <img
+            :src="imageUrls[lightboxIndex]?.full || imageUrls[lightboxIndex]?.url"
+            :alt="`${archive.title} 大图 ${lightboxIndex + 1}`"
+            class="lightbox-img select-none"
+            :class="lightboxOrient === 'landscape' ? 'lightbox-img--landscape' : 'lightbox-img--portrait'"
+            :style="swipeDeltaX ? { transform: `translateX(${swipeDeltaX}px)`, transition: 'none' } : undefined"
+            data-testid="lightbox-image"
+            draggable="false"
+            @load="onLightboxImgLoad"
+            @click.stop
+          />
+        </div>
+      </div>
+    </Teleport>
 </template>
 
 <style scoped>

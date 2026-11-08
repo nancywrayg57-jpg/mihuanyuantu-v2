@@ -382,16 +382,19 @@ onMounted(async () => {
  * Mobile photo layer keeps prior cover crop (accepted).
  */
 .login-hero-fill {
+  /* Deep black edges → dark brick-brown toward the portrait (no flat letterbox). */
   background:
-    radial-gradient(ellipse 70% 90% at 50% 45%, #3a1e18 0%, transparent 62%),
+    radial-gradient(ellipse 58% 82% at 50% 48%, #4a2820 0%, transparent 68%),
     linear-gradient(
       90deg,
       #050403 0%,
-      #140c0a 14%,
-      #2a1612 36%,
-      #3a1e18 50%,
-      #2a1612 64%,
-      #140c0a 86%,
+      #120b09 10%,
+      #2c1713 26%,
+      #4a2820 42%,
+      #5a3228 50%,
+      #4a2820 58%,
+      #2c1713 74%,
+      #120b09 90%,
       #050403 100%
     );
 }
