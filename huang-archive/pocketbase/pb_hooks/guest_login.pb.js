@@ -1,77 +1,73 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-function hzLoadSettings() {
-  try {
-    const row = $app.dao().findFirstRecordByFilter("site_settings", "key = {:k}", { k: "global" })
-    return {
-      guest_passwordless: !!row.get("guest_passwordless"),
-      login_captcha: !!row.get("login_captcha"),
-    }
-  } catch (_) {
-    return { guest_passwordless: true, login_captcha: false }
-  }
-}
-
-function hzToString(v) {
-  if (v == null) return ""
-  if (typeof v === "string") return v
-  try {
-    return Array.prototype.slice.call(v).map((b) => String.fromCharCode(b)).join("")
-  } catch (_) {
-    return String(v)
-  }
-}
-
-function hzConsumeTicket(ticket) {
-  if (!ticket) return false
-  const path = "/pb/pb_data/captcha_sessions/ticket_" + ticket + ".json"
-  try {
-    const raw = hzToString($os.readFile(path))
-    try { $os.remove(path) } catch (_) {}
-    const data = JSON.parse(raw || "{}")
-    if (!data || data.used) return false
-    if (Date.now() > Number(data.exp || 0)) return false
-    return true
-  } catch (_) {
-    return false
-  }
-}
-
-function hzConsumeCaptcha(id, code) {
-  if (!id || !code) return false
-  const path = "/pb/pb_data/captcha_sessions/" + id + ".json"
-  try {
-    const raw = hzToString($os.readFile(path))
-    try { $os.remove(path) } catch (_) {}
-    const data = JSON.parse(raw || "{}")
-    if (!data || !data.code || !data.exp) return false
-    if (Date.now() > Number(data.exp)) return false
-    return String(code).trim().toUpperCase() === String(data.code).toUpperCase()
-  } catch (_) {
-    return false
-  }
-}
-
-function hzRequireCaptcha(body, settings) {
-  if (!settings.login_captcha) return null
-  if (body && body.ticket && hzConsumeTicket(body.ticket)) return null
-  if (body && hzConsumeCaptcha(body.captcha_id || body.id, body.captcha_code || body.code)) return null
-  return "请先完成图形验证码"
-}
-
-// Passwordless entry for the shared 吊唁贵宾 account (when enabled).
+// Passwordless entry for 吊唁贵宾 (when guest_passwordless enabled).
+// Helpers inlined — PB JSVM routerAdd closures cannot see sibling decls.
 routerAdd("POST", "/api/hz/guest-login", (c) => {
   try {
-    const settings = hzLoadSettings()
-    if (!settings.guest_passwordless) {
+    var guest_passwordless = true
+    var login_captcha = false
+    try {
+      var rows = $app.dao().findRecordsByFilter("site_settings", "id != ''", "-created", 10, 0)
+      for (var i = 0; i < rows.length; i++) {
+        if (String(rows[i].get("key") || "") === "global") {
+          try { guest_passwordless = !!rows[i].get("guest_passwordless") } catch (_) {}
+          try { login_captcha = !!rows[i].get("login_captcha") } catch (_) {}
+          break
+        }
+      }
+    } catch (_) {}
+
+    if (!guest_passwordless) {
       return c.json(403, { message: "吊唁免登录模式已关闭，请使用家族姓名与密码登录" })
     }
-    const info = $apis.requestInfo(c)
-    const body = (info && info.data) || {}
-    const captchaErr = hzRequireCaptcha(body, settings)
-    if (captchaErr) return c.json(400, { message: captchaErr })
 
-    const record = $app.dao().findFirstRecordByFilter(
+    var info = $apis.requestInfo(c)
+    var body = (info && info.data) || {}
+
+    if (login_captcha) {
+      var ok = false
+      var ticket = body.ticket
+      if (ticket) {
+        try {
+          var tpath = "/pb/pb_data/captcha_sessions/ticket_" + ticket + ".json"
+          var traw = $os.readFile(tpath)
+          try { $os.remove(tpath) } catch (_) {}
+          var tstr = typeof traw === "string" ? traw : String(traw || "")
+          try {
+            if (typeof traw !== "string") {
+              tstr = Array.prototype.slice.call(traw).map(function (b) { return String.fromCharCode(b) }).join("")
+            }
+          } catch (_) {}
+          var tdata = JSON.parse(tstr || "{}")
+          if (tdata && !tdata.used && Date.now() <= Number(tdata.exp || 0)) ok = true
+        } catch (_) {}
+      }
+      if (!ok) {
+        var cid = body.captcha_id || body.id
+        var ccode = body.captcha_code || body.code
+        if (cid && ccode) {
+          try {
+            var cpath = "/pb/pb_data/captcha_sessions/" + cid + ".json"
+            var craw = $os.readFile(cpath)
+            try { $os.remove(cpath) } catch (_) {}
+            var cstr = typeof craw === "string" ? craw : String(craw || "")
+            try {
+              if (typeof craw !== "string") {
+                cstr = Array.prototype.slice.call(craw).map(function (b) { return String.fromCharCode(b) }).join("")
+              }
+            } catch (_) {}
+            var cdata = JSON.parse(cstr || "{}")
+            if (cdata && cdata.code && Date.now() <= Number(cdata.exp || 0) &&
+                String(ccode).trim().toUpperCase() === String(cdata.code).toUpperCase()) {
+              ok = true
+            }
+          } catch (_) {}
+        }
+      }
+      if (!ok) return c.json(400, { message: "请先完成图形验证码" })
+    }
+
+    var record = $app.dao().findFirstRecordByFilter(
       "users",
       'role = {:role} && display_name = {:name}',
       { role: "guest", name: "吊唁贵宾" },
@@ -85,12 +81,12 @@ routerAdd("POST", "/api/hz/guest-login", (c) => {
   } catch (e) {
     console.log("guest-login error:", e)
     try {
-      const record2 = $app.dao().findFirstRecordByFilter(
+      var record2 = $app.dao().findFirstRecordByFilter(
         "users",
         'role = {:role} && display_name = {:name}',
         { role: "guest", name: "吊唁贵宾" },
       )
-      const token = $tokens.recordAuthToken($app, record2)
+      var token = $tokens.recordAuthToken($app, record2)
       return c.json(200, {
         token: token,
         record: {
