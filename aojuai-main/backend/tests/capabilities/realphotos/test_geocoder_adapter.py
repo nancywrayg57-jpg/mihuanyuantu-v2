@@ -101,3 +101,28 @@ def test_random_by_scene_missing_scene_skips_gps_not_fail() -> None:
     out_scene = run_five_layer(source=buf.getvalue(), preset=with_scene, seed=11)
     gps_ok = next(f for f in out_scene.fields if f["tag"] == "GPSLatitude")
     assert gps_ok["verification_status"] == "verified"
+
+
+def test_gps_mode_none_skips_and_does_not_exif_fail() -> None:
+    """R6 regression: gpsMode=none must skip GPS and not raise EXIF_WRITE_FAILED for GPS."""
+    import io
+
+    from PIL import Image
+
+    from app.capabilities.realphotos.services.five_layer import run_five_layer
+    from app.capabilities.realphotos.services.gps_write import resolve_gps
+    from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
+
+    preset = dict(S1_ENABLED_PRESETS[0])
+    assert preset.get("gpsMode") == "none"
+    plan = resolve_gps(preset=preset, seed=3)
+    assert plan["action"] == "skip"
+    buf = io.BytesIO()
+    Image.new("RGB", (800, 600), (10, 20, 30)).save(buf, format="JPEG", quality=85)
+    out = run_five_layer(source=buf.getvalue(), preset=preset, seed=3)
+    gps_field = next(f for f in out.fields if f["tag"] == "GPSLatitude")
+    assert gps_field["verification_status"] == "skipped"
+    assert out.jpeg.startswith(b"\xff\xd8\xff")
+    # No GPS-related EXIF failure: all failed tags must not be GPSLatitude.
+    failed = [f for f in out.fields if f.get("verification_status") == "failed"]
+    assert all(f.get("tag") != "GPSLatitude" for f in failed)

@@ -136,6 +136,20 @@ async def _enrich_task_detail(service, *, tenant_id: int, task) -> dict[str, Any
         payload["failureMessage"] = None
         payload["failureTitle"] = None
     payload["createdAt"] = task.created_at.isoformat() if getattr(task, "created_at", None) else None
+    # R5: compact score glance for detection_not_passed list rows (no billing change).
+    detection = payload.get("detection")
+    if (
+        str(task.failure_class or "") == "detection_not_passed"
+        and isinstance(detection, dict)
+        and detection.get("total_score") is not None
+    ):
+        payload["detectionBrief"] = {
+            "totalScore": int(detection["total_score"]),
+            "passScoreThreshold": int(detection.get("passScoreThreshold") or 75),
+            "accepted": bool(detection.get("accepted")),
+        }
+    else:
+        payload["detectionBrief"] = None
     return payload
 
 

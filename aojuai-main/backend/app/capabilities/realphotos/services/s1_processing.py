@@ -72,6 +72,8 @@ _RETRYABLE_FAILURES = frozenset(
         "GEMINI_NOT_CONFIGURED",
         "OUTPUT_CONSTRAINT_UNSATISFIED",
         "EXIF_WRITE_FAILED",
+        # R3: MakerNote write/readback failure shares EXIF technical hold/retry semantics
+        "MAKERNOTE_WRITE_FAILED",
         # F6: supplier/network pre-review request failure (not content reject `pre_review`)
         "pre_review_failed",
     }
@@ -203,9 +205,11 @@ class RealphotosS1Service:
         preset = await RealphotosOpsService(self.db).enabled_preset(preset_code)
         if preset is None:
             raise BusinessError(message="预设未启用或不存在", code="PRESET_REJECTED")
+        from app.capabilities.realphotos.services.five_layer import assert_preset_exif_ready
         from app.capabilities.realphotos.services.gps_write import assert_preset_gps_ready
 
         assert_preset_gps_ready(preset)
+        assert_preset_exif_ready(preset)
         review = pre_review_mode if pre_review_mode in {"pass", PRE_REVIEW_REJECT, "live"} else "pass"
         if detection_mode == DETECT_GEMINI:
             detect = DETECT_GEMINI
@@ -316,9 +320,11 @@ class RealphotosS1Service:
         preset = await RealphotosOpsService(self.db).enabled_preset(preset_code)
         if preset is None:
             raise BusinessError(message="预设未启用或不存在", code="PRESET_REJECTED")
+        from app.capabilities.realphotos.services.five_layer import assert_preset_exif_ready
         from app.capabilities.realphotos.services.gps_write import assert_preset_gps_ready
 
         assert_preset_gps_ready(preset)
+        assert_preset_exif_ready(preset)
         review = pre_review_mode if pre_review_mode in {"pass", PRE_REVIEW_REJECT, "live"} else "pass"
         if detection_mode == DETECT_GEMINI:
             detect = DETECT_GEMINI
@@ -707,7 +713,11 @@ class RealphotosS1Service:
         try:
             jpeg = await self._five_layer_jpeg(task)
         except BusinessError as exc:
-            if exc.code not in {"OUTPUT_CONSTRAINT_UNSATISFIED", "EXIF_WRITE_FAILED"}:
+            if exc.code not in {
+                "OUTPUT_CONSTRAINT_UNSATISFIED",
+                "EXIF_WRITE_FAILED",
+                "MAKERNOTE_WRITE_FAILED",
+            }:
                 raise
             reservation = await self._chain_reservation(task)
             if reservation is not None and reservation.state == "reserved":

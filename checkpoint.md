@@ -7,32 +7,23 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-08 CST（Asia/Shanghai） |
-| branch | `cursor/fix-task-failure-ux-9973` |
-| HEAD | `ed393ee` 已推送；PR #36 待审合 |
-| 文档态 | PRD **2.10**；架构 **1.7**；`s5_exited=true`；S7 未开 |
-| 代码态 | FIX-TASK-FAILURE-UX F1–F6：失败/积分中文映射补全；任务详情分数门槛+failureMessage+EXIF failedTags；替身 technical 独立文案；GPS 预提交拦截/跳过提示；`pre_review_failed` 可重试。未改计费字面量；非生产收费 |
-| 验证态 | `/tmp/fix-task-failure-ux-e2e.log` 含 `FIX_TASK_FAILURE_UX_E2E_PASS` 且 `production_billing=false`；`test_geocoder_adapter` + `test_s1_loop` 5 passed |
-| 当前阶段 | FIX-TASK-FAILURE-UX 待非作者 Owner squash |
-| 下一步 | 推送开 PR；Owner 非自评自合；不得开 S7 |
+| branch | `cursor/fix-failure-rate-remain-9973` |
+| HEAD | 待推送 PR（非合入就绪） |
+| 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
+| 代码态 | FIX-FAILURE-RATE-TECH：R1 prompt≥75 对齐+软日志；R2 EXIF 预检；R3 MakerNote 映射/重试；R4 gpsSubmitGuard；R5 detectionBrief；R6 本地 five_layer/pytest 绿，**缺开发机 `/tmp/r6-devhost-task.json`**。未改 PASS_SCORE；未伪造 GPS |
+| 验证态 | `/tmp/fix-failure-rate-remain-e2e.log`：R1–R5_E2E_PASS；**R6_E2E_FAIL**；`MERGE_READY=False`；`production_billing=false` |
+| 当前阶段 | 剩余项部分完成；R6 被 LAN/开发机证据阻塞（约束台账 X1） |
+| 下一步 | 开发机补 R6 证据后重跑 e2e；全绿前禁止 squash；不得开 S7 |
 
-## 1. 仓库与文档基线
+## 1. 约束冲突（必须保留）
 
-| 项目 | 值 |
-| --- | --- |
-| 仓库 | `https://github.com/nancywrayg57-jpg/mihuanyuantu-v2.git` |
-| 文档工作区 | `docs/mihuanyuantu-v2/` |
-| 现行 PRD | `docs/蜜獾原图-v2-PRD-v2.0.md`（document_version **2.10**） |
-| 项目架构 | `docs/蜜獾原图-v2-项目架构-v1.0.md`（version **1.7**） |
-| Agent 开发指令 | `docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md` |
-| 根目录职责文件 | `AGENTS.md`、`handoff.md`、`anchor.md`、`checkpoint.md` |
+见 `docs/mihuanyuantu-v2/fix-failure-rate-remain-constraints.md`：X1 开发机不可达不得写 R6_PASS；X2 PR 可开但非合入就绪；不得降 75 分门槛。
 
 ## 2. 阶段状态（摘要）
 
 | 阶段 | 状态 |
 | --- | --- |
-| S0–S6 | 既有证据；非生产收费 |
-| PRODUCT-GAP-A / PRESET-BULK / ALIGN / BROWSER / EXIF / UX-CN | 已合入 `origin/main`（至 #35） |
-| FIX-TASK-FAILURE-UX | F1–F6 本地 PASS；待 PR 审合 |
+| FIX-TASK-FAILURE-UX F1–F6 | 已合入 #36 |
+| FIX-FAILURE-RATE-TECH R1–R5 | 本地端测 PASS |
+| FIX-FAILURE-RATE-TECH R6 | **FAIL / 阻塞**（无开发机任务证据） |
 | S7 | **须管理员确认** |
-
-过程进度：`docs/mihuanyuantu-v2/progress.yaml`。

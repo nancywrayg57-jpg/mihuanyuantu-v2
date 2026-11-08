@@ -151,6 +151,17 @@ export default function RealphotosPresetsPage() {
   }
 
   async function savePreset() {
+    const missing: string[] = []
+    if (!String(form.brand || '').trim()) missing.push('品牌')
+    if (!String(form.model || '').trim()) missing.push('型号')
+    if (!String(form.iso || '').trim()) missing.push('ISO')
+    if (!String(form.shutter || '').trim()) missing.push('快门')
+    if (!String(form.aperture || '').trim()) missing.push('光圈')
+    if (!String(form.focalLength || '').trim()) missing.push('焦距')
+    if (missing.length) {
+      setMessage(`预设缺少必填字段：${missing.join('、')}（启用前须补全，不会静默填默认值）`)
+      return
+    }
     const gpsConfig =
       form.gpsMode === 'fixed'
         ? { latitude: form.lat, longitude: form.lng, altitude: form.altitude }

@@ -189,6 +189,9 @@ export default function RealphotosLibraryPage() {
         <button className="border px-2 py-1" type="button" onClick={() => goProcess()}>
           去处理（已选 {selectedIds.length}）
         </button>
+        <span className="text-xs text-muted-foreground">
+          单张/批量均进入处理页；GPS 不可用将拦截，缺坐标会提示跳过写入
+        </span>
         <button className="border px-2 py-1" type="button" onClick={() => void downloadSelected()}>
           批量下载
         </button>

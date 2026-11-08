@@ -3,7 +3,7 @@
 ## Project Snapshot
 - Goal: 电商商家将商品图/生成图整理为可追溯、可下载、带设备成像参数的图片资产；积分可审计。不承诺外部平台原创/实拍认定。
 - 首期（S1）: 真会话 → 本地上传 → 单张处理 → 预审占位 → 五层占位实现（仍交 sRGB JPG）→ Gemini 规则替身 → 整数积分流水按张 10 → LocalDisk 网关下载；同租户双账号 + 跨租户隔离。
-- Current phase: delivery（FIX-TASK-FAILURE-UX 待合入；UX-CN-PRESET 已合 #35；S5 已退出；导入未接通；不是生产收费就绪；不得开 S7。文档基线 PRD 2.10 / 架构 1.7）。
+- Current phase: delivery（FIX-FAILURE-RATE-TECH R1–R5 本地 PASS、R6 开发机证据缺失；#36 已合；不是生产收费就绪；不得开 S7。文档基线 PRD 2.10 / 架构 1.7）。
 - Protected decisions: 栈=aojuai；认证=用户名密码+验证码；部署=经济起步；数据=LocalDisk+整数租户积分；AI=首期规则替身；FR-033 scopes=能力名映射。
 - Vibe coding mode: 开启；一次一个可见阶段。
 
@@ -90,7 +90,8 @@
 | 15-preset-bulk | 清占位 + 405 全量导入 + 55 键快照 | `/tmp/preset-bulk-import-e2e.log` | coded_pr_pending | Owner 审 PR；依赖 #29；不开 S7 |
 | 16-browser-e2e-fix | F1–F8：深链/工单/用户/held/率%/藏演示/系统裁剪/generation 网关 | `/tmp/browser-e2e-fix-e2e.log` | merged_#32 | — |
 | 17-ux-cn-preset | U1–U7 中文标签 + 预设分页/详情/新增弹窗；C1 撤批量 UI | `/tmp/ux-cn-preset-e2e.log` | merged_#35 | — |
-| 18-fix-task-failure-ux | F1–F6 失败原因映射/详情分数门槛/GPS 提示/替身区分/预审请求可重试 | `/tmp/fix-task-failure-ux-e2e.log` | local_pass_pr_pending | Owner 非自评自合；F3=展示方案 A；不开 S7 |
+| 18-fix-task-failure-ux | F1–F6 失败原因映射/详情分数门槛/GPS 提示/替身区分/预审请求可重试 | `/tmp/fix-task-failure-ux-e2e.log` | merged_#36 | — |
+| 19-fix-failure-rate-remain | R1–R6 失败率剩余项；R6 须开发机证据 | `/tmp/fix-failure-rate-remain-e2e.log` | r1_r5_pass_r6_blocked | 全绿前禁合入；PASS_SCORE=75；不开 S7 |
 
 ## Risks and Watchpoints
 - Risk: 把文档齐全或 CI 绿当成后端已交付。
@@ -101,6 +102,7 @@
 - Mitigation: F8 网关放行 `generation/*`（资产表校验）；「(降级)」仅文件名元数据回退。
 
 ## Backlog Knowledge
-- Next: 推送 `cursor/fix-task-failure-ux-9973` 开 PR；Owner 非自评自合；不得开 S7；F3 门槛仍 75（方案 A 文案）。
-- Closed this loop: FIX-TASK-FAILURE-UX F1–F6（`/tmp/fix-task-failure-ux-e2e.log` `FIX_TASK_FAILURE_UX_E2E_PASS`）；#35 UX-CN 已在 main。
-- Deferred: A5 运营成本真实聚合（无账本物料）；CI 升至架构推荐 3.12/pnpm10（accepted_risk，待 Owner 锁文件验证）；多 worker 菜单缓存无 Redis 时仍须滚动重启（IA_C6=mitigated_with_ops_note）；替身改库码 `fixture_technical` 须 Owner 批准（本迭代仅 UI 区分）。
+- Next: 开发机写入 `/tmp/r6-devhost-task.json`（`gpsMode=none` 任务）后重跑 `fix_failure_rate_remain_e2e.py`；仅当 `MERGE_READY=True` 才可 Owner squash；不得开 S7。
+- Closed this loop (partial): R1–R5（prompt 对齐、EXIF 预检、MakerNote 映射、单张 GPS 提示、列表差几分）；#36 已在 main。
+- Blocked: R6 正式端测（Cloud→`192.168.19.128` 路由缺失 / 无 host 证据文件）。本地 five_layer+pytest 已绿，**不等于**工单 R6_E2E_PASS。
+- Deferred: A5 运营成本真实聚合；CI 升 3.12/pnpm10；替身改库码 `fixture_technical` 须 Owner 批准。
