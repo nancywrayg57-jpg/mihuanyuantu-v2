@@ -50,8 +50,10 @@ const files = computed(() => {
 const slide = ref(0)
 const lightboxOpen = ref(false)
 const lightboxIndex = ref(0)
-/** 'landscape' | 'portrait' — drives object-fit fill by image orientation */
+/** 'landscape' | 'portrait' — drives stage aspect / fill by image orientation */
 const lightboxOrient = ref('portrait')
+/** CSS aspect-ratio from natural pixels, e.g. "1920 / 1278" */
+const lightboxAspect = ref('3 / 4')
 const swipeStartX = ref(0)
 const swipeStartY = ref(0)
 const swipeDeltaX = ref(0)
@@ -78,6 +80,7 @@ function applyLightboxOrient(nw, nh, seq = lightboxOrientSeq) {
   if (seq !== lightboxOrientSeq) return
   if (!nw || !nh) return
   lightboxOrient.value = nw >= nh ? 'landscape' : 'portrait'
+  lightboxAspect.value = `${nw} / ${nh}`
 }
 
 function detectLightboxOrient(src) {
@@ -622,6 +625,7 @@ async function deleteMemory(m) {
           <div
             class="lightbox-stage"
             :class="lightboxOrient === 'landscape' ? 'lightbox-stage--landscape' : 'lightbox-stage--portrait'"
+            :style="{ '--lb-aspect': lightboxAspect }"
             data-testid="lightbox-stage"
           >
             <img
@@ -645,7 +649,6 @@ async function deleteMemory(m) {
 <style scoped>
 .lightbox-stage {
   position: absolute;
-  inset: 0;
   overflow: hidden;
 }
 
@@ -659,25 +662,43 @@ async function deleteMemory(m) {
   transition: transform 0.15s ease-out;
 }
 
+/* Portrait: fill the upright phone frame. */
+.lightbox-stage--portrait {
+  inset: 0;
+}
+
 /*
- * Mobile landscape: rotate the stage into landscape so a wide photo fills
- * the phone as a landscape frame (not a cropped strip of a portrait stage).
- * Portrait stays upright and fills the portrait frame.
+ * Landscape: keep content upright; use a landscape-aspect stage that
+ * fills phone width and is vertically centered (true landscape fill,
+ * not a 90°-rotated sideways photo).
  */
-@media (max-width: 767.98px) {
-  .lightbox-stage--landscape {
-    width: 100dvh;
-    height: 100dvw;
-    top: 50%;
-    left: 50%;
-    right: auto;
-    bottom: auto;
-    transform: translate(-50%, -50%) rotate(90deg);
-    transform-origin: center center;
-  }
+.lightbox-stage--landscape {
+  left: 0;
+  right: 0;
+  width: 100%;
+  top: 50%;
+  bottom: auto;
+  height: auto;
+  aspect-ratio: var(--lb-aspect, 3 / 2);
+  max-height: 100%;
+  transform: translateY(-50%);
 }
 
 @media (min-width: 768px) {
+  .lightbox-stage--portrait,
+  .lightbox-stage--landscape {
+    inset: 0;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: auto;
+    transform: none;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+  }
   .lightbox-img--landscape,
   .lightbox-img--portrait {
     object-fit: contain;
