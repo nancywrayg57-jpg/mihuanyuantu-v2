@@ -33,9 +33,11 @@ def gps_writability(*, gps_mode: str, gps_config: dict[str, Any] | None = None) 
     if action == "write":
         return {"gpsWritable": True, "gpsWritableReason": "", "gpsMode": mode}
     if action == "skip":
+        # Skip is processable (legacy-aligned). Do not surface the old hard-fail
+        # phrase as gpsWritableReason — that made presets look still broken.
         return {
             "gpsWritable": True,
-            "gpsWritableReason": str(plan.get("reason") or "按规则跳过写入"),
+            "gpsWritableReason": "",
             "gpsMode": mode,
         }
     return {
@@ -102,10 +104,11 @@ def resolve_gps(*, preset: dict[str, Any], seed: int) -> dict[str, Any]:
             alt = float(config.get("altitude") if config.get("altitude") not in (None, "") else 0.0)
         except (TypeError, ValueError):
             # Old runtime: fixed 无坐标则不生成 GPS，任务仍成功；模式保持 fixed。
+            # Wording must not equal the former hard-fail string (inbox/UI confusion).
             return {
                 "action": "skip",
                 "mode": mode,
-                "reason": "fixed 模式缺少可用的纬度/经度，跳过 GPS 写入（不伪造坐标）",
+                "reason": "fixed 无坐标：已按旧版跳过 GPS 写入（不伪造、不失败）",
             }
         if not (-90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0):
             return {"action": "fail", "mode": mode, "reason": "fixed 坐标超出合法范围"}
