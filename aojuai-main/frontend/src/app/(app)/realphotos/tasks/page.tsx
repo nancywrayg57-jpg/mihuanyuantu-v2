@@ -4,6 +4,14 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
+import {
+  boolPassLabel,
+  creditDispositionLabel,
+  detectionDimensionLabel,
+  failureClassLabel,
+  generationModeLabel,
+  taskStatusLabel,
+} from '@/lib/realphotos-labels'
 
 type Detection = {
   accepted?: boolean
@@ -81,10 +89,33 @@ function canReprocess(task: ProcessingTask): boolean {
   )
 }
 
-function reportText(task: ProcessingTask): string {
-  const detection = task.detection
-  if (!detection) return '尚无报告'
-  return `reason=${detection.reason || ''} noise=${detection.noise} depthOfField=${detection.depthOfField} lighting=${detection.lighting} colorRealism=${detection.colorRealism} overallRealism=${detection.overallRealism} total_score=${detection.total_score} passed=${String(detection.passed)}`
+function DetectionReport({ detection }: { detection: Detection | null | undefined }) {
+  if (!detection) return <p>暂无报告</p>
+  const dims: Array<[string, number | undefined]> = [
+    ['noise', detection.noise],
+    ['depth', detection.depthOfField],
+    ['lighting', detection.lighting],
+    ['color_realism', detection.colorRealism],
+    ['overall_realism', detection.overallRealism],
+  ]
+  return (
+    <div className="space-y-1">
+      <p>
+        结果：{boolPassLabel(detection.passed)}
+        {detection.accepted !== undefined ? ` · 接受：${boolPassLabel(detection.accepted)}` : ''}
+      </p>
+      <p>总分：{detection.total_score ?? '—'}</p>
+      <p>检测器：{detection.detector || '—'}</p>
+      <p>原因：{detection.reason || '—'}</p>
+      <ul className="list-inside list-disc">
+        {dims.map(([key, value]) => (
+          <li key={key}>
+            {detectionDimensionLabel(key)}：{value ?? '—'}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
 }
 
 export default function RealphotosTasksPage() {
@@ -364,9 +395,13 @@ export default function RealphotosTasksPage() {
                 }}
               >
                 <option value="all">全部</option>
-                <option value="DELIVERED">DELIVERED</option>
-                <option value="FAILED">FAILED</option>
-                <option value="SUBMITTED">SUBMITTED</option>
+                <option value="DELIVERED">已交付</option>
+                <option value="FAILED">失败</option>
+                <option value="SUBMITTED">已提交</option>
+                <option value="PRE_REVIEW">预审中</option>
+                <option value="PRE_REVIEW_FAILED">预审失败</option>
+                <option value="FULL_PROCESSING">处理中</option>
+                <option value="DETECTION">检测中</option>
               </select>
             </label>
             <span>
@@ -418,7 +453,7 @@ export default function RealphotosTasksPage() {
                 <th className="text-left">任务</th>
                 <th className="text-left">状态</th>
                 <th className="text-left">积分处置</th>
-                <th className="text-left">失败</th>
+                <th className="text-left">失败原因</th>
                 <th className="text-left">操作</th>
               </tr>
             </thead>
@@ -442,9 +477,9 @@ export default function RealphotosTasksPage() {
                       />
                     </td>
                     <td>{item.id}</td>
-                    <td>{item.status}</td>
-                    <td>{item.creditDisposition || '处理中'}</td>
-                    <td>{item.failureClass || ''}</td>
+                    <td>{taskStatusLabel(item.status)}</td>
+                    <td>{creditDispositionLabel(item.creditDisposition)}</td>
+                    <td>{failureClassLabel(item.failureClass)}</td>
                     <td>
                       <button className="border px-2 py-0.5" type="button" onClick={() => setDetail(item)}>
                         详情
@@ -457,17 +492,58 @@ export default function RealphotosTasksPage() {
           </table>
           <p className="text-sm">{downloadNote}</p>
           {detail ? (
-            <div className="space-y-2 border p-3 text-sm">
-              <div className="flex justify-between">
-                <strong>处理任务 {detail.id}</strong>
-                <button type="button" className="border px-2 py-0.5" onClick={() => setDetail(null)}>
-                  关闭
-                </button>
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+              onClick={() => setDetail(null)}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`处理任务 ${detail.id} 详情`}
+            >
+              <div
+                className="max-h-[90vh] w-full max-w-lg space-y-3 overflow-y-auto border bg-background p-4 text-sm shadow"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="flex justify-between gap-2">
+                  <strong>处理任务 {detail.id}</strong>
+                  <button type="button" className="border px-2 py-0.5" onClick={() => setDetail(null)}>
+                    关闭
+                  </button>
+                </div>
+                <section className="space-y-1">
+                  <h3 className="font-medium">基本</h3>
+                  <p>状态：{taskStatusLabel(detail.status)}</p>
+                  <p>预设编号：{detail.presetCode || '—'}</p>
+                  <p>创建时间：{detail.createdAt || '—'}</p>
+                  {detail.copiedFrom ? <p>复制自：{detail.copiedFrom}</p> : null}
+                </section>
+                <section className="space-y-1">
+                  <h3 className="font-medium">积分</h3>
+                  <p>处置：{creditDispositionLabel(detail.creditDisposition)}</p>
+                  {detail.billingMode ? <p>计费模式：{detail.billingMode}</p> : null}
+                </section>
+                <section className="space-y-1">
+                  <h3 className="font-medium">失败</h3>
+                  <p>失败原因：{failureClassLabel(detail.failureClass)}</p>
+                </section>
+                {detail.gpsWrite ? (
+                  <section className="space-y-1">
+                    <h3 className="font-medium">GPS 写入</h3>
+                    <p>是否写入：{detail.gpsWrite.written ? '是' : '否'}</p>
+                    <p>原因：{detail.gpsWrite.reason || '—'}</p>
+                    {detail.gpsWrite.actualGps ? (
+                      <p>
+                        实际坐标：{detail.gpsWrite.actualGps.latitude ?? '—'},{' '}
+                        {detail.gpsWrite.actualGps.longitude ?? '—'}, 海拔{' '}
+                        {detail.gpsWrite.actualGps.altitude ?? '—'}
+                      </p>
+                    ) : null}
+                  </section>
+                ) : null}
+                <section className="space-y-1">
+                  <h3 className="font-medium">检测报告</h3>
+                  <DetectionReport detection={detail.detection} />
+                </section>
               </div>
-              <p>预设：{detail.presetCode}</p>
-              <p>检测报告：{reportText(detail)}</p>
-              <p>积分：{detail.creditDisposition || '处理中'}</p>
-              <p className="text-xs text-muted-foreground">报告仅在详情内展示，无独立检测结果页。</p>
             </div>
           ) : null}
         </section>
@@ -524,7 +600,7 @@ export default function RealphotosTasksPage() {
                 genItems.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
-                    <td>{item.mode}</td>
+                    <td>{generationModeLabel(item.mode)}</td>
                     <td>{item.quantity}</td>
                     <td>
                       {item.width}×{item.height}
@@ -545,36 +621,48 @@ export default function RealphotosTasksPage() {
           </table>
           <p className="text-sm">{downloadNote}</p>
           {genDetail ? (
-            <div className="space-y-2 border p-3 text-sm">
-              <div className="flex justify-between">
-                <strong>生图任务 {genDetail.id}</strong>
-                <button type="button" className="border px-2 py-0.5" onClick={() => setGenDetail(null)}>
-                  关闭
-                </button>
-              </div>
-              <p>正向：{genDetail.positivePrompt}</p>
-              <p>负向：{genDetail.negativePrompt || '（空）'}</p>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr>
-                    <th className="text-left">张</th>
-                    <th className="text-left">状态</th>
-                    <th className="text-left">资产</th>
-                    <th className="text-left">计费</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {genDetail.items.map((row) => (
-                    <tr key={row.index}>
-                      <td>{row.index}</td>
-                      <td>{row.status}</td>
-                      <td>{row.assetId || ''}</td>
-                      <td>{row.creditsConsumed}</td>
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+              onClick={() => setGenDetail(null)}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`生图任务 ${genDetail.id} 详情`}
+            >
+              <div
+                className="max-h-[90vh] w-full max-w-lg space-y-2 overflow-y-auto border bg-background p-4 text-sm shadow"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="flex justify-between">
+                  <strong>生图任务 {genDetail.id}</strong>
+                  <button type="button" className="border px-2 py-0.5" onClick={() => setGenDetail(null)}>
+                    关闭
+                  </button>
+                </div>
+                <p>模式：{generationModeLabel(genDetail.mode)}</p>
+                <p>正向：{genDetail.positivePrompt}</p>
+                <p>负向：{genDetail.negativePrompt || '（空）'}</p>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th className="text-left">张</th>
+                      <th className="text-left">状态</th>
+                      <th className="text-left">资产</th>
+                      <th className="text-left">计费</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              <p className="text-xs text-muted-foreground">生图详情无复制、主动重处理、四卡或任务链时间线。</p>
+                  </thead>
+                  <tbody>
+                    {genDetail.items.map((row) => (
+                      <tr key={row.index}>
+                        <td>{row.index}</td>
+                        <td>{taskStatusLabel(row.status)}</td>
+                        <td>{row.assetId || ''}</td>
+                        <td>{row.creditsConsumed}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="text-xs text-muted-foreground">生图详情无复制、主动重处理、四卡或任务链时间线。</p>
+              </div>
             </div>
           ) : null}
         </section>

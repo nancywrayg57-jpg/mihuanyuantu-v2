@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
+import { originKindLabel } from '@/lib/realphotos-labels'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
 
 type Asset = {
@@ -196,10 +197,11 @@ export default function RealphotosLibraryPage() {
         </button>
       </section>
       <section id="local-upload" className="space-y-2 text-sm">
-        <label className="block">
-          本地上传（仅入库，不自动处理）
+        <p>本地上传（仅入库，不自动处理）</p>
+        <label className="inline-flex cursor-pointer items-center border px-3 py-1">
+          选择文件
           <input
-            className="mt-1 block"
+            className="sr-only"
             type="file"
             accept="image/jpeg,image/png,.jpg,.jpeg,.png"
             onChange={(event) => void onLocalUpload(event.target.files?.[0] || null)}
@@ -282,7 +284,7 @@ export default function RealphotosLibraryPage() {
                     ? ` · 请求${item.requestedWidth}×${item.requestedHeight} / 实际${item.actualWidth}×${item.actualHeight}`
                     : ''}
                 </td>
-                <td>{item.originKind}</td>
+                <td>{originKindLabel(item.originKind)}</td>
                 <td>
                   {item.width}×{item.height}
                 </td>
