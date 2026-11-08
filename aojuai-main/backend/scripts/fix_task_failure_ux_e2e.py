@@ -66,7 +66,7 @@ def main() -> int:
         ("pre_review_failed", "预审请求失败（技术）"),
         ("GEMINI_TECHNICAL", "Gemini 检测技术异常"),
         ("GEMINI_NOT_CONFIGURED", "最终检测未配置"),
-        ("technical", "规则替身技术失败"),
+        ("technical", "历史联调替身（已停用）"),
         ("released_detection_not_passed", "检测未通过已释放"),
         ("held_unresolved_prd_4_5_vs_fr016", "争议冻结"),
     ):
@@ -87,9 +87,9 @@ def main() -> int:
     must("detectionMode" in s1_api, "E-F2_detectionMode_payload")
 
     # --- E-F5: fixture vs real tech ---
-    must("规则替身技术失败" in labels, "E-F5_fixture_label")
+    must("历史联调替身（已停用）" in labels, "E-F5_fixture_label")
     must("failureClassLabelForTask" in tasks, "E-F5_list_uses_for_task")
-    must("规则替身（technical）" in tasks, "E-F5_detail_mode_copy")
+    must("历史联调替身（已停用）" in tasks, "E-F5_detail_mode_copy")
 
     # --- E-F4: GPS soft hint / hard block ---
     must("gpsWillSkip" in gps_src, "E-F4_gpsWillSkip_field")
