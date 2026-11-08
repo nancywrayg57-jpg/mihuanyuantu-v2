@@ -101,13 +101,16 @@ async def test_s1_single_image_loop(db) -> None:
             idempotency_key="inject-denied",
             detection_mode="not_passed",
         )
+    # C1: fixture pass/pre_review inject is admin-only; merchant defaults to live gemini.
     task = await loop.submit_single(
         tenant_id=tenant1,
         owner_account_id=user_a,
-        actor_role_codes={ROLE_MERCHANT},
+        actor_role_codes={ROLE_ADMIN},
         asset_id=int(asset.id),
         preset_code=S1_ENABLED_PRESETS[0]["code"],
         idempotency_key="task-pass",
+        detection_mode="pass",
+        pre_review_mode="pass",
     )
     assert task.status == TASK_SUBMITTED
     with pytest.raises(BusinessError):
@@ -173,10 +176,12 @@ async def test_s1_single_image_loop(db) -> None:
     task_b = await loop.submit_single(
         tenant_id=tenant1,
         owner_account_id=user_b,
-        actor_role_codes={ROLE_MERCHANT},
+        actor_role_codes={ROLE_ADMIN},
         asset_id=int(asset_b.id),
         preset_code=S1_ENABLED_PRESETS[1]["code"],
         idempotency_key="task-b",
+        detection_mode="pass",
+        pre_review_mode="pass",
     )
     claimed_b = await jobs.claim(worker_id="s1-test-b", job_kinds=("process_image",))
     await loop.execute_queued(claimed_b)
