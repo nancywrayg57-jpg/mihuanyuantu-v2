@@ -107,6 +107,7 @@ def _task_payload(task) -> dict[str, Any]:
         "presetSnapshot": dict(task.preset_snapshot or {}),
         "failureClass": task.failure_class,
         "creditDisposition": task.credit_disposition,
+        "detectionMode": str(getattr(task, "detection_mode", "") or ""),
         "outputObjectKey": task.output_object_key,
         "outputExpiresAt": task.output_expires_at.isoformat() if task.output_expires_at else None,
         "pipelineVersion": task.pipeline_version,
@@ -115,6 +116,27 @@ def _task_payload(task) -> dict[str, Any]:
         "preReviewMode": mode,
         "preReviewAudit": audit,
     }
+
+
+async def _enrich_task_detail(service, *, tenant_id: int, task) -> dict[str, Any]:
+    payload = _task_payload(task)
+    payload["detection"] = await service.detection_payload(
+        tenant_id=int(tenant_id), task_id=int(task.id)
+    )
+    payload["gpsWrite"] = await service.gps_write_summary(
+        tenant_id=int(tenant_id), task_id=int(task.id)
+    )
+    detail = await service.failure_detail_payload(
+        tenant_id=int(tenant_id), task_id=int(task.id)
+    )
+    if detail and detail.get("message"):
+        payload["failureMessage"] = detail["message"]
+        payload["failureTitle"] = detail.get("title") or ""
+    else:
+        payload["failureMessage"] = None
+        payload["failureTitle"] = None
+    payload["createdAt"] = task.created_at.isoformat() if getattr(task, "created_at", None) else None
+    return payload
 
 
 class CopyBody(BaseModel):
@@ -316,12 +338,11 @@ async def list_processing_tasks(
     )
     payloads = []
     for task in rows:
-        payload = _task_payload(task)
-        payload["detection"] = await service.detection_payload(
-            tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id)
+        payloads.append(
+            await _enrich_task_detail(
+                service, tenant_id=int(tenant_ctx.tenant_id), task=task
+            )
         )
-        payload["createdAt"] = task.created_at.isoformat() if task.created_at else None
-        payloads.append(payload)
     return SuccessResponse(
         data={
             "items": payloads,
@@ -387,12 +408,8 @@ async def get_task(
         task_id=int(task_id),
         owner_account_id=int(current_user.id),
     )
-    payload = _task_payload(task)
-    payload["detection"] = await service.detection_payload(
-        tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id)
-    )
-    payload["gpsWrite"] = await service.gps_write_summary(
-        tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id)
+    payload = await _enrich_task_detail(
+        service, tenant_id=int(tenant_ctx.tenant_id), task=task
     )
     return SuccessResponse(data=payload)
 

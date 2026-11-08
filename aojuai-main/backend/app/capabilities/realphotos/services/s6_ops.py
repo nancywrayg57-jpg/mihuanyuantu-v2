@@ -475,6 +475,8 @@ class RealphotosOpsService:
         return items
 
     async def list_enabled_presets(self) -> list[dict]:
+        from app.capabilities.realphotos.services.gps_write import gps_writability
+
         items: list[dict] = []
         if INJECT_S1_CATALOG_INTO_ENABLED:
             disabled = {
@@ -482,7 +484,20 @@ class RealphotosOpsService:
                 for row in (await self.db.execute(select(RealphotosDevicePreset))).scalars().all()
                 if row.deleted_at is None and not row.enabled
             }
-            items = [dict(item) for item in S1_ENABLED_PRESETS if item["code"] not in disabled]
+            for raw in S1_ENABLED_PRESETS:
+                if raw["code"] in disabled:
+                    continue
+                payload = dict(raw)
+                writable = gps_writability(
+                    gps_mode=str(payload.get("gpsMode") or "none"),
+                    gps_config=payload.get("gpsConfig")
+                    if isinstance(payload.get("gpsConfig"), dict)
+                    else None,
+                )
+                payload["gpsWritable"] = bool(writable["gpsWritable"])
+                payload["gpsWillSkip"] = bool(writable.get("gpsWillSkip"))
+                payload["gpsWritableReason"] = str(writable["gpsWritableReason"] or "")
+                items.append(payload)
         extra = (
             await self.db.execute(
                 select(RealphotosDevicePreset).where(
@@ -1194,6 +1209,7 @@ class RealphotosOpsService:
             "deviceTypeMappedFrom": mapped_from,
             "deviceTypeUnsupported": bool(dtype not in DEVICE_TYPES and mapped_from),
             "gpsWritable": bool(writable["gpsWritable"]),
+            "gpsWillSkip": bool(writable.get("gpsWillSkip")),
             "gpsWritableReason": str(writable["gpsWritableReason"] or ""),
         }
         if config:

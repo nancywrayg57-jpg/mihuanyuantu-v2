@@ -13,6 +13,10 @@ type Preset = {
   model: string
   deviceType: string
   brand: string
+  gpsWritable?: boolean
+  gpsWillSkip?: boolean
+  gpsWritableReason?: string
+  gpsMode?: string
 }
 
 type PendingAsset = { id: string; previewUrl: string }
@@ -89,6 +93,17 @@ export function RealphotosBatchClient() {
     }
   }, [models, presetCode])
 
+  const selectedPreset = useMemo(
+    () => presets.find((item) => item.code === presetCode) || null,
+    [presets, presetCode],
+  )
+  const gpsSubmitBlocked = Boolean(selectedPreset && selectedPreset.gpsWritable === false)
+  const gpsSkipHint =
+    selectedPreset?.gpsWillSkip && selectedPreset.gpsMode && selectedPreset.gpsMode !== 'none'
+      ? selectedPreset.gpsWritableReason ||
+        '本预设 GPS 配置不完整，处理时将跳过 GPS 写入（不伪造坐标）'
+      : ''
+
   async function onFile(next: File | null) {
     setFile(null)
     if (!next) return
@@ -134,6 +149,12 @@ export function RealphotosBatchClient() {
     }
     if (!presetCode || library.length < 1 || library.length > 10) {
       setNotice('须先选择库内资源 1–10 张，并完成类型→品牌→型号')
+      return
+    }
+    if (gpsSubmitBlocked) {
+      setNotice(
+        `所选预设 GPS 不可用，已拦截提交：${selectedPreset?.gpsWritableReason || '请先在预设台账补全 GPS'}`,
+      )
       return
     }
     try {
@@ -219,6 +240,14 @@ export function RealphotosBatchClient() {
             </select>
           </label>
         </div>
+        {gpsSubmitBlocked ? (
+          <p className="text-sm text-destructive">
+            GPS 不可用，已禁止提交：{selectedPreset?.gpsWritableReason || '未知原因'}
+          </p>
+        ) : null}
+        {!gpsSubmitBlocked && gpsSkipHint ? (
+          <p className="text-sm text-amber-700 dark:text-amber-400">GPS 提示：{gpsSkipHint}</p>
+        ) : null}
       </section>
       <section className="space-y-3">
         <h2 className="text-sm font-medium">待处理图片（库内资源）</h2>
@@ -248,7 +277,12 @@ export function RealphotosBatchClient() {
           >
             移除最后一张
           </button>
-          <button className="border px-3 py-1" type="button" disabled={frozen} onClick={() => void submitBatch()}>
+          <button
+            className="border px-3 py-1"
+            type="button"
+            disabled={frozen || gpsSubmitBlocked}
+            onClick={() => void submitBatch()}
+          >
             开始处理
           </button>
         </div>

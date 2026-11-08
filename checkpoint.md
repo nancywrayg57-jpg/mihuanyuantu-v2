@@ -7,12 +7,12 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-08 CST（Asia/Shanghai） |
-| branch | `cursor/ux-cn-preset-9973` |
-| HEAD | `f6c19e7` 已推送；PR #35 待审合 |
+| branch | `cursor/fix-task-failure-ux-9973` |
+| HEAD | 待推送 PR |
 | 文档态 | PRD **2.10**；架构 **1.7**；`s5_exited=true`；S7 未开 |
-| 代码态 | UX-CN-PRESET U1–U7：`realphotos-labels` 展示映射；资源「选择文件」；任务中文列+详情弹窗；预设分页 20、删批量按钮、详情/新增弹窗；工单台/工作台/批量/订单客服中文。未接通 URL 真导入；非生产收费 |
-| 验证态 | `/tmp/ux-cn-preset-e2e.log` 含 `UX_CN_PRESET_E2E_PASS` 且 `production_billing=false`；截图 `/tmp/cursor/screenshots/ux-cn-preset-*.png` |
-| 当前阶段 | UX-CN-PRESET 待非作者 Owner squash |
+| 代码态 | FIX-TASK-FAILURE-UX F1–F6：失败/积分中文映射补全；任务详情分数门槛+failureMessage+EXIF failedTags；替身 technical 独立文案；GPS 预提交拦截/跳过提示；`pre_review_failed` 可重试。未改计费字面量；非生产收费 |
+| 验证态 | `/tmp/fix-task-failure-ux-e2e.log` 含 `FIX_TASK_FAILURE_UX_E2E_PASS` 且 `production_billing=false`；`test_geocoder_adapter` + `test_s1_loop` 5 passed |
+| 当前阶段 | FIX-TASK-FAILURE-UX 待非作者 Owner squash |
 | 下一步 | 推送开 PR；Owner 非自评自合；不得开 S7 |
 
 ## 1. 仓库与文档基线
@@ -31,9 +31,8 @@
 | 阶段 | 状态 |
 | --- | --- |
 | S0–S6 | 既有证据；非生产收费 |
-| PRODUCT-GAP-A / PRESET-BULK | 已合入 `origin/main`（#29/#30） |
-| ALIGN-GAP-A5BC / BROWSER-E2E-FIX / EXIF | 已合入（#31/#32/#33） |
-| UX-CN-PRESET | U1–U7 本地 PASS；待 PR 审合 |
+| PRODUCT-GAP-A / PRESET-BULK / ALIGN / BROWSER / EXIF / UX-CN | 已合入 `origin/main`（至 #35） |
+| FIX-TASK-FAILURE-UX | F1–F6 本地 PASS；待 PR 审合 |
 | S7 | **须管理员确认** |
 
 过程进度：`docs/mihuanyuantu-v2/progress.yaml`。

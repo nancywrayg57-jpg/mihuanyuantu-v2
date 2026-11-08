@@ -42,7 +42,8 @@ def test_gps_writability_fixed_missing_coords() -> None:
     assert "缺少可用的纬度/经度" not in str(plan.get("reason") or "")
     writable = gps_writability(gps_mode="fixed", gps_config={})
     assert writable["gpsWritable"] is True
-    assert writable["gpsWritableReason"] == ""
+    assert writable["gpsWillSkip"] is True
+    assert "跳过" in str(writable.get("gpsWritableReason") or "")
     assert writable["gpsMode"] == "fixed"
     assert_preset_gps_ready({"gpsMode": "fixed", "gpsConfig": {}})
 
@@ -75,6 +76,8 @@ def test_random_by_scene_missing_scene_skips_gps_not_fail() -> None:
     assert "不伪造" in str(plan.get("reason") or "")
     writable = gps_writability(gps_mode="random_by_scene", gps_config={})
     assert writable["gpsWritable"] is True
+    assert writable["gpsWillSkip"] is True
+    assert "跳过" in str(writable.get("gpsWritableReason") or "")
     assert_preset_gps_ready({"gpsMode": "random_by_scene", "gpsConfig": {}})
 
     buf = io.BytesIO()
