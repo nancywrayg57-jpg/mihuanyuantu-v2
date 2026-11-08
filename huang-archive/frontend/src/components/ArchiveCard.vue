@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { Heart, MessageCircle, Trash2, ExternalLink, Pencil, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { Heart, MessageCircle, Trash2, ExternalLink, Pencil, ChevronLeft, ChevronRight, X } from 'lucide-vue-next'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
 import { zhError } from '../lib/errors'
@@ -50,12 +50,20 @@ const files = computed(() => {
 const slide = ref(0)
 const lightboxOpen = ref(false)
 const lightboxIndex = ref(0)
+/** 'landscape' | 'portrait' — drives object-fit fill by image orientation */
+const lightboxOrient = ref('portrait')
+const swipeStartX = ref(0)
+const swipeStartY = ref(0)
+const swipeDeltaX = ref(0)
+const swipeActive = ref(false)
+
 watch(
   () => props.archive.id,
   () => {
     slide.value = 0
     lightboxOpen.value = false
     lightboxIndex.value = 0
+    swipeDeltaX.value = 0
   },
 )
 watch(files, (list) => {
@@ -67,21 +75,73 @@ function openLightbox(index = slide.value) {
   const i = Math.max(0, Math.min(Number(index) || 0, Math.max(0, imageUrls.value.length - 1)))
   lightboxIndex.value = i
   slide.value = i
+  lightboxOrient.value = 'portrait'
+  swipeDeltaX.value = 0
   lightboxOpen.value = true
 }
 function closeLightbox() {
   lightboxOpen.value = false
+  swipeActive.value = false
+  swipeDeltaX.value = 0
 }
 function lightboxPrev() {
   if (!imageUrls.value.length) return
   lightboxIndex.value = (lightboxIndex.value - 1 + imageUrls.value.length) % imageUrls.value.length
   slide.value = lightboxIndex.value
+  swipeDeltaX.value = 0
 }
 function lightboxNext() {
   if (!imageUrls.value.length) return
   lightboxIndex.value = (lightboxIndex.value + 1) % imageUrls.value.length
   slide.value = lightboxIndex.value
+  swipeDeltaX.value = 0
 }
+
+function onLightboxImgLoad(e) {
+  const img = e?.target
+  if (!img?.naturalWidth) return
+  lightboxOrient.value = img.naturalWidth >= img.naturalHeight ? 'landscape' : 'portrait'
+}
+
+function onLightboxTouchStart(e) {
+  if (!e.touches?.length) return
+  swipeActive.value = true
+  swipeStartX.value = e.touches[0].clientX
+  swipeStartY.value = e.touches[0].clientY
+  swipeDeltaX.value = 0
+}
+function onLightboxTouchMove(e) {
+  if (!swipeActive.value || !e.touches?.length) return
+  const dx = e.touches[0].clientX - swipeStartX.value
+  const dy = e.touches[0].clientY - swipeStartY.value
+  // Lock to horizontal when dominant; prevent vertical page scroll fight lightly
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
+    swipeDeltaX.value = dx
+    e.preventDefault?.()
+  }
+}
+function onLightboxTouchEnd() {
+  if (!swipeActive.value) return
+  const dx = swipeDeltaX.value
+  swipeActive.value = false
+  swipeDeltaX.value = 0
+  if (imageUrls.value.length < 2) return
+  if (dx <= -48) lightboxNext()
+  else if (dx >= 48) lightboxPrev()
+}
+
+function onLightboxKeydown(e) {
+  if (!lightboxOpen.value) return
+  if (e.key === 'Escape') closeLightbox()
+  else if (e.key === 'ArrowLeft') lightboxPrev()
+  else if (e.key === 'ArrowRight') lightboxNext()
+}
+
+watch(lightboxOpen, (open) => {
+  if (typeof window === 'undefined') return
+  if (open) window.addEventListener('keydown', onLightboxKeydown)
+  else window.removeEventListener('keydown', onLightboxKeydown)
+})
 const firstFile = computed(() => files.value[0] || '')
 const activeFile = computed(() => files.value[slide.value] || firstFile.value || '')
 const fileUrl = computed(() =>
@@ -483,51 +543,93 @@ async function deleteMemory(m) {
       </div>
     </div>
 
-    <!-- In-app lightbox: opens at the clicked slide; prev/next flip without off-by-one jump -->
+    <!-- Lightbox: swipe L/R on touch; no arrow buttons; red bordered X above image -->
     <div
       v-if="lightboxOpen && imageUrls.length"
-      class="fixed inset-0 z-[70] bg-ink/90 flex flex-col"
+      class="fixed inset-0 z-[70] bg-ink/92 flex flex-col touch-pan-y"
       data-testid="image-lightbox"
       @click.self="closeLightbox"
+      @touchstart.passive="onLightboxTouchStart"
+      @touchmove="onLightboxTouchMove"
+      @touchend="onLightboxTouchEnd"
+      @touchcancel="onLightboxTouchEnd"
     >
-      <div class="flex items-center justify-between px-4 py-3 text-parchment">
-        <span data-testid="lightbox-index">{{ lightboxIndex + 1 }} / {{ imageUrls.length }}</span>
+      <div class="shrink-0 flex flex-col items-center gap-2 pt-[max(0.75rem,env(safe-area-inset-top))] px-4">
         <button
           type="button"
-          class="min-h-tap px-4 border border-parchment/40"
+          class="lightbox-close-x min-h-tap min-w-[48px] grid place-items-center bg-parchment text-cinnabar border-[3px] border-cinnabar shadow-md"
           data-testid="lightbox-close"
-          @click="closeLightbox"
-        >关闭</button>
-      </div>
-      <div class="flex-1 relative flex items-center justify-center px-12 pb-6">
-        <button
-          v-if="imageUrls.length > 1"
-          type="button"
-          class="absolute left-2 z-10 min-h-tap min-w-[48px] grid place-items-center bg-parchment/15 text-parchment"
-          data-testid="lightbox-prev"
-          aria-label="上一张"
-          @click.stop="lightboxPrev"
+          aria-label="关闭"
+          title="关闭"
+          @click.stop="closeLightbox"
         >
-          <ChevronLeft class="w-8 h-8" />
+          <X class="w-7 h-7 stroke-[2.5]" />
         </button>
+        <span class="text-parchment/80 text-sm" data-testid="lightbox-index">
+          {{ lightboxIndex + 1 }} / {{ imageUrls.length }}
+        </span>
+      </div>
+      <div
+        class="flex-1 relative min-h-0 flex items-center justify-center overflow-hidden px-2 pb-[max(1rem,env(safe-area-inset-bottom))]"
+        data-testid="lightbox-stage"
+      >
         <img
           :src="imageUrls[lightboxIndex]?.full || imageUrls[lightboxIndex]?.url"
           :alt="`${archive.title} 大图 ${lightboxIndex + 1}`"
-          class="max-h-full max-w-full object-contain"
+          class="lightbox-img select-none"
+          :class="lightboxOrient === 'landscape' ? 'lightbox-img--landscape' : 'lightbox-img--portrait'"
+          :style="swipeDeltaX ? { transform: `translateX(${swipeDeltaX}px)`, transition: 'none' } : undefined"
           data-testid="lightbox-image"
+          draggable="false"
+          @load="onLightboxImgLoad"
           @click.stop
         />
-        <button
-          v-if="imageUrls.length > 1"
-          type="button"
-          class="absolute right-2 z-10 min-h-tap min-w-[48px] grid place-items-center bg-parchment/15 text-parchment"
-          data-testid="lightbox-next"
-          aria-label="下一张"
-          @click.stop="lightboxNext"
-        >
-          <ChevronRight class="w-8 h-8" />
-        </button>
       </div>
+      <!-- Arrow buttons intentionally removed — swipe (touch) / ←→ keys (desktop) -->
     </div>
   </article>
 </template>
+
+<style scoped>
+.lightbox-close-x {
+  border-radius: 0.35rem;
+}
+
+.lightbox-img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  transition: transform 0.15s ease-out;
+}
+
+/* Landscape fills width of stage; portrait fills height — cover to fill viewer by orientation */
+.lightbox-img--landscape {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.lightbox-img--portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+@media (min-width: 768px) {
+  /* Desktop: prefer seeing full image with contain while still filling the longer axis */
+  .lightbox-img--landscape {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  .lightbox-img--portrait {
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+  }
+}
+</style>

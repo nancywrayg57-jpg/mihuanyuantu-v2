@@ -198,11 +198,13 @@ onMounted(async () => {
     class="login-screen relative min-h-[100dvh] w-full overflow-hidden text-white"
     data-testid="login-screen"
   >
-    <div
-      class="login-bg absolute inset-0 bg-cover bg-no-repeat"
-      aria-hidden="true"
-    />
-    <div class="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-black/70" aria-hidden="true" />
+    <!-- Mobile: unchanged cover crop of login-bg.jpg. Desktop: full near-1:1 portrait + side tone fills. -->
+    <div class="login-hero-stage absolute inset-0" aria-hidden="true" data-testid="login-hero-stage">
+      <div class="login-hero-fill absolute inset-0" data-testid="login-hero-fill" />
+      <div class="login-hero-photo login-hero-photo--mobile absolute inset-0" data-testid="login-hero-mobile" />
+      <div class="login-hero-photo login-hero-photo--desktop absolute inset-0" data-testid="login-hero-desktop" />
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-black/70 pointer-events-none" aria-hidden="true" />
 
     <div class="relative z-10 min-h-[100dvh] flex flex-col px-3 sm:px-5 pt-[max(0.4rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <header class="login-hero-copy pt-1.5 sm:pt-6 text-center shrink-0">
@@ -373,10 +375,50 @@ onMounted(async () => {
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Face sits mid-frame below the compact title band (was 28% center → forehead under subtitle). */
-.login-bg {
+/*
+ * 方案 A — Desktop only:
+ * Side fills use deep black + dark brick-brown (dominant portrait tones).
+ * Portrait is contain/centered — never stretched to wide aspect.
+ * Mobile photo layer keeps prior cover crop (accepted).
+ */
+.login-hero-fill {
+  background:
+    radial-gradient(ellipse 70% 90% at 50% 45%, #3a1e18 0%, transparent 62%),
+    linear-gradient(
+      90deg,
+      #050403 0%,
+      #140c0a 14%,
+      #2a1612 36%,
+      #3a1e18 50%,
+      #2a1612 64%,
+      #140c0a 86%,
+      #050403 100%
+    );
+}
+
+.login-hero-photo--mobile {
+  display: block;
   background-image: url('/login-bg.jpg');
+  background-size: cover;
   background-position: 30% 62%;
+  background-repeat: no-repeat;
+}
+
+.login-hero-photo--desktop {
+  display: none;
+  background-image: url('/login-bg-desktop.jpg');
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+@media (min-width: 768px) {
+  .login-hero-photo--mobile {
+    display: none;
+  }
+  .login-hero-photo--desktop {
+    display: block;
+  }
 }
 
 .login-hero-copy {
