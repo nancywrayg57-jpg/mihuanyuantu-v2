@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { ApiError, apiFetch } from '@/lib/api'
+import { gpsSubmitGuard } from '@/lib/realphotos-gps-submit'
 import { deviceTypeLabel } from '@/lib/realphotos-labels'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
 
@@ -97,12 +98,10 @@ export function RealphotosBatchClient() {
     () => presets.find((item) => item.code === presetCode) || null,
     [presets, presetCode],
   )
-  const gpsSubmitBlocked = Boolean(selectedPreset && selectedPreset.gpsWritable === false)
-  const gpsSkipHint =
-    selectedPreset?.gpsWillSkip && selectedPreset.gpsMode && selectedPreset.gpsMode !== 'none'
-      ? selectedPreset.gpsWritableReason ||
-        '本预设 GPS 配置不完整，处理时将跳过 GPS 写入（不伪造坐标）'
-      : ''
+  const gpsGuard = useMemo(() => gpsSubmitGuard(selectedPreset), [selectedPreset])
+  const gpsSubmitBlocked = gpsGuard.blocked
+  const gpsSkipHint = gpsGuard.skipHint
+  const singleEntry = library.length === 1
 
   async function onFile(next: File | null) {
     setFile(null)
@@ -152,9 +151,7 @@ export function RealphotosBatchClient() {
       return
     }
     if (gpsSubmitBlocked) {
-      setNotice(
-        `所选预设 GPS 不可用，已拦截提交：${selectedPreset?.gpsWritableReason || '请先在预设台账补全 GPS'}`,
-      )
+      setNotice(`所选预设 GPS 不可用，已拦截提交：${gpsGuard.blockReason}`)
       return
     }
     try {
@@ -240,13 +237,14 @@ export function RealphotosBatchClient() {
             </select>
           </label>
         </div>
+        {singleEntry ? (
+          <p className="text-xs text-muted-foreground">单张入口（资源库带入 1 张）：GPS 规则与批量一致。</p>
+        ) : null}
         {gpsSubmitBlocked ? (
-          <p className="text-sm text-destructive">
-            GPS 不可用，已禁止提交：{selectedPreset?.gpsWritableReason || '未知原因'}
-          </p>
+          <p className="text-sm text-destructive">GPS 不可用，已禁止提交：{gpsGuard.blockReason}</p>
         ) : null}
         {!gpsSubmitBlocked && gpsSkipHint ? (
-          <p className="text-sm text-amber-700 dark:text-amber-400">GPS 提示：{gpsSkipHint}</p>
+          <p className="text-sm text-amber-700 dark:text-amber-400">将跳过 GPS：{gpsSkipHint}</p>
         ) : null}
       </section>
       <section className="space-y-3">

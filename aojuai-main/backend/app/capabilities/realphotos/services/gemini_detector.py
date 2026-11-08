@@ -4,18 +4,25 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 import urllib.error
 import urllib.request
 
+from app.capabilities.realphotos.services.redo_policy import PASS_SCORE
 from app.core.config import settings
 from app.core.exceptions import BusinessError
 
 _KEYS = ("noise", "depthOfField", "lighting", "colorRealism", "overallRealism")
+_LOG = logging.getLogger(__name__)
+# R1: keep PASS_SCORE as the only gate; prompt must ask model to align passed with ≥75.
 _PROMPT = (
     "你是图片最终检测器。只返回一个 JSON 对象，不要 Markdown。"
     "键必须是 noise、depthOfField、lighting、colorRealism、overallRealism、total_score、passed、reason。"
     "五个维度和 total_score 都是 0 到 100 的整数。total_score 由你单独给出，不要写成五维平均。"
     "passed 是布尔值。reason 是字符串。"
+    f"平台通过线为 total_score ≥ {PASS_SCORE}："
+    f"仅当 total_score ≥ {PASS_SCORE} 时 passed 才可为 true；"
+    f"若 total_score < {PASS_SCORE}，passed 必须为 false，并在 reason 中说明未达 {PASS_SCORE}。"
 )
 
 
@@ -44,6 +51,13 @@ def parse_gemini_report(payload: str) -> dict:
         raise BusinessError(message="检测响应缺少 passed", code="GEMINI_TECHNICAL")
     parsed["passed"] = passed
     parsed["reason"] = "" if row.get("reason") is None else str(row.get("reason"))
+    # Soft check only: never rewrite model JSON to fake acceptance (R1).
+    if parsed["passed"] is True and int(parsed["total_score"]) < int(PASS_SCORE):
+        _LOG.warning(
+            "gemini_passed_score_misaligned passed=true total_score=%s pass_score=%s",
+            parsed["total_score"],
+            PASS_SCORE,
+        )
     return parsed
 
 

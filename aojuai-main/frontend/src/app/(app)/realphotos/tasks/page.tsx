@@ -52,6 +52,11 @@ type ProcessingTask = {
     actualGps?: { latitude?: number; longitude?: number; altitude?: number } | null
     failedTags?: Array<{ tag?: string; reason?: string; verificationStatus?: string }>
   } | null
+  detectionBrief?: {
+    totalScore?: number
+    passScoreThreshold?: number
+    accepted?: boolean
+  } | null
 }
 
 type GenerationItem = {
@@ -83,6 +88,7 @@ const RETRYABLE = new Set([
   'GEMINI_NOT_CONFIGURED',
   'OUTPUT_CONSTRAINT_UNSATISFIED',
   'EXIF_WRITE_FAILED',
+  'MAKERNOTE_WRITE_FAILED',
   'pre_review_failed',
 ])
 
@@ -499,6 +505,12 @@ export default function RealphotosTasksPage() {
                     <td>{creditDispositionLabel(item.creditDisposition)}</td>
                     <td>
                       {failureClassLabelForTask(item.failureClass, item.detectionMode)}
+                      {item.detectionBrief && item.failureClass === 'detection_not_passed' ? (
+                        <span className="ml-1 text-muted-foreground">
+                          （{item.detectionBrief.totalScore}/100，线{' '}
+                          {item.detectionBrief.passScoreThreshold ?? DETECTION_PASS_SCORE}）
+                        </span>
+                      ) : null}
                     </td>
                     <td>
                       <button className="border px-2 py-0.5" type="button" onClick={() => setDetail(item)}>

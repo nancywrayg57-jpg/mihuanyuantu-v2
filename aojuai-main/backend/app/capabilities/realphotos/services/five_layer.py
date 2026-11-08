@@ -141,6 +141,38 @@ def _f_number(aperture: str) -> float:
     return float(str(aperture).strip().removeprefix("f/").removeprefix("F/"))
 
 
+_EXIF_REQUIRED: tuple[tuple[str, str], ...] = (
+    ("brand", "品牌"),
+    ("model", "型号"),
+    ("iso", "ISO"),
+    ("shutter", "快门"),
+    ("aperture", "光圈"),
+    ("focalLength", "焦距"),
+)
+
+
+def missing_exif_fields(preset: dict) -> list[str]:
+    """Return Chinese labels of missing brand/model/exposure fields (R2)."""
+    missing: list[str] = []
+    for key, label in _EXIF_REQUIRED:
+        if not str(preset.get(key) or "").strip():
+            missing.append(label)
+    return missing
+
+
+def assert_preset_exif_ready(preset: dict) -> None:
+    """Reject submit/save-enable when EXIF required fields are incomplete (R2).
+
+    Does not invent default exposure values.
+    """
+    missing = missing_exif_fields(preset)
+    if missing:
+        raise BusinessError(
+            message=f"预设缺少必填字段：{'、'.join(missing)}",
+            code="PRESET_EXIF_INCOMPLETE",
+        )
+
+
 def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes, list[dict]]:
     from app.capabilities.realphotos.services.gps_write import resolve_gps
 

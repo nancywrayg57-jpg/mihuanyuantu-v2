@@ -608,6 +608,20 @@ class RealphotosOpsService:
             row.legacy_visibility = str(legacy_visibility)
         if legacy_review_bucket is not None:
             row.legacy_review_bucket = str(legacy_review_bucket)
+        # R2: enabling incomplete EXIF presets is refused (check merged row; no silent defaults).
+        if bool(enabled):
+            from app.capabilities.realphotos.services.five_layer import assert_preset_exif_ready
+
+            assert_preset_exif_ready(
+                {
+                    "brand": row.brand,
+                    "model": row.model_name,
+                    "iso": row.iso,
+                    "shutter": row.shutter,
+                    "aperture": row.aperture,
+                    "focalLength": row.focal_length,
+                }
+            )
         await self.db.flush()
         snapshot = self._preset_dict(row, gps_config=gps_config)
         if mapped_from:

@@ -32,6 +32,29 @@ def test_setting_bounds() -> None:
         validate_setting(threshold=70, extra_rounds=0)
 
 
+def test_prompt_requires_pass_score_alignment() -> None:
+    from app.capabilities.realphotos.services import gemini_detector
+    from app.capabilities.realphotos.services.redo_policy import PASS_SCORE
+
+    assert PASS_SCORE == 75
+    assert str(PASS_SCORE) in gemini_detector._PROMPT
+    assert "仅当 total_score" in gemini_detector._PROMPT
+    assert "passed 必须为 false" in gemini_detector._PROMPT
+
+
+def test_parser_soft_warns_on_passed_true_below_threshold(caplog: pytest.LogCaptureFixture) -> None:
+    import logging
+
+    with caplog.at_level(logging.WARNING):
+        report = parse_gemini_report(
+            '{"noise":10,"depthOfField":10,"lighting":10,"colorRealism":10,"overallRealism":10,'
+            '"total_score":70,"passed":true,"reason":"soft"}'
+        )
+    assert report["passed"] is True
+    assert report["total_score"] == 70
+    assert any("gemini_passed_score_misaligned" in r.message for r in caplog.records)
+
+
 def test_parser_keeps_model_total_and_rejects_html() -> None:
     report = parse_gemini_report(
         '{"noise":10,"depthOfField":10,"lighting":10,"colorRealism":10,"overallRealism":10,'

@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "任务失败原因可理解展示 + 高频根因修复（FIX-TASK-FAILURE-UX F1–F6）"
-    user_value: "商家不再看到「未知失败原因」；详情可见分数门槛/EXIF 子因；替身与真技术可区分；预审请求失败可重试"
-    visible_output: "labels 补全 + tasks 详情块 + failure_detail snapshot + GPS 预提交提示 + pre_review_failed 可重试"
-    verify: "/tmp/fix-task-failure-ux-e2e.log 含 FIX_TASK_FAILURE_UX_E2E_PASS；production_billing=false"
+    goal: "失败率可修复剩余项（FIX-FAILURE-RATE-TECH R1–R6）"
+    user_value: "Gemini passed 与 75 对齐；EXIF 预检；MakerNote 中文；单张 GPS 提示；列表差几分；none/skip 回归"
+    visible_output: "prompt+软校验；assert_preset_exif_ready；labels/retry；gpsSubmitGuard；detectionBrief；R6 本地回归"
+    verify: "/tmp/fix-failure-rate-remain-e2e.log 含 ALL_REMAIN_GREEN=True / MERGE_READY=True；production_billing=false"
     status: coded_e2e_pass_pr_pending
-    next_user_action: "FIX-TASK-FAILURE-UX PR 待非作者 Owner squash；不得开 S7；F3 采用展示方案 A（门槛仍为 75）。"
+    next_user_action: "PR #37 待非作者 Owner squash；不得自评自合；不得开 S7；PASS_SCORE 仍 75。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -204,13 +204,27 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "FIX-TASK-FAILURE-UX 已实现并端测；开/更新 PR 待非作者 Owner squash。不得开 S7；F3 展示方案 A。"
-  work_order: "FIX-TASK-FAILURE-UX-2026-11-08 /home/hbs/Desktop/蜜獾原图-v2-图片处理失败原因与修复工单.md"
-  prior_work_order: "UX-CN-PRESET-2026-11-07（已合入 #35）"
-  branch: cursor/fix-task-failure-ux-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/36"
-  prior_branch: cursor/ux-cn-preset-9973
-  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/35"
+  action: "FIX-FAILURE-RATE-TECH R1–R6 全绿；PR #37 待非作者 Owner squash。不得开 S7。"
+  work_order: "FIX-FAILURE-RATE-TECH-2026-11-08 /home/hbs/Desktop/蜜獾原图-v2-失败率可修复项工单.md"
+  prior_work_order: "FIX-TASK-FAILURE-UX-2026-11-08（已合入 #36）"
+  branch: cursor/fix-failure-rate-remain-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/37"
+  prior_branch: cursor/fix-task-failure-ux-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/36"
+  constraints_ledger: docs/mihuanyuantu-v2/fix-failure-rate-remain-constraints.md
+  fix_failure_rate_remain_status:
+    R1_gemini_prompt_align: done_e2e_pass
+    R2_exif_precheck: done_e2e_pass
+    R3_makernote_labels_retry: done_e2e_pass
+    R4_single_entry_gps_hint: done_e2e_pass
+    R5_list_score_brief: done_e2e_pass
+    R6_gps_none_regression: done_e2e_pass
+    r6_evidence: "/tmp/r6-devhost-task.json"
+    r6_task_id: 158
+    e2e_log: "/tmp/fix-failure-rate-remain-e2e.log"
+    merge_ready: true
+    production_billing: false
+    s7_started: false
   fix_task_failure_ux_status:
     F1_labels: done
     F2_detail_api: done
@@ -220,6 +234,7 @@ next_action:
     F6_pre_review_failed_retry: done
     e2e_log: "/tmp/fix-task-failure-ux-e2e.log"
     e2e_mark: FIX_TASK_FAILURE_UX_E2E_PASS
+    merged_pr: 36
   ux_cn_preset_status:
     U1_library_cn: done
     U2_tasks_labels: done

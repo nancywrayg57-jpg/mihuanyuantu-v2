@@ -415,6 +415,10 @@ async def test_user_admin_log_preset_and_metrics(db):
         brand="Honeybadger",
         model_name="HB-S6",
         maker_note="CANON",
+        iso="100",
+        shutter="1/125",
+        aperture="f/1.8",
+        focal_length="26mm",
         ai_positive_prompt="pos",
         ai_negative_prompt="neg",
     )
