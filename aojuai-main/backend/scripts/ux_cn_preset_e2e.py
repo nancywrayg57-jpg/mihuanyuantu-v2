@@ -8,7 +8,6 @@ Exit mark: UX_CN_PRESET_E2E_PASS.
 from __future__ import annotations
 
 import re
-import sys
 from pathlib import Path
 
 LOG_PATH = Path("/tmp/ux-cn-preset-e2e.log")
