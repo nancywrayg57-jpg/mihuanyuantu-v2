@@ -3,6 +3,11 @@
 import { useEffect, useState } from 'react'
 
 import { ApiError, apiFetch } from '@/lib/api'
+import {
+  creditDispositionLabel,
+  ticketStatusLabel,
+  ticketTypeLabel,
+} from '@/lib/realphotos-labels'
 
 type Ticket = {
   id: number
@@ -151,9 +156,9 @@ export default function RealphotosTechDeskPage() {
         类型筛选
         <select className="ml-2 border px-2 py-1" value={ticketType} onChange={(event) => setTicketType(event.target.value)}>
           <option value="all">全部</option>
-          <option value="account_freeze">account_freeze</option>
-          <option value="image_appeal">image_appeal</option>
-          <option value="order">order</option>
+          <option value="account_freeze">{ticketTypeLabel('account_freeze')}</option>
+          <option value="image_appeal">{ticketTypeLabel('image_appeal')}</option>
+          <option value="order">{ticketTypeLabel('order')}</option>
         </select>
       </label>
       <table className="w-full border-collapse text-sm">
@@ -181,8 +186,8 @@ export default function RealphotosTechDeskPage() {
                 <td className="border px-2 py-1">{item.id}</td>
                 <td className="border px-2 py-1">{item.tenantId}</td>
                 <td className="border px-2 py-1">{item.ownerAccountId}</td>
-                <td className="border px-2 py-1">{item.ticketType}</td>
-                <td className="border px-2 py-1">{item.status}</td>
+                <td className="border px-2 py-1">{ticketTypeLabel(item.ticketType)}</td>
+                <td className="border px-2 py-1">{ticketStatusLabel(item.status)}</td>
                 <td className="border px-2 py-1">{item.reason}</td>
                 <td className="border px-2 py-1">
                   <button className="border px-2 py-0.5" type="button" onClick={() => setDetail(item)}>
@@ -202,8 +207,8 @@ export default function RealphotosTechDeskPage() {
               关闭面板
             </button>
           </div>
-          <p>类型：{detail.ticketType}</p>
-          <p>状态：{detail.status}</p>
+          <p>类型：{ticketTypeLabel(detail.ticketType)}</p>
+          <p>状态：{ticketStatusLabel(detail.status)}</p>
           <p>关联账号：租户 {detail.tenantId} / 用户 {detail.ownerAccountId}</p>
           <p>原因：{detail.reason}</p>
           <p>时间：{detail.createdAt || '（无）'}</p>
@@ -282,7 +287,7 @@ export default function RealphotosTechDeskPage() {
                 {heldItems.length === 0 ? (
                   <tr>
                     <td className="border px-2 py-1" colSpan={4}>
-                      暂无 held_until_tech_support 任务
+                      暂无技术失败冻结待客服任务
                     </td>
                   </tr>
                 ) : (
@@ -291,7 +296,7 @@ export default function RealphotosTechDeskPage() {
                       <td className="border px-2 py-1">{item.taskId}</td>
                       <td className="border px-2 py-1">{item.tenantId}</td>
                       <td className="border px-2 py-1">{item.ownerAccountId}</td>
-                      <td className="border px-2 py-1">{item.creditDisposition}</td>
+                      <td className="border px-2 py-1">{creditDispositionLabel(item.creditDisposition)}</td>
                     </tr>
                   ))
                 )}

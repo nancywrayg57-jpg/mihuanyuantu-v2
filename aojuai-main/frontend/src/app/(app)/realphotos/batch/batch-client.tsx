@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { ApiError, apiFetch } from '@/lib/api'
+import { deviceTypeLabel } from '@/lib/realphotos-labels'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
 
 type Preset = {
@@ -184,7 +185,7 @@ export function RealphotosBatchClient() {
             >
               {deviceTypes.map((item) => (
                 <option key={item} value={item}>
-                  {item}
+                  {deviceTypeLabel(item)}
                 </option>
               ))}
             </select>

@@ -5,6 +5,11 @@ import { useEffect, useState } from 'react'
 
 import { ApiError, apiFetch } from '@/lib/api'
 import { formatRate } from '@/lib/format-rate'
+import {
+  taskStatusLabel,
+  ticketStatusLabel,
+  ticketTypeLabel,
+} from '@/lib/realphotos-labels'
 
 type WorkspacePayload = {
   viewKind?: 'merchant' | 'admin' | 'order_support' | 'tech_support'
@@ -153,7 +158,7 @@ export default function RealphotosWorkspacePage() {
           <article className="border p-3">
             <div>本月已完成</div>
             <div className="text-lg">{cell(data.cards.monthDelivered)}</div>
-            <div className="text-muted-foreground">DELIVERED 真实计数</div>
+            <div className="text-muted-foreground">已交付真实计数</div>
           </article>
           <article className="border p-3">
             <div>未读消息</div>
@@ -283,7 +288,7 @@ export default function RealphotosWorkspacePage() {
                 data.techSupportDesk.items.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
-                    <td>{item.ticketType}</td>
+                    <td>{ticketTypeLabel(item.ticketType)}</td>
                     <td>{item.tenantId}</td>
                     <td>{item.ownerAccountId}</td>
                     <td>{item.reason}</td>
@@ -322,7 +327,7 @@ export default function RealphotosWorkspacePage() {
                   <tr key={`${item.kind}-${item.id}`}>
                     <td>{item.kind === 'processing' ? '处理' : '生图'}</td>
                     <td>{item.id}</td>
-                    <td>{item.status}</td>
+                    <td>{taskStatusLabel(item.status)}</td>
                     <td>{item.createdAt || '空'}</td>
                   </tr>
                 ))
@@ -365,8 +370,8 @@ export default function RealphotosWorkspacePage() {
                 myTickets.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
-                    <td>{item.ticketType}</td>
-                    <td>{item.status}</td>
+                    <td>{ticketTypeLabel(item.ticketType)}</td>
+                    <td>{ticketStatusLabel(item.status)}</td>
                     <td>{item.reason}</td>
                   </tr>
                 ))

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 
 import { ApiError, apiFetch } from '@/lib/api'
+import { taskStatusLabel } from '@/lib/realphotos-labels'
 
 type Order = {
   id: string
@@ -87,7 +88,7 @@ export default function RealphotosOrderSupportPage() {
                   <td>{order.tierYuan}</td>
                   <td>{order.creditPoints}</td>
                   <td>{order.voucherNote}</td>
-                  <td>{order.status}</td>
+                  <td>{taskStatusLabel(order.status)}</td>
                   <td className="space-x-2">
                     <button className="border px-2 py-1" type="button" onClick={() => void confirm(order.id)}>
                       确认到账

@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-07 CST（Asia/Shanghai） |
-| branch | `cursor/browser-e2e-fix-9973`（基线 post-#31 / `origin/main` tip） |
-| HEAD | `0e3faff` 已推送；PR #32 待审合 |
+| updated | 2026-11-08 CST（Asia/Shanghai） |
+| branch | `cursor/ux-cn-preset-9973` |
+| HEAD | 待推送 PR（基于 `origin/main` tip `e4d159a` / #33） |
 | 文档态 | PRD **2.10**；架构 **1.7**；`s5_exited=true`；S7 未开 |
-| 代码态 | BROWSER-E2E-FIX F1–F8：登录 next、工单办结/held 释放、用户管理 UI、率百分比、藏演示、系统页角色裁剪、**generation 网关可读**。未接通 URL 真导入；非生产收费 |
-| 验证态 | `/tmp/browser-e2e-fix-e2e.log` 含 `BROWSER_E2E_FIX_E2E_PASS` 且 `production_billing=false`；F8 截图 `/tmp/cursor/screenshots/browser-e2e-fix-f8-library-thumbs.png`；ALIGN #31 / 本单 #32 均待非作者审合 |
-| 当前阶段 | BROWSER-E2E-FIX PR #32 待非作者 Owner squash |
-| 下一步 | Owner 审合 #32（及 #31）；不得自评自合；不得开 S7 |
+| 代码态 | UX-CN-PRESET U1–U7：`realphotos-labels` 展示映射；资源「选择文件」；任务中文列+详情弹窗；预设分页 20、删批量按钮、详情/新增弹窗；工单台/工作台/批量/订单客服中文。未接通 URL 真导入；非生产收费 |
+| 验证态 | `/tmp/ux-cn-preset-e2e.log` 含 `UX_CN_PRESET_E2E_PASS` 且 `production_billing=false`；截图 `/tmp/cursor/screenshots/ux-cn-preset-*.png` |
+| 当前阶段 | UX-CN-PRESET 待非作者 Owner squash |
+| 下一步 | 推送开 PR；Owner 非自评自合；不得开 S7 |
 
 ## 1. 仓库与文档基线
 
@@ -32,9 +32,8 @@
 | --- | --- |
 | S0–S6 | 既有证据；非生产收费 |
 | PRODUCT-GAP-A / PRESET-BULK | 已合入 `origin/main`（#29/#30） |
-| OPS-QUALITY-D | D1 已吸收进 ALIGN G8；D2 本地 PASS |
-| ALIGN-GAP-A5BC | G1–G8 PASS；PR #31 待非作者 squash |
-| BROWSER-E2E-FIX | F1–F8 本地 PASS；待推送开 PR |
+| ALIGN-GAP-A5BC / BROWSER-E2E-FIX / EXIF | 已合入（#31/#32/#33） |
+| UX-CN-PRESET | U1–U7 本地 PASS；待 PR 审合 |
 | S7 | **须管理员确认** |
 
 过程进度：`docs/mihuanyuantu-v2/progress.yaml`。

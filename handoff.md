@@ -43,9 +43,9 @@
 
 ## 5. 下一步（摘要；以 progress 为准）
 
-- **待合入 PR**：https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/30 （`cursor/preset-bulk-import-9973`，工单 `PRESET-BULK-IMPORT-2026-11-07`），依赖/叠入 PRODUCT-GAP-A #29。
-- **证据**：`/tmp/preset-bulk-import-e2e.log` 含 `PRESET_BULK_IMPORT_E2E_PASS`；`legacy_activated_count=405`；`placeholder_presets_removed=true`；`legacy_param_keys_complete=true`；`production_billing=false`。
-- **要点**：先清 Honeybadger/s1 占位；405 全量启用；快照含完整 `legacyParameters`；GPS 源模式保留、不伪造坐标。
+- **当前分支**：`cursor/ux-cn-preset-9973`（工单 `UX-CN-PRESET-2026-11-07`）。
+- **证据**：`/tmp/ux-cn-preset-e2e.log` 含 `UX_CN_PRESET_E2E_PASS`；`production_billing=false`；截图 `/tmp/cursor/screenshots/ux-cn-preset-*.png`。
+- **要点**：展示层中文映射（不改库内英文状态码）；预设分页 20；删「清除占位/一键导入全部」UI（API 保留，C1）；任务/预设详情与新增弹窗。
 - **不得开 S7**；不得接通 URL 真导入；不得自评自合。
 
 ## 6. 风险提醒
@@ -62,5 +62,5 @@
 2) docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md
 3) docs/mihuanyuantu-v2/progress.yaml（以 next_action / 冲突裁决为准）
 硬约束：中文回复、标识符英语；不提交真实密钥；不直推/不合并 main；不开 S7；不得自评自合。
-当前工作：读 checkpoint §0 与 progress.next_action；找到 cursor/preset-bulk-import-9973 与 #29 状态。
+当前工作：读 checkpoint §0 与 progress.next_action；推进 cursor/ux-cn-preset-9973 PR 审合（不得自评自合）。
 ```
