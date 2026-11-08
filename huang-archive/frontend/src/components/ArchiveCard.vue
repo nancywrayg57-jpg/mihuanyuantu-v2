@@ -597,40 +597,30 @@ async function deleteMemory(m) {
   border-radius: 0.35rem;
 }
 
+/* Stage is the swipe/fill surface; image covers it by orientation. */
+[data-testid='lightbox-stage'] {
+  position: relative;
+}
+
 .lightbox-img {
-  display: block;
-  max-width: 100%;
-  max-height: 100%;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-position: center;
   transition: transform 0.15s ease-out;
 }
 
-/* Landscape fills width of stage; portrait fills height — cover to fill viewer by orientation */
-.lightbox-img--landscape {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-
+/* Mobile: fill the open viewer (landscape → cover wide; portrait → cover tall). */
+.lightbox-img--landscape,
 .lightbox-img--portrait {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
-  object-position: center;
 }
 
 @media (min-width: 768px) {
-  /* Desktop: prefer seeing full image with contain while still filling the longer axis */
-  .lightbox-img--landscape {
-    width: 100%;
-    height: auto;
-    max-height: 100%;
-    object-fit: contain;
-  }
+  /* Desktop: keep full picture readable; still orientation-tagged for swipe UX */
+  .lightbox-img--landscape,
   .lightbox-img--portrait {
-    height: 100%;
-    width: auto;
-    max-width: 100%;
     object-fit: contain;
   }
 }
