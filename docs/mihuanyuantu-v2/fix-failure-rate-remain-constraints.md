@@ -19,9 +19,9 @@
 
 | ID | 冲突 | 处理 |
 | --- | --- | --- |
-| X1 | 工单要求 R6 开发机 Worker+API；沙箱曾误判不可达 | **已澄清**：本 VM 即 `192.168.19.128`。R6 须在本机 PG `claim_one` + Worker 留 `/tmp/r6-devhost-task.json`，不得仅靠 five_layer 单元测冒充 |
-| X2 | 工单「全待做项全绿方可申请合入」 vs Collaborator 须推 PR 供审 | 可开 PR 供审阅，但 PR 必须标明 **非合入就绪** 直至 R6 开发机 PASS；禁止自评自合 |
-| X3 | 工单 R1 要求 ≥3 张 `detection_mode=gemini` 全任务状态；开发机不可达 | 本地可用 backend `.env` 的 Gemini Key 做 `detect_jpeg` 对齐率证据；**全任务状态**若无 Worker 则标缺口，不得假装 DELIVERED |
+| X1 | 工单要求 R6 开发机 Worker+API；沙箱曾误判不可达 | **已闭合**：本机 PG `claim_one` 任务 158 `gpsMode=none` DELIVERED；`R6_E2E_PASS` |
+| X2 | 全绿才可合入 vs 先开 PR | **已闭合**：`MERGE_READY=True`；仍禁止自评自合，仅非作者 Owner squash |
+| X3 | R1 需 gemini 全任务状态 | **已闭合**：本机 SQLite+Worker `detection_mode=gemini`×3，含 status/failureMessage/gate |
 
 ## C3 · 歧义（按工单默认裁决，不发明产品）
 
