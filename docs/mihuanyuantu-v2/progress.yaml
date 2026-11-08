@@ -208,7 +208,7 @@ next_action:
   work_order: "FIX-TASK-FAILURE-UX-2026-11-08 /home/hbs/Desktop/蜜獾原图-v2-图片处理失败原因与修复工单.md"
   prior_work_order: "UX-CN-PRESET-2026-11-07（已合入 #35）"
   branch: cursor/fix-task-failure-ux-9973
-  pr: pending
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/36"
   prior_branch: cursor/ux-cn-preset-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/35"
   fix_task_failure_ux_status:

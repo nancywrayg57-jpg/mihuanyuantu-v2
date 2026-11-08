@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-08 CST（Asia/Shanghai） |
 | branch | `cursor/fix-task-failure-ux-9973` |
-| HEAD | 待推送 PR |
+| HEAD | `ed393ee` 已推送；PR #36 待审合 |
 | 文档态 | PRD **2.10**；架构 **1.7**；`s5_exited=true`；S7 未开 |
 | 代码态 | FIX-TASK-FAILURE-UX F1–F6：失败/积分中文映射补全；任务详情分数门槛+failureMessage+EXIF failedTags；替身 technical 独立文案；GPS 预提交拦截/跳过提示；`pre_review_failed` 可重试。未改计费字面量；非生产收费 |
 | 验证态 | `/tmp/fix-task-failure-ux-e2e.log` 含 `FIX_TASK_FAILURE_UX_E2E_PASS` 且 `production_billing=false`；`test_geocoder_adapter` + `test_s1_loop` 5 passed |
