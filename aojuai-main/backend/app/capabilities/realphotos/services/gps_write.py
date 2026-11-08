@@ -26,23 +26,33 @@ def gps_writability(*, gps_mode: str, gps_config: dict[str, Any] | None = None) 
     """Ops-facing GPS writability without mutating mode (ALIGN-GAP G6).
 
     Never rewrites gpsMode=fixed → none. Returns gpsWritable + Chinese reason.
+    gpsWillSkip=true when runtime will skip GPS (incomplete fixed/random, or mode none).
     """
     mode = str(gps_mode or "none").strip() or "none"
     plan = resolve_gps(preset={"gpsMode": mode, "gpsConfig": dict(gps_config or {})}, seed=0)
     action = str(plan.get("action") or "")
+    plan_reason = str(plan.get("reason") or "")
     if action == "write":
-        return {"gpsWritable": True, "gpsWritableReason": "", "gpsMode": mode}
-    if action == "skip":
-        # Skip is processable (legacy-aligned). Do not surface the old hard-fail
-        # phrase as gpsWritableReason — that made presets look still broken.
         return {
             "gpsWritable": True,
+            "gpsWillSkip": False,
             "gpsWritableReason": "",
+            "gpsMode": mode,
+        }
+    if action == "skip":
+        # Skip is processable (legacy-aligned). Surface soft hint for incomplete coords/scene
+        # so merchants see pre-submit warning; keep gpsWritableReason empty for none mode.
+        incomplete = mode in {"fixed", "random_by_scene"} and bool(plan_reason)
+        return {
+            "gpsWritable": True,
+            "gpsWillSkip": True,
+            "gpsWritableReason": plan_reason if incomplete else "",
             "gpsMode": mode,
         }
     return {
         "gpsWritable": False,
-        "gpsWritableReason": str(plan.get("reason") or "GPS 不可写入"),
+        "gpsWillSkip": True,
+        "gpsWritableReason": plan_reason or "GPS 不可写入",
         "gpsMode": mode,
     }
 

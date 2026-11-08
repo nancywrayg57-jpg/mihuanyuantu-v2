@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import secrets
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
@@ -71,6 +72,8 @@ _RETRYABLE_FAILURES = frozenset(
         "GEMINI_NOT_CONFIGURED",
         "OUTPUT_CONSTRAINT_UNSATISFIED",
         "EXIF_WRITE_FAILED",
+        # F6: supplier/network pre-review request failure (not content reject `pre_review`)
+        "pre_review_failed",
     }
 )
 
@@ -927,21 +930,32 @@ class RealphotosS1Service:
         ).scalar_one_or_none()
         if row is None:
             return None
-        accepted = bool(row.passed) and int(row.total_score) >= 75
+        score = int(row.total_score)
+        model_passed = bool(row.passed)
+        accepted = model_passed and score >= 75
+        explanation = None
+        if not accepted:
+            explanation = (
+                f"检测未通过：总分 {score}/100，未达通过线 75"
+                f"（模型 passed={'true' if model_passed else 'false'}）"
+            )
         return {
             "noise": int(row.noise),
             "depthOfField": int(row.depth_of_field),
             "lighting": int(row.lighting),
             "colorRealism": int(row.color_realism),
             "overallRealism": int(row.overall_realism),
-            "total_score": int(row.total_score),
-            "passed": bool(row.passed),
+            "total_score": score,
+            "passed": model_passed,
             "accepted": accepted,
+            "passScoreThreshold": 75,
+            "platformGateExplanation": explanation,
             "reason": row.reason,
             "detector": row.detector,
         }
 
-    async def gps_write_summary(self, *, tenant_id: int, task_id: int) -> dict | None:
+    async def failure_detail_payload(self, *, tenant_id: int, task_id: int) -> dict | None:
+        """Latest failure_detail snapshot (F2); falls back to None when absent."""
         rows = (
             await self.db.execute(
                 select(RealphotosTaskSnapshot).where(
@@ -953,26 +967,75 @@ class RealphotosS1Service:
         ).scalars().all()
         for row in reversed(list(rows)):
             snap = row.snapshot if isinstance(row.snapshot, dict) else {}
-            if snap.get("kind") != "s2_exif_field_ledger":
+            if snap.get("kind") != "failure_detail":
                 continue
-            for field in list(snap.get("fields") or []):
-                if not isinstance(field, dict) or field.get("tag") != "GPSLatitude":
-                    continue
-                status = str(field.get("verification_status") or "")
-                if status == "verified" and field.get("actualGps"):
-                    return {
+            return {
+                "title": str(snap.get("title") or ""),
+                "message": str(snap.get("message") or ""),
+                "failureClass": snap.get("failureClass"),
+                "creditDisposition": snap.get("creditDisposition"),
+                "at": snap.get("at"),
+            }
+        return None
+
+    async def gps_write_summary(self, *, tenant_id: int, task_id: int) -> dict | None:
+        rows = (
+            await self.db.execute(
+                select(RealphotosTaskSnapshot).where(
+                    RealphotosTaskSnapshot.tenant_id == int(tenant_id),
+                    RealphotosTaskSnapshot.task_id == int(task_id),
+                    RealphotosTaskSnapshot.deleted_at.is_(None),
+                )
+            )
+        ).scalars().all()
+        ledger = None
+        for row in reversed(list(rows)):
+            snap = row.snapshot if isinstance(row.snapshot, dict) else {}
+            if snap.get("kind") == "s2_exif_field_ledger":
+                ledger = snap
+                break
+        if ledger is None:
+            return None
+        fields = [f for f in list(ledger.get("fields") or []) if isinstance(f, dict)]
+        failed_tags = [
+            {
+                "tag": str(f.get("tag") or ""),
+                "reason": str(f.get("reason") or "回读失败"),
+                "verificationStatus": str(f.get("verification_status") or ""),
+            }
+            for f in fields
+            if str(f.get("verification_status") or "") == "failed"
+        ]
+        gps_summary: dict[str, Any] = {
+            "written": False,
+            "actualGps": None,
+            "gpsMode": None,
+            "reason": "未写入 GPS",
+            "failedTags": failed_tags,
+        }
+        for field in fields:
+            if field.get("tag") != "GPSLatitude":
+                continue
+            status = str(field.get("verification_status") or "")
+            gps_summary["gpsMode"] = field.get("gpsMode")
+            if status == "verified" and field.get("actualGps"):
+                gps_summary.update(
+                    {
                         "written": True,
                         "actualGps": dict(field["actualGps"]),
-                        "gpsMode": field.get("gpsMode"),
                         "reason": "",
                     }
-                return {
-                    "written": False,
-                    "actualGps": None,
-                    "gpsMode": field.get("gpsMode"),
-                    "reason": str(field.get("reason") or "未写入 GPS"),
-                }
-        return None
+                )
+            else:
+                gps_summary.update(
+                    {
+                        "written": False,
+                        "actualGps": None,
+                        "reason": str(field.get("reason") or "未写入 GPS"),
+                    }
+                )
+            break
+        return gps_summary
 
     async def _five_layer_jpeg(self, task: RealphotosImageTask) -> bytes:
         from app.capabilities.realphotos.services.five_layer import run_five_layer
@@ -1512,6 +1575,22 @@ class RealphotosS1Service:
                 status="pending",
             )
         )
+        # Persist last operator-facing detail for task detail UI (F2); codes stay English.
+        if task.failure_class or str(task.status or "") == "failed":
+            self.db.add(
+                RealphotosTaskSnapshot(
+                    tenant_id=int(task.tenant_id),
+                    task_id=int(task.id),
+                    snapshot={
+                        "kind": "failure_detail",
+                        "title": title,
+                        "message": body,
+                        "failureClass": task.failure_class,
+                        "creditDisposition": task.credit_disposition,
+                        "at": _utcnow().isoformat(),
+                    },
+                )
+            )
 
     async def _reservation(self, task: RealphotosImageTask) -> RealphotosCreditReservation | None:
         if str(getattr(task, "billing_mode", "normal") or "normal") == "copy_no_reserve":

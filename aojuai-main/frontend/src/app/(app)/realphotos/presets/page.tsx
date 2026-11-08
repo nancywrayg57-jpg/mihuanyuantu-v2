@@ -24,6 +24,9 @@ type Preset = {
   makerNote?: string
   gpsConfig?: Record<string, unknown> | null
   source?: string | null
+  gpsWritable?: boolean
+  gpsWillSkip?: boolean
+  gpsWritableReason?: string
 }
 
 type VersionRow = {
@@ -529,6 +532,19 @@ export default function RealphotosPresetsPage() {
             <p>MakerNote：{detail.makerNote || '（空）'}</p>
             <p>GPS 模式：{gpsModeLabel(detail.gpsMode)}</p>
             {detail.gpsConfig ? <p>GPS 配置：{JSON.stringify(detail.gpsConfig)}</p> : null}
+            <p>
+              GPS 可写：
+              {detail.gpsWritable === false
+                ? '否'
+                : detail.gpsWillSkip
+                  ? '可提交（运行时将跳过 GPS）'
+                  : '是'}
+            </p>
+            {detail.gpsWritableReason ? (
+              <p className={detail.gpsWritable === false || detail.gpsWillSkip ? 'text-destructive' : ''}>
+                GPS 说明：{detail.gpsWritableReason}
+              </p>
+            ) : null}
             <p>状态：{detail.enabled ? '启用' : '停用'}</p>
             {detail.source ? <p>来源：{detail.source}</p> : null}
             <button

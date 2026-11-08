@@ -5,11 +5,14 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import {
+  DETECTION_PASS_SCORE,
   boolPassLabel,
   creditDispositionLabel,
   detectionDimensionLabel,
-  failureClassLabel,
+  detectionNotPassedExplanation,
+  failureClassLabelForTask,
   generationModeLabel,
+  gpsModeLabel,
   taskStatusLabel,
 } from '@/lib/realphotos-labels'
 
@@ -18,6 +21,8 @@ type Detection = {
   passed?: boolean
   reason?: string
   total_score?: number
+  passScoreThreshold?: number
+  platformGateExplanation?: string | null
   noise?: number
   depthOfField?: number
   lighting?: number
@@ -33,6 +38,9 @@ type ProcessingTask = {
   outputObjectKey?: string | null
   creditDisposition?: string | null
   failureClass?: string | null
+  failureMessage?: string | null
+  failureTitle?: string | null
+  detectionMode?: string | null
   createdAt?: string | null
   detection?: Detection | null
   copiedFrom?: string | null
@@ -40,7 +48,9 @@ type ProcessingTask = {
   gpsWrite?: {
     written?: boolean
     reason?: string
+    gpsMode?: string | null
     actualGps?: { latitude?: number; longitude?: number; altitude?: number } | null
+    failedTags?: Array<{ tag?: string; reason?: string; verificationStatus?: string }>
   } | null
 }
 
@@ -73,6 +83,7 @@ const RETRYABLE = new Set([
   'GEMINI_NOT_CONFIGURED',
   'OUTPUT_CONSTRAINT_UNSATISFIED',
   'EXIF_WRITE_FAILED',
+  'pre_review_failed',
 ])
 
 function canRetry(task: ProcessingTask): boolean {
@@ -98,13 +109,20 @@ function DetectionReport({ detection }: { detection: Detection | null | undefine
     ['color_realism', detection.colorRealism],
     ['overall_realism', detection.overallRealism],
   ]
+  const threshold = detection.passScoreThreshold ?? DETECTION_PASS_SCORE
+  const gate =
+    detection.platformGateExplanation ||
+    (detection.accepted === false ? detectionNotPassedExplanation(detection) : null)
   return (
     <div className="space-y-1">
       <p>
-        结果：{boolPassLabel(detection.passed)}
-        {detection.accepted !== undefined ? ` · 接受：${boolPassLabel(detection.accepted)}` : ''}
+        模型结果：{boolPassLabel(detection.passed)}
+        {detection.accepted !== undefined ? ` · 平台接受：${boolPassLabel(detection.accepted)}` : ''}
       </p>
-      <p>总分：{detection.total_score ?? '—'}</p>
+      <p>
+        总分：{detection.total_score ?? '—'} / 100（通过线 {threshold}）
+      </p>
+      {gate ? <p className="text-destructive">{gate}</p> : null}
       <p>检测器：{detection.detector || '—'}</p>
       <p>原因：{detection.reason || '—'}</p>
       <ul className="list-inside list-disc">
@@ -479,7 +497,9 @@ export default function RealphotosTasksPage() {
                     <td>{item.id}</td>
                     <td>{taskStatusLabel(item.status)}</td>
                     <td>{creditDispositionLabel(item.creditDisposition)}</td>
-                    <td>{failureClassLabel(item.failureClass)}</td>
+                    <td>
+                      {failureClassLabelForTask(item.failureClass, item.detectionMode)}
+                    </td>
                     <td>
                       <button className="border px-2 py-0.5" type="button" onClick={() => setDetail(item)}>
                         详情
@@ -523,19 +543,51 @@ export default function RealphotosTasksPage() {
                 </section>
                 <section className="space-y-1">
                   <h3 className="font-medium">失败</h3>
-                  <p>失败原因：{failureClassLabel(detail.failureClass)}</p>
+                  <p>
+                    失败原因：
+                    {failureClassLabelForTask(detail.failureClass, detail.detectionMode)}
+                  </p>
+                  {detail.detectionMode ? (
+                    <p>
+                      检测模式：
+                      {detail.detectionMode === 'technical'
+                        ? '规则替身（technical）'
+                        : detail.detectionMode}
+                    </p>
+                  ) : null}
+                  {detail.failureMessage ? (
+                    <p>
+                      详情：{detail.failureTitle ? `${detail.failureTitle} — ` : ''}
+                      {detail.failureMessage}
+                    </p>
+                  ) : null}
                 </section>
                 {detail.gpsWrite ? (
                   <section className="space-y-1">
-                    <h3 className="font-medium">GPS 写入</h3>
-                    <p>是否写入：{detail.gpsWrite.written ? '是' : '否'}</p>
-                    <p>原因：{detail.gpsWrite.reason || '—'}</p>
+                    <h3 className="font-medium">EXIF / GPS</h3>
+                    <p>
+                      GPS 模式：
+                      {detail.gpsWrite.gpsMode
+                        ? gpsModeLabel(String(detail.gpsWrite.gpsMode))
+                        : '—'}
+                    </p>
+                    <p>是否写入 GPS：{detail.gpsWrite.written ? '是' : '否'}</p>
+                    <p>GPS 原因：{detail.gpsWrite.reason || '—'}</p>
                     {detail.gpsWrite.actualGps ? (
                       <p>
                         实际坐标：{detail.gpsWrite.actualGps.latitude ?? '—'},{' '}
                         {detail.gpsWrite.actualGps.longitude ?? '—'}, 海拔{' '}
                         {detail.gpsWrite.actualGps.altitude ?? '—'}
                       </p>
+                    ) : null}
+                    {detail.gpsWrite.failedTags && detail.gpsWrite.failedTags.length > 0 ? (
+                      <ul className="list-inside list-disc">
+                        {detail.gpsWrite.failedTags.map((row) => (
+                          <li key={`${row.tag}-${row.reason}`}>
+                            失败标签 {row.tag || '—'}: {row.reason || '回读失败'}
+                          </li>
+                        ))}
+                      </ul>
                     ) : null}
                   </section>
                 ) : null}

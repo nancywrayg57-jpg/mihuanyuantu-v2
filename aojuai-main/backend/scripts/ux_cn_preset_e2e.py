@@ -80,7 +80,10 @@ def main() -> int:
     must("失败原因" in tasks, "E-U2-1_header_失败原因")
     must(not re.search(r">失败</th>", tasks), "E-U2-1_no_orphan_失败_header")
     must("taskStatusLabel(" in tasks and "creditDispositionLabel(" in tasks, "E-U2-2_status_credit_labels")
-    must("failureClassLabel(" in tasks, "E-U2-3_failure_label")
+    must(
+        "failureClassLabel(" in tasks or "failureClassLabelForTask(" in tasks,
+        "E-U2-3_failure_label",
+    )
     must('value="DELIVERED"' in tasks and ">已交付<" in tasks, "E-U2_filter_value_en_label_cn")
 
     # U3

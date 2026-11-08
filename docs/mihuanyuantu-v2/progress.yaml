@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "运营侧中文可读性 + 设备预设交互（UX-CN-PRESET U1–U7）"
-    user_value: "商家/客服看中文状态与来源；预设分页、详情弹窗、新增弹窗可用"
-    visible_output: "realphotos-labels + 资源/任务/预设/工单台/工作台中文展示；预设弹窗交互"
-    verify: "/tmp/ux-cn-preset-e2e.log 含 UX_CN_PRESET_E2E_PASS；production_billing=false"
+    goal: "任务失败原因可理解展示 + 高频根因修复（FIX-TASK-FAILURE-UX F1–F6）"
+    user_value: "商家不再看到「未知失败原因」；详情可见分数门槛/EXIF 子因；替身与真技术可区分；预审请求失败可重试"
+    visible_output: "labels 补全 + tasks 详情块 + failure_detail snapshot + GPS 预提交提示 + pre_review_failed 可重试"
+    verify: "/tmp/fix-task-failure-ux-e2e.log 含 FIX_TASK_FAILURE_UX_E2E_PASS；production_billing=false"
     status: coded_e2e_pass_pr_pending
-    next_user_action: "UX-CN-PRESET PR 待非作者 Owner squash；不得开 S7；不得接通 URL 真导入。"
+    next_user_action: "FIX-TASK-FAILURE-UX PR 待非作者 Owner squash；不得开 S7；F3 采用展示方案 A（门槛仍为 75）。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -204,13 +204,22 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "UX-CN-PRESET 已实现并端测；开/更新 PR 待非作者 Owner squash。不得开 S7；不得接通 URL 真导入。"
-  work_order: "UX-CN-PRESET-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-中文体验与预设交互工单.md"
-  prior_work_order: "BROWSER-E2E-FIX-2026-11-07（已合入 #32）"
-  branch: cursor/ux-cn-preset-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/35"
-  prior_branch: cursor/browser-e2e-fix-9973
-  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/32"
+  action: "FIX-TASK-FAILURE-UX 已实现并端测；开/更新 PR 待非作者 Owner squash。不得开 S7；F3 展示方案 A。"
+  work_order: "FIX-TASK-FAILURE-UX-2026-11-08 /home/hbs/Desktop/蜜獾原图-v2-图片处理失败原因与修复工单.md"
+  prior_work_order: "UX-CN-PRESET-2026-11-07（已合入 #35）"
+  branch: cursor/fix-task-failure-ux-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/36"
+  prior_branch: cursor/ux-cn-preset-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/35"
+  fix_task_failure_ux_status:
+    F1_labels: done
+    F2_detail_api: done
+    F3_scheme_A_display: done
+    F4_gps_hint_block: done
+    F5_fixture_vs_tech: done
+    F6_pre_review_failed_retry: done
+    e2e_log: "/tmp/fix-task-failure-ux-e2e.log"
+    e2e_mark: FIX_TASK_FAILURE_UX_E2E_PASS
   ux_cn_preset_status:
     U1_library_cn: done
     U2_tasks_labels: done
@@ -222,6 +231,7 @@ next_action:
     C1_bulk_ui_removed_api_kept: recorded
     e2e_log: "/tmp/ux-cn-preset-e2e.log"
     e2e_mark: UX_CN_PRESET_E2E_PASS
+    merged_pr: 35
     browser_note: "Chrome puppeteer same-netns sqlite；任务/预设空列表时详情点击记 skipped；源码合同与新增弹窗已覆盖 dialog 模式"
     screenshots:
       - "/tmp/cursor/screenshots/ux-cn-preset-_realphotos_library.png"

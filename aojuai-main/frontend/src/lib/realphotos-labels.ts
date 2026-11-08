@@ -57,6 +57,8 @@ export function creditDispositionLabel(value: string | null | undefined): string
     released_tech_audit: '技术客服已释放',
     released_pre_review_reject: '预审拒绝已释放',
     released_precheck: '前置校验失败已释放',
+    released_detection_not_passed: '检测未通过已释放',
+    held_unresolved_prd_4_5_vs_fr016: '争议冻结（PRD 待裁决）',
     copy_no_reserve_technical: '复制路径技术失败（未预冻）',
     processing: '处理中',
   }
@@ -68,18 +70,48 @@ export function failureClassLabel(value: string | null | undefined): string {
   if (!raw) return '—'
   const map: Record<string, string> = {
     pre_review: '预审未通过',
+    pre_review_failed: '预审请求失败（技术）',
     precheck: '前置校验失败',
-    technical: '技术失败',
+    // Fixture detection_mode=technical：预期失败，勿与 EXIF/Gemini 真技术异常混称（F5）
+    technical: '规则替身技术失败',
+    fixture_technical: '规则替身技术失败',
+    detection_not_passed: '检测未通过',
+    detection_failed: '检测失败',
     EXIF_WRITE_FAILED: 'EXIF 写入失败',
     OUTPUT_CONSTRAINT_UNSATISFIED: '输出约束未满足',
     GEMINI_FAILED: 'Gemini 检测失败',
     GEMINI_TIMEOUT: 'Gemini 检测超时',
     GEMINI_REJECTED: 'Gemini 未通过',
-    detection_failed: '检测失败',
+    GEMINI_TECHNICAL: 'Gemini 检测技术异常',
+    GEMINI_NOT_CONFIGURED: '最终检测未配置',
   }
   if (map[raw]) return map[raw]
   if (raw.startsWith('GEMINI_')) return `Gemini 相关（${raw}）`
   return unknown('失败原因', raw)
+}
+
+/** F5: prefer detectionMode=technical wording even if failureClass is generic. */
+export function failureClassLabelForTask(
+  failureClass: string | null | undefined,
+  detectionMode?: string | null,
+): string {
+  const mode = String(detectionMode || '').trim()
+  if (mode === 'technical') return failureClassLabel('technical')
+  return failureClassLabel(failureClass)
+}
+
+export const DETECTION_PASS_SCORE = 75
+
+export function detectionNotPassedExplanation(detection: {
+  total_score?: number | null
+  passed?: boolean | null
+  accepted?: boolean | null
+} | null | undefined): string | null {
+  if (!detection) return null
+  const score = detection.total_score
+  if (score == null || Number.isNaN(Number(score))) return null
+  const modelPassed = detection.passed === true ? 'true' : detection.passed === false ? 'false' : '—'
+  return `检测未通过：总分 ${Number(score)}/100，未达通过线 ${DETECTION_PASS_SCORE}（模型 passed=${modelPassed}）`
 }
 
 export function ticketTypeLabel(value: string | null | undefined): string {
