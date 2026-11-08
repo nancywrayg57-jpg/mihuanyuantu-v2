@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-08 CST（Asia/Shanghai） |
 | branch | `cursor/fix-failure-rate-remain-9973` |
-| HEAD | 待推送 PR（非合入就绪） |
+| HEAD | `bbee3ea` 已推送；PR #37 **非合入就绪**（R6 缺开发机证据） |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
 | 代码态 | FIX-FAILURE-RATE-TECH：R1 prompt≥75 对齐+软日志；R2 EXIF 预检；R3 MakerNote 映射/重试；R4 gpsSubmitGuard；R5 detectionBrief；R6 本地 five_layer/pytest 绿，**缺开发机 `/tmp/r6-devhost-task.json`**。未改 PASS_SCORE；未伪造 GPS |
 | 验证态 | `/tmp/fix-failure-rate-remain-e2e.log`：R1–R5_E2E_PASS；**R6_E2E_FAIL**；`MERGE_READY=False`；`production_billing=false` |

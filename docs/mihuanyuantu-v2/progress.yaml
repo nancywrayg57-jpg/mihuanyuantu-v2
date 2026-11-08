@@ -208,7 +208,7 @@ next_action:
   work_order: "FIX-FAILURE-RATE-TECH-2026-11-08 /home/hbs/Desktop/蜜獾原图-v2-失败率可修复项工单.md"
   prior_work_order: "FIX-TASK-FAILURE-UX-2026-11-08（已合入 #36）"
   branch: cursor/fix-failure-rate-remain-9973
-  pr: pending
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/37"
   prior_branch: cursor/fix-task-failure-ux-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/36"
   constraints_ledger: docs/mihuanyuantu-v2/fix-failure-rate-remain-constraints.md
