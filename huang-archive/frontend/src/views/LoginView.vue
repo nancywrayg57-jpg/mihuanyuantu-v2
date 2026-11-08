@@ -199,25 +199,24 @@ onMounted(async () => {
     data-testid="login-screen"
   >
     <div
-      class="absolute inset-0 bg-cover bg-no-repeat"
-      style="background-image: url('/login-bg.jpg'); background-position: 28% center"
+      class="login-bg absolute inset-0 bg-cover bg-no-repeat"
       aria-hidden="true"
     />
-    <div class="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/70" aria-hidden="true" />
+    <div class="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-black/70" aria-hidden="true" />
 
-    <div class="relative z-10 min-h-[100dvh] flex flex-col px-5 pt-[max(2.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <header class="pt-4 sm:pt-8 text-center shrink-0">
+    <div class="relative z-10 min-h-[100dvh] flex flex-col px-3 sm:px-5 pt-[max(0.4rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      <header class="login-hero-copy pt-1.5 sm:pt-6 text-center shrink-0">
         <h1
-          class="font-lishu text-[2.35rem] sm:text-5xl md:text-6xl leading-tight tracking-wide drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)]"
+          class="login-title font-lishu drop-shadow-[0_2px_10px_rgba(0,0,0,0.55)]"
           data-testid="login-title"
         >
           {{ SITE_TITLE }}
         </h1>
         <p
-          class="mt-3 text-base sm:text-lg tracking-[0.2em] text-white/90 font-sans"
+          class="login-subtitle mt-1 sm:mt-2 text-white/90 font-sans"
           data-testid="login-subtitle"
         >
-          1933 -- 2026
+          （1933—2026）
         </p>
       </header>
 
@@ -372,5 +371,33 @@ onMounted(async () => {
   border: 1px solid rgba(255, 255, 255, 0.28);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+/* Face sits mid-frame below the compact title band (was 28% center → forehead under subtitle). */
+.login-bg {
+  background-image: url('/login-bg.jpg');
+  background-position: 30% 62%;
+}
+
+.login-hero-copy {
+  /* Fluid title size: 8 隶书字 must fit one line on 320px-wide phones. */
+  --login-title-size: clamp(1.28rem, 0.55rem + 4.6vw, 3rem);
+}
+
+.login-title {
+  font-size: var(--login-title-size);
+  line-height: 1.12;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  max-width: 100%;
+}
+
+/* 「主标题字号 − 2」→ two rem/Tailwind steps (0.25rem × 2). */
+.login-subtitle {
+  font-size: calc(var(--login-title-size) - 0.5rem);
+  line-height: 1.2;
+  letter-spacing: 0.08em;
 }
 </style>
