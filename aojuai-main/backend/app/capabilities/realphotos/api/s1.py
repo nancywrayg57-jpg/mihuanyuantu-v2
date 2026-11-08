@@ -157,7 +157,7 @@ class CopyBody(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     idempotency_key: str = Field(alias="idempotencyKey")
-    detection_mode: str = Field(default="pass", alias="detectionMode")
+    detection_mode: str = Field(default="gemini", alias="detectionMode")
 
 
 @router.get("/presets")
@@ -228,11 +228,13 @@ async def copy_processing_task(
     db: DBSession,
     _: None = Depends(PermissionChecker([JOBS_ENQUEUE])),
 ) -> dict[str, Any]:
+    roles = _actor_roles(await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id)))
     task = await RealphotosS1Service(db).copy_processing_task(
         tenant_id=int(tenant_ctx.tenant_id),
         owner_account_id=int(current_user.id),
         source_task_id=int(task_id),
         idempotency_key=body.idempotency_key,
+        actor_role_codes=roles,
         detection_mode=body.detection_mode,
     )
     await db.commit()

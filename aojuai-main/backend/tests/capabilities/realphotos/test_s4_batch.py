@@ -160,10 +160,12 @@ async def test_precheck_failure_releases_only_that_image(db) -> None:
     _batch, tasks = await ctx["loop"].submit_batch(
         tenant_id=ctx["tenant1"],
         owner_account_id=ctx["user_a"],
-        actor_role_codes={ROLE_MERCHANT},
+        actor_role_codes={ROLE_ADMIN},
         asset_ids=[int(good.id), int(bad.id)],
         preset_code=ctx["preset"],
         idempotency_key="s4-partial",
+        detection_mode="pass",
+        pre_review_mode="pass",
     )
     assert tasks[0].status != TASK_PRE_REVIEW_FAILED
     assert tasks[1].status == TASK_PRE_REVIEW_FAILED
@@ -212,10 +214,12 @@ async def test_two_passes_consume_twenty_and_not_pass_keeps_jpeg(db) -> None:
     _batch, passed = await ctx["loop"].submit_batch(
         tenant_id=ctx["tenant1"],
         owner_account_id=ctx["user_a"],
-        actor_role_codes={ROLE_MERCHANT},
+        actor_role_codes={ROLE_ADMIN},
         asset_ids=[int(asset.id) for asset in assets],
         preset_code=ctx["preset"],
         idempotency_key="s4-two-pass",
+        detection_mode="pass",
+        pre_review_mode="pass",
     )
     for task in passed:
         done = await _execute(db, ctx["loop"], int(task.id))

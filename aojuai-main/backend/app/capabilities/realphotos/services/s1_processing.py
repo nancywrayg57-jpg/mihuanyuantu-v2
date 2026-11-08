@@ -78,6 +78,45 @@ _RETRYABLE_FAILURES = frozenset(
         "pre_review_failed",
     }
 )
+_ADMIN_DETECT_INJECT = frozenset({DETECT_PASS, DETECT_NOT_PASSED, DETECT_TECHNICAL})
+
+
+def _is_admin(actor_role_codes: set[str]) -> bool:
+    return ROLE_ADMIN in actor_role_codes or "admin" in actor_role_codes
+
+
+def resolve_detection_mode(*, detection_mode: str | None, actor_role_codes: set[str]) -> str:
+    """Merchant production path is gemini-only; fixture inject remains admin-only (C1).
+
+    Strategy (logged in e2e): merchant requesting pass/not_passed/technical → FORBIDDEN_INJECT
+    (no task row). Omitted/unknown/gemini → DETECT_GEMINI (never fall back to pass).
+    """
+    raw = str(detection_mode or "").strip() or DETECT_GEMINI
+    if _is_admin(actor_role_codes):
+        if raw == DETECT_GEMINI or raw in _ADMIN_DETECT_INJECT:
+            return raw
+        return DETECT_GEMINI
+    if raw in _ADMIN_DETECT_INJECT:
+        raise BusinessError(
+            message="仅管理员可注入检测替身结果；商家须使用正式 gemini 检测",
+            code="FORBIDDEN_INJECT",
+        )
+    return DETECT_GEMINI
+
+
+def resolve_pre_review_mode(*, pre_review_mode: str | None, actor_role_codes: set[str]) -> str:
+    """Merchant must use live pre-review; pass/reject inject is admin-only (C1)."""
+    raw = str(pre_review_mode).strip() if pre_review_mode is not None else ""
+    if _is_admin(actor_role_codes):
+        if raw in {"pass", PRE_REVIEW_REJECT, "live"}:
+            return raw
+        return "pass"
+    if raw in {"pass", PRE_REVIEW_REJECT}:
+        raise BusinessError(
+            message="仅管理员可注入预审结果；商家须使用正式 live 预审",
+            code="FORBIDDEN_INJECT",
+        )
+    return "live"
 
 
 def _utcnow() -> datetime:
@@ -188,8 +227,8 @@ class RealphotosS1Service:
         asset_id: int,
         preset_code: str,
         idempotency_key: str,
-        pre_review_mode: str = "pass",
-        detection_mode: str = DETECT_PASS,
+        pre_review_mode: str | None = None,
+        detection_mode: str = DETECT_GEMINI,
     ) -> RealphotosImageTask:
         if S1_MAX_IMAGES != 1:
             raise BusinessError(message="S1 仅单张", code="INPUT_INVALID")
@@ -210,15 +249,14 @@ class RealphotosS1Service:
 
         assert_preset_gps_ready(preset)
         assert_preset_exif_ready(preset)
-        review = pre_review_mode if pre_review_mode in {"pass", PRE_REVIEW_REJECT, "live"} else "pass"
-        if detection_mode == DETECT_GEMINI:
-            detect = DETECT_GEMINI
-        elif detection_mode in {DETECT_PASS, DETECT_NOT_PASSED, DETECT_TECHNICAL}:
-            detect = detection_mode
-        else:
-            detect = DETECT_PASS
-        injected = review == PRE_REVIEW_REJECT or detect in {DETECT_NOT_PASSED, DETECT_TECHNICAL}
-        if injected and ROLE_ADMIN not in actor_role_codes:
+        review = resolve_pre_review_mode(
+            pre_review_mode=pre_review_mode, actor_role_codes=actor_role_codes
+        )
+        detect = resolve_detection_mode(
+            detection_mode=detection_mode, actor_role_codes=actor_role_codes
+        )
+        injected = review == PRE_REVIEW_REJECT or detect in _ADMIN_DETECT_INJECT
+        if injected and not _is_admin(actor_role_codes):
             raise BusinessError(message="仅管理员可注入预审或检测结果", code="FORBIDDEN_INJECT")
         asset = await self._asset(tenant_id=tenant_id, asset_id=asset_id)
         if asset.deleted_at is not None:
@@ -298,8 +336,8 @@ class RealphotosS1Service:
         asset_ids: list[int],
         preset_code: str,
         idempotency_key: str,
-        pre_review_mode: str = "pass",
-        detection_mode: str = DETECT_PASS,
+        pre_review_mode: str | None = None,
+        detection_mode: str = DETECT_GEMINI,
     ) -> tuple[RealphotosBatch, list[RealphotosImageTask]]:
         """FR-015 / FR-016：1–10 张共用一个预设。整单拒绝不留预留；通过后按张冻结。"""
         key = str(idempotency_key or "").strip()
@@ -325,15 +363,14 @@ class RealphotosS1Service:
 
         assert_preset_gps_ready(preset)
         assert_preset_exif_ready(preset)
-        review = pre_review_mode if pre_review_mode in {"pass", PRE_REVIEW_REJECT, "live"} else "pass"
-        if detection_mode == DETECT_GEMINI:
-            detect = DETECT_GEMINI
-        elif detection_mode in {DETECT_PASS, DETECT_NOT_PASSED, DETECT_TECHNICAL}:
-            detect = detection_mode
-        else:
-            detect = DETECT_PASS
-        injected = review == PRE_REVIEW_REJECT or detect in {DETECT_NOT_PASSED, DETECT_TECHNICAL}
-        if injected and ROLE_ADMIN not in actor_role_codes:
+        review = resolve_pre_review_mode(
+            pre_review_mode=pre_review_mode, actor_role_codes=actor_role_codes
+        )
+        detect = resolve_detection_mode(
+            detection_mode=detection_mode, actor_role_codes=actor_role_codes
+        )
+        injected = review == PRE_REVIEW_REJECT or detect in _ADMIN_DETECT_INJECT
+        if injected and not _is_admin(actor_role_codes):
             raise BusinessError(message="仅管理员可注入预审或检测结果", code="FORBIDDEN_INJECT")
         wallet = await self.credits.get_wallet(tenant_id=int(tenant_id))
         needed = len(requested) * PROCESS_UNIT_CREDITS
@@ -1108,6 +1145,9 @@ class RealphotosS1Service:
         )
         if task.failure_class not in _RETRYABLE_FAILURES:
             raise BusinessError(message="只有技术失败可以沿用原任务重试", code="RETRY_REJECTED")
+        # C1: historical fixture technical must not re-fire for merchant retry.
+        if str(task.detection_mode or "") == DETECT_TECHNICAL:
+            task.detection_mode = DETECT_GEMINI
         policy = await self._policy(task)
         if int(policy.execution_count) >= MAX_EXECUTIONS:
             raise BusinessError(message="技术重试次数已用尽，请转技术客服", code="RETRY_LIMIT")
@@ -1246,11 +1286,15 @@ class RealphotosS1Service:
         owner_account_id: int,
         source_task_id: int,
         idempotency_key: str,
-        detection_mode: str = DETECT_PASS,
+        actor_role_codes: set[str] | None = None,
+        detection_mode: str = DETECT_GEMINI,
     ) -> RealphotosImageTask:
         """ND-025 / FR-013: copy processing task without re-freeze or full pre-review."""
         from app.capabilities.realphotos.models import RealphotosMerchantProfile
 
+        roles = set(actor_role_codes or set())
+        # C1: reject fixture inject before latch so merchants see FORBIDDEN_INJECT clearly.
+        detect = resolve_detection_mode(detection_mode=detection_mode, actor_role_codes=roles)
         key = str(idempotency_key or "").strip()
         if not key:
             raise BusinessError(message="缺少幂等键", code="INPUT_INVALID")
@@ -1296,12 +1340,7 @@ class RealphotosS1Service:
                 message="复制处理任务执行中，暂缓本账号其他扣分与冻结；充值可用",
                 code="COPY_LATCH_ACTIVE",
             )
-        if detection_mode == DETECT_GEMINI:
-            detect = DETECT_GEMINI
-        elif detection_mode in {DETECT_PASS, DETECT_NOT_PASSED, DETECT_TECHNICAL}:
-            detect = detection_mode
-        else:
-            detect = DETECT_PASS
+        # ND-025 still skips live pre-review (pre_review_mode=pass on copied row).
         batch = RealphotosBatch(
             tenant_id=int(tenant_id),
             owner_account_id=int(owner_account_id),

@@ -134,7 +134,7 @@ async def test_timeout_and_non_integer_hold_without_download(db, monkeypatch: py
 
     from app.capabilities.realphotos.constants import DETECT_GEMINI
     from app.capabilities.realphotos.models import RealphotosCreditReservation, RealphotosDetectionResult
-    from app.capabilities.realphotos.permissions import ROLE_MERCHANT
+    from app.capabilities.realphotos.permissions import ROLE_ADMIN
     from app.capabilities.realphotos.services import five_layer, gemini_detector
     from app.capabilities.realphotos.services.bootstrap import bootstrap_s0_accounts
     from app.capabilities.realphotos.services.job_service import RealphotosJobService
@@ -184,14 +184,16 @@ async def test_timeout_and_non_integer_hold_without_download(db, monkeypatch: py
     preset = S1_ENABLED_PRESETS[0]["code"]
 
     async def run(key: str):
+        # C1: merchant live pre-review needs supplier config; admin pass inject keeps gemini path unit-testable.
         task = await loop.submit_single(
             tenant_id=tenant,
             owner_account_id=user,
-            actor_role_codes={ROLE_MERCHANT},
+            actor_role_codes={ROLE_ADMIN},
             asset_id=int(asset.id),
             preset_code=preset,
             idempotency_key=key,
             detection_mode=DETECT_GEMINI,
+            pre_review_mode="pass",
         )
         claimed = await jobs.claim(
             worker_id="s3-unit",

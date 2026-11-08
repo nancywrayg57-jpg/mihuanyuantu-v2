@@ -1,10 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-import { ApiError, apiFetch } from '@/lib/api'
+import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { gpsSubmitGuard } from '@/lib/realphotos-gps-submit'
 import { deviceTypeLabel } from '@/lib/realphotos-labels'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
@@ -32,6 +32,7 @@ export function RealphotosBatchClient() {
   const [notice, setNotice] = useState('')
   const [frozen, setFrozen] = useState(false)
   const [library, setLibrary] = useState<PendingAsset[]>([])
+  const gatewayPreviewUrls = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     void apiFetch<{ preReviewFrozen: boolean }>('/api/v1/realphotos/me')
@@ -59,9 +60,67 @@ export function RealphotosBatchClient() {
       .filter(Boolean)
       .slice(0, 10)
     if (!ids.length) return
+
+    let cancelled = false
+    const created: string[] = []
+
     setLibrary(ids.map((id) => ({ id, previewUrl: '' })))
     setNotice(`已从图片资源带入 ${ids.length} 张`)
+
+    async function loadLibraryThumbs() {
+      let assets: { id: string; objectKey?: string }[] = []
+      try {
+        const data = await apiFetch<{ items: { id: string; objectKey?: string }[] }>(
+          '/api/v1/realphotos/assets',
+        )
+        assets = data.items || []
+      } catch {
+        if (!cancelled) setNotice((prev) => `${prev}；资源列表加载失败，缩略图暂不可用`)
+        return
+      }
+      const byId = new Map(assets.map((item) => [item.id, item]))
+      let thumbFail = 0
+      for (const id of ids) {
+        if (cancelled) return
+        const objectKey = byId.get(id)?.objectKey
+        if (!objectKey) {
+          thumbFail += 1
+          continue
+        }
+        try {
+          const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${objectKey}`)
+          if (cancelled) return
+          const url = URL.createObjectURL(blob)
+          created.push(url)
+          gatewayPreviewUrls.current.add(url)
+          setLibrary((prev) =>
+            prev.map((row) => (row.id === id && !row.previewUrl ? { ...row, previewUrl: url } : row)),
+          )
+        } catch {
+          thumbFail += 1
+        }
+      }
+      if (!cancelled && thumbFail > 0) {
+        setNotice((prev) => `${prev}；缩略图加载失败 ${thumbFail} 张（不阻断提交）`)
+      }
+    }
+
+    void loadLibraryThumbs()
+    return () => {
+      cancelled = true
+      for (const url of created) {
+        URL.revokeObjectURL(url)
+        gatewayPreviewUrls.current.delete(url)
+      }
+    }
   }, [searchParams])
+
+  useEffect(() => {
+    return () => {
+      for (const url of gatewayPreviewUrls.current) URL.revokeObjectURL(url)
+      gatewayPreviewUrls.current.clear()
+    }
+  }, [])
 
   const deviceTypes = useMemo(
     () => Array.from(new Set(presets.map((item) => item.deviceType).filter(Boolean))),
@@ -271,7 +330,16 @@ export function RealphotosBatchClient() {
           <button
             className="border px-3 py-1"
             type="button"
-            onClick={() => setLibrary((prev) => prev.slice(0, -1))}
+            onClick={() =>
+              setLibrary((prev) => {
+                const last = prev[prev.length - 1]
+                if (last?.previewUrl) {
+                  URL.revokeObjectURL(last.previewUrl)
+                  gatewayPreviewUrls.current.delete(last.previewUrl)
+                }
+                return prev.slice(0, -1)
+              })
+            }
           >
             移除最后一张
           </button>

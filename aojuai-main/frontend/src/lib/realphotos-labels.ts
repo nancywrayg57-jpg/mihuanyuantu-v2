@@ -72,9 +72,9 @@ export function failureClassLabel(value: string | null | undefined): string {
     pre_review: '预审未通过',
     pre_review_failed: '预审请求失败（技术）',
     precheck: '前置校验失败',
-    // Fixture detection_mode=technical：预期失败，勿与 EXIF/Gemini 真技术异常混称（F5）
-    technical: '规则替身技术失败',
-    fixture_technical: '规则替身技术失败',
+    // C1: historical fixture technical — retired for merchant UX; keep distinct from real EXIF/Gemini holds
+    technical: '历史联调替身（已停用）',
+    fixture_technical: '历史联调替身（已停用）',
     detection_not_passed: '检测未通过',
     detection_failed: '检测失败',
     EXIF_WRITE_FAILED: 'EXIF 写入失败',

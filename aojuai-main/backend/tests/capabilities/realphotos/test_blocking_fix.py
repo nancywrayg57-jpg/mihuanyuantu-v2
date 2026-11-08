@@ -159,7 +159,7 @@ async def test_copy_no_reserve_and_latch(db):
         asset_id=int(asset.id),
         preset_code=S1_ENABLED_PRESETS[0]["code"],
         idempotency_key="copy-src",
-        detection_mode="pass",
+        detection_mode="gemini",
     )
     before = await credits.get_wallet(tenant_id=tenant)
     copied = await loop.copy_processing_task(
@@ -167,7 +167,8 @@ async def test_copy_no_reserve_and_latch(db):
         owner_account_id=user,
         source_task_id=int(source.id),
         idempotency_key="copy-dst",
-        detection_mode="pass",
+        actor_role_codes={ROLE_MERCHANT},
+        detection_mode="gemini",
     )
     assert copied.copied_from_task_id == int(source.id)
     assert copied.billing_mode == "copy_no_reserve"
@@ -190,7 +191,7 @@ async def test_copy_no_reserve_and_latch(db):
             asset_id=int(asset.id),
             preset_code=S1_ENABLED_PRESETS[0]["code"],
             idempotency_key="copy-blocked",
-            detection_mode="pass",
+            detection_mode="gemini",
         )
     assert exc.value.code == "COPY_LATCH_ACTIVE"
     assert await db.scalar(select(func.count()).select_from(RealphotosImageTask)) >= 2

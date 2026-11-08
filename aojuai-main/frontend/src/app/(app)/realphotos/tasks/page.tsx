@@ -93,6 +93,8 @@ const RETRYABLE = new Set([
 ])
 
 function canRetry(task: ProcessingTask): boolean {
+  // C1: historical fixture technical is retired — do not present as formal tech-retry guidance
+  if (String(task.detectionMode || '').trim() === 'technical') return false
   return Boolean(task.failureClass && RETRYABLE.has(task.failureClass))
 }
 
@@ -346,7 +348,7 @@ export default function RealphotosTasksPage() {
           method: 'POST',
           body: JSON.stringify({
             idempotencyKey: `copy-${current.id}-${Date.now()}`,
-            detectionMode: 'pass',
+            detectionMode: 'gemini',
           }),
         },
       )
@@ -563,7 +565,7 @@ export default function RealphotosTasksPage() {
                     <p>
                       检测模式：
                       {detail.detectionMode === 'technical'
-                        ? '规则替身（technical）'
+                        ? '历史联调替身（已停用）'
                         : detail.detectionMode}
                     </p>
                   ) : null}
