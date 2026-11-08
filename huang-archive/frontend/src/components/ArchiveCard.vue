@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { Heart, MessageCircle, Trash2, ExternalLink, Pencil, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
@@ -71,23 +71,48 @@ watch(files, (list) => {
   if (lightboxIndex.value >= list.length) lightboxIndex.value = Math.max(0, list.length - 1)
 })
 
+/** Invalidate stale Image()/load callbacks when the slide changes. */
+let lightboxOrientSeq = 0
+
+function applyLightboxOrient(nw, nh, seq = lightboxOrientSeq) {
+  if (seq !== lightboxOrientSeq) return
+  if (!nw || !nh) return
+  lightboxOrient.value = nw >= nh ? 'landscape' : 'portrait'
+}
+
 function detectLightboxOrient(src) {
   if (!src || typeof Image === 'undefined') return
+  const seq = ++lightboxOrientSeq
   const im = new Image()
-  im.onload = () => {
-    // Use bitmap pixel size (these archives have no EXIF orientation tag).
-    lightboxOrient.value = im.naturalWidth >= im.naturalHeight ? 'landscape' : 'portrait'
-  }
+  im.onload = () => applyLightboxOrient(im.naturalWidth, im.naturalHeight, seq)
   im.onerror = () => {
-    lightboxOrient.value = 'portrait'
+    if (seq === lightboxOrientSeq) lightboxOrient.value = 'portrait'
   }
   im.src = src
+}
+
+function syncLightboxOrientFromDom(seq = lightboxOrientSeq) {
+  const tryApply = () => {
+    if (seq !== lightboxOrientSeq) return true
+    const img = document.querySelector('[data-testid="lightbox-image"]')
+    if (img?.naturalWidth && img.naturalHeight) {
+      applyLightboxOrient(img.naturalWidth, img.naturalHeight, seq)
+      return true
+    }
+    return false
+  }
+  if (tryApply()) return
+  requestAnimationFrame(() => {
+    if (tryApply()) return
+    setTimeout(tryApply, 50)
+  })
 }
 
 function syncLightboxOrient() {
   const item = imageUrls.value[lightboxIndex.value]
   const src = item?.full || item?.url
   detectLightboxOrient(src)
+  nextTick(() => syncLightboxOrientFromDom())
 }
 
 function openLightbox(index = slide.value) {
@@ -102,6 +127,7 @@ function closeLightbox() {
   lightboxOpen.value = false
   swipeActive.value = false
   swipeDeltaX.value = 0
+  lightboxOrientSeq += 1
 }
 function lightboxPrev() {
   if (!imageUrls.value.length) return
@@ -119,9 +145,7 @@ function lightboxNext() {
 }
 
 function onLightboxImgLoad(e) {
-  const img = e?.target
-  if (!img?.naturalWidth) return
-  lightboxOrient.value = img.naturalWidth >= img.naturalHeight ? 'landscape' : 'portrait'
+  applyLightboxOrient(e?.target?.naturalWidth, e?.target?.naturalHeight)
 }
 
 function onLightboxTouchStart(e) {
