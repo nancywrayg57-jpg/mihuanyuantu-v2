@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import io
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -37,20 +36,6 @@ def must(cond: bool, msg: str) -> None:
 def mark(rid: str, ok: bool, detail: str = "") -> None:
     tag = f"{rid}_E2E_PASS" if ok else f"{rid}_E2E_FAIL"
     note(f"{tag} {detail}".rstrip())
-
-
-def _load_dotenv() -> None:
-    env_path = BE / ".env"
-    if not env_path.exists():
-        return
-    for line in env_path.read_text(encoding="utf-8", errors="ignore").splitlines():
-        if not line or line.strip().startswith("#") or "=" not in line:
-            continue
-        key, val = line.split("=", 1)
-        key = key.strip()
-        val = val.strip().strip('"').strip("'")
-        if key and key not in os.environ:
-            os.environ[key] = val
 
 
 def main() -> int:
@@ -105,21 +90,20 @@ def main() -> int:
     must(gps_field.get("verification_status") == "skipped", "R6_five_layer_gps_skipped")
     must(out.jpeg.startswith(b"\xff\xd8\xff"), "R6_jpeg_ok")
 
-    pytest = subprocess.run(
-        [
-            str(BE / ".venv" / "bin" / "pytest"),
-            "tests/capabilities/realphotos/test_geocoder_adapter.py",
-            "-q",
-            "--tb=line",
-        ],
-        cwd=str(BE),
-        env={**os.environ, "DB_DRIVER": "sqlite"},
-        capture_output=True,
-        text=True,
+    # In-process pytest avoids GOV-10 os.environ copies for child env.
+    import pytest as _pytest
+
+    geocoder_rc = int(
+        _pytest.main(
+            [
+                "tests/capabilities/realphotos/test_geocoder_adapter.py",
+                "-q",
+                "--tb=line",
+            ]
+        )
     )
-    note("pytest_geocoder_exit=" + str(pytest.returncode))
-    note((pytest.stdout or "")[-500:])
-    must(pytest.returncode == 0, "R6_pytest_geocoder_green")
+    note("pytest_geocoder_exit=" + str(geocoder_rc))
+    must(geocoder_rc == 0, "R6_pytest_geocoder_green")
 
     # R6 live 开发机: ONLY pass when explicit host evidence exists (never TCP-only).
     # Required artifact (written by SSH session on 192.168.19.128): /tmp/r6-devhost-task.json
@@ -172,8 +156,9 @@ def main() -> int:
     must("gemini_passed_score_misaligned" in gemini_src, "R1_soft_warning_present")
     must("passed is True and int(parsed" in gemini_src or "passed\"] is True" in gemini_src, "R1_no_silent_rewrite")
 
-    _load_dotenv()
-    key = str(os.environ.get("GEMINI_API_KEY") or "").strip()
+    from app.core.config import settings
+
+    key = str(settings.GEMINI_API_KEY or "").strip()
     if not key:
         mark("R1", False, "GEMINI_API_KEY missing; unit/prompt checks only")
     else:
