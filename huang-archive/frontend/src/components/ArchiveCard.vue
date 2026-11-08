@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { Heart, MessageCircle, Trash2, ExternalLink, Pencil, ChevronLeft, ChevronRight, X } from 'lucide-vue-next'
+import { Heart, MessageCircle, Trash2, ExternalLink, Pencil, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
 import { zhError } from '../lib/errors'
@@ -71,13 +71,32 @@ watch(files, (list) => {
   if (lightboxIndex.value >= list.length) lightboxIndex.value = Math.max(0, list.length - 1)
 })
 
+function detectLightboxOrient(src) {
+  if (!src || typeof Image === 'undefined') return
+  const im = new Image()
+  im.onload = () => {
+    // Use bitmap pixel size (these archives have no EXIF orientation tag).
+    lightboxOrient.value = im.naturalWidth >= im.naturalHeight ? 'landscape' : 'portrait'
+  }
+  im.onerror = () => {
+    lightboxOrient.value = 'portrait'
+  }
+  im.src = src
+}
+
+function syncLightboxOrient() {
+  const item = imageUrls.value[lightboxIndex.value]
+  const src = item?.full || item?.url
+  detectLightboxOrient(src)
+}
+
 function openLightbox(index = slide.value) {
   const i = Math.max(0, Math.min(Number(index) || 0, Math.max(0, imageUrls.value.length - 1)))
   lightboxIndex.value = i
   slide.value = i
-  lightboxOrient.value = 'portrait'
   swipeDeltaX.value = 0
   lightboxOpen.value = true
+  syncLightboxOrient()
 }
 function closeLightbox() {
   lightboxOpen.value = false
@@ -89,12 +108,14 @@ function lightboxPrev() {
   lightboxIndex.value = (lightboxIndex.value - 1 + imageUrls.value.length) % imageUrls.value.length
   slide.value = lightboxIndex.value
   swipeDeltaX.value = 0
+  syncLightboxOrient()
 }
 function lightboxNext() {
   if (!imageUrls.value.length) return
   lightboxIndex.value = (lightboxIndex.value + 1) % imageUrls.value.length
   slide.value = lightboxIndex.value
   swipeDeltaX.value = 0
+  syncLightboxOrient()
 }
 
 function onLightboxImgLoad(e) {
@@ -551,55 +572,57 @@ async function deleteMemory(m) {
         v-if="lightboxOpen && imageUrls.length"
         class="fixed inset-0 z-[80] bg-ink flex flex-col touch-pan-y"
         data-testid="image-lightbox"
+        :data-orient="lightboxOrient"
         @click.self="closeLightbox"
         @touchstart.passive="onLightboxTouchStart"
         @touchmove="onLightboxTouchMove"
         @touchend="onLightboxTouchEnd"
         @touchcancel="onLightboxTouchEnd"
       >
-        <div class="shrink-0 flex flex-col items-center gap-2 pt-[max(0.75rem,env(safe-area-inset-top))] px-4 pb-2">
-          <button
-            type="button"
-            class="lightbox-close-x min-h-tap min-w-[48px] grid place-items-center bg-parchment text-cinnabar border-[3px] border-cinnabar shadow-md"
-            data-testid="lightbox-close"
-            aria-label="关闭"
-            title="关闭"
-            @click.stop="closeLightbox"
-          >
-            <X class="w-7 h-7 stroke-[2.5]" />
-          </button>
+        <div
+          class="shrink-0 relative z-[2] flex items-center justify-between gap-3 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2"
+        >
           <span class="text-parchment/80 text-sm" data-testid="lightbox-index">
             {{ lightboxIndex + 1 }} / {{ imageUrls.length }}
           </span>
+          <button
+            type="button"
+            class="min-h-tap px-4 border border-parchment/70 text-parchment bg-ink/80"
+            data-testid="lightbox-close"
+            @click.stop="closeLightbox"
+          >
+            关闭
+          </button>
         </div>
-        <div
-          class="flex-1 relative min-h-0 flex items-center justify-center overflow-hidden px-2 pb-[max(1rem,env(safe-area-inset-bottom))]"
-          data-testid="lightbox-stage"
-        >
-          <img
-            :src="imageUrls[lightboxIndex]?.full || imageUrls[lightboxIndex]?.url"
-            :alt="`${archive.title} 大图 ${lightboxIndex + 1}`"
-            class="lightbox-img select-none"
-            :class="lightboxOrient === 'landscape' ? 'lightbox-img--landscape' : 'lightbox-img--portrait'"
-            :style="swipeDeltaX ? { transform: `translateX(${swipeDeltaX}px)`, transition: 'none' } : undefined"
-            data-testid="lightbox-image"
-            draggable="false"
-            @load="onLightboxImgLoad"
-            @click.stop
-          />
+        <div class="flex-1 relative min-h-0 overflow-hidden" data-testid="lightbox-stage-wrap">
+          <div
+            class="lightbox-stage"
+            :class="lightboxOrient === 'landscape' ? 'lightbox-stage--landscape' : 'lightbox-stage--portrait'"
+            data-testid="lightbox-stage"
+          >
+            <img
+              :key="`${lightboxIndex}-${imageUrls[lightboxIndex]?.name || ''}`"
+              :src="imageUrls[lightboxIndex]?.full || imageUrls[lightboxIndex]?.url"
+              :alt="`${archive.title} 大图 ${lightboxIndex + 1}`"
+              class="lightbox-img select-none"
+              :class="lightboxOrient === 'landscape' ? 'lightbox-img--landscape' : 'lightbox-img--portrait'"
+              :style="swipeDeltaX ? { transform: `translateX(${swipeDeltaX}px)`, transition: 'none' } : undefined"
+              data-testid="lightbox-image"
+              draggable="false"
+              @load="onLightboxImgLoad"
+              @click.stop
+            />
+          </div>
         </div>
       </div>
     </Teleport>
 </template>
 
 <style scoped>
-.lightbox-close-x {
-  border-radius: 0.35rem;
-}
-
-/* Stage is the swipe/fill surface; image covers it by orientation. */
-[data-testid='lightbox-stage'] {
-  position: relative;
+.lightbox-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
 }
 
 .lightbox-img {
@@ -608,17 +631,29 @@ async function deleteMemory(m) {
   width: 100%;
   height: 100%;
   object-position: center;
+  object-fit: cover;
   transition: transform 0.15s ease-out;
 }
 
-/* Mobile: fill the open viewer (landscape → cover wide; portrait → cover tall). */
-.lightbox-img--landscape,
-.lightbox-img--portrait {
-  object-fit: cover;
+/*
+ * Mobile landscape: rotate the stage into landscape so a wide photo fills
+ * the phone as a landscape frame (not a cropped strip of a portrait stage).
+ * Portrait stays upright and fills the portrait frame.
+ */
+@media (max-width: 767.98px) {
+  .lightbox-stage--landscape {
+    width: 100dvh;
+    height: 100dvw;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: center center;
+  }
 }
 
 @media (min-width: 768px) {
-  /* Desktop: keep full picture readable; still orientation-tagged for swipe UX */
   .lightbox-img--landscape,
   .lightbox-img--portrait {
     object-fit: contain;
