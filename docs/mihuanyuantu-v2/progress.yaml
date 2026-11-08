@@ -208,7 +208,7 @@ next_action:
   work_order: "UX-CN-PRESET-2026-11-07 /home/hbs/Desktop/蜜獾原图-v2-中文体验与预设交互工单.md"
   prior_work_order: "BROWSER-E2E-FIX-2026-11-07（已合入 #32）"
   branch: cursor/ux-cn-preset-9973
-  pr: pending_create
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/35"
   prior_branch: cursor/browser-e2e-fix-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/32"
   ux_cn_preset_status:

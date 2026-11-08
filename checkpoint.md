@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-08 CST（Asia/Shanghai） |
 | branch | `cursor/ux-cn-preset-9973` |
-| HEAD | 待推送 PR（基于 `origin/main` tip `e4d159a` / #33） |
+| HEAD | `f6c19e7` 已推送；PR #35 待审合 |
 | 文档态 | PRD **2.10**；架构 **1.7**；`s5_exited=true`；S7 未开 |
 | 代码态 | UX-CN-PRESET U1–U7：`realphotos-labels` 展示映射；资源「选择文件」；任务中文列+详情弹窗；预设分页 20、删批量按钮、详情/新增弹窗；工单台/工作台/批量/订单客服中文。未接通 URL 真导入；非生产收费 |
 | 验证态 | `/tmp/ux-cn-preset-e2e.log` 含 `UX_CN_PRESET_E2E_PASS` 且 `production_billing=false`；截图 `/tmp/cursor/screenshots/ux-cn-preset-*.png` |
