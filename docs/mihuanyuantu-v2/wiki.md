@@ -91,7 +91,7 @@
 | 16-browser-e2e-fix | F1–F8：深链/工单/用户/held/率%/藏演示/系统裁剪/generation 网关 | `/tmp/browser-e2e-fix-e2e.log` | merged_#32 | — |
 | 17-ux-cn-preset | U1–U7 中文标签 + 预设分页/详情/新增弹窗；C1 撤批量 UI | `/tmp/ux-cn-preset-e2e.log` | merged_#35 | — |
 | 18-fix-task-failure-ux | F1–F6 失败原因映射/详情分数门槛/GPS 提示/替身区分/预审请求可重试 | `/tmp/fix-task-failure-ux-e2e.log` | merged_#36 | — |
-| 19-fix-failure-rate-remain | R1–R6 失败率剩余项；R6 须开发机证据 | `/tmp/fix-failure-rate-remain-e2e.log` | r1_r5_pass_r6_blocked | 全绿前禁合入；PASS_SCORE=75；不开 S7 |
+| 19-fix-failure-rate-remain | R1–R6 失败率剩余项；本机即开发机补 R6 | `/tmp/fix-failure-rate-remain-e2e.log` | local_pass_pr_pending | Owner squash #37；PASS_SCORE=75；不开 S7 |
 
 ## Risks and Watchpoints
 - Risk: 把文档齐全或 CI 绿当成后端已交付。
@@ -102,7 +102,6 @@
 - Mitigation: F8 网关放行 `generation/*`（资产表校验）；「(降级)」仅文件名元数据回退。
 
 ## Backlog Knowledge
-- Next: 开发机写入 `/tmp/r6-devhost-task.json`（`gpsMode=none` 任务）后重跑 `fix_failure_rate_remain_e2e.py`；仅当 `MERGE_READY=True` 才可 Owner squash；不得开 S7。
-- Closed this loop (partial): R1–R5（prompt 对齐、EXIF 预检、MakerNote 映射、单张 GPS 提示、列表差几分）；#36 已在 main。
-- Blocked: R6 正式端测（Cloud→`192.168.19.128` 路由缺失 / 无 host 证据文件）。本地 five_layer+pytest 已绿，**不等于**工单 R6_E2E_PASS。
+- Next: Owner 非自评自合 PR #37；不得开 S7。
+- Closed this loop: FIX-FAILURE-RATE-TECH R1–R6（`MERGE_READY=True`；R6 证据 task=158 `gpsMode=none` DELIVERED on 本机开发机）。
 - Deferred: A5 运营成本真实聚合；CI 升 3.12/pnpm10；替身改库码 `fixture_technical` 须 Owner 批准。

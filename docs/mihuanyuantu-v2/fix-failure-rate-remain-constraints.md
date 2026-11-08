@@ -11,7 +11,7 @@
 | F-PR36 | PR #36 已 `MERGED`（`f50f26e`），工单表头仍写「待非作者 squash」→ **过时** | `gh pr view 36` state=MERGED；工单 §表头「关联」 |
 | F-BASE | 本单从 `origin/main` tip `f50f26e` 新开 `cursor/fix-failure-rate-remain-9973` | 工单「分支约定：可在现分支续作，或新开 …remain-9973」 |
 | F-SINGLE | 商家「单张」入口 = 资源库「去处理」→ `/realphotos/batch?assetIds=`；**无独立单张处理页** | `library/page.tsx` `goProcess`；工单 R4「若走 library…」 |
-| F-LAN | Cloud/本机对 `192.168.19.128:22/5432`：**Network is unreachable** | 工单 R6 端测第 1 条要求开发机；`AGENTS.md` §5 开发机端测 |
+| F-LAN | 先前 Cloud 沙箱内探测 LAN **Network is unreachable**；**操作员确认本机即开发机**（`hostname -I` 含 `192.168.19.128`） | 工单 R6；用户 2026-11-08「本机就是开发机」 |
 | F-PASS75 | 禁止改 `PASS_SCORE=75` | 工单 §0.4；R1「禁止修改 PASS_SCORE」 |
 | F-NOGPSFAKE | 禁止伪造 GPS / 静默改 gpsMode | 工单 §3；PRD 诚实失败 |
 
@@ -19,7 +19,7 @@
 
 | ID | 冲突 | 处理 |
 | --- | --- | --- |
-| X1 | 工单要求 R6 开发机 Worker+API 端测；本环境无 LAN 路由 | **不得**写 `R6_E2E_PASS`；先写 `R6_E2E_FAIL`（原因=LAN unreachable）+ 本地 pytest 回归证据；合入申请推迟到开发机绿或 Owner 书面改单 |
+| X1 | 工单要求 R6 开发机 Worker+API；沙箱曾误判不可达 | **已澄清**：本 VM 即 `192.168.19.128`。R6 须在本机 PG `claim_one` + Worker 留 `/tmp/r6-devhost-task.json`，不得仅靠 five_layer 单元测冒充 |
 | X2 | 工单「全待做项全绿方可申请合入」 vs Collaborator 须推 PR 供审 | 可开 PR 供审阅，但 PR 必须标明 **非合入就绪** 直至 R6 开发机 PASS；禁止自评自合 |
 | X3 | 工单 R1 要求 ≥3 张 `detection_mode=gemini` 全任务状态；开发机不可达 | 本地可用 backend `.env` 的 Gemini Key 做 `detect_jpeg` 对齐率证据；**全任务状态**若无 Worker 则标缺口，不得假装 DELIVERED |
 
@@ -38,7 +38,7 @@
 | F1–F6 不重复实现 | 遵守；仅索引 |
 | `生产物料` | 仓内 gitignore 路径存在；口令不入库不外泄 |
 | Gemini Key（本地 `.env`） | 存在，仅用于 R1 本地 detect 对齐；不打印 |
-| 开发机 SSH | **缺失连通** → R6 正式端测阻塞 |
+| 开发机 | **本机即是**；R6 已用本机 PG Worker 留证 |
 
 ## C5 · 禁止项复述（硬）
 

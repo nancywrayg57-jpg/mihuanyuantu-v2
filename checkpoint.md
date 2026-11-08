@@ -8,22 +8,21 @@
 | --- | --- |
 | updated | 2026-11-08 CST（Asia/Shanghai） |
 | branch | `cursor/fix-failure-rate-remain-9973` |
-| HEAD | `bbee3ea` 已推送；PR #37 **非合入就绪**（R6 缺开发机证据） |
+| HEAD | 待推送（R6 开发机证据已补） |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
-| 代码态 | FIX-FAILURE-RATE-TECH：R1 prompt≥75 对齐+软日志；R2 EXIF 预检；R3 MakerNote 映射/重试；R4 gpsSubmitGuard；R5 detectionBrief；R6 本地 five_layer/pytest 绿，**缺开发机 `/tmp/r6-devhost-task.json`**。未改 PASS_SCORE；未伪造 GPS |
-| 验证态 | `/tmp/fix-failure-rate-remain-e2e.log`：R1–R5_E2E_PASS；**R6_E2E_FAIL**；`MERGE_READY=False`；`production_billing=false` |
-| 当前阶段 | 剩余项部分完成；R6 被 LAN/开发机证据阻塞（约束台账 X1） |
-| 下一步 | 开发机补 R6 证据后重跑 e2e；全绿前禁止 squash；不得开 S7 |
+| 代码态 | FIX-FAILURE-RATE-TECH R1–R6：Gemini prompt 对齐 75；EXIF 预检；MakerNote 映射/重试；gpsSubmitGuard；detectionBrief；本机 PG `gpsMode=none` 任务 158 DELIVERED |
+| 验证态 | `/tmp/fix-failure-rate-remain-e2e.log`：`ALL_REMAIN_GREEN=True` `MERGE_READY=True`；`/tmp/r6-devhost-task.json` taskId=158；`production_billing=false` |
+| 当前阶段 | PR #37 待非作者 Owner squash |
+| 下一步 | Owner 非自评自合；不得开 S7 |
 
-## 1. 约束冲突（必须保留）
+## 1. 约束说明
 
-见 `docs/mihuanyuantu-v2/fix-failure-rate-remain-constraints.md`：X1 开发机不可达不得写 R6_PASS；X2 PR 可开但非合入就绪；不得降 75 分门槛。
+本机即开发机 `192.168.19.128`（操作员确认）。沙箱曾误判 LAN 不可达；R6 已在本机 PostgreSQL `claim_one` + Worker 留证。
 
 ## 2. 阶段状态（摘要）
 
 | 阶段 | 状态 |
 | --- | --- |
-| FIX-TASK-FAILURE-UX F1–F6 | 已合入 #36 |
-| FIX-FAILURE-RATE-TECH R1–R5 | 本地端测 PASS |
-| FIX-FAILURE-RATE-TECH R6 | **FAIL / 阻塞**（无开发机任务证据） |
+| FIX-TASK-FAILURE-UX | 已合入 #36 |
+| FIX-FAILURE-RATE-TECH R1–R6 | 端测全绿；PR #37 待审合 |
 | S7 | **须管理员确认** |
