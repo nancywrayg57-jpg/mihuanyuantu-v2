@@ -6,7 +6,6 @@ Does not invent PASS for blocked 开发机 steps. Does not lower PASS_SCORE.
 
 from __future__ import annotations
 
-import importlib.util
 import io
 import json
 import os
@@ -89,10 +88,11 @@ def main() -> int:
     redo = (BE / "app" / "capabilities" / "realphotos" / "services" / "redo_policy.py").read_text(encoding="utf-8")
 
     # -------- R6 unit / local first (order per ticket) --------
+    from PIL import Image
+
     from app.capabilities.realphotos.services.five_layer import run_five_layer
     from app.capabilities.realphotos.services.gps_write import resolve_gps
     from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
-    from PIL import Image
 
     preset_none = dict(S1_ENABLED_PRESETS[0])
     must(preset_none.get("gpsMode") == "none", "R6_catalog_gps_none")
@@ -184,6 +184,9 @@ def main() -> int:
         async def _r1_local_gemini_tasks() -> list[dict]:
             from pathlib import Path as _Path
 
+            from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+            from sqlalchemy.pool import StaticPool
+
             import app.capabilities.realphotos.models  # noqa: F401
             import app.domain  # noqa: F401
             from app.capabilities.realphotos.permissions import ROLE_ADMIN, ROLE_MERCHANT
@@ -196,8 +199,6 @@ def main() -> int:
             from app.core import feature_switches
             from app.core.config import settings
             from app.infrastructure.database.session import Base
-            from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-            from sqlalchemy.pool import StaticPool
 
             root = _Path("/tmp/r1-remain-storage")
             root.mkdir(parents=True, exist_ok=True)
@@ -254,7 +255,7 @@ def main() -> int:
                     asset = await loop.upload(
                         tenant_id=tenant1, owner_account_id=user_a, data=bio.getvalue()
                     )
-                    task = await loop.submit_single(
+                    await loop.submit_single(
                         tenant_id=tenant1,
                         owner_account_id=user_a,
                         actor_role_codes={ROLE_MERCHANT},
