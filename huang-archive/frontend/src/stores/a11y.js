@@ -1,15 +1,22 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 
-const KEY = 'hz_a11y_v1'
+/** v2: default large type for elderly-friendly logged-in UI */
+const KEY = 'hz_a11y_v2'
+
+/** ~120% base (within 112–125%); cycle still allows standard / larger */
+export const FONT_STEPS = [1, 1.2, 1.3]
+export const DEFAULT_FONT_SCALE = 1.2
 
 export const useA11yStore = defineStore('a11y', () => {
-  const fontScale = ref(1) // 1 | 1.15 | 1.3
+  const fontScale = ref(DEFAULT_FONT_SCALE)
   const largeTap = ref(false)
 
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || '{}')
-    if (saved.fontScale) fontScale.value = saved.fontScale
+    if (typeof saved.fontScale === 'number' && FONT_STEPS.includes(saved.fontScale)) {
+      fontScale.value = saved.fontScale
+    }
     if (saved.largeTap) largeTap.value = !!saved.largeTap
   } catch (_) {}
 
@@ -18,22 +25,27 @@ export const useA11yStore = defineStore('a11y', () => {
       KEY,
       JSON.stringify({ fontScale: fontScale.value, largeTap: largeTap.value }),
     )
-    apply()
   }
 
-  function apply() {
+  /** Apply type scale for logged-in chrome; login page stays at 1. */
+  function apply(opts = {}) {
     if (typeof document === 'undefined') return
-    document.documentElement.style.setProperty('--hz-font-scale', String(fontScale.value))
-    document.documentElement.classList.toggle('hz-large-tap', largeTap.value)
+    const forLoggedIn = opts.loggedIn !== false
+    const scale = forLoggedIn ? fontScale.value : 1
+    document.documentElement.style.setProperty('--hz-font-scale', String(scale))
+    document.documentElement.classList.toggle('hz-large-tap', forLoggedIn && largeTap.value)
+    document.documentElement.classList.toggle('hz-logged-in-type', forLoggedIn)
   }
 
-  watch([fontScale, largeTap], persist, { immediate: true })
+  watch([fontScale, largeTap], () => {
+    persist()
+    apply({ loggedIn: document.documentElement.classList.contains('hz-logged-in-type') })
+  })
 
   function cycleFont() {
-    const steps = [1, 1.15, 1.3]
-    const i = steps.indexOf(fontScale.value)
-    fontScale.value = steps[(i + 1) % steps.length]
+    const i = FONT_STEPS.indexOf(fontScale.value)
+    fontScale.value = FONT_STEPS[(i + 1) % FONT_STEPS.length]
   }
 
-  return { fontScale, largeTap, cycleFont, apply }
+  return { fontScale, largeTap, cycleFont, apply, FONT_STEPS, DEFAULT_FONT_SCALE }
 })

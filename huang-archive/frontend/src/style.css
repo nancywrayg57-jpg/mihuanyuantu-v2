@@ -18,6 +18,7 @@
   --mute: #6e685f;
   --cinnabar: #9e2a2b;
   --celadon: #2e5b70;
+  /* Default 1; App.vue bumps to ~1.2 after login for elderly-friendly reading. */
   --hz-font-scale: 1;
   --hz-tap: 48px;
 }
