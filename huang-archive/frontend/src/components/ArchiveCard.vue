@@ -549,7 +549,7 @@ async function deleteMemory(m) {
     <Teleport to="body">
       <div
         v-if="lightboxOpen && imageUrls.length"
-        class="fixed inset-0 z-[80] bg-ink/95 flex flex-col touch-pan-y"
+        class="fixed inset-0 z-[80] bg-ink flex flex-col touch-pan-y"
         data-testid="image-lightbox"
         @click.self="closeLightbox"
         @touchstart.passive="onLightboxTouchStart"
