@@ -28,9 +28,9 @@ const captchaSvg = ref('')
 const captchaCode = ref('')
 const captchaImg = ref('')
 
-/** Desktop-only side couplets (traditional: 上联右、下联左). Hidden on mobile. */
-const COUPLET_RIGHT = '抟土化金，八旬泥火淬匠心，艺绝千秋留典范' // 上联
-const COUPLET_LEFT = '树德遗范，九秩风霜承勤俭，祥开四世享期颐' // 下联
+/** Desktop-only side couplets (traditional: 上联右、下联左). Hidden on mobile. Spaces, no commas. */
+const COUPLET_RIGHT = '抟土化金 八旬泥火淬匠心 艺绝千秋留典范' // 上联（含「淬」）
+const COUPLET_LEFT = '树德遗范 九秩风霜承勤俭 祥开四世享期颐' // 下联
 const coupletRightChars = COUPLET_RIGHT.split('')
 const coupletLeftChars = COUPLET_LEFT.split('')
 
@@ -215,10 +215,20 @@ onMounted(async () => {
     <!-- Desktop-only vertical couplets in side fills (never on mobile). -->
     <div class="login-couplets" aria-hidden="true" data-testid="login-couplets">
       <p class="login-couplet login-couplet--right" data-testid="couplet-right">
-        <span v-for="(ch, i) in coupletRightChars" :key="'r' + i" class="login-couplet-ch">{{ ch }}</span>
+        <span
+          v-for="(ch, i) in coupletRightChars"
+          :key="'r' + i"
+          class="login-couplet-ch"
+          :class="{ 'is-gap': ch === ' ' }"
+        >{{ ch === ' ' ? '·' : ch }}</span>
       </p>
       <p class="login-couplet login-couplet--left" data-testid="couplet-left">
-        <span v-for="(ch, i) in coupletLeftChars" :key="'l' + i" class="login-couplet-ch">{{ ch }}</span>
+        <span
+          v-for="(ch, i) in coupletLeftChars"
+          :key="'l' + i"
+          class="login-couplet-ch"
+          :class="{ 'is-gap': ch === ' ' }"
+        >{{ ch === ' ' ? '·' : ch }}</span>
       </p>
     </div>
 
@@ -384,11 +394,13 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* Dark rounded field — aligned with desktop hero chrome reference. */
 .login-field {
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(12, 10, 9, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35) inset;
 }
 
 /*
@@ -398,20 +410,18 @@ onMounted(async () => {
  * Mobile photo layer keeps prior cover crop (accepted).
  */
 .login-hero-fill {
-  /* Deep black edges → dark brick-brown toward the portrait (no flat letterbox). */
+  /* Match chrysanthemum hero: deep black side fills with soft warm mid glow. */
   background:
-    radial-gradient(ellipse 58% 82% at 50% 48%, #4a2820 0%, transparent 68%),
+    radial-gradient(ellipse 55% 80% at 50% 48%, #2a1a16 0%, transparent 70%),
     linear-gradient(
       90deg,
-      #050403 0%,
-      #120b09 10%,
-      #2c1713 26%,
-      #4a2820 42%,
-      #5a3228 50%,
-      #4a2820 58%,
-      #2c1713 74%,
-      #120b09 90%,
-      #050403 100%
+      #030303 0%,
+      #0a0807 18%,
+      #16100e 40%,
+      #1c1411 50%,
+      #16100e 60%,
+      #0a0807 82%,
+      #030303 100%
     );
 }
 
@@ -425,7 +435,8 @@ onMounted(async () => {
 
 .login-hero-photo--desktop {
   display: none;
-  background-image: url('/login-bg-desktop.jpg');
+  /* Detail-processed chrysanthemum portrait (near 4:5, contain — no stretch). */
+  background-image: url('/login-bg-desktop.png');
   background-size: contain;
   background-position: center center;
   background-repeat: no-repeat;
@@ -474,6 +485,11 @@ onMounted(async () => {
 
   .login-couplet-ch {
     display: block;
+  }
+
+  .login-couplet-ch.is-gap {
+    visibility: hidden;
+    height: 0.55em;
   }
 
   /*
