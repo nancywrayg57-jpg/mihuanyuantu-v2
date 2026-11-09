@@ -210,7 +210,7 @@ onMounted(async () => {
       <div class="login-hero-photo login-hero-photo--mobile absolute inset-0" data-testid="login-hero-mobile" />
       <div class="login-hero-photo login-hero-photo--desktop absolute inset-0" data-testid="login-hero-desktop" />
     </div>
-    <div class="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-black/70 pointer-events-none" aria-hidden="true" />
+    <div class="login-hero-scrim absolute inset-0 pointer-events-none" aria-hidden="true" />
 
     <!-- Desktop-only vertical couplets in side fills (never on mobile). -->
     <div class="login-couplets" aria-hidden="true" data-testid="login-couplets">
@@ -233,7 +233,7 @@ onMounted(async () => {
     </div>
 
     <div class="relative z-10 min-h-[100dvh] flex flex-col px-3 sm:px-5 pt-[max(0.4rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <header class="login-hero-copy pt-1.5 sm:pt-6 text-center shrink-0">
+      <header class="login-hero-copy pt-1.5 text-center shrink-0">
         <h1
           class="login-title font-lishu drop-shadow-[0_2px_10px_rgba(0,0,0,0.55)]"
           data-testid="login-title"
@@ -448,6 +448,12 @@ onMounted(async () => {
   }
   .login-hero-photo--desktop {
     display: block;
+    /*
+     * Pin portrait to the bottom so a dark top band stays clear for
+     * title/subtitle (must not sit on forehead/hair).
+     */
+    background-size: auto 72%;
+    background-position: center bottom;
   }
 }
 
@@ -468,8 +474,10 @@ onMounted(async () => {
 
   .login-couplet {
     position: absolute;
-    top: 11%;
-    height: 72%;
+    /* Shared top/bottom so L/R columns share vertical rhythm. */
+    top: 16%;
+    bottom: 18%;
+    height: auto;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -505,9 +513,36 @@ onMounted(async () => {
   }
 }
 
+.login-hero-scrim {
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0.15) 42%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+}
+
 .login-hero-copy {
   /* Fluid title size: 8 隶书字 must fit one line on 320px-wide phones. */
   --login-title-size: clamp(1.28rem, 0.55rem + 4.6vw, 3rem);
+}
+
+/* Desktop: keep title/subtitle in the dark band above the portrait head. */
+@media (min-width: 768px) {
+  .login-hero-scrim {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.55) 0%,
+      rgba(0, 0, 0, 0.22) 18%,
+      rgba(0, 0, 0, 0.12) 42%,
+      rgba(0, 0, 0, 0.72) 100%
+    );
+  }
+
+  .login-hero-copy {
+    padding-top: clamp(0.85rem, 2.2vh, 1.6rem);
+    padding-bottom: 0.25rem;
+  }
 }
 
 .login-title {
