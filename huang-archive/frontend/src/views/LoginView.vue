@@ -436,7 +436,7 @@ onMounted(async () => {
 .login-hero-photo--desktop {
   display: none;
   /* Detail-processed chrysanthemum portrait (near 4:5, contain — no stretch). */
-  background-image: url('/login-bg-desktop.png');
+  background-image: url('/login-bg-desktop.png?v=chrys2');
   background-size: contain;
   background-position: center center;
   background-repeat: no-repeat;
