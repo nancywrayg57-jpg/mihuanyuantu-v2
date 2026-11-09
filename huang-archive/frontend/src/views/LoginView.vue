@@ -466,8 +466,8 @@ onMounted(async () => {
     margin: 0;
     color: #fff;
     font-family: "LinHai LiShu", "Songti SC", serif;
-    /* Scale with viewport height so vertical rhythm matches the hero. */
-    font-size: clamp(1.05rem, 2.35vh, 1.9rem);
+    /* +1 CSS size step vs prior clamp(1.05rem, 2.35vh, 1.9rem). */
+    font-size: clamp(1.25rem, 2.6vh, 2.15rem);
     line-height: 1;
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.65), 0 0 18px rgba(0, 0, 0, 0.35);
   }
@@ -476,13 +476,16 @@ onMounted(async () => {
     display: block;
   }
 
-  /* Center each couplet in the side gutter: (100vw - 100vmin) / 2 is the fill width. */
+  /*
+   * Side gutter = (100vw - 100vmin) / 2. Prior inset was gutter/2 from the outer edge
+   * (centered in fill). Halve the gap to the portrait → move to 3/4 of the gutter.
+   */
   .login-couplet--right {
-    right: max(1rem, calc((100vw - 100vmin) / 4));
+    right: max(0.75rem, calc((100vw - 100vmin) * 3 / 8));
   }
 
   .login-couplet--left {
-    left: max(1rem, calc((100vw - 100vmin) / 4));
+    left: max(0.75rem, calc((100vw - 100vmin) * 3 / 8));
   }
 }
 
