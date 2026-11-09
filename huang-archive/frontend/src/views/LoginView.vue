@@ -28,6 +28,12 @@ const captchaSvg = ref('')
 const captchaCode = ref('')
 const captchaImg = ref('')
 
+/** Desktop-only side couplets (traditional: 上联右、下联左). Hidden on mobile. */
+const COUPLET_RIGHT = '抟土化金，八旬泥火淬匠心，艺绝千秋留典范' // 上联
+const COUPLET_LEFT = '树德遗范，九秩风霜承勤俭，祥开四世享期颐' // 下联
+const coupletRightChars = COUPLET_RIGHT.split('')
+const coupletLeftChars = COUPLET_LEFT.split('')
+
 const isGuestSelected = computed(() => isGuestName(name.value))
 
 const stepHint = computed(() => {
@@ -205,6 +211,16 @@ onMounted(async () => {
       <div class="login-hero-photo login-hero-photo--desktop absolute inset-0" data-testid="login-hero-desktop" />
     </div>
     <div class="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-black/70 pointer-events-none" aria-hidden="true" />
+
+    <!-- Desktop-only vertical couplets in side fills (never on mobile). -->
+    <div class="login-couplets" aria-hidden="true" data-testid="login-couplets">
+      <p class="login-couplet login-couplet--right" data-testid="couplet-right">
+        <span v-for="(ch, i) in coupletRightChars" :key="'r' + i" class="login-couplet-ch">{{ ch }}</span>
+      </p>
+      <p class="login-couplet login-couplet--left" data-testid="couplet-left">
+        <span v-for="(ch, i) in coupletLeftChars" :key="'l' + i" class="login-couplet-ch">{{ ch }}</span>
+      </p>
+    </div>
 
     <div class="relative z-10 min-h-[100dvh] flex flex-col px-3 sm:px-5 pt-[max(0.4rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <header class="login-hero-copy pt-1.5 sm:pt-6 text-center shrink-0">
@@ -421,6 +437,52 @@ onMounted(async () => {
   }
   .login-hero-photo--desktop {
     display: block;
+  }
+}
+
+/* Couplets: desktop web only — sit in L/R side fills, clear of portrait face/body. */
+.login-couplets {
+  display: none;
+}
+
+/* Require a wide viewport so side gutters exist (contain 1:1 portrait). */
+@media (min-width: 900px) and (min-aspect-ratio: 5 / 4) {
+  .login-couplets {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+  }
+
+  .login-couplet {
+    position: absolute;
+    top: 11%;
+    height: 72%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+    color: #fff;
+    font-family: "LinHai LiShu", "Songti SC", serif;
+    /* Scale with viewport height so vertical rhythm matches the hero. */
+    font-size: clamp(1.05rem, 2.35vh, 1.9rem);
+    line-height: 1;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.65), 0 0 18px rgba(0, 0, 0, 0.35);
+  }
+
+  .login-couplet-ch {
+    display: block;
+  }
+
+  /* Center each couplet in the side gutter: (100vw - 100vmin) / 2 is the fill width. */
+  .login-couplet--right {
+    right: max(1rem, calc((100vw - 100vmin) / 4));
+  }
+
+  .login-couplet--left {
+    left: max(1rem, calc((100vw - 100vmin) / 4));
   }
 }
 
