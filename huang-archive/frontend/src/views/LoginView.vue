@@ -232,8 +232,10 @@ onMounted(async () => {
       </p>
     </div>
 
-    <div class="relative z-10 min-h-[100dvh] flex flex-col px-3 sm:px-5 pt-[max(0.4rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <header class="login-hero-copy pt-1.5 text-center shrink-0">
+    <div
+      class="login-shell relative z-10 min-h-[100dvh] flex flex-col px-3 sm:px-5 pt-[max(0.4rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+    >
+      <header class="login-hero-copy text-center shrink-0">
         <h1
           class="login-title font-lishu drop-shadow-[0_2px_10px_rgba(0,0,0,0.55)]"
           data-testid="login-title"
@@ -241,7 +243,7 @@ onMounted(async () => {
           {{ SITE_TITLE }}
         </h1>
         <p
-          class="login-subtitle mt-1 sm:mt-2 text-white/90 font-sans"
+          class="login-subtitle mt-1 text-white/90 font-sans"
           data-testid="login-subtitle"
         >
           （1933—2026）
@@ -447,12 +449,15 @@ onMounted(async () => {
     /*
      * Desktop hero metrics (shared by photo + couplets).
      * Portrait asset 1350×1270 → aspect ≈ 1.063.
+     * Tall hero leaves only a tight (~10–30px) band above the head for title.
      */
-    --hz-hero-h-ratio: 0.72;
+    --hz-hero-h-ratio: 0.943;
     --hz-hero-aspect: 1.062992;
     --hz-hero-h: calc(100vh * var(--hz-hero-h-ratio));
     --hz-hero-w: calc(var(--hz-hero-h) * var(--hz-hero-aspect));
     --hz-gutter: max(1.1rem, calc((100vw - min(var(--hz-hero-w), 100vw)) / 2));
+    /* Horizontal couplet↔portrait gap target (~10–30px). */
+    --hz-couplet-gap: clamp(12px, 1.2vw, 26px);
   }
 
   .login-hero-photo--mobile {
@@ -461,8 +466,7 @@ onMounted(async () => {
   .login-hero-photo--desktop {
     display: block;
     /*
-     * Pin portrait to the bottom so a dark top band stays clear for
-     * title/subtitle (must not sit on forehead/hair). Height fluid by width.
+     * Pin portrait to the bottom; taller ratio → smaller title/hair clearance.
      */
     background-size: auto calc(100% * var(--hz-hero-h-ratio));
     background-position: center bottom;
@@ -489,9 +493,9 @@ onMounted(async () => {
 
   .login-couplet {
     position: absolute;
-    /* Shared top/bottom — L/R identical vertical rhythm across widths. */
-    top: max(11%, calc(100% - var(--hz-hero-h) + 3.5%));
-    bottom: max(12%, 11%);
+    /* Shared top/bottom — hug the portrait sides (tight vertical band). */
+    top: max(7%, calc(100% - var(--hz-hero-h) + 0.8%));
+    bottom: max(8%, 9%);
     height: auto;
     display: flex;
     flex-direction: column;
@@ -518,13 +522,15 @@ onMounted(async () => {
     height: 0.55em;
   }
 
-  /* Sit near mid-gutter (derived from actual hero width, not 100vmin). */
+  /* ~10–30px outside the portrait edge (from portrait, not mid-gutter). */
   .login-couplet--right {
-    right: max(0.65rem, calc(var(--hz-gutter) * 0.4));
+    left: calc(50% + (var(--hz-hero-w) / 2) + var(--hz-couplet-gap));
+    right: auto;
   }
 
   .login-couplet--left {
-    left: max(0.65rem, calc(var(--hz-gutter) * 0.4));
+    right: calc(50% + (var(--hz-hero-w) / 2) + var(--hz-couplet-gap));
+    left: auto;
   }
 }
 
@@ -540,24 +546,33 @@ onMounted(async () => {
 .login-hero-copy {
   /* Fluid title size: 8 隶书字 must fit one line on 320px-wide phones. */
   --login-title-size: clamp(1.28rem, 0.55rem + 4.6vw, 3rem);
+  padding-top: 0.375rem; /* mobile; desktop mq overrides tighter */
 }
 
-/* Desktop: keep title/subtitle in the dark band above the portrait head. */
+/* Desktop: compact title band just above the hairline. */
 @media (min-width: 768px) {
   .login-hero-scrim {
     background: linear-gradient(
       to bottom,
-      rgba(0, 0, 0, 0.55) 0%,
-      rgba(0, 0, 0, 0.22) 18%,
-      rgba(0, 0, 0, 0.12) 42%,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0.18) 14%,
+      rgba(0, 0, 0, 0.1) 40%,
       rgba(0, 0, 0, 0.72) 100%
     );
   }
 
+  .login-shell {
+    padding-top: max(0.15rem, env(safe-area-inset-top));
+  }
+
   .login-hero-copy {
-    padding-top: clamp(0.75rem, 1.2vh + 0.4vw, 1.8rem);
-    padding-bottom: 0.25rem;
+    padding-top: clamp(0.1rem, 0.25vh, 0.4rem);
+    padding-bottom: 0;
     --login-title-size: clamp(1.55rem, 0.9rem + 1.35vw, 3.15rem);
+  }
+
+  .login-subtitle {
+    margin-top: 0.12rem !important;
   }
 }
 
