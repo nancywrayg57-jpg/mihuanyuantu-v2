@@ -443,6 +443,18 @@ onMounted(async () => {
 }
 
 @media (min-width: 768px) {
+  .login-screen {
+    /*
+     * Desktop hero metrics (shared by photo + couplets).
+     * Portrait asset 1350×1270 → aspect ≈ 1.063.
+     */
+    --hz-hero-h-ratio: 0.72;
+    --hz-hero-aspect: 1.062992;
+    --hz-hero-h: calc(100vh * var(--hz-hero-h-ratio));
+    --hz-hero-w: calc(var(--hz-hero-h) * var(--hz-hero-aspect));
+    --hz-gutter: max(1.1rem, calc((100vw - min(var(--hz-hero-w), 100vw)) / 2));
+  }
+
   .login-hero-photo--mobile {
     display: none;
   }
@@ -450,9 +462,9 @@ onMounted(async () => {
     display: block;
     /*
      * Pin portrait to the bottom so a dark top band stays clear for
-     * title/subtitle (must not sit on forehead/hair).
+     * title/subtitle (must not sit on forehead/hair). Height fluid by width.
      */
-    background-size: auto 72%;
+    background-size: auto calc(100% * var(--hz-hero-h-ratio));
     background-position: center bottom;
   }
 }
@@ -462,8 +474,11 @@ onMounted(async () => {
   display: none;
 }
 
-/* Require a wide viewport so side gutters exist (contain 1:1 portrait). */
-@media (min-width: 900px) and (min-aspect-ratio: 5 / 4) {
+/*
+ * Desktop couplets: unified 刀隶体 (complete glyphs — no Songti inject/fallback mix).
+ * Visible from ~1100px where side gutters exist for bottom-pinned hero.
+ */
+@media (min-width: 1100px) {
   .login-couplets {
     display: block;
     position: absolute;
@@ -474,9 +489,9 @@ onMounted(async () => {
 
   .login-couplet {
     position: absolute;
-    /* Shared top/bottom so L/R columns share vertical rhythm. */
-    top: 16%;
-    bottom: 18%;
+    /* Shared top/bottom — L/R identical vertical rhythm across widths. */
+    top: max(11%, calc(100% - var(--hz-hero-h) + 3.5%));
+    bottom: max(12%, 11%);
     height: auto;
     display: flex;
     flex-direction: column;
@@ -484,15 +499,18 @@ onMounted(async () => {
     align-items: center;
     margin: 0;
     color: #fff;
-    font-family: "LinHai LiShu", "Songti SC", serif;
-    /* +1 CSS size step vs prior clamp(1.05rem, 2.35vh, 1.9rem). */
-    font-size: clamp(1.25rem, 2.6vh, 2.15rem);
+    /* Single face only — no Songti/Noto fallback that desyncs glyph style. */
+    font-family: "DaoLi LiShu", serif;
+    font-size: clamp(1.05rem, 0.4rem + 0.75vw + 0.55vh, 2.2rem);
+    font-synthesis: none;
     line-height: 1;
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.65), 0 0 18px rgba(0, 0, 0, 0.35);
   }
 
   .login-couplet-ch {
     display: block;
+    font-family: inherit;
+    font-size: 1em;
   }
 
   .login-couplet-ch.is-gap {
@@ -500,16 +518,13 @@ onMounted(async () => {
     height: 0.55em;
   }
 
-  /*
-   * Side gutter = (100vw - 100vmin) / 2. Prior inset was gutter/2 from the outer edge
-   * (centered in fill). Halve the gap to the portrait → move to 3/4 of the gutter.
-   */
+  /* Sit near mid-gutter (derived from actual hero width, not 100vmin). */
   .login-couplet--right {
-    right: max(0.75rem, calc((100vw - 100vmin) * 3 / 8));
+    right: max(0.65rem, calc(var(--hz-gutter) * 0.4));
   }
 
   .login-couplet--left {
-    left: max(0.75rem, calc((100vw - 100vmin) * 3 / 8));
+    left: max(0.65rem, calc(var(--hz-gutter) * 0.4));
   }
 }
 
@@ -540,8 +555,9 @@ onMounted(async () => {
   }
 
   .login-hero-copy {
-    padding-top: clamp(0.85rem, 2.2vh, 1.6rem);
+    padding-top: clamp(0.75rem, 1.2vh + 0.4vw, 1.8rem);
     padding-bottom: 0.25rem;
+    --login-title-size: clamp(1.55rem, 0.9rem + 1.35vw, 3.15rem);
   }
 }
 

@@ -10,6 +10,15 @@
   font-display: swap;
 }
 
+/* Unified couplet 隶书 — full glyph coverage (no Noto/宋体 inject). */
+@font-face {
+  font-family: "DaoLi LiShu";
+  src: url("/fonts/daoli-lishu.woff2?v=1") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --rice: #f7f4eb;
   --parchment: #fcfbf7;
