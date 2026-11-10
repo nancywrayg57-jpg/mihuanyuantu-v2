@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "设备预设与系统日志修复（UX-PRESET-LOGS R1–R3）"
-    user_value: "去掉无用途导入记录与 Honeybadger；预设详情/表单对齐原型∩旧版键；日志实名+中文"
-    visible_output: "presets 分 Tab；GET device-presets/{code}；account-logs Display；导入区移除"
-    verify: "/tmp/ux-preset-logs-e2e.log 含 UX_PRESET_LOGS_E2E_PASS；production_billing=false"
-    status: coded_e2e_pass_pr_pending
-    next_user_action: "推 PR 后非作者 Owner squash；不得自评自合；不得开 S7。"
+    goal: "检测低分根因排查（SCORE-ROOTCAUSE）"
+    user_value: "先判定是否代码缺陷；非缺陷则说明失败率原因且不刷分"
+    visible_output: "10×2 live Gemini 基线表 + 根因结论"
+    verify: "/tmp/score-lift-rootcause-e2e.log 含 SCORE_ROOTCAUSE_E2E_PARTIAL；DEFECT_LIST 空；production_billing=false"
+    status: rootcause_partial_no_defect_fix
+    next_user_action: "确认收口或另授权产品策略变更后再追 90%≥75；不得开 S7。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -204,13 +204,30 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "UX-PRESET-LOGS R1–R3 端测 PASS；推 PR 待非作者 Owner squash。不得开 S7。"
-  work_order: "UX-PRESET-LOGS-2026-11-10 /home/hbs/Desktop/蜜獾原图-v2-设备预设与系统日志修复工单-2026-11-10.md"
-  prior_work_order: "FIX-CLEAR-FIXTURE-DETECT-BATCH-THUMB（已合入 #38）"
-  branch: cursor/ux-preset-logs-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/39"
-  prior_branch: cursor/clear-fixture-batch-thumb-9973
-  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/38"
+  action: "SCORE-ROOTCAUSE 根因收口：低分 NOT_DEFECT；证据 /tmp/score-lift-rootcause-e2e.log。不得开 S7。"
+  work_order: "SCORE-ROOTCAUSE-2026-11-10（对话确认方案）"
+  prior_work_order: "UX-PRESET-LOGS-2026-11-10 PR #39"
+  branch: cursor/score-rootcause-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/40"
+  prior_branch: cursor/ux-preset-logs-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/39"
+  score_rootcause_status:
+    baseline_log: "/tmp/score-lift-rootcause-e2e.log"
+    mark: SCORE_ROOTCAUSE_E2E_PARTIAL
+    rounds: 2
+    sample_n: 10
+    delivered_pass_ge75: 0
+    score_min: 40
+    score_max: 72
+    score_avg: 65.2
+    main_verdict: NOT_DEFECT_SAMPLE_OR_MODEL
+    secondary_pre_review: NOT_DEFECT_SUPPLIER_POLICY_OR_UPSTREAM
+    secondary_gemini_tech: NOT_DEFECT_UPSTREAM
+    defect_list_empty: true
+    code_changes_applied: false
+    pass_score_unchanged: 75
+    production_billing: false
+    s7_started: false
   ux_preset_logs_status:
     R1_import_honeybadger: done_e2e_pass
     R2_preset_fields: done_e2e_pass
