@@ -208,7 +208,7 @@ next_action:
   work_order: "SCORE-ROOTCAUSE-2026-11-10（对话确认方案）"
   prior_work_order: "UX-PRESET-LOGS-2026-11-10 PR #39"
   branch: cursor/score-rootcause-9973
-  pr: pending_evidence_only
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/40"
   prior_branch: cursor/ux-preset-logs-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/39"
   score_rootcause_status:

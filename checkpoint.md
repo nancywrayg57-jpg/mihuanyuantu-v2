@@ -8,12 +8,12 @@
 | --- | --- |
 | updated | 2026-11-10 CST（Asia/Shanghai） |
 | branch | `cursor/score-rootcause-9973` |
-| HEAD | 待提交（基线脚本 + 根因结论） |
+| HEAD | `9e590b2`（证据 PR #40） |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
 | 代码态 | SCORE-ROOTCAUSE：10×2 live Gemini 基线完成；**低分判定 NOT_DEFECT**（未改 PASS_SCORE / 未刷分） |
 | 验证态 | `/tmp/score-lift-rootcause-e2e.log`：`SCORE_ROOTCAUSE_E2E_PARTIAL`；scored 10 张均 &lt;75（40–72）；`production_billing=false` |
 | 当前阶段 | 根因报告收口（管理员：非缺陷暂不修） |
-| 下一步 | 可选推证据 PR；不得开 S7；若要追 90%≥75 须另批「可改产品策略」授权 |
+| 下一步 | Owner 审 PR #40；不得开 S7；若要追 90%≥75 须另批「可改产品策略」授权 |
 
 ## 1. 约束说明
 
