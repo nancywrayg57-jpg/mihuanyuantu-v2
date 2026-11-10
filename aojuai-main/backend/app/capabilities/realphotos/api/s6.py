@@ -96,6 +96,7 @@ class PresetBody(BaseModel):
     gps_config: dict | None = Field(default=None, alias="gpsConfig")
     ai_positive_prompt: str | None = Field(default=None, alias="aiPositivePrompt")
     ai_negative_prompt: str | None = Field(default=None, alias="aiNegativePrompt")
+    legacy_parameters: dict | None = Field(default=None, alias="legacyParameters")
 
 
 class TicketCreateBody(BaseModel):
@@ -445,12 +446,16 @@ async def list_preset_imports(
     page_size: int = 20,
     _: None = Depends(PermissionChecker([ADMIN_READ])),
 ) -> dict[str, Any]:
+    """Deprecated for admin UI (UX-PRESET-LOGS R1). Kept for scripts/CI activate evidence."""
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     if ROLE_ADMIN not in roles and "admin" not in roles:
         raise ForbiddenError(message="只有平台管理员可以浏览导入记录")
     from app.capabilities.realphotos.services.legacy_preset_imports import browse_legacy_imports
 
-    return SuccessResponse(data=await browse_legacy_imports(db, page=page, page_size=page_size))
+    data = await browse_legacy_imports(db, page=page, page_size=page_size)
+    data["uiRetired"] = True
+    data["deprecatedNote"] = "导入记录区已从设备预设页移除；405 已全量激活进运行台账"
+    return SuccessResponse(data=data)
 
 
 @router.post("/device-preset-imports/activate")
@@ -549,8 +554,22 @@ async def save_preset(
         gps_config=body.gps_config,
         ai_positive_prompt=body.ai_positive_prompt,
         ai_negative_prompt=body.ai_negative_prompt,
+        legacy_parameters=body.legacy_parameters,
     )
     await db.commit()
+    return SuccessResponse(data=payload)
+
+
+@router.get("/device-presets/{code}")
+async def get_device_preset(
+    code: str,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
+) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosOpsService(db).get_admin_preset(actor_role_codes=roles, code=code)
     return SuccessResponse(data=payload)
 
 

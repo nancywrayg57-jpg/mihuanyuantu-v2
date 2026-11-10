@@ -39,8 +39,8 @@ def test_five_layer_keeps_size_writes_preset_and_meets_byte_floor() -> None:
         capture_output=True,
     )
     row = json.loads(raw.stdout.decode())[0]
-    assert row["Make"] == "Honeybadger"
-    assert row["Model"] == "HB-Phone-1"
+    assert row["Make"] == "RuntimeCam"
+    assert row["Model"] == "RC-Phone-1"
     assert "GPSLatitude" not in row
     assert "MakerNote" not in row
 

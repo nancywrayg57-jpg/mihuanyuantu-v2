@@ -6,14 +6,14 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-08 CST（Asia/Shanghai） |
-| branch | `cursor/fix-failure-rate-remain-9973` |
-| HEAD | 待推送（R6 开发机证据已补） |
+| updated | 2026-11-10 CST（Asia/Shanghai） |
+| branch | `cursor/ux-preset-logs-9973` |
+| HEAD | 待推送 |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
-| 代码态 | FIX-FAILURE-RATE-TECH R1–R6：Gemini prompt 对齐 75；EXIF 预检；MakerNote 映射/重试；gpsSubmitGuard；detectionBrief；本机 PG `gpsMode=none` 任务 158 DELIVERED |
-| 验证态 | `/tmp/fix-failure-rate-remain-e2e.log`：`ALL_REMAIN_GREEN=True` `MERGE_READY=True`；`/tmp/r6-devhost-task.json` taskId=158；`production_billing=false` |
-| 当前阶段 | PR #37 待非作者 Owner squash |
-| 下一步 | Owner 非自评自合；不得开 S7 |
+| 代码态 | UX-PRESET-LOGS R1–R3：导入记录区移除 + Honeybadger 清除；预设详情/表单分 Tab 对齐原型∩旧版 55 键；系统日志 Display+中文 |
+| 验证态 | `/tmp/ux-preset-logs-e2e.log`：`UX_PRESET_LOGS_E2E_PASS`；`production_billing=false` |
+| 当前阶段 | UX-PRESET-LOGS 待推 PR |
+| 下一步 | Collaborator 推 PR；非作者 Owner squash；不得开 S7 |
 
 ## 1. 约束说明
 

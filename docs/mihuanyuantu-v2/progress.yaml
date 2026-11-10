@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "失败率可修复剩余项（FIX-FAILURE-RATE-TECH R1–R6）"
-    user_value: "Gemini passed 与 75 对齐；EXIF 预检；MakerNote 中文；单张 GPS 提示；列表差几分；none/skip 回归"
-    visible_output: "prompt+软校验；assert_preset_exif_ready；labels/retry；gpsSubmitGuard；detectionBrief；R6 本地回归"
-    verify: "/tmp/fix-failure-rate-remain-e2e.log 含 ALL_REMAIN_GREEN=True / MERGE_READY=True；production_billing=false"
+    goal: "设备预设与系统日志修复（UX-PRESET-LOGS R1–R3）"
+    user_value: "去掉无用途导入记录与 Honeybadger；预设详情/表单对齐原型∩旧版键；日志实名+中文"
+    visible_output: "presets 分 Tab；GET device-presets/{code}；account-logs Display；导入区移除"
+    verify: "/tmp/ux-preset-logs-e2e.log 含 UX_PRESET_LOGS_E2E_PASS；production_billing=false"
     status: coded_e2e_pass_pr_pending
-    next_user_action: "PR #37 待非作者 Owner squash；不得自评自合；不得开 S7；PASS_SCORE 仍 75。"
+    next_user_action: "推 PR 后非作者 Owner squash；不得自评自合；不得开 S7。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -204,14 +204,22 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "FIX-FAILURE-RATE-TECH R1–R6 全绿；PR #37 待非作者 Owner squash。不得开 S7。"
-  work_order: "FIX-FAILURE-RATE-TECH-2026-11-08 /home/hbs/Desktop/蜜獾原图-v2-失败率可修复项工单.md"
-  prior_work_order: "FIX-TASK-FAILURE-UX-2026-11-08（已合入 #36）"
-  branch: cursor/fix-failure-rate-remain-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/37"
-  prior_branch: cursor/fix-task-failure-ux-9973
-  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/36"
-  constraints_ledger: docs/mihuanyuantu-v2/fix-failure-rate-remain-constraints.md
+  action: "UX-PRESET-LOGS R1–R3 端测 PASS；推 PR 待非作者 Owner squash。不得开 S7。"
+  work_order: "UX-PRESET-LOGS-2026-11-10 /home/hbs/Desktop/蜜獾原图-v2-设备预设与系统日志修复工单-2026-11-10.md"
+  prior_work_order: "FIX-CLEAR-FIXTURE-DETECT-BATCH-THUMB（已合入 #38）"
+  branch: cursor/ux-preset-logs-9973
+  pr: pending
+  prior_branch: cursor/clear-fixture-batch-thumb-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/38"
+  ux_preset_logs_status:
+    R1_import_honeybadger: done_e2e_pass
+    R2_preset_fields: done_e2e_pass
+    R3_logs_display: done_e2e_pass
+    import_records_needed: false
+    e2e_log: "/tmp/ux-preset-logs-e2e.log"
+    e2e_mark: UX_PRESET_LOGS_E2E_PASS
+    production_billing: false
+    s7_started: false
   fix_failure_rate_remain_status:
     R1_gemini_prompt_align: done_e2e_pass
     R2_exif_precheck: done_e2e_pass

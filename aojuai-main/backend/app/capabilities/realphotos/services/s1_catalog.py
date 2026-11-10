@@ -8,13 +8,14 @@ from app.capabilities.realphotos.constants import (
     RECHARGE_TIERS_YUAN,
 )
 
-# 虚构型号，避免把未授权品牌 MakerNote 写成已写入。gpsMode=none：不发明坐标。
+# 测试/目录占位型号。禁止再用 Honeybadger 演示品牌（UX-PRESET-LOGS R1）。
+# gpsMode=none：不发明坐标。INJECT_S1_CATALOG_INTO_ENABLED 默认关闭。
 S1_ENABLED_PRESETS: tuple[dict, ...] = (
     {
         "code": "s1-phone-01",
         "deviceType": "phone",
-        "brand": "Honeybadger",
-        "model": "HB-Phone-1",
+        "brand": "RuntimeCam",
+        "model": "RC-Phone-1",
         "iso": "100",
         "shutter": "1/120",
         "aperture": "f/1.8",
@@ -24,8 +25,8 @@ S1_ENABLED_PRESETS: tuple[dict, ...] = (
     {
         "code": "s1-dslr-01",
         "deviceType": "dslr",
-        "brand": "Honeybadger",
-        "model": "HB-DSLR-1",
+        "brand": "RuntimeCam",
+        "model": "RC-DSLR-1",
         "iso": "200",
         "shutter": "1/200",
         "aperture": "f/2.8",
@@ -35,8 +36,8 @@ S1_ENABLED_PRESETS: tuple[dict, ...] = (
     {
         "code": "s1-mirrorless-01",
         "deviceType": "mirrorless",
-        "brand": "Honeybadger",
-        "model": "HB-ML-1",
+        "brand": "RuntimeCam",
+        "model": "RC-ML-1",
         "iso": "400",
         "shutter": "1/250",
         "aperture": "f/4",

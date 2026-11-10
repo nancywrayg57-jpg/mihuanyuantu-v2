@@ -40,6 +40,7 @@ from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
 from app.capabilities.realphotos.services.s1_upload import inspect_upload
 from app.core.exceptions import BusinessError, ForbiddenError
 from app.core.security import hash_password
+from app.domain.auth.models import Tenant
 from app.domain.roles.models import Role
 from app.domain.users.models import User, UserRole, UserStatus
 
@@ -51,6 +52,22 @@ GPS_MODES = {"none", "fixed", "random_by_scene"}
 # PRESET-BULK-IMPORT B1: stop injecting Honeybadger s1-* into merchant enabled list.
 INJECT_S1_CATALOG_INTO_ENABLED = False
 PROTECTED_USERNAME = "rp_admin"
+PLACEHOLDER_BRAND_BLOCKLIST = {"honeybadger"}
+ACCOUNT_LOG_ACTION_ZH = {
+    "create": "创建账号",
+    "credit": "加减积分",
+    "status": "启停账号",
+    "delete": "删除账号",
+    "reset_password": "重置密码",
+    "permission": "调整权限",
+}
+ACCOUNT_LOG_RESULT_ZH = {
+    "success": "成功",
+    "ok": "成功",
+    "failed": "失败",
+    "error": "失败",
+    "denied": "拒绝",
+}
 
 
 def normalize_device_type(raw: str | None) -> tuple[str, str | None]:
@@ -459,8 +476,10 @@ class RealphotosOpsService:
         }
         items: list[dict] = []
         seen: set[str] = set()
-        # Do not invent enabled Honeybadger catalog rows; only show DB truth.
+        # Do not invent catalog rows; only show DB truth. Honeybadger placeholders should be soft-deleted.
         for code, row in rows.items():
+            if str(row.brand or "").strip().lower() in PLACEHOLDER_BRAND_BLOCKLIST:
+                continue
             gps_config = await self._latest_gps_config(code)
             items.append(self._preset_dict(row, gps_config=gps_config))
             seen.add(code)
@@ -473,6 +492,28 @@ class RealphotosOpsService:
                 payload["placeholder"] = True
                 items.append(payload)
         return items
+
+    async def get_admin_preset(self, *, actor_role_codes: set[str], code: str) -> dict[str, Any]:
+        if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
+            raise ForbiddenError(message="只有平台管理员可以浏览预设台账")
+        row = await self._preset_row(code)
+        if row is None or row.deleted_at is not None:
+            raise BusinessError(message="预设不存在", code="NOT_FOUND")
+        snap = await self._latest_snapshot(code)
+        gps_config = None
+        if isinstance(snap.get("gpsConfig"), dict):
+            gps_config = dict(snap["gpsConfig"])
+        payload = self._preset_dict(row, gps_config=gps_config)
+        if isinstance(snap.get("legacyParameters"), dict):
+            payload["legacyParameters"] = dict(snap["legacyParameters"])
+        else:
+            payload["legacyParameters"] = {}
+        if isinstance(snap.get("legacyGpsMeta"), dict):
+            payload["legacyGpsMeta"] = dict(snap["legacyGpsMeta"])
+        if "gpsWriteConnected" in snap:
+            payload["gpsWriteConnected"] = bool(snap["gpsWriteConnected"])
+        payload["copyrightPolicy"] = "excluded_prd_no_author_copyright_ip_geo"
+        return payload
 
     async def list_enabled_presets(self) -> list[dict]:
         from app.capabilities.realphotos.services.gps_write import gps_writability
@@ -510,15 +551,17 @@ class RealphotosOpsService:
         seen = {item["code"] for item in items}
         catalog_codes = {item["code"] for item in S1_ENABLED_PRESETS}
         for row in extra:
-            # Skip catalog / Honeybadger placeholders; RuntimeCam test seeds with same codes remain visible until cleared.
+            # Skip catalog / Honeybadger placeholders (R1: no demo brand in merchant list).
             if str(row.source) == "catalog":
                 continue
-            if row.code in catalog_codes and row.brand == "Honeybadger":
+            if str(row.brand or "").strip().lower() in PLACEHOLDER_BRAND_BLOCKLIST:
                 continue
-            if str(row.code).startswith(("pa-gps-", "bf-")) and row.brand == "Honeybadger":
+            if row.code in catalog_codes and str(row.brand or "") == "Honeybadger":
                 continue
-            if row.brand == "Honeybadger" and str(row.source) == "admin" and str(row.code).startswith("s1-"):
-                continue
+            if str(row.code).startswith(("pa-gps-", "bf-", "s1-", "pga-")):
+                # Historical placeholder code prefixes — hide unless real legacy_import.
+                if str(row.source) != "legacy_import":
+                    continue
             if row.code not in seen:
                 gps_config = await self._latest_gps_config(row.code)
                 items.append(self._preset_dict(row, gps_config=gps_config))
@@ -550,6 +593,7 @@ class RealphotosOpsService:
         legacy_visibility: str | None = None,
         legacy_review_bucket: str | None = None,
         snapshot_extra: dict | None = None,
+        legacy_parameters: dict | None = None,
     ) -> dict[str, Any]:
         if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
             raise ForbiddenError(message="只有平台管理员可以维护设备预设")
@@ -563,6 +607,11 @@ class RealphotosOpsService:
         label = str(code or "").strip()
         if not label or not str(brand or "").strip() or not str(model_name or "").strip():
             raise BusinessError(message="预设编号、品牌和型号必填", code="INPUT_INVALID")
+        if str(brand).strip().lower() in PLACEHOLDER_BRAND_BLOCKLIST:
+            raise BusinessError(
+                message="禁止使用 Honeybadger 占位品牌；请填写真实设备品牌",
+                code="INPUT_INVALID",
+            )
         row = await self._preset_row(label)
         if row is None:
             row = RealphotosDevicePreset(
@@ -629,6 +678,35 @@ class RealphotosOpsService:
         if snapshot_extra:
             for key, value in dict(snapshot_extra).items():
                 snapshot[key] = value
+        # Merge legacy parameter snapshot; strip PRD-forbidden author/copyright/ip_geo keys.
+        if legacy_parameters is not None:
+            cleaned = {
+                str(k): v
+                for k, v in dict(legacy_parameters).items()
+                if str(k).lower() not in {"author", "copyright", "ip_geo", "ipgeo"}
+            }
+            # Keep column mirrors honest when present.
+            cleaned.setdefault("camera_make", row.brand)
+            cleaned.setdefault("camera_model", row.model_name)
+            cleaned.setdefault("iso", row.iso)
+            cleaned.setdefault("shutter_speed", row.shutter)
+            cleaned.setdefault("aperture", row.aperture)
+            cleaned.setdefault("focal_length", row.focal_length)
+            cleaned.setdefault("gps_mode", row.gps_mode)
+            if row.maker_note:
+                cleaned.setdefault("maker_note_template", row.maker_note)
+            if row.ai_positive_prompt:
+                cleaned.setdefault("ai_positive_prompt", row.ai_positive_prompt)
+            if row.ai_negative_prompt:
+                cleaned.setdefault("ai_negative_prompt", row.ai_negative_prompt)
+            snapshot["legacyParameters"] = cleaned
+        elif isinstance((snapshot_extra or {}).get("legacyParameters"), dict):
+            pass
+        else:
+            # Preserve previous legacyParameters on edit when caller omits them.
+            prev = await self._latest_snapshot(row.code)
+            if isinstance(prev.get("legacyParameters"), dict) and "legacyParameters" not in snapshot:
+                snapshot["legacyParameters"] = dict(prev["legacyParameters"])
         # When fixed/random without coords, still mark write path connected but honesty lives in legacyGpsMeta.
         snapshot["gpsWriteConnected"] = True
         self.db.add(
@@ -646,6 +724,8 @@ class RealphotosOpsService:
         if snapshot_extra:
             for key, value in dict(snapshot_extra).items():
                 payload[key] = value
+        if isinstance(snapshot.get("legacyParameters"), dict):
+            payload["legacyParameters"] = dict(snapshot["legacyParameters"])
         payload["gpsWriteConnected"] = True
         return payload
 
@@ -891,6 +971,46 @@ class RealphotosOpsService:
             )
         ).scalars().all()
         start = (index - 1) * size
+        page_rows = rows[start : start + size]
+        user_ids = {int(r.operator_user_id) for r in page_rows} | {int(r.target_user_id) for r in page_rows}
+        tenant_ids = {int(r.tenant_id) for r in page_rows}
+        users = {}
+        if user_ids:
+            for user in (
+                await self.db.execute(select(User).where(User.id.in_(user_ids)))
+            ).scalars().all():
+                users[int(user.id)] = user
+        tenants = {}
+        if tenant_ids:
+            for tenant in (
+                await self.db.execute(select(Tenant).where(Tenant.id.in_(tenant_ids)))
+            ).scalars().all():
+                tenants[int(tenant.id)] = tenant
+
+        def _user_display(uid: int) -> str:
+            user = users.get(int(uid))
+            if user is None or getattr(user, "deleted_at", None) is not None:
+                return f"已删除用户 #{int(uid)}"
+            return str(user.username)
+
+        def _tenant_display(tid: int) -> str:
+            tenant = tenants.get(int(tid))
+            if tenant is None or getattr(tenant, "deleted_at", None) is not None:
+                return f"已删除租户 #{int(tid)}"
+            code = str(getattr(tenant, "code", "") or "")
+            name = str(getattr(tenant, "name", "") or "")
+            if code and name:
+                return f"{name}（{code}）"
+            return name or code or f"租户 #{int(tid)}"
+
+        def _action_zh(raw: str) -> str:
+            key = str(raw or "").strip()
+            return ACCOUNT_LOG_ACTION_ZH.get(key, f"未知（{key or '空'}）")
+
+        def _result_zh(raw: str) -> str:
+            key = str(raw or "").strip().lower()
+            return ACCOUNT_LOG_RESULT_ZH.get(key, f"未知（{raw or '空'}）")
+
         return {
             "pageSize": size,
             "items": [
@@ -899,14 +1019,19 @@ class RealphotosOpsService:
                     "operatorUserId": int(row.operator_user_id),
                     "targetUserId": int(row.target_user_id),
                     "tenantId": int(row.tenant_id),
+                    "operatorDisplay": _user_display(int(row.operator_user_id)),
+                    "targetDisplay": _user_display(int(row.target_user_id)),
+                    "tenantDisplay": _tenant_display(int(row.tenant_id)),
                     "action": row.action,
+                    "actionLabel": _action_zh(str(row.action or "")),
                     "before": dict(row.before_state or {}),
                     "after": dict(row.after_state or {}),
                     "createdAt": row.created_at.isoformat() if row.created_at else None,
                     "reason": row.reason,
                     "result": row.result,
+                    "resultLabel": _result_zh(str(row.result or "")),
                 }
-                for row in rows[start : start + size]
+                for row in page_rows
             ],
         }
 
@@ -1230,7 +1355,7 @@ class RealphotosOpsService:
             payload["gpsConfig"] = config
         return payload
 
-    async def _latest_gps_config(self, code: str) -> dict | None:
+    async def _latest_snapshot(self, code: str) -> dict[str, Any]:
         latest = (
             await self.db.execute(
                 select(RealphotosPresetVersion)
@@ -1242,8 +1367,11 @@ class RealphotosOpsService:
             )
         ).scalars().first()
         if latest is None:
-            return None
-        snap = dict(latest.snapshot or {})
+            return {}
+        return dict(latest.snapshot or {})
+
+    async def _latest_gps_config(self, code: str) -> dict | None:
+        snap = await self._latest_snapshot(code)
         raw = snap.get("gpsConfig")
         return dict(raw) if isinstance(raw, dict) else None
 
