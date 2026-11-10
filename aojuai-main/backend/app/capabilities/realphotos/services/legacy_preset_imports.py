@@ -390,11 +390,16 @@ async def clear_placeholder_presets(
     now = datetime.now(UTC)
     catalog_codes = {item["code"] for item in S1_ENABLED_PRESETS}
     for row in rows:
-        if not _is_placeholder_row(row):
+        brand = str(row.brand or "")
+        is_hb = brand in PLACEHOLDER_BRANDS
+        if not _is_placeholder_row(row) and not is_hb:
             continue
-        # Prefer disable for audit; soft-delete pure catalog placeholders.
+        # Never touch real legacy_import rows (even if brand somehow mismatched).
+        if str(row.source or "") == "legacy_import":
+            continue
+        # UX-PRESET-LOGS R1: soft-delete Honeybadger / catalog placeholders; do not leave demo brands.
         row.enabled = False
-        if str(row.source or "") == "catalog" or row.code in catalog_codes:
+        if is_hb or str(row.source or "") == "catalog" or row.code in catalog_codes:
             row.deleted_at = now
             soft_deleted.append(row.code)
         else:
@@ -406,6 +411,7 @@ async def clear_placeholder_presets(
         "softDeletedCodes": soft_deleted,
         "catalogInjection": False,
         "s1CatalogCodes": sorted(catalog_codes),
+        "honeybadgerCleared": True,
     }
 
 

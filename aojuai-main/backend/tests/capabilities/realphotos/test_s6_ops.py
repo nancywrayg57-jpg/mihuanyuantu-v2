@@ -412,8 +412,8 @@ async def test_user_admin_log_preset_and_metrics(db):
         actor_role_codes={ROLE_ADMIN},
         code="s6-brand",
         device_type="phone",
-        brand="Honeybadger",
-        model_name="HB-S6",
+        brand="Canon",
+        model_name="EOS-S6",
         maker_note="CANON",
         iso="100",
         shutter="1/125",
@@ -429,17 +429,30 @@ async def test_user_admin_log_preset_and_metrics(db):
             actor_role_codes={ROLE_ADMIN},
             code="s6-author",
             device_type="phone",
-            brand="Honeybadger",
-            model_name="HB-S6",
+            brand="Canon",
+            model_name="EOS-S6",
             author="someone",
         )
+    with pytest.raises(BusinessError) as hb_rejected:
+        await ctx["ops"].save_preset(
+            actor_role_codes={ROLE_ADMIN},
+            code="s6-hb-block",
+            device_type="phone",
+            brand="Honeybadger",
+            model_name="HB-Blocked",
+            iso="100",
+            shutter="1/125",
+            aperture="f/1.8",
+            focal_length="26mm",
+        )
+    assert hb_rejected.value.code == "INPUT_INVALID"
     with pytest.raises(ForbiddenError):
         await ctx["ops"].save_preset(
             actor_role_codes={ROLE_MERCHANT},
             code="s6-merchant",
             device_type="phone",
-            brand="Honeybadger",
-            model_name="HB-No",
+            brand="Canon",
+            model_name="EOS-No",
         )
     metrics = await ctx["ops"].metrics(actor_role_codes={ROLE_ADMIN})
     assert metrics["merchantCards"] is False
