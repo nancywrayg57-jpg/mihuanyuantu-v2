@@ -7,22 +7,22 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-10 CST（Asia/Shanghai） |
-| branch | `cursor/ux-preset-logs-9973` |
-| HEAD | `f431970`（已推 `cursor/ux-preset-logs-9973`） |
+| branch | `cursor/score-rootcause-9973` |
+| HEAD | 待提交（基线脚本 + 根因结论） |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
-| 代码态 | UX-PRESET-LOGS R1–R3：导入记录区移除 + Honeybadger 清除；预设详情/表单分 Tab 对齐原型∩旧版 55 键；系统日志 Display+中文 |
-| 验证态 | `/tmp/ux-preset-logs-e2e.log`：`UX_PRESET_LOGS_E2E_PASS`；`production_billing=false` |
-| 当前阶段 | PR #39 待非作者 Owner squash |
-| 下一步 | 非作者 Owner squash；不得自评自合；不得开 S7 |
+| 代码态 | SCORE-ROOTCAUSE：10×2 live Gemini 基线完成；**低分判定 NOT_DEFECT**（未改 PASS_SCORE / 未刷分） |
+| 验证态 | `/tmp/score-lift-rootcause-e2e.log`：`SCORE_ROOTCAUSE_E2E_PARTIAL`；scored 10 张均 &lt;75（40–72）；`production_billing=false` |
+| 当前阶段 | 根因报告收口（管理员：非缺陷暂不修） |
+| 下一步 | 可选推证据 PR；不得开 S7；若要追 90%≥75 须另批「可改产品策略」授权 |
 
 ## 1. 约束说明
 
-本机即开发机 `192.168.19.128`（操作员确认）。沙箱曾误判 LAN 不可达；R6 已在本机 PostgreSQL `claim_one` + Worker 留证。
+本机即开发机 `192.168.19.128`。本轮缺陷闸门：仅代码缺陷才修；样张/上游诚实失败只说明原因。
 
 ## 2. 阶段状态（摘要）
 
 | 阶段 | 状态 |
 | --- | --- |
-| FIX-TASK-FAILURE-UX | 已合入 #36 |
-| FIX-FAILURE-RATE-TECH R1–R6 | 端测全绿；PR #37 待审合 |
+| UX-PRESET-LOGS | PR #39 |
+| SCORE-ROOTCAUSE | 基线 PARTIAL：主因非缺陷；次要预审拒绝/超时与 Gemini 技术失败判 NOT_DEFECT_UPSTREAM/POLICY |
 | S7 | **须管理员确认** |
