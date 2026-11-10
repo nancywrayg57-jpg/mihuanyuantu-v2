@@ -8,12 +8,12 @@
 | --- | --- |
 | updated | 2026-11-10 CST（Asia/Shanghai） |
 | branch | `cursor/ux-preset-logs-9973` |
-| HEAD | 待推送 |
+| HEAD | `f431970`（已推 `cursor/ux-preset-logs-9973`） |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
 | 代码态 | UX-PRESET-LOGS R1–R3：导入记录区移除 + Honeybadger 清除；预设详情/表单分 Tab 对齐原型∩旧版 55 键；系统日志 Display+中文 |
 | 验证态 | `/tmp/ux-preset-logs-e2e.log`：`UX_PRESET_LOGS_E2E_PASS`；`production_billing=false` |
-| 当前阶段 | UX-PRESET-LOGS 待推 PR |
-| 下一步 | Collaborator 推 PR；非作者 Owner squash；不得开 S7 |
+| 当前阶段 | PR #39 待非作者 Owner squash |
+| 下一步 | 非作者 Owner squash；不得自评自合；不得开 S7 |
 
 ## 1. 约束说明
 

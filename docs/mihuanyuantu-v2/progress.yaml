@@ -208,7 +208,7 @@ next_action:
   work_order: "UX-PRESET-LOGS-2026-11-10 /home/hbs/Desktop/蜜獾原图-v2-设备预设与系统日志修复工单-2026-11-10.md"
   prior_work_order: "FIX-CLEAR-FIXTURE-DETECT-BATCH-THUMB（已合入 #38）"
   branch: cursor/ux-preset-logs-9973
-  pr: pending
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/39"
   prior_branch: cursor/clear-fixture-batch-thumb-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/38"
   ux_preset_logs_status:
