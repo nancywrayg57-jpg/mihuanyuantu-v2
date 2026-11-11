@@ -26,12 +26,12 @@ from app.capabilities.realphotos.services.s1_recharge import RealphotosRechargeS
 from app.core.exceptions import BusinessError
 
 
-def test_r3_alembic_head_is_0003() -> None:
+def test_r3_alembic_head_is_single() -> None:
     backend = Path(__file__).resolve().parents[3]
     cfg = Config(str(backend / "alembic.ini"))
     cfg.set_main_option("script_location", str(CAPABILITY.migration_path()))
     heads = list(ScriptDirectory.from_config(cfg).get_heads())
-    assert heads == ["realphotos_0003"], heads
+    assert heads == ["realphotos_0004"], heads
 
 
 @pytest.mark.asyncio
