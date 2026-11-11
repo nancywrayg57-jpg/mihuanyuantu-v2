@@ -51,6 +51,7 @@ from app.capabilities.realphotos.models import (
 )
 from app.capabilities.realphotos.permissions import ROLE_ADMIN
 from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
+from app.capabilities.realphotos.services.five_layer import PIPELINE_VERSION as _PIPELINE
 from app.capabilities.realphotos.services.job_service import RealphotosJobService
 from app.capabilities.realphotos.services.redo_policy import (
     MAX_EXECUTIONS,
@@ -62,7 +63,6 @@ from app.capabilities.realphotos.services.s1_upload import inspect_upload
 from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
 from app.core.exceptions import AOJUException, BusinessError, NotFoundError
 
-_PIPELINE = "s2-five-layer-1"
 _STAGES = ("L1", "L2", "L3", "L4", "L5")
 _RETRYABLE_FAILURES = frozenset(
     {

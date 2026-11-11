@@ -7,25 +7,25 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
-| branch | `cursor/model-api-config-9973` |
-| HEAD | `a088f4a`（PR #43） |
+| branch | `cursor/five-layer-phys-tune-9973` |
+| HEAD | `f32b653`（PR #44） |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
-| 代码态 | MODEL-API-CONFIG：管理员可配置四职责渠道；运行时读合同；`ensure()` 仅补缺行；单 Key 不轮询 |
-| 验证态 | `/tmp/model-api-config-e2e.log`：`M1_MODEL_API_UI_PASS` `M2_CONTRACT_PERSIST_PASS` `M3_RUNTIME_SYNC_PASS` `M4_RBAC_AUDIT_PASS`；`SKIP_GPT_IMAGE_SIZE=true`；`production_billing=false`；`s7_started=false`；`polling_enabled=false` |
-| 当前阶段 | MODEL-API-CONFIG-2026-11-11（M1–M4 端测 PASS，待非作者 Owner squash） |
-| 下一步 | 开/更新 PR；Owner 审合；不得开 S7；不得借机做 B2-X |
+| 代码态 | `s2-five-layer-2`：L1 ISO 弱相关阻尼噪声 + L2 小幅加强；未移植暗角/色差/饱和度 |
+| 验证态 | `/tmp/five-layer-phys-tune-e2e.log`：`P0_BASELINE_FROZEN` `P1_PIPELINE_BUMP_PASS` `P2_FIDELITY_PASS` `P3_GEMINI_COMPARE_PASS` `FIVE_LAYER_PHYS_TUNE_E2E_PASS`；结论 `PHYS_TUNE_NEUTRAL`；`pass_score=75`；`production_billing=false`；`s7_started=false` |
+| 当前阶段 | FIVE-LAYER-PHYS-TUNE（技术完成，待 Owner 决定是否合入） |
+| 下一步 | 开 PR；非作者 Owner squash；不得宣称已解决低分；不得开 S7 |
 
 ## 1. 约束说明
 
-- 原型多 Key 轮询 vs PRD FR-012：听 PRD，第一版不轮询。
-- FR-030：模型配置**不进**用户操作日志；审计=合同 `updated_at` + `realphotos.supplier_config` 应用日志（脱敏）。
-- 密钥明文仅写 gitignore 的 `生产物料/realphotos-duty-secrets.json` 或 `.secrets/`；响应只回掩码。
+- ND-020：肉眼无可见主体/颜色/文字变化；本地对照 MAD≈1.0–1.6（asset 159 等）。
+- 旧版 `imagePhysicalizer` 仅借鉴 ISO–噪声定性；禁止色差/暗角/饱和度。
+- 分数：v1 中位数 69 → v2 中位数 68（Δ=-1）；≥75 仍为 0 → `PHYS_TUNE_NEUTRAL`。
 
 ## 2. 阶段状态（摘要）
 
 | 阶段 | 状态 |
 | --- | --- |
-| MODEL-API-CONFIG | M1–M4 端测 PASS；待 PR |
-| MODULE-B-CONTRACT | 已合入 #42（B1 PASS；B2 缺口登记） |
-| MODULE-A-GAP | 已合入 #41 |
+| FIVE-LAYER-PHYS-TUNE | 端测 PASS；结论 NEUTRAL |
+| MODEL-API-CONFIG | 已合入 #43 |
+| MODULE-B-CONTRACT | 已合入 #42 |
 | S7 | **须管理员确认** |

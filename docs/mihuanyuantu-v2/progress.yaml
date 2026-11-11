@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "MODEL-API-CONFIG：系统管理「模型 API」可配置四职责渠道"
-    user_value: "管理员可换预审/生图/优化/最终检测渠道；保存后全站同步；单 Key 不轮询"
-    visible_output: "system?tab=models 表单+列表；合同全字段持久化；运行时读启用合同"
-    verify: "/tmp/model-api-config-e2e.log 含 M1–M4 PASS；SKIP_GPT_IMAGE_SIZE=true；polling_enabled=false；production_billing=false"
+    goal: "FIVE-LAYER-PHYS-TUNE：适度加强 L1/L2 物理化（ND-020 内）"
+    user_value: "交付图更接近细微机成像噪声；同图 Gemini 对照；不降通过线、不刷分"
+    visible_output: "pipeline s2-five-layer-2；ISO 弱相关 L1；L2 σ=0.028"
+    verify: "/tmp/five-layer-phys-tune-e2e.log 含 FIVE_LAYER_PHYS_TUNE_E2E_PASS；结论 PHYS_TUNE_NEUTRAL；pass_score=75"
     status: coded_e2e_pass_pr_pending
-    next_user_action: "非作者 Owner squash；不得开 S7；不得借机做 B2-X / 轮询。"
+    next_user_action: "非作者 Owner 决定合入或回退；不得宣称已解决低分；不得开 S7。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -204,13 +204,27 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "MODEL-API-CONFIG：M1–M4 端测 PASS；推 PR 待非作者 Owner squash。不得开 S7；不得打开 Key 轮询；跳过 gpt-image 尺寸。"
-  work_order: "MODEL-API-CONFIG-2026-11-11 docs/mihuanyuantu-v2/input/MODEL-API-CONFIG-2026-11-11.md"
-  prior_work_order: "MODULE-B-CONTRACT-2026-11-10 已合入 #42"
-  branch: cursor/model-api-config-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/43"
-  prior_branch: cursor/module-b-contract-9973
-  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/42"
+  action: "FIVE-LAYER-PHYS-TUNE：端测 PASS、结论 PHYS_TUNE_NEUTRAL；推 PR 待非作者 Owner 决定合入。不得宣称已解决低分；不得开 S7；PASS_SCORE=75 未改。"
+  work_order: "FIVE-LAYER-PHYS-TUNE-2026-11-11 docs/mihuanyuantu-v2/input/FIVE-LAYER-PHYS-TUNE-2026-11-11.md"
+  prior_work_order: "MODEL-API-CONFIG-2026-11-11 已合入 #43"
+  branch: cursor/five-layer-phys-tune-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/44"
+  prior_branch: cursor/model-api-config-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/43"
+  five_layer_phys_tune_status:
+    P0_baseline: done
+    P1_pipeline: s2-five-layer-2
+    P2_fidelity: pass
+    P3_gemini_compare: pass
+    verdict: PHYS_TUNE_NEUTRAL
+    median_delta_v2_minus_v1: -1.0
+    ge75_v1: 0
+    ge75_v2: 0
+    pass_score: 75
+    production_billing: false
+    s7_started: false
+    e2e_log: "/tmp/five-layer-phys-tune-e2e.log"
+    constraint_ledger: docs/mihuanyuantu-v2/input/FIVE-LAYER-PHYS-TUNE-constraint-ledger.md
   model_api_config_status:
     M1_ui: done_e2e_pass
     M2_persist_ensure: done_e2e_pass
