@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Download, PictureInPicture2, Minimize2 } from 'lucide-vue-next'
 import pb from '../lib/pb'
+import { coverOrThumbUrl } from '../lib/mediaPrepare'
 import { isWeChat, resolvePlayUrl } from '../lib/videoPlayback'
 import { useMiniPlayerStore } from '../stores/miniPlayer'
 
@@ -19,6 +20,7 @@ const playUrl = computed(() => resolved.value.url)
 const originalUrl = computed(() => resolved.value.original)
 const mode = computed(() => resolved.value.mode)
 const note = computed(() => resolved.value.note)
+const posterUrl = computed(() => coverOrThumbUrl(pb, props.archive) || '')
 
 function bindMediaSession() {
   if (!('mediaSession' in navigator)) return
@@ -105,6 +107,7 @@ onBeforeUnmount(() => {
       v-if="playUrl"
       ref="videoEl"
       :src="playUrl"
+      :poster="posterUrl || undefined"
       class="w-full h-full object-contain bg-black"
       controls
       playsinline

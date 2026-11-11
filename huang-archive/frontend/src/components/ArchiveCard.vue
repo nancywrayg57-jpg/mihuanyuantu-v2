@@ -1,6 +1,19 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
-import { Heart, MessageCircle, Trash2, ExternalLink, Pencil, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import {
+  Heart,
+  MessageCircle,
+  Trash2,
+  ExternalLink,
+  Pencil,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  Download,
+  RotateCw,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-vue-next'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
 import { useLocaleStore } from '../stores/locale'
@@ -28,6 +41,8 @@ const busy = ref(false)
 const confirmDelete = ref(false)
 const editOpen = ref(false)
 const actionError = ref('')
+/** Expand nested VideoPlayer only after user taps poster (avoids list black frames). */
+const videoExpanded = ref(false)
 
 watch(
   () => props.archive.likes_count,
@@ -62,6 +77,11 @@ const swipeStartX = ref(0)
 const swipeStartY = ref(0)
 const swipeDeltaX = ref(0)
 const swipeActive = ref(false)
+const lightboxError = ref(false)
+const lightboxZoom = ref(1)
+const lightboxRotate = ref(0)
+const pinchStartDist = ref(0)
+const pinchStartZoom = ref(1)
 
 watch(
   () => props.archive.id,
@@ -71,6 +91,8 @@ watch(
     lightboxOpen.value = false
     lightboxIndex.value = 0
     swipeDeltaX.value = 0
+    videoExpanded.value = false
+    resetLightboxView()
   },
 )
 watch(
@@ -129,64 +151,138 @@ function syncLightboxOrient() {
   nextTick(() => syncLightboxOrientFromDom())
 }
 
+function resetLightboxView() {
+  lightboxError.value = false
+  lightboxZoom.value = 1
+  lightboxRotate.value = 0
+  pinchStartDist.value = 0
+  pinchStartZoom.value = 1
+  swipeDeltaX.value = 0
+}
+
 function openLightbox(index = slide.value) {
   const i = Math.max(0, Math.min(Number(index) || 0, Math.max(0, imageUrls.value.length - 1)))
   lightboxIndex.value = i
   slide.value = i
-  swipeDeltaX.value = 0
+  resetLightboxView()
   lightboxOpen.value = true
   syncLightboxOrient()
 }
 function closeLightbox() {
   lightboxOpen.value = false
   swipeActive.value = false
-  swipeDeltaX.value = 0
+  resetLightboxView()
   lightboxOrientSeq += 1
 }
 function lightboxPrev() {
   if (!imageUrls.value.length) return
   lightboxIndex.value = (lightboxIndex.value - 1 + imageUrls.value.length) % imageUrls.value.length
   slide.value = lightboxIndex.value
-  swipeDeltaX.value = 0
+  resetLightboxView()
   syncLightboxOrient()
 }
 function lightboxNext() {
   if (!imageUrls.value.length) return
   lightboxIndex.value = (lightboxIndex.value + 1) % imageUrls.value.length
   slide.value = lightboxIndex.value
-  swipeDeltaX.value = 0
+  resetLightboxView()
   syncLightboxOrient()
 }
 
 function onLightboxImgLoad(e) {
+  lightboxError.value = false
   applyLightboxOrient(e?.target?.naturalWidth, e?.target?.naturalHeight)
+}
+function onLightboxImgError() {
+  lightboxError.value = true
+}
+
+const lightboxImgStyle = computed(() => {
+  const parts = []
+  if (swipeDeltaX.value) parts.push(`translateX(${swipeDeltaX.value}px)`)
+  if (lightboxRotate.value) parts.push(`rotate(${lightboxRotate.value}deg)`)
+  if (lightboxZoom.value !== 1) parts.push(`scale(${lightboxZoom.value})`)
+  return {
+    transform: parts.length ? parts.join(' ') : undefined,
+    transition: swipeDeltaX.value || pinchStartDist.value ? 'none' : 'transform 0.15s ease-out',
+  }
+})
+
+function zoomLightbox(delta) {
+  lightboxZoom.value = Math.min(4, Math.max(1, Math.round((lightboxZoom.value + delta) * 100) / 100))
+}
+function rotateLightbox() {
+  lightboxRotate.value = (lightboxRotate.value + 90) % 360
+}
+function downloadLightboxImage() {
+  const item = imageUrls.value[lightboxIndex.value]
+  const href = item?.full || item?.url
+  if (!href) return
+  const a = document.createElement('a')
+  a.href = href
+  a.download = item?.name || `${props.archive.title || 'photo'}.jpg`
+  a.target = '_blank'
+  a.rel = 'noopener'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+}
+
+function touchDistance(touches) {
+  if (!touches || touches.length < 2) return 0
+  const dx = touches[0].clientX - touches[1].clientX
+  const dy = touches[0].clientY - touches[1].clientY
+  return Math.hypot(dx, dy)
 }
 
 function onLightboxTouchStart(e) {
   if (!e.touches?.length) return
+  if (e.touches.length >= 2) {
+    swipeActive.value = false
+    swipeDeltaX.value = 0
+    pinchStartDist.value = touchDistance(e.touches)
+    pinchStartZoom.value = lightboxZoom.value
+    return
+  }
   swipeActive.value = true
   swipeStartX.value = e.touches[0].clientX
   swipeStartY.value = e.touches[0].clientY
   swipeDeltaX.value = 0
 }
 function onLightboxTouchMove(e) {
+  if (e.touches?.length >= 2 && pinchStartDist.value > 0) {
+    const dist = touchDistance(e.touches)
+    if (dist > 0) {
+      lightboxZoom.value = Math.min(4, Math.max(1, pinchStartZoom.value * (dist / pinchStartDist.value)))
+    }
+    e.preventDefault?.()
+    return
+  }
   if (!swipeActive.value || !e.touches?.length) return
+  if (lightboxZoom.value > 1.05) return
   const dx = e.touches[0].clientX - swipeStartX.value
   const dy = e.touches[0].clientY - swipeStartY.value
-  // Lock to horizontal when dominant; prevent vertical page scroll fight lightly
   if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
     swipeDeltaX.value = dx
     e.preventDefault?.()
   }
 }
 function onLightboxTouchEnd() {
+  pinchStartDist.value = 0
   if (!swipeActive.value) return
   const dx = swipeDeltaX.value
   swipeActive.value = false
   swipeDeltaX.value = 0
+  if (lightboxZoom.value > 1.05) return
   if (imageUrls.value.length < 2) return
   if (dx <= -48) lightboxNext()
   else if (dx >= 48) lightboxPrev()
+}
+
+function onLightboxWheel(e) {
+  if (!lightboxOpen.value) return
+  e.preventDefault?.()
+  zoomLightbox(e.deltaY < 0 ? 0.15 : -0.15)
 }
 
 function onLightboxKeydown(e) {
@@ -431,7 +527,39 @@ async function deleteMemory(m) {
       </template>
       <template v-else-if="isVideo">
         <div class="absolute inset-0">
-          <VideoPlayer :archive="archive" />
+          <VideoPlayer v-if="videoExpanded" :archive="archive" />
+          <button
+            v-else
+            type="button"
+            class="absolute inset-0 w-full h-full p-0 border-0 cursor-pointer group"
+            data-testid="video-poster-play"
+            :aria-label="`播放 ${archive.title}`"
+            @click="videoExpanded = true"
+          >
+            <img
+              v-if="listCoverUrl"
+              :src="listCoverUrl"
+              :alt="archive.title"
+              class="absolute inset-0 w-full h-full object-cover"
+              data-testid="video-poster-img"
+            />
+            <div
+              v-else
+              class="absolute inset-0 bg-ink/85 grid place-items-center text-parchment/80 font-song"
+              data-testid="video-poster-placeholder"
+            >
+              视频
+            </div>
+            <span
+              class="absolute inset-0 grid place-items-center"
+            >
+              <span
+                class="w-14 h-14 rounded-full bg-ink/60 border border-parchment/50 grid place-items-center text-parchment group-hover:bg-cinnabar/90"
+              >
+                <Play class="w-7 h-7 fill-current" />
+              </span>
+            </span>
+          </button>
           <span
             v-if="durationLabel"
             class="absolute bottom-2 left-2 z-10 text-xs bg-ink/70 text-parchment px-1.5 py-0.5"
@@ -644,23 +772,100 @@ async function deleteMemory(m) {
         @touchmove="onLightboxTouchMove"
         @touchend="onLightboxTouchEnd"
         @touchcancel="onLightboxTouchEnd"
+        @wheel.prevent="onLightboxWheel"
       >
         <div
-          class="shrink-0 relative z-[2] flex items-center justify-between gap-3 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2"
+          class="shrink-0 relative z-[2] flex items-center justify-between gap-2 px-3 sm:px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2"
         >
-          <span class="text-parchment/80 text-sm" data-testid="lightbox-index">
+          <span class="text-parchment/80 text-sm shrink-0" data-testid="lightbox-index">
             {{ lightboxIndex + 1 }} / {{ imageUrls.length }}
           </span>
-          <button
-            type="button"
-            class="min-h-tap px-4 border border-parchment/70 text-parchment bg-ink/80"
-            data-testid="lightbox-close"
-            @click.stop="closeLightbox"
-          >
-            关闭
-          </button>
+          <div class="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
+            <button
+              type="button"
+              class="min-h-tap min-w-[40px] grid place-items-center border border-parchment/50 text-parchment bg-ink/70"
+              data-testid="lightbox-zoom-out"
+              title="缩小"
+              @click.stop="zoomLightbox(-0.25)"
+            >
+              <ZoomOut class="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              class="min-h-tap min-w-[40px] grid place-items-center border border-parchment/50 text-parchment bg-ink/70"
+              data-testid="lightbox-zoom-in"
+              title="放大"
+              @click.stop="zoomLightbox(0.25)"
+            >
+              <ZoomIn class="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              class="min-h-tap min-w-[40px] grid place-items-center border border-parchment/50 text-parchment bg-ink/70"
+              data-testid="lightbox-rotate"
+              title="旋转"
+              @click.stop="rotateLightbox"
+            >
+              <RotateCw class="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              class="min-h-tap min-w-[40px] grid place-items-center border border-parchment/50 text-parchment bg-ink/70"
+              data-testid="lightbox-download"
+              title="下载"
+              @click.stop="downloadLightboxImage"
+            >
+              <Download class="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              class="min-h-tap px-4 border border-parchment/70 text-parchment bg-ink/80"
+              data-testid="lightbox-close"
+              @click.stop="closeLightbox"
+            >
+              关闭
+            </button>
+          </div>
         </div>
         <div class="flex-1 relative min-h-0 overflow-hidden" data-testid="lightbox-stage-wrap">
+          <button
+            v-if="imageUrls.length > 1"
+            type="button"
+            class="hidden md:grid absolute left-2 top-1/2 -translate-y-1/2 z-[3] min-h-[48px] min-w-[48px] place-items-center bg-ink/55 border border-parchment/40 text-parchment"
+            data-testid="lightbox-prev"
+            aria-label="上一张"
+            @click.stop="lightboxPrev"
+          >
+            <ChevronLeft class="w-7 h-7" />
+          </button>
+          <button
+            v-if="imageUrls.length > 1"
+            type="button"
+            class="hidden md:grid absolute right-2 top-1/2 -translate-y-1/2 z-[3] min-h-[48px] min-w-[48px] place-items-center bg-ink/55 border border-parchment/40 text-parchment"
+            data-testid="lightbox-next"
+            aria-label="下一张"
+            @click.stop="lightboxNext"
+          >
+            <ChevronRight class="w-7 h-7" />
+          </button>
+          <div
+            v-if="lightboxError"
+            class="absolute inset-0 z-[4] flex flex-col items-center justify-center gap-3 p-6 text-center text-parchment"
+            data-testid="lightbox-error"
+          >
+            <p class="font-song text-lg">图片无法显示</p>
+            <p class="text-sm text-parchment/75 max-w-sm">
+              可能是 HEIC 等格式当前浏览器不支持，或文件损坏。请下载后用系统相册打开，或重新上传 JPEG。
+            </p>
+            <button
+              type="button"
+              class="min-h-tap px-4 border border-parchment/60"
+              data-testid="lightbox-error-download"
+              @click.stop="downloadLightboxImage"
+            >
+              下载原图
+            </button>
+          </div>
           <div
             class="lightbox-stage"
             :class="lightboxOrient === 'landscape' ? 'lightbox-stage--landscape' : 'lightbox-stage--portrait'"
@@ -673,10 +878,11 @@ async function deleteMemory(m) {
               :alt="`${archive.title} 大图 ${lightboxIndex + 1}`"
               class="lightbox-img select-none"
               :class="lightboxOrient === 'landscape' ? 'lightbox-img--landscape' : 'lightbox-img--portrait'"
-              :style="swipeDeltaX ? { transform: `translateX(${swipeDeltaX}px)`, transition: 'none' } : undefined"
+              :style="lightboxImgStyle"
               data-testid="lightbox-image"
               draggable="false"
               @load="onLightboxImgLoad"
+              @error="onLightboxImgError"
               @click.stop
             />
           </div>

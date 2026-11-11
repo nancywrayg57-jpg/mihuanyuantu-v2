@@ -35,37 +35,79 @@ function canvasToJpegFile(canvas, name, quality) {
   })
 }
 
-/** Compress raster image; skip GIF/SVG; keep HEIC as-is (browser often can't decode). */
+function isHeicFile(file) {
+  const type = String(file?.type || '').toLowerCase()
+  const name = String(file?.name || '').toLowerCase()
+  return type.includes('heic') || type.includes('heif') || /\.(heic|heif)$/.test(name)
+}
+
+/** Convert HEIC/HEIF → JPEG via heic2any (dynamic import). Throws on failure. */
+export async function convertHeicToJpeg(file, quality = IMAGE_QUALITY) {
+  const heic2any = (await import('heic2any')).default
+  const result = await heic2any({
+    blob: file,
+    toType: 'image/jpeg',
+    quality: Math.min(1, Math.max(0.5, quality)),
+  })
+  const blob = Array.isArray(result) ? result[0] : result
+  if (!blob || blob.size < 32) throw new Error('HEIC 转换结果为空')
+  const base = String(file.name || 'photo').replace(/\.[^.]+$/, '') || 'photo'
+  return new File([blob], `${base}.jpg`, { type: 'image/jpeg', lastModified: Date.now() })
+}
+
+/** Compress raster image; skip GIF/SVG; convert HEIC→JPEG before compress. */
 export async function compressImageFile(file, { maxEdge = IMAGE_MAX_EDGE, quality = IMAGE_QUALITY } = {}) {
-  const type = String(file.type || '').toLowerCase()
-  const name = String(file.name || '').toLowerCase()
-  if (type.includes('gif') || name.endsWith('.gif')) return { file, compressed: false, skipped: 'gif' }
-  if (type.includes('heic') || type.includes('heif') || /\.(heic|heif)$/.test(name)) {
-    return { file, compressed: false, skipped: 'heic' }
+  let working = file
+  let heicConverted = false
+  const type0 = String(file.type || '').toLowerCase()
+  const name0 = String(file.name || '').toLowerCase()
+  if (type0.includes('gif') || name0.endsWith('.gif')) return { file, compressed: false, skipped: 'gif' }
+
+  if (isHeicFile(file)) {
+    try {
+      working = await convertHeicToJpeg(file, quality)
+      heicConverted = true
+    } catch (e) {
+      const err = new Error('HEIC 无法转换，请导出为 JPEG 后再上传')
+      err.cause = e
+      throw err
+    }
   }
+
+  const type = String(working.type || '').toLowerCase()
+  const name = String(working.name || '').toLowerCase()
   if (!type.startsWith('image/') && !/\.(jpe?g|png|webp|bmp|tiff?)$/.test(name)) {
-    return { file, compressed: false, skipped: 'not-image' }
+    return { file: working, compressed: false, skipped: 'not-image' }
   }
 
   try {
-    const img = await loadImage(file)
+    const img = await loadImage(working)
     const scale = Math.min(1, maxEdge / Math.max(img.width, img.height))
     const w = Math.max(1, Math.round(img.width * scale))
     const h = Math.max(1, Math.round(img.height * scale))
-    if (scale >= 0.98 && file.size <= 400 * 1024 && type === 'image/jpeg') {
-      return { file, compressed: false, skipped: 'already-small', width: img.width, height: img.height }
+    if (!heicConverted && scale >= 0.98 && working.size <= 400 * 1024 && type === 'image/jpeg') {
+      return { file: working, compressed: false, skipped: 'already-small', width: img.width, height: img.height }
     }
     const canvas = document.createElement('canvas')
     canvas.width = w
     canvas.height = h
     const ctx = canvas.getContext('2d')
     ctx.drawImage(img, 0, 0, w, h)
-    const out = await canvasToJpegFile(canvas, file.name, quality)
-    if (out.size >= file.size * 0.95 && type === 'image/jpeg') {
-      return { file, compressed: false, skipped: 'no-gain', width: img.width, height: img.height }
+    const out = await canvasToJpegFile(canvas, working.name, quality)
+    if (!heicConverted && out.size >= working.size * 0.95 && type === 'image/jpeg') {
+      return { file: working, compressed: false, skipped: 'no-gain', width: img.width, height: img.height }
     }
-    return { file: out, compressed: true, width: w, height: h, originalSize: file.size, size: out.size }
-  } catch {
+    return {
+      file: out,
+      compressed: true,
+      heicConverted,
+      width: w,
+      height: h,
+      originalSize: file.size,
+      size: out.size,
+    }
+  } catch (e) {
+    if (heicConverted) return { file: working, compressed: true, heicConverted, skipped: 'decode-after-heic' }
     return { file, compressed: false, skipped: 'decode-failed' }
   }
 }
@@ -159,12 +201,20 @@ export async function prepareUploadFiles(files, category) {
   const notes = []
 
   for (const f of list) {
-    if (category === 'image' || category === 'scan' || String(f.type).startsWith('image/')) {
+    if (
+      category === 'image' ||
+      category === 'scan' ||
+      String(f.type).startsWith('image/') ||
+      isHeicFile(f)
+    ) {
       const r = await compressImageFile(f)
       prepared.push(r.file)
-      if (r.compressed) {
+      if (r.heicConverted) notes.push(`${f.name} 已转为 JPEG`)
+      if (r.compressed && !r.heicConverted) {
         const saved = Math.max(0, (r.originalSize || f.size) - r.size)
         notes.push(`${f.name} 已压缩（约省 ${Math.round(saved / 1024)}KB）`)
+      } else if (r.compressed && r.heicConverted) {
+        notes.push(`${f.name} 已压缩`)
       }
     } else {
       prepared.push(f)
