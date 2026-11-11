@@ -298,11 +298,13 @@ async function save() {
       }
     }
 
-    // Video edit never appends media here from cover flow; only explicit pending adds for image/scan
+    // Video edit never appends media here from cover flow; only explicit pending adds for image/scan.
+    // PocketBase 0.22.26: multipart field name `media_files+` is a no-op; plain `media_files`
+    // with new files appends without wiping existing (verified live). Do not send empty media_files.
     if (!isVideo.value) {
       for (const f of pendingFiles.value) {
         const nf = normalizeUploadFile(f)
-        form.append('media_files+', nf, nf.name || `img-${Date.now()}.jpg`)
+        form.append('media_files', nf, nf.name || `img-${Date.now()}.jpg`)
       }
     }
 
