@@ -89,6 +89,24 @@ function existingUrl(name) {
   return thumbUrl(pb, props.archive, name, '1200x0') || pb.files.getURL(props.archive, name)
 }
 
+/** Original media/cover file URL (no thumb) — used when copying into cover_file. */
+function originalFileUrl(name) {
+  if (!props.archive || !name) return ''
+  return pb.files.getURL(props.archive, name)
+}
+
+async function fetchArchiveBlob(name, { original = false } = {}) {
+  const url = original ? originalFileUrl(name) : existingUrl(name)
+  if (!url) throw new Error('找不到图片文件')
+  const headers = {}
+  if (pb.authStore?.token) headers.Authorization = pb.authStore.token
+  const res = await fetch(url, { headers, credentials: 'include' })
+  if (!res.ok) throw new Error(`读取图片失败（${res.status}）`)
+  const blob = await res.blob()
+  if (!blob || blob.size < 32) throw new Error('图片内容为空')
+  return blob
+}
+
 /** Fetch PB file as blob URL so canvas crop is not CORS-tainted. */
 async function toLocalCropSrc(urlOrName) {
   let url = urlOrName
@@ -253,20 +271,22 @@ async function save() {
         const cf = normalizeUploadFile(pendingFiles.value[0])
         form.append('cover_file', cf, 'cover.jpg')
       } else if (coverDirty.value && coverName.value && !newCoverFile.value) {
-        // User picked an existing media as cover without cropping — copy that file to cover_file
-        try {
-          const url = existingUrl(coverName.value)
-          const headers = {}
-          if (pb.authStore?.token) headers.Authorization = pb.authStore.token
-          const res = await fetch(url, { headers, credentials: 'include' })
-          if (res.ok) {
-            const blob = await res.blob()
-            const file = new File([blob], coverName.value || 'cover.jpg', {
-              type: blob.type || 'image/jpeg',
-            })
-            form.append('cover_file', file, safeUploadFilename(file, 'jpg'))
-          }
-        } catch (_) {}
+        // User picked an existing media as cover — copy ORIGINAL bytes into cover_file
+        const blob = await fetchArchiveBlob(coverName.value, { original: true })
+        let file = new File([blob], coverName.value || 'cover.jpg', {
+          type: blob.type || 'image/jpeg',
+        })
+        // cover_file maxSize is 5MB — compress when needed
+        if (file.size > 5 * 1024 * 1024) {
+          const prepared = await prepareUploadFiles([file], 'image')
+          file = prepared.files[0] || file
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error('封面过大（需 ≤5MB），请先裁剪后再设为封面')
+        }
+        form.append('cover_file', normalizeUploadFile(file), safeUploadFilename(file, 'jpg') || 'cover.jpg')
+      } else if (coverDirty.value && !newCoverFile.value && !removeCover.value && !coverName.value) {
+        throw new Error('请选择封面图后再保存')
       }
     }
 
@@ -406,6 +426,13 @@ function close() {
               </div>
             </div>
             <p class="text-mute text-sm">{{ i18n.t('coverHint') }}</p>
+            <p
+              v-if="coverDirty"
+              class="text-sm text-cinnabar"
+              data-testid="cover-dirty-hint"
+            >
+              {{ i18n.t('coverDirtyHint') }}
+            </p>
           </div>
 
           <p v-if="error" class="text-cinnabar" data-testid="edit-error">{{ error }}</p>

@@ -50,6 +50,8 @@ const files = computed(() => {
   return Array.isArray(raw) ? raw.filter(Boolean) : raw ? [raw] : []
 })
 const slide = ref(0)
+/** When true, list face prefers cover_file over media_files[slide]. Cleared once user browses the album. */
+const preferCoverFace = ref(true)
 const lightboxOpen = ref(false)
 const lightboxIndex = ref(0)
 /** 'landscape' | 'portrait' — drives stage aspect / fill by image orientation */
@@ -65,9 +67,16 @@ watch(
   () => props.archive.id,
   () => {
     slide.value = 0
+    preferCoverFace.value = true
     lightboxOpen.value = false
     lightboxIndex.value = 0
     swipeDeltaX.value = 0
+  },
+)
+watch(
+  () => props.archive.cover_file,
+  () => {
+    preferCoverFace.value = true
   },
 )
 watch(files, (list) => {
@@ -218,14 +227,27 @@ const durationLabel = computed(() => {
 const showListCover = computed(
   () => isImageLike.value || (isVideo.value && !!listCoverUrl.value) || (isAudio.value && !!listCoverUrl.value),
 )
+/** List / default face: prefer cover_file (crop + set-cover) until user browses media. */
+const cardFaceUrl = computed(() => {
+  if (isImageLike.value && preferCoverFace.value && listCoverUrl.value) return listCoverUrl.value
+  return imageUrls.value[slide.value]?.url || listCoverUrl.value || fileUrl.value
+})
 
-function prevSlide() {
+function browseSlide(nextIndex) {
+  preferCoverFace.value = false
   if (!files.value.length) return
-  slide.value = (slide.value - 1 + files.value.length) % files.value.length
+  const n = files.value.length
+  slide.value = ((nextIndex % n) + n) % n
+}
+function prevSlide() {
+  browseSlide(slide.value - 1)
 }
 function nextSlide() {
-  if (!files.value.length) return
-  slide.value = (slide.value + 1) % files.value.length
+  browseSlide(slide.value + 1)
+}
+function selectSlide(i) {
+  preferCoverFace.value = false
+  slide.value = i
 }
 
 async function checkLiked() {
@@ -441,7 +463,7 @@ async function deleteMemory(m) {
           @click="openLightbox(slide)"
         >
           <img
-            :src="imageUrls[slide]?.url || listCoverUrl || fileUrl"
+            :src="cardFaceUrl"
             :alt="`${archive.title}（${slide + 1}/${imageUrls.length}）`"
             class="w-full h-full object-cover pointer-events-none"
             loading="lazy"
@@ -453,7 +475,7 @@ async function deleteMemory(m) {
           class="absolute top-2 right-2 z-10 text-xs bg-ink/75 text-parchment px-2 py-0.5"
           data-testid="archive-multi-badge"
         >
-          {{ slide + 1 }}/{{ multiCount }} 张
+          {{ preferCoverFace && listCoverUrl ? '封面' : `${slide + 1}/${multiCount} 张` }}
         </div>
         <div v-if="multiCount > 1" class="absolute inset-y-0 left-0 right-0 z-10 flex items-center justify-between px-1 pointer-events-none">
           <button
@@ -485,8 +507,8 @@ async function deleteMemory(m) {
             :key="img.name"
             type="button"
             class="shrink-0 w-10 h-10 border-2 overflow-hidden"
-            :class="i === slide ? 'border-cinnabar' : 'border-parchment/80'"
-            @click.stop="slide = i"
+            :class="!preferCoverFace && i === slide ? 'border-cinnabar' : 'border-parchment/80'"
+            @click.stop="selectSlide(i)"
           >
             <img :src="img.url" :alt="`缩略图 ${i + 1}`" class="w-full h-full object-cover" />
           </button>
