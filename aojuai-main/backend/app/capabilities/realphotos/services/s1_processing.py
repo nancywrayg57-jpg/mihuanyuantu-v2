@@ -16,7 +16,6 @@ from app.capabilities.realphotos.constants import (
     DETECT_NOT_PASSED,
     DETECT_PASS,
     DETECT_TECHNICAL,
-    INBOX_TTL_DAYS,
     OUTPUT_TTL_HOURS,
     PRE_REVIEW_REJECT,
     PROCESS_UNIT_CREDITS,

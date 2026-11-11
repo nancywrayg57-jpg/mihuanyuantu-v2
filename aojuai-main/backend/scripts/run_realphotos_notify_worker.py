@@ -23,8 +23,8 @@ if str(BACKEND_DIR) not in sys.path:
 
 
 async def _ensure_schema() -> None:
-    from scripts.product_gap_fix_schema import ensure_product_gap_fix_schema
     from app.infrastructure.database.session import engine
+    from scripts.product_gap_fix_schema import ensure_product_gap_fix_schema
 
     await ensure_product_gap_fix_schema(engine)
 

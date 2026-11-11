@@ -64,10 +64,10 @@ async def main() -> int:
 
     load_dotenv(REPO / "aojuai-main/backend/.env")
 
-    import app.capabilities.realphotos.models  # noqa: F401
-    import app.domain  # noqa: F401
     from sqlalchemy import func, select
 
+    import app.capabilities.realphotos.models  # noqa: F401
+    import app.domain  # noqa: F401
     from app.capabilities.realphotos.models import (
         RealphotosAsset,
         RealphotosCreditLedgerEntry,
@@ -76,13 +76,13 @@ async def main() -> int:
         RealphotosInboxMessage,
         RealphotosOutbox,
     )
+    from app.capabilities.realphotos.seed import reconcile
     from app.capabilities.realphotos.services.bootstrap import DEFAULT_PASSWORD, bootstrap_s0_accounts
     from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
     from app.capabilities.realphotos.services.job_service import RealphotosJobService
     from app.capabilities.realphotos.services.notify_outbox import RealphotosNotifyOutboxService
     from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
     from app.capabilities.realphotos.services.s6_ops import pixel_identity
-    from app.capabilities.realphotos.seed import reconcile
     from app.core.config import settings
     from app.infrastructure.database.session import Base, async_session_factory, engine, init_db
     from app.main import app as fastapi_app

@@ -27,7 +27,7 @@ async def ensure_product_gap_fix_schema(engine: AsyncEngine) -> None:
             ("next_attempt_at", "ALTER TABLE cap_realphotos_outbox ADD COLUMN next_attempt_at DATETIME"),
             ("last_error", "ALTER TABLE cap_realphotos_outbox ADD COLUMN last_error TEXT"),
         ):
-            exists = await conn.execute(text(f"PRAGMA table_info(cap_realphotos_outbox)"))
+            exists = await conn.execute(text("PRAGMA table_info(cap_realphotos_outbox)"))
             cols = {str(row[1]) for row in exists.fetchall()}
             if name in cols:
                 continue
