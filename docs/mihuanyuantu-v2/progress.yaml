@@ -208,7 +208,7 @@ next_action:
   work_order: "FIVE-LAYER-PHYS-TUNE-2026-11-11 docs/mihuanyuantu-v2/input/FIVE-LAYER-PHYS-TUNE-2026-11-11.md"
   prior_work_order: "MODEL-API-CONFIG-2026-11-11 已合入 #43"
   branch: cursor/five-layer-phys-tune-9973
-  pr: pending
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/44"
   prior_branch: cursor/model-api-config-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/43"
   five_layer_phys_tune_status:

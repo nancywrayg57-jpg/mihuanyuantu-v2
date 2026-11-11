@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
 | branch | `cursor/five-layer-phys-tune-9973` |
-| HEAD | （推送后以 `git rev-parse HEAD` / PR 为准） |
+| HEAD | `f32b653`（PR #44） |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
 | 代码态 | `s2-five-layer-2`：L1 ISO 弱相关阻尼噪声 + L2 小幅加强；未移植暗角/色差/饱和度 |
 | 验证态 | `/tmp/five-layer-phys-tune-e2e.log`：`P0_BASELINE_FROZEN` `P1_PIPELINE_BUMP_PASS` `P2_FIDELITY_PASS` `P3_GEMINI_COMPARE_PASS` `FIVE_LAYER_PHYS_TUNE_E2E_PASS`；结论 `PHYS_TUNE_NEUTRAL`；`pass_score=75`；`production_billing=false`；`s7_started=false` |
