@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
 | branch | `cursor/product-gap-fix-9973` |
-| HEAD | `4abf495`（分支 tip；合入前以 PR 为准） |
+| HEAD | `ad53535` · PR [#45](https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/45) |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
 | 代码态 | PRODUCT-GAP-FIX G1–G5 已实现；G6 仅回归；FR-025 未重做 |
 | 验证态 | `/tmp/product-gap-fix-e2e.log`：`PRODUCT_GAP_FIX_E2E_PASS=true`；`S7_OUT_OF_SCOPE=true`；`G6_NO_REIMPLEMENT=true`；G1–G6 分项均为 true |

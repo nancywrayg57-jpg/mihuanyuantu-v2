@@ -16,7 +16,8 @@
 
 ## 3. 下一步（摘要）
 
-- **分支**：`cursor/product-gap-fix-9973`（工单 `PRODUCT-GAP-FIX-2026-11-11`）
+- **分支 / PR**：`cursor/product-gap-fix-9973` → https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/45（工单 `PRODUCT-GAP-FIX-2026-11-11`）
+- **合入注意**：当前推送账号为 `@nancywrayg57-jpg`（Owner）；按 AGENTS §7 **不得自评自合**——须非作者账号审批/合并，或改由 Collaborator 重开作者身份。
 - **范围**：开发 G1–G5；G6=FR-025 **仅回归**（MODULE-A A2 已交付，不重做）
 - **端测**：`/tmp/product-gap-fix-e2e.log` → `PRODUCT_GAP_FIX_E2E_PASS=true`
 - **合入**：仅非作者 Owner squash；Collaborator 不合并、不打 Tag、不部署
