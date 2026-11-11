@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
 | branch | `cursor/model-api-config-9973` |
-| HEAD | （推送前本地未提交/待 PR；以 `git rev-parse HEAD` 为准） |
+| HEAD | `9ea4a2d` |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
 | 代码态 | MODEL-API-CONFIG：管理员可配置四职责渠道；运行时读合同；`ensure()` 仅补缺行；单 Key 不轮询 |
 | 验证态 | `/tmp/model-api-config-e2e.log`：`M1_MODEL_API_UI_PASS` `M2_CONTRACT_PERSIST_PASS` `M3_RUNTIME_SYNC_PASS` `M4_RBAC_AUDIT_PASS`；`SKIP_GPT_IMAGE_SIZE=true`；`production_billing=false`；`s7_started=false`；`polling_enabled=false` |
