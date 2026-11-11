@@ -214,8 +214,13 @@ async def _main() -> int:
         assert metrics.status_code == 200
         body = metrics.json()["data"]
         assert body["cost"] is None
-        assert body.get("costReason") == "no_upstream_invoice_ledger_v1"
-        note("A5 cost=null costReason=no_upstream_invoice_ledger_v1 deferred=true")
+        assert body.get("cost") is None
+        assert body.get("costReason") in {
+            "no_upstream_calls",
+            "unit_price_missing",
+            "no_upstream_invoice_ledger_v1",
+        }
+        note(f"A5 cost=null costReason={body.get('costReason')} creditsNotUsedForCost=true")
 
         # --- A6: inbox cleanup ---
         async with async_session_factory() as db:

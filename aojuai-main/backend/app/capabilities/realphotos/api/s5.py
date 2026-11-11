@@ -411,21 +411,35 @@ async def create_template(
 @router.post("/resource-imports")
 async def import_resources(
     body: ImportBody,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
     db: DBSession,
     _: None = Depends(PermissionChecker([WORKSPACE_READ])),
 ) -> dict[str, Any]:
-    await RealphotosGrowthService(db).import_resources(payload=body.payload)
-    return SuccessResponse(data={})
+    payload = await RealphotosGrowthService(db).import_resources(
+        payload=body.payload,
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+    )
+    await db.commit()
+    return SuccessResponse(data=payload)
 
 
 @router.post("/resource-imports/files")
 async def import_resource_file(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
     db: DBSession,
     file: UploadFile = File(...),
     _: None = Depends(PermissionChecker([WORKSPACE_READ])),
 ) -> dict[str, Any]:
-    await RealphotosGrowthService(db).import_resource_file(raw=await file.read())
-    return SuccessResponse(data={})
+    payload = await RealphotosGrowthService(db).import_resource_file(
+        raw=await file.read(),
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+    )
+    await db.commit()
+    return SuccessResponse(data=payload)
 
 
 @router.post("/business-api-keys")

@@ -18,6 +18,16 @@ def supplier_live_enabled() -> bool:
     return str(settings.REALPHOTOS_SUPPLIER_LIVE or "").strip().lower() in {"1", "true", "yes", "on"}
 
 
+def import_staging_enabled() -> bool:
+    """Admin work-order gate for temporary image-host联调. Not ND-012 formal closure."""
+    return str(settings.REALPHOTOS_IMPORT_STAGING or "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
 def material_paths() -> list[Path]:
     here = Path(__file__).resolve()
     repo = here.parents[6]

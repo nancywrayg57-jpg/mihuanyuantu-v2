@@ -14,7 +14,11 @@ from app.capabilities.realphotos.services.supplier_clients import (
     DEEPSEEK_URL,
     GENERATION_BASE,
 )
-from app.capabilities.realphotos.services.supplier_material import read_material_secret, supplier_live_enabled
+from app.capabilities.realphotos.services.supplier_material import (
+    import_staging_enabled,
+    read_material_secret,
+    supplier_live_enabled,
+)
 from app.core.config import settings
 from app.core.exceptions import BusinessError, ForbiddenError
 
@@ -71,13 +75,21 @@ _SPECS: tuple[dict[str, Any], ...] = (
     },
     {
         "duty": "import",
-        "provider": "unconfigured",
-        "model_id": "",
-        "region": "",
-        "credential_ref": "",
-        "base_url": "",
-        "capabilities": {"formalSupplier": False},
-        "gap_note": "物料清单 T03 仍缺正式导入供应商。临时图床不作为正式合同，保持不外呼。",
+        "provider": "staging-image-host",
+        "model_id": "staging-image-host",
+        "region": "47.85.47.252",
+        "credential_ref": "生产物料清单§4 临时图床（仅联调）",
+        "base_url": "http://47.85.47.252",
+        "capabilities": {
+            "formalSupplier": False,
+            "stagingAllowed": True,
+            "pathPrefix": "/images/",
+            "methods": ["GET"],
+        },
+        "gap_note": (
+            "正式供应商 PENDING；管理员 2026-11-10 授权临时图床联调外呼，"
+            "不得宣称 ND-012 正式闭合。"
+        ),
         "secret_duty": "",
     },
     {
@@ -119,22 +131,42 @@ class RealphotosSupplierConfigService:
 
     async def ensure(self) -> None:
         live = supplier_live_enabled()
+        staging = import_staging_enabled()
         for spec in _SPECS:
+            # import may enable under staging flag without supplier_live.
             # final_detection is config/settings based; other duties still require supplier live.
-            if spec["duty"] != "final_detection" and not live:
+            if spec["duty"] not in {"final_detection", "import"} and not live:
                 continue
+            if spec["duty"] == "import" and not staging and not live:
+                # Still upsert the honest contract row when staging off, but keep disabled.
+                pass
             existing = await self._row(spec["duty"])
             model_id = str(spec["model_id"])
             if spec["duty"] == "final_detection":
                 model_id = str(settings.GEMINI_MODEL or model_id).strip() or model_id
                 secret_ok = bool(str(settings.GEMINI_API_KEY or "").strip())
+                enabled = secret_ok
+            elif spec["duty"] == "import":
+                secret_ok = True
+                caps = dict(spec["capabilities"])
+                enabled = bool(staging and caps.get("stagingAllowed") is True)
             else:
                 secret_ok = bool(spec["secret_duty"]) and bool(read_material_secret(str(spec["secret_duty"])))
-            enabled = secret_ok and spec["duty"] != "import"
+                enabled = secret_ok
             if existing is not None:
                 if spec["duty"] == "final_detection":
                     if existing.model_id in {"", "gemini-2.5-pro"} or existing.model_id != model_id:
                         existing.model_id = model_id
+                    existing.enabled = enabled
+                    existing.config_version = CONFIG_VERSION
+                    existing.gap_note = spec["gap_note"]
+                elif spec["duty"] == "import":
+                    existing.provider = str(spec["provider"])
+                    existing.model_id = model_id
+                    existing.region = str(spec["region"])
+                    existing.credential_ref = str(spec["credential_ref"])
+                    existing.base_url = str(spec["base_url"])
+                    existing.capabilities = dict(spec["capabilities"])
                     existing.enabled = enabled
                     existing.config_version = CONFIG_VERSION
                     existing.gap_note = spec["gap_note"]

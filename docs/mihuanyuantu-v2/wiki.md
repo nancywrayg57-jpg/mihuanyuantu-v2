@@ -104,4 +104,5 @@
 ## Backlog Knowledge
 - Next: Owner 非自评自合 PR #37；不得开 S7。
 - Closed this loop: FIX-FAILURE-RATE-TECH R1–R6（`MERGE_READY=True`；R6 证据 task=158 `gpsMode=none` DELIVERED on 本机开发机）。
-- Deferred: A5 运营成本真实聚合；CI 升 3.12/pnpm10；替身改库码 `fixture_technical` 须 Owner 批准。
+- MODULE-A-GAP-2026-11-10：临时图床联调导入（`REALPHOTOS_IMPORT_STAGING`，`formalSupplier=false`）；`cap_realphotos_provider_usage` 调用时成本；worker `inbox_cleanup`/`output_cleanup`。证据 `/tmp/module-a-gap-e2e.log`。ND-012 正式仍 PENDING。
+- Deferred: CI 升 3.12/pnpm10；替身改库码 `fixture_technical` 须 Owner 批准；正式导入供应商 / OSS / geocoder。

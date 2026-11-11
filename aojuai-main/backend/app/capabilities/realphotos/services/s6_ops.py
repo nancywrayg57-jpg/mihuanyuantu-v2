@@ -1094,15 +1094,22 @@ class RealphotosOpsService:
             or 0
         )
         model_calls = reviews + generations + prompt_opts
+        from app.capabilities.realphotos.services.provider_usage import RealphotosProviderUsageService
+
+        cost_block = await RealphotosProviderUsageService(self.db).ops_cost_summary()
         return {
             "availableInteger": int(balance or 0),
             "reservedInteger": int(reserved or 0),
             "queueDepth": int(queued or 0),
             "failureRate": None if tasks == 0 else failed / tasks,
             "detectionPassRate": None if detected == 0 else passed / detected,
-            # No upstream invoice ledger in v1 — honest empty, not a fake 0.
-            "cost": None,
-            "costReason": "no_upstream_invoice_ledger_v1",
+            # Call-time upstream ledger; never invent 0 when price/calls missing.
+            "cost": cost_block.get("cost"),
+            "costReason": cost_block.get("costReason"),
+            "costKnownAmount": cost_block.get("costKnownAmount"),
+            "costUnknownCount": cost_block.get("costUnknownCount"),
+            "costSource": cost_block.get("costSource"),
+            "creditsNotUsedForCost": True,
             "modelCalls": int(model_calls),
             "modelCallsSource": "content_review+generation_item+prompt_optimization",
             "storageBytes": int(storage_bytes or 0),

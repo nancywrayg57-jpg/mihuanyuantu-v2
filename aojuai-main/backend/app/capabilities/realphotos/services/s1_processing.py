@@ -671,12 +671,33 @@ class RealphotosS1Service:
         finally:
             handle.close()
         mime = "image/png" if data.startswith(b"\x89PNG") else "image/jpeg"
+        from app.capabilities.realphotos.services.provider_usage import RealphotosProviderUsageService
+
+        usage = RealphotosProviderUsageService(self.db)
         try:
             outcome = await review_image(model_id=contract.model_id, data=data, mime=mime)
         except SupplierCallError as exc:
+            await usage.record_call(
+                duty="pre_review",
+                provider=str(contract.provider or "dashscope"),
+                model_id=str(contract.model_id or ""),
+                config_version=str(contract.config_version or ""),
+                tenant_id=int(task.tenant_id),
+                task_id=int(task.id),
+                note=f"failed:{exc.kind}",
+            )
             await self._hold_technical(task, code="pre_review_failed", message=f"预审请求失败 {exc.kind}，积分保持冻结。")
             task.supplier_trace = {"status": exc.status, "contentType": exc.content_type, "kind": exc.kind}
             return task
+        await usage.record_call(
+            duty="pre_review",
+            provider=str(contract.provider or "dashscope"),
+            model_id=str(outcome.get("model_id") or contract.model_id),
+            config_version=str(contract.config_version or ""),
+            tenant_id=int(task.tenant_id),
+            task_id=int(task.id),
+            note=f"verdict:{outcome.get('verdict')}",
+        )
         await RealphotosSupplierConfigService(self.db).note_response(
             duty="pre_review",
             model_id=str(outcome.get("model_id") or contract.model_id),
@@ -1208,12 +1229,32 @@ class RealphotosS1Service:
 
     async def _settle_gemini(self, task: RealphotosImageTask, jpeg: bytes) -> RealphotosImageTask:
         from app.capabilities.realphotos.services.gemini_detector import detect_jpeg
+        from app.capabilities.realphotos.services.provider_usage import RealphotosProviderUsageService
+        from app.core.config import settings
 
+        usage = RealphotosProviderUsageService(self.db)
+        model_id = str(settings.GEMINI_MODEL or "gemini-3.1-pro-preview")
         try:
             report = detect_jpeg(jpeg)
         except BusinessError as exc:
+            await usage.record_call(
+                duty="final_detection",
+                provider="google-gemini",
+                model_id=model_id,
+                tenant_id=int(task.tenant_id),
+                task_id=int(task.id),
+                note=f"failed:{exc.code}",
+            )
             await self._hold_technical(task, code=exc.code, message=exc.message)
             return task
+        await usage.record_call(
+            duty="final_detection",
+            provider="google-gemini",
+            model_id=str(report.get("detector") or model_id),
+            tenant_id=int(task.tenant_id),
+            task_id=int(task.id),
+            note=f"score:{report.get('total_score')}",
+        )
         out_key = f"tenant/{int(task.tenant_id)}/output/{int(task.id)}.jpg"
         stored = get_storage_adapter().put_bytes(out_key, jpeg, content_type="image/jpeg")
         task.output_object_key = stored.object_key

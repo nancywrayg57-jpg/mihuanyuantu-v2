@@ -30,6 +30,8 @@ type WorkspacePayload = {
     failureRate: number | null
     detectionPassRate: number | null
     cost: number | null
+    costReason?: string | null
+    costUnknownCount?: number | null
     modelCalls: number | null
     storageBytes: number | null
     merchantCards: boolean
@@ -72,6 +74,14 @@ type WorkspacePayload = {
 function cell(value: number | string | null | undefined, emptyLabel = '暂无数据') {
   if (value === null || value === undefined || value === '') return emptyLabel
   return String(value)
+}
+
+function costCell(cost: number | null | undefined, reason: string | null | undefined) {
+  if (typeof cost === 'number') return String(cost)
+  if (reason === 'no_upstream_calls') return '尚无调用'
+  if (reason === 'unit_price_missing') return '暂无上游单价'
+  if (reason) return `暂无数据（${reason}）`
+  return '暂无数据'
 }
 
 type Ticket = {
@@ -195,7 +205,9 @@ export default function RealphotosWorkspacePage() {
               </tr>
               <tr>
                 <th className="border px-2 py-1 text-left">成本</th>
-                <td className="border px-2 py-1">{cell(data.opsMetrics.cost)}</td>
+                <td className="border px-2 py-1">
+                  {costCell(data.opsMetrics.cost, data.opsMetrics.costReason)}
+                </td>
               </tr>
               <tr>
                 <th className="border px-2 py-1 text-left">模型调用量</th>

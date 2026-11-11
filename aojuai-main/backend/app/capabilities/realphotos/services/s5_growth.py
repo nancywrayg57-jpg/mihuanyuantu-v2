@@ -42,7 +42,7 @@ FIXTURE_PROVIDER = "fixture"
 UNCONFIGURED_PROVIDER = "unconfigured"
 
 
-def _import_entry_count(payload: object) -> int:
+def _import_entries(payload: object) -> list[object]:
     if isinstance(payload, list):
         entries = payload
     else:
@@ -61,7 +61,36 @@ def _import_entry_count(payload: object) -> int:
             entries = [line for line in text.splitlines() if line.strip()]
     if len(entries) < 1:
         raise BusinessError(message="导入内容为空", code="INPUT_INVALID")
-    return len(entries)
+    return entries
+
+
+def _import_entry_count(payload: object) -> int:
+    return len(_import_entries(payload))
+
+
+def _normalize_import_row(entry: object, *, index: int) -> dict[str, str]:
+    """FR-028 field order: name → seller → sku → asn → price → website → url."""
+    if isinstance(entry, str):
+        return {
+            "name": "",
+            "seller": "",
+            "sku": "",
+            "asn": "",
+            "price": "",
+            "website": "",
+            "url": entry.strip(),
+        }
+    if not isinstance(entry, dict):
+        raise BusinessError(message=f"第 {index + 1} 条格式无效", code="INPUT_INVALID")
+    return {
+        "name": str(entry.get("name") or "").strip(),
+        "seller": str(entry.get("seller") or "").strip(),
+        "sku": str(entry.get("sku") or "").strip(),
+        "asn": str(entry.get("asn") or "").strip(),
+        "price": str(entry.get("price") or "").strip(),
+        "website": str(entry.get("website") or "").strip(),
+        "url": str(entry.get("url") or "").strip(),
+    }
 
 
 class RealphotosGrowthService:
@@ -472,23 +501,141 @@ class RealphotosGrowthService:
                 visible.append(row)
         return visible
 
-    async def import_resources(self, *, payload: object) -> None:
-        """URL/JSON 导入。上限 100。缺供应商证据时不外呼、不入库。"""
-        count = _import_entry_count(payload)
-        if count > URL_IMPORT_MAX:
-            raise BusinessError(message="第 101 条整单拒绝", code="INPUT_INVALID")
-        raise BusinessError(
-            message="缺少供应商合同与接口证据",
-            code="SERVICE_NOT_CONFIGURED",
-        )
+    async def import_resources(
+        self,
+        *,
+        payload: object,
+        tenant_id: int,
+        owner_account_id: int,
+    ) -> dict:
+        """URL/JSON 导入联调路径。上限 100。缺联调授权时不外呼、不入库。
 
-    async def import_resource_file(self, *, raw: bytes) -> None:
-        """上传的 JSON 文件按数组条数计。不抓取其中的 URL。"""
+        Strategy: ``per_item_continue`` — allowlist/validation failures skip that
+        row; successful rows still land (FR-003 spirit). Count >100 still rejects
+        the whole batch with no writes.
+        """
+        from app.capabilities.realphotos.services.import_fetch import (
+            fetch_import_bytes,
+            host_allowlist_from_base_url,
+        )
+        from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
+        from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
+        from app.capabilities.realphotos.services.supplier_material import import_staging_enabled
+
+        entries = _import_entries(payload)
+        if len(entries) > URL_IMPORT_MAX:
+            raise BusinessError(message="第 101 条整单拒绝", code="INPUT_INVALID")
+
+        contract = await RealphotosSupplierConfigService(self.db).enabled("import")
+        caps = dict(contract.capabilities or {}) if contract is not None else {}
+        staging_ok = bool(
+            import_staging_enabled()
+            and contract is not None
+            and caps.get("stagingAllowed") is True
+            and caps.get("formalSupplier") is not True
+        )
+        if not staging_ok:
+            raise BusinessError(
+                message="缺少供应商合同与接口证据",
+                code="SERVICE_NOT_CONFIGURED",
+            )
+
+        allowed_hosts = host_allowlist_from_base_url(str(contract.base_url or ""))
+        s1 = RealphotosS1Service(self.db)
+        imported: list[dict] = []
+        failed: list[dict] = []
+        for index, entry in enumerate(entries):
+            try:
+                fields = _normalize_import_row(entry, index=index)
+                url = fields["url"]
+                if not url:
+                    raise BusinessError(message="缺少 url", code="INPUT_INVALID")
+                # JSON objects require name for FR-028 required semantics when not a bare URL line.
+                if isinstance(entry, dict) and not fields["name"]:
+                    raise BusinessError(message="缺少 name", code="INPUT_INVALID")
+                raw = await fetch_import_bytes(url, allowed_hosts=allowed_hosts)
+                asset = await s1.upload(
+                    tenant_id=int(tenant_id),
+                    owner_account_id=int(owner_account_id),
+                    data=raw,
+                    meta_name=fields["name"] or None,
+                    meta_seller=fields["seller"] or None,
+                    meta_sku=fields["sku"] or None,
+                    meta_asn=fields["asn"] or None,
+                    meta_price=fields["price"] or None,
+                    meta_website=fields["website"] or None,
+                    meta_url=fields["url"] or None,
+                )
+                asset.origin_kind = "url_import"
+                await self.db.flush()
+                imported.append({"index": index, "assetId": str(int(asset.id)), "url": url})
+            except BusinessError as exc:
+                failed.append(
+                    {
+                        "index": index,
+                        "code": str(exc.code or "IMPORT_FAILED"),
+                        "message": str(exc.message or "导入失败"),
+                    }
+                )
+            except Exception as exc:  # noqa: BLE001 — per-item isolation
+                failed.append(
+                    {
+                        "index": index,
+                        "code": "IMPORT_FAILED",
+                        "message": type(exc).__name__,
+                    }
+                )
+
+        # Audit via account log shape without password fields / disk paths.
+        from app.capabilities.realphotos.models import RealphotosAccountLog
+
+        self.db.add(
+            RealphotosAccountLog(
+                tenant_id=int(tenant_id),
+                operator_user_id=int(owner_account_id),
+                target_user_id=int(owner_account_id),
+                action="resource_import",
+                before_state={},
+                after_state={
+                    "imported": len(imported),
+                    "failed": len(failed),
+                    "formalSupplier": False,
+                    "stagingAllowed": True,
+                    "strategy": "per_item_continue",
+                },
+                reason="staging image-host import batch",
+                result="success" if imported else "failed",
+            )
+        )
+        await self.db.flush()
+        return {
+            "imported": len(imported),
+            "failed": failed,
+            "items": imported,
+            "formalSupplier": False,
+            "stagingAllowed": True,
+            "strategy": "per_item_continue",
+            "creditsCharged": 0,
+            "processingTasksCreated": 0,
+        }
+
+    async def import_resource_file(
+        self,
+        *,
+        raw: bytes,
+        tenant_id: int,
+        owner_account_id: int,
+    ) -> dict:
+        """上传的 JSON 文件按数组条数计；启用联调后按 URL 拉取。"""
         try:
             text = bytes(raw).decode("utf-8")
         except UnicodeDecodeError as exc:
             raise BusinessError(message="JSON 文件须为 UTF-8", code="INPUT_INVALID") from exc
-        await self.import_resources(payload=text)
+        return await self.import_resources(
+            payload=text,
+            tenant_id=tenant_id,
+            owner_account_id=owner_account_id,
+        )
 
     async def _submit_live_generation(
         self,
@@ -535,6 +682,9 @@ class RealphotosGrowthService:
                 data=reference,
             )
             reference = prepare_reference_jpeg(reference)
+        from app.capabilities.realphotos.services.provider_usage import RealphotosProviderUsageService
+
+        usage = RealphotosProviderUsageService(self.db)
         try:
             outcome = await generate_images(
                 model_id=model_id,
@@ -546,6 +696,15 @@ class RealphotosGrowthService:
                 seed=None,
             )
         except SupplierCallError as exc:
+            await usage.record_call(
+                duty="generation",
+                provider="aoju",
+                model_id=str(model_id),
+                tenant_id=int(tenant_id),
+                units=1,
+                unit_name="request",
+                note=f"failed:{exc.kind}",
+            )
             raise BusinessError(
                 message=f"生图失败，未扣积分（{exc.kind} {exc.status or ''}）".strip(),
                 code="SUPPLIER_FAILED",
@@ -558,6 +717,16 @@ class RealphotosGrowthService:
             ) from exc
         images = list(outcome.get("images") or [])
         kinds = {str(item.get("kind")) for item in images if item.get("raw")}
+        stored_n = sum(1 for item in images if item.get("raw"))
+        await usage.record_call(
+            duty="generation",
+            provider="aoju",
+            model_id=str(outcome.get("model_id") or model_id),
+            tenant_id=int(tenant_id),
+            units=max(stored_n, 1),
+            unit_name="image" if stored_n else "request",
+            note=f"stored:{stored_n}/requested:{count}",
+        )
         await RealphotosSupplierConfigService(self.db).note_response(
             duty="generation",
             model_id=str(outcome.get("model_id") or model_id),
@@ -738,9 +907,20 @@ class RealphotosGrowthService:
             event_key=f"prompt-opt-freeze:{int(row.id)}",
             reference={"source": "prompt_optimization", "id": int(row.id)},
         )
+        from app.capabilities.realphotos.services.provider_usage import RealphotosProviderUsageService
+
+        usage = RealphotosProviderUsageService(self.db)
         try:
             outcome = await optimize_text(model_id=model_id, original=original)
         except SupplierCallError as exc:
+            await usage.record_call(
+                duty="prompt_opt",
+                provider="deepseek",
+                model_id=str(model_id),
+                tenant_id=int(tenant_id),
+                task_id=int(row.id),
+                note=f"failed:{exc.kind}",
+            )
             row.supplier_trace = {
                 "status": exc.status,
                 "contentType": exc.content_type,
@@ -756,6 +936,14 @@ class RealphotosGrowthService:
             )
             await self.db.flush()
             return row
+        await usage.record_call(
+            duty="prompt_opt",
+            provider="deepseek",
+            model_id=str(outcome.get("model_id") or model_id),
+            tenant_id=int(tenant_id),
+            task_id=int(row.id),
+            note="succeeded",
+        )
         await credits.consume_reserved(
             tenant_id=int(tenant_id),
             amount=PROMPT_OPT_CREDITS,

@@ -456,7 +456,18 @@ async def cleanup_expired_inbox(
         from app.core.exceptions import ForbiddenError
 
         raise ForbiddenError(message="只有平台管理员可以清理过期站内消息")
+    # Keep sync path for operators; also enqueue durable worker job (FR-019).
+    from app.capabilities.realphotos.constants import JOB_KIND_INBOX_CLEANUP
+    from app.capabilities.realphotos.services.job_service import RealphotosJobService
+
     payload = await RealphotosS1Service(db).cleanup_expired_inbox()
+    job = await RealphotosJobService(db).enqueue_cleanup(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        job_kind=JOB_KIND_INBOX_CLEANUP,
+        payload={"source": "admin_api_sync_and_enqueue"},
+    )
+    payload = {**payload, "enqueuedJobId": str(int(job.id)), "jobKind": JOB_KIND_INBOX_CLEANUP}
     await db.commit()
     return SuccessResponse(data=payload)
 
@@ -473,7 +484,17 @@ async def cleanup_expired_outputs(
         from app.core.exceptions import ForbiddenError
 
         raise ForbiddenError(message="只有平台管理员可以清理过期处理结果")
+    from app.capabilities.realphotos.constants import JOB_KIND_OUTPUT_CLEANUP
+    from app.capabilities.realphotos.services.job_service import RealphotosJobService
+
     payload = await RealphotosS1Service(db).cleanup_expired_outputs()
+    job = await RealphotosJobService(db).enqueue_cleanup(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        job_kind=JOB_KIND_OUTPUT_CLEANUP,
+        payload={"source": "admin_api_sync_and_enqueue"},
+    )
+    payload = {**payload, "enqueuedJobId": str(int(job.id)), "jobKind": JOB_KIND_OUTPUT_CLEANUP}
     await db.commit()
     return SuccessResponse(data=payload)
 

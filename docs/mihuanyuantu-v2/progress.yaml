@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "设备预设与系统日志修复（UX-PRESET-LOGS R1–R3）"
-    user_value: "去掉无用途导入记录与 Honeybadger；预设详情/表单对齐原型∩旧版键；日志实名+中文"
-    visible_output: "presets 分 Tab；GET device-presets/{code}；account-logs Display；导入区移除"
-    verify: "/tmp/ux-preset-logs-e2e.log 含 UX_PRESET_LOGS_E2E_PASS；production_billing=false"
+    goal: "Module A 缺口收口（MODULE-A-GAP A1–A3）"
+    user_value: "临时图床联调导入；调用时成本账本；过期消息/结果入队清理"
+    visible_output: "imports 联调文案；opsMetrics.cost 来自 usage；worker 认领 inbox/output_cleanup"
+    verify: "/tmp/module-a-gap-e2e.log 含 A1/A2/A3 PASS 与 AC009_SKIPPED；production_billing=false；formal_supplier=false"
     status: coded_e2e_pass_pr_pending
-    next_user_action: "推 PR 后非作者 Owner squash；不得自评自合；不得开 S7。"
+    next_user_action: "非作者 Owner squash PR；不得自评自合；不得开 S7；不得宣称 ND-012 正式闭合。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -204,13 +204,31 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "UX-PRESET-LOGS R1–R3 端测 PASS；推 PR 待非作者 Owner squash。不得开 S7。"
-  work_order: "UX-PRESET-LOGS-2026-11-10 /home/hbs/Desktop/蜜獾原图-v2-设备预设与系统日志修复工单-2026-11-10.md"
-  prior_work_order: "FIX-CLEAR-FIXTURE-DETECT-BATCH-THUMB（已合入 #38）"
-  branch: cursor/ux-preset-logs-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/39"
-  prior_branch: cursor/clear-fixture-batch-thumb-9973
-  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/38"
+  action: "MODULE-A-GAP A1–A3 端测 PASS；推 PR 待非作者 Owner squash。不得开 S7；不得宣称 ND-012 正式闭合。"
+  work_order: "MODULE-A-GAP-2026-11-10 docs/mihuanyuantu-v2/input/MODULE-A-GAP-2026-11-10.md"
+  prior_work_order: "UX-PRESET-LOGS-2026-11-10 PR #39；SCORE-ROOTCAUSE PR #40"
+  branch: cursor/module-a-gap-9973
+  pr: pending
+  prior_branch: cursor/score-rootcause-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/40"
+  module_a_gap_status:
+    A1_url_import_staging: done_e2e_pass
+    A2_cost_metering: done_e2e_pass
+    A3_cleanup_queue: done_e2e_pass
+    AC009_skipped: true
+    FR012_code_change: false
+    OSS_out_of_scope: true
+    geocoder_out_of_scope: true
+    formal_supplier: false
+    staging_allowed: true
+    import_strategy: per_item_continue
+    physical_usage_table: cap_realphotos_provider_usage
+    alembic_deviation: orm_create_all_like_siblings
+    e2e_log: "/tmp/module-a-gap-e2e.log"
+    e2e_mark: MODULE_A_GAP_E2E_PASS
+    production_billing: false
+    s7_started: false
+    constraint_ledger: docs/mihuanyuantu-v2/input/MODULE-A-GAP-constraint-ledger.md
   ux_preset_logs_status:
     R1_import_honeybadger: done_e2e_pass
     R2_preset_fields: done_e2e_pass
