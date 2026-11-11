@@ -329,6 +329,10 @@ class Settings(BaseSettings):
     REALPHOTOS_ALLOW_DEV_CAPTCHA: str = ""
     REALPHOTOS_SUPPLIER_LIVE: str = ""
     REALPHOTOS_STORAGE_ROOT: str = ""
+    # MODULE-A-GAP: admin-authorized staging image-host import (formalSupplier stays false).
+    REALPHOTOS_IMPORT_STAGING: str = ""
+    # duty|model_id → {unit_cost, currency, unit_name}; empty = no known unit price.
+    REALPHOTOS_UNIT_COSTS_JSON: str = ""
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.1-pro-preview"
     GEMINI_API_BASE: str = "https://generativelanguage.googleapis.com/v1beta"

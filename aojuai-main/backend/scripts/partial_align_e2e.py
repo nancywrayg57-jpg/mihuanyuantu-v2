@@ -294,7 +294,12 @@ async def _main() -> int:
         assert isinstance(body["reservedInteger"], int)
         assert isinstance(body["queueDepth"], int)
         assert body["cost"] is None
-        assert body.get("costReason") == "no_upstream_invoice_ledger_v1"
+        assert body.get("cost") is None
+        assert body.get("costReason") in {
+            "no_upstream_calls",
+            "unit_price_missing",
+            "no_upstream_invoice_ledger_v1",
+        }
         assert isinstance(body["modelCalls"], int)
         assert isinstance(body["storageBytes"], int)
         note(

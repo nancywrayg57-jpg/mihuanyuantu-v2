@@ -331,11 +331,17 @@ async def test_url_import_rejects_101_and_stays_unconfigured(db):
     before = int(await db.scalar(select(func.count()).select_from(RealphotosAsset)) or 0)
     with pytest.raises(BusinessError) as too_many:
         await ctx["growth"].import_resources(
-            payload="\n".join(f"https://example.invalid/{index}.jpg" for index in range(101))
+            payload="\n".join(f"https://example.invalid/{index}.jpg" for index in range(101)),
+            tenant_id=ctx["tenant"],
+            owner_account_id=ctx["user"],
         )
     assert too_many.value.code == "INPUT_INVALID"
     with pytest.raises(BusinessError) as unconfigured:
-        await ctx["growth"].import_resources(payload="https://example.invalid/a.jpg")
+        await ctx["growth"].import_resources(
+            payload="https://example.invalid/a.jpg",
+            tenant_id=ctx["tenant"],
+            owner_account_id=ctx["user"],
+        )
     assert unconfigured.value.code == "SERVICE_NOT_CONFIGURED"
     hundred = [
         {
@@ -350,13 +356,25 @@ async def test_url_import_rejects_101_and_stays_unconfigured(db):
         for index in range(100)
     ]
     with pytest.raises(BusinessError) as pasted:
-        await ctx["growth"].import_resources(payload=json.dumps(hundred))
+        await ctx["growth"].import_resources(
+            payload=json.dumps(hundred),
+            tenant_id=ctx["tenant"],
+            owner_account_id=ctx["user"],
+        )
     assert pasted.value.code == "SERVICE_NOT_CONFIGURED"
     with pytest.raises(BusinessError) as pasted_file:
-        await ctx["growth"].import_resource_file(raw=json.dumps(hundred).encode())
+        await ctx["growth"].import_resource_file(
+            raw=json.dumps(hundred).encode(),
+            tenant_id=ctx["tenant"],
+            owner_account_id=ctx["user"],
+        )
     assert pasted_file.value.code == "SERVICE_NOT_CONFIGURED"
     with pytest.raises(BusinessError) as too_many_json:
-        await ctx["growth"].import_resource_file(raw=json.dumps(hundred + [hundred[0]]).encode())
+        await ctx["growth"].import_resource_file(
+            raw=json.dumps(hundred + [hundred[0]]).encode(),
+            tenant_id=ctx["tenant"],
+            owner_account_id=ctx["user"],
+        )
     assert too_many_json.value.code == "INPUT_INVALID"
     after = int(await db.scalar(select(func.count()).select_from(RealphotosAsset)) or 0)
     assert after == before

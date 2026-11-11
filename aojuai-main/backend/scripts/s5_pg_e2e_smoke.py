@@ -270,13 +270,19 @@ async def _main() -> int:
         assets_before = int(await db.scalar(select(func.count()).select_from(RealphotosAsset)) or 0)
         try:
             await growth.import_resources(
-                payload="\n".join(f"https://example.invalid/{index}.jpg" for index in range(101))
+                payload="\n".join(f"https://example.invalid/{index}.jpg" for index in range(101)),
+                tenant_id=tenant,
+                owner_account_id=user,
             )
             raise RuntimeError("101st import was accepted")
         except BusinessError as exc:
             assert exc.code == "INPUT_INVALID"
         try:
-            await growth.import_resources(payload="https://example.invalid/a.jpg")
+            await growth.import_resources(
+                payload="https://example.invalid/a.jpg",
+                tenant_id=tenant,
+                owner_account_id=user,
+            )
             raise RuntimeError("url import was accepted")
         except BusinessError as exc:
             assert exc.code == "SERVICE_NOT_CONFIGURED"
@@ -352,12 +358,20 @@ async def _main() -> int:
         ]
         json_before = int(await db.scalar(select(func.count()).select_from(RealphotosAsset)) or 0)
         try:
-            await growth.import_resources(payload=json.dumps(pasted_rows))
+            await growth.import_resources(
+                payload=json.dumps(pasted_rows),
+                tenant_id=tenant,
+                owner_account_id=user,
+            )
             raise RuntimeError("100 json import was accepted")
         except BusinessError as exc:
             assert exc.code == "SERVICE_NOT_CONFIGURED"
         try:
-            await growth.import_resources(payload=json.dumps(pasted_rows + [pasted_rows[0]]))
+            await growth.import_resources(
+                payload=json.dumps(pasted_rows + [pasted_rows[0]]),
+                tenant_id=tenant,
+                owner_account_id=user,
+            )
             raise RuntimeError("101 json import was accepted")
         except BusinessError as exc:
             assert exc.code == "INPUT_INVALID"

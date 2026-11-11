@@ -10,7 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.capabilities.realphotos.constants import (
     JOB_KIND_HEARTBEAT,
+    JOB_KIND_INBOX_CLEANUP,
     JOB_KIND_NOOP,
+    JOB_KIND_OUTPUT_CLEANUP,
     JOB_KIND_PROCESS_IMAGE,
     JOB_STATUS_FAILED,
     JOB_STATUS_QUEUED,
@@ -52,8 +54,17 @@ class RealphotosJobService:
         payload: dict | None = None,
     ) -> RealphotosExecutionJob:
         kind = str(job_kind or "").strip() or JOB_KIND_HEARTBEAT
-        if kind not in {JOB_KIND_HEARTBEAT, JOB_KIND_NOOP}:
-            raise BusinessError(message="S0 仅允许 heartbeat/noop 任务", code="INPUT_INVALID")
+        allowed = {
+            JOB_KIND_HEARTBEAT,
+            JOB_KIND_NOOP,
+            JOB_KIND_INBOX_CLEANUP,
+            JOB_KIND_OUTPUT_CLEANUP,
+        }
+        if kind not in allowed:
+            raise BusinessError(
+                message="仅允许 heartbeat/noop/inbox_cleanup/output_cleanup",
+                code="INPUT_INVALID",
+            )
         job = RealphotosExecutionJob(
             tenant_id=int(tenant_id),
             job_kind=kind,
@@ -65,6 +76,24 @@ class RealphotosJobService:
         self.db.add(job)
         await self.db.flush()
         return job
+
+    async def enqueue_cleanup(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int | None,
+        job_kind: str,
+        payload: dict | None = None,
+    ) -> RealphotosExecutionJob:
+        kind = str(job_kind or "").strip()
+        if kind not in {JOB_KIND_INBOX_CLEANUP, JOB_KIND_OUTPUT_CLEANUP}:
+            raise BusinessError(message="清理任务类型无效", code="INPUT_INVALID")
+        return await self.enqueue(
+            tenant_id=tenant_id,
+            owner_account_id=owner_account_id,
+            job_kind=kind,
+            payload=payload,
+        )
 
     async def enqueue_process(
         self,

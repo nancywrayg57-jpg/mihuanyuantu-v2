@@ -39,7 +39,13 @@ class RealphotosHeartbeatTaskSource:
             service = RealphotosJobService(db)
             job = await service.claim(
                 worker_id=self.worker_id,
-                job_kinds=("heartbeat", "noop", "process_image"),
+                job_kinds=(
+                    "heartbeat",
+                    "noop",
+                    "process_image",
+                    "inbox_cleanup",
+                    "output_cleanup",
+                ),
             )
             if job is None:
                 await db.rollback()
@@ -65,14 +71,22 @@ class RealphotosHeartbeatTaskSource:
                 await db.rollback()
                 logger.warning("realphotos_heartbeat_lease_mismatch", job_id=claimed["job_id"])
                 return
+            result: dict[str, Any] = {"ok": True, "kind": job.job_kind, "worker": self.worker_id}
             if job.job_kind == "process_image":
                 from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
 
                 await RealphotosS1Service(db).execute_queued(job)
-            await service.complete_success(
-                job=job,
-                result={"ok": True, "kind": job.job_kind, "worker": self.worker_id},
-            )
+            elif job.job_kind == "inbox_cleanup":
+                from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
+
+                cleanup = await RealphotosS1Service(db).cleanup_expired_inbox()
+                result.update(cleanup)
+            elif job.job_kind == "output_cleanup":
+                from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
+
+                cleanup = await RealphotosS1Service(db).cleanup_expired_outputs()
+                result.update(cleanup)
+            await service.complete_success(job=job, result=result)
             await db.commit()
             logger.info(
                 "realphotos_heartbeat_succeeded",
