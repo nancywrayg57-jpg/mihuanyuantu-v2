@@ -44,11 +44,16 @@ export function LoginClient() {
   async function refreshChallenge() {
     try {
       const next = await fetchLoginChallenge('web-login')
+      if (!next.challengeId) {
+        throw new Error('验证码挑战未返回')
+      }
       if (!next.imageBase64) {
-        throw new Error('验证码图片未返回')
+        throw new Error(
+          '验证码图片未返回：请重启后端 API（加载含 imageBase64 的版本）后再点刷新',
+        )
       }
       setChallenge(next)
-      // 生产不得预填；开发态可提示但不自动填入，避免「看不见图也能登」
+      // 生产不得预填；开发态仅展示提示码，仍须看图/手输
       setCaptcha('')
       setError(null)
     } catch (err) {

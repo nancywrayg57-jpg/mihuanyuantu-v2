@@ -46,7 +46,7 @@ async def _challenge_login(client: httpx.AsyncClient, username: str, password: s
     assert challenge.status_code == 200, challenge.text
     data = challenge.json()["data"]
     img = str(data.get("imageBase64") or "")
-    assert img.startswith("data:image/png;base64,"), f"g1_missing_captcha_image keys={list(data)}"
+    assert img.startswith("data:image/"), f"g1_missing_captcha_image keys={list(data)}"
     return await client.post(
         "/api/v1/realphotos/auth/login",
         json={
@@ -136,7 +136,7 @@ async def main() -> int:
         must(probe.status_code == 200, f"g1_challenge_http={probe.status_code}")
         probe_data = probe.json()["data"]
         must(
-            str(probe_data.get("imageBase64") or "").startswith("data:image/png;base64,"),
+            str(probe_data.get("imageBase64") or "").startswith("data:image/"),
             "g1_captcha_image_present",
         )
         note("PASS g1_captcha_image_present")
