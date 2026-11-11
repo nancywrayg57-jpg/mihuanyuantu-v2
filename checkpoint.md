@@ -7,28 +7,29 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
-| branch | `cursor/product-gap-fix-9973` |
-| HEAD | `ad53535` · PR [#45](https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/45) |
-| 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
-| 代码态 | PRODUCT-GAP-FIX G1–G5 已实现；G6 仅回归；FR-025 未重做 |
-| 验证态 | `/tmp/product-gap-fix-e2e.log`：`PRODUCT_GAP_FIX_E2E_PASS=true`；`S7_OUT_OF_SCOPE=true`；`G6_NO_REIMPLEMENT=true`；G1–G6 分项均为 true |
-| 当前阶段 | PRODUCT-GAP-FIX-2026-11-11（端测绿，待 Owner 合入） |
-| 下一步 | 开/更新 PR；非作者 Owner squash；不得开 S7；不得把 FR-025 写成「本单新实现」 |
+| branch | `cursor/remain-gap-w1-9973` |
+| HEAD | （推送后填）· 基线 `main`=`f86b6af`（#46） |
+| 文档态 | PRD **2.10**；架构 **1.7**；S7 **BLOCKED**；Web 登录入口见 `WEB_LOGIN_ENTRY.md` |
+| 代码态 | REMAIN W1：R1 底座旁路关闭 + R2 资源库服务端分页；R3–R8 未做；R4 待管理员选 A/B |
+| 验证态 | `/tmp/remain-gap-e2e.log`：`REMAIN_GAP_W1_PASS=true`；`R1_AUTH_BYPASS_CLOSED_PASS=true`；`R2_ASSET_SERVER_PAGE_PASS=true`；`R9_S7_BLOCKED=true`；`production_billing=false`；`R4_NEEDS_ADMIN_CHOICE=true` |
+| 当前阶段 | REMAIN-GAP-PLAN-2026-11-11 · **W1**（端测绿，待 PR / 非作者 Owner squash） |
+| 下一步 | 推 W1 PR；**不得**自评自合；**不得**开 S7；R4 等管理员书面选路径 A 或 B；W2+ 未授权不抢跑 |
 
 ## 1. 约束说明
 
-- G1：Web 登录必须 captcha → `/api/v1/realphotos/auth/*` + cookie 会话 30 天 refresh。
-- G2：提交前查 `RealphotosImageLock`；命中 `IMAGE_LOCKED`，无冻结/无入队。
-- G3：`POST /assets/batch`；`len>20` → `UPLOAD_BATCH_REJECTED` 整批拒。
-- G4：业务只写 outbox；`python -m scripts.run_realphotos_notify_worker`；最多 3 attempt；补发不扣费。
-- G5：鉴权下载仓内 OpenAPI 制品；商家 API 凭证页入口。
-- G6：仅回归 `opsMetrics.cost`；禁止改 `provider_usage` 口径。
+- R1：`rp_*` 岗位调 `POST /api/v1/auth/login` → 403 `AUTH_CAPTCHA_REQUIRED`；合法入口 `/api/v1/realphotos/auth/*`。
+- R2：`GET /api/v1/realphotos/assets?page=&pageSize=` 默认 20，最大钳制 100，返回 `items`+`total`；前端按页请求。
+- R4：`[NEEDS CLARIFICATION]` 路径 A（`guard_epoch`/`ACCOUNT_SPEND_BUSY`）或 B（改合同承认 `copy_latch_*`）——**禁止本会话私自选**。
+- R9：`R9_S7_BLOCKED=true`；`production_billing=false`；不部署、不改 Secrets、不打生产 Tag。
+- 继承 #46：G1–G5 已在 main；本单不重复 captcha/锁图/batch20/outbox/OpenAPI 可达；不重做 FR-025；不改 `PASS_SCORE`。
 
 ## 2. 阶段状态（摘要）
 
 | 阶段 | 状态 |
 | --- | --- |
-| PRODUCT-GAP-FIX | 端测 PASS；待 PR 合入 |
+| REMAIN-GAP W1（R1+R2） | 端测 PASS；待 PR 合入 |
+| REMAIN-GAP W2（R3+R4） | 未开工；R4 待管理员裁决 |
+| PRODUCT-GAP-FIX | 已合入 #46 |
 | FIVE-LAYER-PHYS-TUNE | 已合入 #44 |
 | MODEL-API-CONFIG | 已合入 #43 |
-| S7 | **须管理员确认；本工单不纳入** |
+| S7 | **`R9_S7_BLOCKED=true`；须管理员书面授权** |

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Query, Request, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 
@@ -98,13 +98,14 @@ async def list_assets(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
+    page: int = Query(1, ge=1),
+    page_size: int | None = Query(None, alias="pageSize"),
+    origin_kind: str | None = Query(None, alias="originKind"),
     _: None = Depends(PermissionChecker([WORKSPACE_READ])),
 ) -> dict[str, Any]:
-    rows = await RealphotosGrowthService(db).list_assets(
-        tenant_id=int(tenant_ctx.tenant_id),
-        owner_account_id=int(current_user.id),
-    )
+    """FR-028：服务端分页；兼容旧客户端省略 page 时仍返回本页 items + total。"""
     from app.capabilities.realphotos.adapters.storage import get_storage_adapter
+    from app.capabilities.realphotos.constants import ASSET_PAGE_SIZE_DEFAULT
     from app.capabilities.realphotos.services.asset_naming import (
         compose_download_basename,
         compose_list_filename,
@@ -112,6 +113,13 @@ async def list_assets(
     )
     from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService, pixel_identity
 
+    rows, total, page_n, size = await RealphotosGrowthService(db).list_assets_page(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        page=int(page or 1),
+        page_size=int(page_size) if page_size is not None else ASSET_PAGE_SIZE_DEFAULT,
+        origin_kind=origin_kind,
+    )
     locked_ids = await RealphotosOpsService(db).locked_identities(
         tenant_id=int(tenant_ctx.tenant_id),
         owner_account_id=int(current_user.id),
@@ -163,7 +171,14 @@ async def list_assets(
                 ),
             }
         )
-    return SuccessResponse(data={"items": items})
+    return SuccessResponse(
+        data={
+            "items": items,
+            "total": int(total),
+            "page": int(page_n),
+            "pageSize": int(size),
+        }
+    )
 
 
 async def _generation_body(request: Request) -> tuple[GenerationBody, bytes | None]:

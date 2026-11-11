@@ -51,6 +51,9 @@ GENERATION_MAX_EDGE = 2048
 URL_IMPORT_MAX = 100
 # FR-028 / AC-002：本地上传单次硬上限；第 21 张起整批拒绝。
 UPLOAD_BATCH_MAX = 20
+# FR-028：资源库服务端分页默认约 20/页；超大 pageSize 钳制。
+ASSET_PAGE_SIZE_DEFAULT = 20
+ASSET_PAGE_SIZE_MAX = 100
 # FR-023：站内消息投递最多自动重试 3 次（含首次共 3 次 attempt）。
 NOTIFY_MAX_ATTEMPTS = 3
 NOTIFY_RETRY_SECONDS = (2, 5, 15)

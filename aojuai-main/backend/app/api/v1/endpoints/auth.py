@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from app.api.deps import CurrentUser, DBSession, OptionalCurrentUser, snapshot_current_user
 from app.core.auth_cookies import clear_auth_cookies, get_access_cookie, get_refresh_cookie, set_auth_cookies
 from app.core.config import settings
-from app.core.exceptions import BusinessError, UnauthorizedError
+from app.core.exceptions import AOJUException, BusinessError, UnauthorizedError
 from app.core.logger import get_logger
 from app.core.response import ErrorResponse, SuccessResponse
 from app.core.schemas import ResponseBase
@@ -217,6 +217,43 @@ def _resolve_request_access_token(http_request: Request) -> str | None:
     return get_access_cookie(http_request)
 
 
+# 蜜獾原图业务岗位：Web 会话唯一合法入口为 /api/v1/realphotos/auth/*（含验证码）
+_REALPHOTOS_WEB_LOGIN_ROLES = frozenset(
+    {
+        "rp_merchant",
+        "rp_order_support",
+        "rp_admin",
+        "rp_tech_support",
+    }
+)
+
+
+async def _reject_realphotos_roles_on_base_login(*, db: DBSession, user: Any, client_ip: str) -> None:
+    """REMAIN-GAP R1：关闭底座无 captcha 登录旁路进入业务会话。"""
+    user_service = UserService(db)
+    role_codes = await user_service.get_user_role_codes(int(user.id), tenant_id=int(user.tenant_id))
+    hit = sorted(_REALPHOTOS_WEB_LOGIN_ROLES.intersection({str(code) for code in (role_codes or [])}))
+    if not hit:
+        return
+    logger.warning(
+        "base_login_blocked_realphotos_role",
+        user_id=int(user.id),
+        username=user.username,
+        roles=hit,
+        ip=client_ip,
+    )
+    raise AOJUException(
+        message="业务账号须使用图形验证码登录：POST /api/v1/realphotos/auth/challenges 后 /login",
+        code="AUTH_CAPTCHA_REQUIRED",
+        status_code=403,
+        details={
+            "loginPath": "/api/v1/realphotos/auth/login",
+            "challengePath": "/api/v1/realphotos/auth/challenges",
+            "roles": hit,
+        },
+    )
+
+
 async def _build_auth_session_payload(*, db: DBSession, user: Any, expires: datetime | None) -> dict[str, Any]:
     actor = snapshot_current_user(user)
     user_service = UserService(db)
@@ -317,6 +354,9 @@ async def login(
             ip=client_ip,
         )
         raise UnauthorizedError(message="User account is disabled or locked")
+
+    # FR-001 / REMAIN-GAP R1：蜜獾业务角色禁止无验证码底座登录旁路
+    await _reject_realphotos_roles_on_base_login(db=db, user=user, client_ip=client_ip)
 
     # Record successful login using service method
     await user_service.record_login_success(user)

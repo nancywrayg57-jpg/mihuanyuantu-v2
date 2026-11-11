@@ -32,12 +32,33 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "PRODUCT-GAP-FIX：G1–G5 首版缺口（验证码/锁图/批量20/outbox/OpenAPI）+ G6 成本回归"
-    user_value: "登录必过验证码；锁定图不可再处理；本地≤20 批量上传；消息可重试投递；商家可下载 OpenAPI；成本不重做"
-    visible_output: "realphotos captcha cookie login；IMAGE_LOCKED；POST /assets/batch；notify worker；contracts download；FR-025 regression only"
-    verify: "/tmp/product-gap-fix-e2e.log 含 PRODUCT_GAP_FIX_E2E_PASS；S7_OUT_OF_SCOPE；G6_NO_REIMPLEMENT"
+    goal: "REMAIN-GAP-PLAN W1：R1 关闭底座无验证码登录旁路 + R2 资源库服务端分页"
+    user_value: "业务角色无法绕过 captcha；资源库按页约 20 条拉取，不再前端全量切片"
+    visible_output: "POST /api/v1/auth/login 对 rp_* → 403 AUTH_CAPTCHA_REQUIRED；GET /assets?page&pageSize + total；WEB_LOGIN_ENTRY.md"
+    verify: "/tmp/remain-gap-e2e.log 含 REMAIN_GAP_W1_PASS；R1_AUTH_BYPASS_CLOSED_PASS；R2_ASSET_SERVER_PAGE_PASS；R9_S7_BLOCKED；production_billing=false"
     status: coded_e2e_pass_pr_pending
-    next_user_action: "PR #45 已关；图形验证码+cookie session 已返修；非作者 Owner squash 新 PR；不得自评自合；不得开 S7。"
+    next_user_action: "推/开 W1 PR；非作者 Owner squash；R4 等管理员选 A/B；不得开 S7；不得自评自合。"
+  remain_gap_plan_2026_11_11:
+    work_order: REMAIN-GAP-PLAN-2026-11-11
+    branch: cursor/remain-gap-w1-9973
+    baseline_main: f86b6af
+    baseline_pr: 46
+    w1_r1_auth_bypass: done_e2e_pass
+    w1_r2_asset_server_page: done_e2e_pass
+    w2_r3_alembic: not_started
+    w2_r4_copy_guard: needs_clarification_path_a_or_b
+    w3_r5_worker_topology: not_started
+    w4_r6_fe_sdk: not_started
+    w4_r7_oss_stub: not_started
+    w4_r8_arch_frontmatter: not_started
+    r9_s7: blocked
+    r9_marker: R9_S7_BLOCKED=true
+    r9_checklist_draft: docs/mihuanyuantu-v2/S7-开工检查清单-草稿.md
+    production_billing: false
+    e2e_log: /tmp/remain-gap-e2e.log
+    evidence_marker: REMAIN_GAP_W1_PASS=true
+    constraint_ledger: docs/mihuanyuantu-v2/input/REMAIN-GAP-PLAN-constraint-ledger.md
+    web_login_entry_doc: docs/mihuanyuantu-v2/WEB_LOGIN_ENTRY.md
   product_gap_fix_2026_11_11:
     work_order: PRODUCT-GAP-FIX-2026-11-11
     branch: cursor/product-gap-fix-9973
@@ -218,13 +239,22 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "FIVE-LAYER-PHYS-TUNE：端测 PASS、结论 PHYS_TUNE_NEUTRAL；推 PR 待非作者 Owner 决定合入。不得宣称已解决低分；不得开 S7；PASS_SCORE=75 未改。"
-  work_order: "FIVE-LAYER-PHYS-TUNE-2026-11-11 docs/mihuanyuantu-v2/input/FIVE-LAYER-PHYS-TUNE-2026-11-11.md"
-  prior_work_order: "MODEL-API-CONFIG-2026-11-11 已合入 #43"
-  branch: cursor/five-layer-phys-tune-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/44"
-  prior_branch: cursor/model-api-config-9973
-  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/43"
+  action: "REMAIN-GAP W1：端测 PASS；推 PR 待非作者 Owner squash。R4 标 [NEEDS CLARIFICATION] 等管理员选 A/B；R9_S7_BLOCKED；不得开 S7；不得自评自合。"
+  work_order: "REMAIN-GAP-PLAN-2026-11-11 docs/mihuanyuantu-v2/input/REMAIN-GAP-PLAN-2026-11-11.md"
+  prior_work_order: "PRODUCT-GAP-FIX-2026-11-11 已合入 #46"
+  branch: cursor/remain-gap-w1-9973
+  pr: pending_push
+  prior_branch: cursor/product-gap-fix-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/46"
+  remain_gap_w1_status:
+    R1_auth_bypass: done_e2e_pass
+    R2_asset_server_page: done_e2e_pass
+    R4_path: needs_clarification
+    R9_S7_BLOCKED: true
+    production_billing: false
+    e2e_log: /tmp/remain-gap-e2e.log
+    evidence_marker: REMAIN_GAP_W1_PASS=true
+  five_layer_phys_tune_prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/44"
   five_layer_phys_tune_status:
     P0_baseline: done
     P1_pipeline: s2-five-layer-2
