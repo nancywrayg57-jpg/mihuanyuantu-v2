@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
 | branch | `cursor/module-b-contract-9973` |
-| HEAD | 待推 PR（MODULE-B-CONTRACT） |
+| HEAD | `c9add9c`（PR #42） |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
 | 代码态 | B1：OpenAPI 对接工件 + 无会话 Key 路径端测 PASS；B2：尺寸门闸 `SUPPORTS_SIZE_CONTROL=false`，已诚实登记，**未做 B2-X** |
 | 验证态 | `/tmp/module-b-contract-e2e.log`：`B1_FR033_CONTRACT_PASS` + `B2_SIZE_UNSUPPORTED_RECORDED`；`production_billing=false`；`s7_started=false` |

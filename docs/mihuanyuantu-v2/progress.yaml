@@ -208,7 +208,7 @@ next_action:
   work_order: "MODULE-B-CONTRACT-2026-11-10 docs/mihuanyuantu-v2/input/MODULE-B-CONTRACT-2026-11-10.md"
   prior_work_order: "MODULE-A-GAP-2026-11-10 已合入 #41"
   branch: cursor/module-b-contract-9973
-  pr: pending
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/42"
   prior_branch: cursor/module-a-gap-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/41"
   module_b_contract_status:
