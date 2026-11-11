@@ -11,8 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ApiError } from '@/lib/api'
-import { loginByPassword } from '@/lib/auth-api'
+import { fetchLoginChallenge, loginByPassword, type LoginChallenge } from '@/lib/auth-api'
 import { demoAccounts } from '@/lib/demo-accounts'
 import { NeuralBackground } from '@/components/login/neural-background'
 import { useAuth } from '@/hooks/useAuth'
@@ -37,8 +36,25 @@ export function LoginClient() {
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [captcha, setCaptcha] = useState('')
+  const [challenge, setChallenge] = useState<LoginChallenge | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  async function refreshChallenge() {
+    try {
+      const next = await fetchLoginChallenge('web-login')
+      setChallenge(next)
+      setCaptcha(next.devCode || '')
+    } catch (err) {
+      setChallenge(null)
+      setError(err instanceof Error ? err.message : '验证码加载失败')
+    }
+  }
+
+  useEffect(() => {
+    void refreshChallenge()
+  }, [])
 
   useEffect(() => {
     if (!session) return
@@ -50,6 +66,7 @@ export function LoginClient() {
   const fillDemoAccount = (account: { username: string; password: string }) => {
     setUsername(account.username)
     setPassword(account.password)
+    void refreshChallenge()
   }
 
   if (session) return null
@@ -63,14 +80,26 @@ export function LoginClient() {
         setError(null)
         setSubmitting(true)
         try {
-          const nextSession = await loginByPassword(username, password)
+          if (!challenge?.challengeId) {
+            throw new Error('请先获取验证码')
+          }
+          if (!captcha.trim()) {
+            throw new Error('请输入验证码')
+          }
+          const nextSession = await loginByPassword(
+            username,
+            password,
+            challenge.challengeId,
+            captcha.trim(),
+          )
           setSession(nextSession)
           toast.success(t('system.auth.loginSuccess'))
           router.replace(nextSession.mustCompleteProfile ? '/personal/profile-required' : nextPath)
         } catch (err) {
-          const message = err instanceof ApiError ? err.message : t('system.auth.loginFailed')
+          const message = err instanceof Error ? err.message : t('system.auth.loginFailed')
           setError(message)
           toast.error(message)
+          void refreshChallenge()
         } finally {
           setSubmitting(false)
         }
@@ -99,8 +128,27 @@ export function LoginClient() {
             required
           />
         </div>
+        <div className="grid gap-2">
+          <Label htmlFor="captcha">验证码</Label>
+          <div className="flex gap-2">
+            <Input
+              id="captcha"
+              autoComplete="one-time-code"
+              value={captcha}
+              onChange={(e) => setCaptcha(e.target.value)}
+              placeholder="6 位数字"
+              required
+            />
+            <Button type="button" variant="outline" onClick={() => void refreshChallenge()}>
+              刷新
+            </Button>
+          </div>
+          {challenge?.devCode ? (
+            <p className="text-xs text-muted-foreground">开发验证码已预填（仅 DEBUG/测试开关）</p>
+          ) : null}
+        </div>
         {error ? <div className="text-sm text-destructive">{error}</div> : null}
-        <Button type="submit" disabled={submitting}>
+        <Button type="submit" disabled={submitting || !challenge}>
           {submitting ? t('auth.loggingIn') : t('auth.login')}
         </Button>
         <Button type="button" variant="outline" asChild>

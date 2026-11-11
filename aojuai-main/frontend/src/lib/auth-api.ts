@@ -1,6 +1,5 @@
 'use client'
 
-import { apiFetch } from '@/lib/api'
 import { createCookieBackedSession, type Session } from '@/lib/auth'
 
 type LoginResponseData = {
@@ -32,6 +31,15 @@ type AuthEnvelope<T> = {
   success?: boolean
   data?: T | null
   message?: string | null
+  code?: string | null
+}
+
+export type LoginChallenge = {
+  challengeId: string
+  expiresAt: string
+  ttlSeconds: number
+  /** 仅开发/测试开关下返回；生产不出现 */
+  devCode?: string
 }
 
 function getApiBaseUrl() {
@@ -52,12 +60,58 @@ function toCookieBackedSession(data: AuthSessionResponseData): Session {
   })
 }
 
-export async function loginByPassword(username: string, password: string): Promise<Session> {
-  const data = await apiFetch<LoginResponseData>('/api/v1/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ username, password }),
-  })
+async function readEnvelope<T>(response: Response): Promise<T> {
+  const json = (await response.json().catch(() => null)) as AuthEnvelope<T> | null
+  if (!response.ok || !json?.success || !json.data) {
+    const error = new Error(json?.message || `HTTP ${response.status}`) as Error & {
+      status?: number
+      code?: string | null
+    }
+    error.status = response.status
+    error.code = json?.code
+    throw error
+  }
+  return json.data
+}
 
+/** FR-001：拉取 realphotos 验证码挑战（勿走底座无验证码 login）。 */
+export async function fetchLoginChallenge(clientKey?: string): Promise<LoginChallenge> {
+  const response = await fetch(`${getApiBaseUrl()}/api/v1/realphotos/auth/challenges`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    cache: 'no-store',
+    body: JSON.stringify(clientKey ? { clientKey } : {}),
+  })
+  return readEnvelope<LoginChallenge>(response)
+}
+
+/** FR-001：用户名 + 密码 + challengeId/captcha → realphotos 登录（写 cookie）。 */
+export async function loginByPassword(
+  username: string,
+  password: string,
+  challengeId: string,
+  challengeCode: string,
+): Promise<Session> {
+  const response = await fetch(`${getApiBaseUrl()}/api/v1/realphotos/auth/login`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    cache: 'no-store',
+    body: JSON.stringify({
+      username,
+      password,
+      challengeId,
+      challengeCode,
+    }),
+  })
+  const data = await readEnvelope<LoginResponseData>(response)
   return toCookieBackedSession(data)
 }
 

@@ -33,6 +33,7 @@ from app.capabilities.realphotos.constants import (
     TASK_PRE_REVIEW_FAILED,
     TASK_PRE_REVIEW_PASSED,
     TASK_SUBMITTED,
+    UPLOAD_BATCH_MAX,
 )
 from app.capabilities.realphotos.models import (
     RealphotosAsset,
@@ -218,6 +219,51 @@ class RealphotosS1Service:
         await self.db.flush()
         return asset
 
+    async def upload_batch(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        files: list[bytes],
+    ) -> list[RealphotosAsset]:
+        """FR-028 / AC-002：本地批量上传；>20 整批拒绝且不入库。单张非法与单文件一致（抛错不入库）。"""
+        items = list(files or [])
+        if len(items) == 0:
+            raise BusinessError(message="未选择文件", code="INPUT_INVALID")
+        if len(items) > UPLOAD_BATCH_MAX:
+            raise BusinessError(
+                message=f"单次最多上传 {UPLOAD_BATCH_MAX} 张，整批拒绝",
+                code="UPLOAD_BATCH_REJECTED",
+                details={"count": len(items), "max": UPLOAD_BATCH_MAX},
+            )
+        # 先整批硬校验，全部通过后再写库，避免部分脏写
+        for data in items:
+            inspect_upload(data)
+        created: list[RealphotosAsset] = []
+        for data in items:
+            created.append(
+                await self.upload(
+                    tenant_id=int(tenant_id),
+                    owner_account_id=int(owner_account_id),
+                    data=data,
+                )
+            )
+        return created
+
+    async def _assert_asset_unlocked(
+        self, *, tenant_id: int, owner_account_id: int, asset: RealphotosAsset
+    ) -> None:
+        handle = get_storage_adapter().open_read(asset.object_key)
+        try:
+            data = handle.read()
+        finally:
+            handle.close()
+        await RealphotosOpsService(self.db).assert_image_unlocked(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(owner_account_id),
+            data=data,
+        )
+
     async def submit_single(
         self,
         *,
@@ -261,6 +307,12 @@ class RealphotosS1Service:
         asset = await self._asset(tenant_id=tenant_id, asset_id=asset_id)
         if asset.deleted_at is not None:
             raise NotFoundError(message="资源不存在")
+        # FR-006：锁图执法须在冻结积分 / 入队之前
+        await self._assert_asset_unlocked(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(owner_account_id),
+            asset=asset,
+        )
         batch = RealphotosBatch(
             tenant_id=int(tenant_id),
             owner_account_id=int(owner_account_id),
@@ -376,6 +428,16 @@ class RealphotosS1Service:
         needed = len(requested) * PROCESS_UNIT_CREDITS
         if int(wallet["availableInteger"]) < needed:
             raise BusinessError(message="余额不足，整单拒绝", code="INSUFFICIENT_CREDITS")
+        # FR-006：批量提交前逐张校验锁；命中则整单拒、不冻结
+        for asset_id in requested:
+            asset = await self._asset(tenant_id=int(tenant_id), asset_id=int(asset_id))
+            if asset.deleted_at is not None:
+                raise NotFoundError(message="资源不存在")
+            await self._assert_asset_unlocked(
+                tenant_id=int(tenant_id),
+                owner_account_id=int(owner_account_id),
+                asset=asset,
+            )
         try:
             async with self.db.begin_nested():
                 return await self._open_batch(
@@ -594,8 +656,10 @@ class RealphotosS1Service:
 
     async def resend_inbox(
         self, *, tenant_id: int, recipient_user_id: int, message_id: int
-    ) -> RealphotosInboxMessage:
-        """补发站内通知：不重跑任务、不重复扣费。"""
+    ) -> RealphotosOutbox:
+        """补发站内通知：只写 outbox，不重跑任务、不重复扣费；由 notify worker 投递。"""
+        from app.capabilities.realphotos.services.notify_outbox import RealphotosNotifyOutboxService
+
         source = (
             await self.db.execute(
                 select(RealphotosInboxMessage).where(
@@ -609,18 +673,15 @@ class RealphotosS1Service:
         if source is None:
             raise NotFoundError(message="消息不存在")
         now = _utcnow()
-        copy = RealphotosInboxMessage(
+        event_key = f"resend:{int(source.id)}:{int(now.timestamp())}"
+        return await RealphotosNotifyOutboxService(self.db).enqueue_inbox(
             tenant_id=int(tenant_id),
             recipient_user_id=int(recipient_user_id),
-            event_key=f"resend:{int(source.id)}:{int(now.timestamp())}",
+            event_key=event_key,
             title=source.title,
             body=source.body,
-            expires_at=now + timedelta(days=30),
-            read_at=None,
+            extra={"resendOf": int(source.id)},
         )
-        self.db.add(copy)
-        await self.db.flush()
-        return copy
 
     async def selected_download_items(
         self,
@@ -1700,28 +1761,20 @@ class RealphotosS1Service:
             await self.db.flush()
 
     async def _notify(self, task: RealphotosImageTask, *, title: str, body: str) -> None:
+        from app.capabilities.realphotos.services.notify_outbox import RealphotosNotifyOutboxService
+
         policy = await self._policy(task)
         event_key = (
             f"inbox:task:{int(task.id)}:{task.failure_class or task.status}:{int(policy.execution_count)}"
         )
-        self.db.add(
-            RealphotosInboxMessage(
-                tenant_id=int(task.tenant_id),
-                recipient_user_id=int(task.owner_account_id),
-                event_key=event_key,
-                title=title,
-                body=body,
-                expires_at=_utcnow() + timedelta(days=INBOX_TTL_DAYS),
-            )
-        )
-        self.db.add(
-            RealphotosOutbox(
-                tenant_id=int(task.tenant_id),
-                event_key=event_key,
-                event_type="inbox",
-                payload={"taskId": int(task.id), "title": title},
-                status="pending",
-            )
+        # FR-023：业务路径只写 outbox；投递由独立 notify worker 完成
+        await RealphotosNotifyOutboxService(self.db).enqueue_inbox(
+            tenant_id=int(task.tenant_id),
+            recipient_user_id=int(task.owner_account_id),
+            event_key=event_key,
+            title=title,
+            body=body,
+            extra={"taskId": int(task.id)},
         )
         # Persist last operator-facing detail for task detail UI (F2); codes stay English.
         if task.failure_class or str(task.status or "") == "failed":

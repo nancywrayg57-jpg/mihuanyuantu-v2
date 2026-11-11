@@ -18,11 +18,14 @@ type Asset = {
   displayName?: string
   downloadBasename?: string
   degraded?: boolean
+  locked?: boolean
   requestedWidth?: number | null
   requestedHeight?: number | null
   actualWidth?: number
   actualHeight?: number
 }
+
+const UPLOAD_BATCH_MAX = 20
 
 const PAGE_SIZE = 20
 
@@ -138,29 +141,48 @@ export default function RealphotosLibraryPage() {
   }
 
   function goProcess() {
-    const ids = selectedIds.slice(0, 10)
+    const unlocked = selectedIds.filter((id) => !items.find((item) => item.id === id)?.locked)
+    const lockedCount = selectedIds.length - unlocked.length
+    const ids = unlocked.slice(0, 10)
     if (!ids.length) {
-      setMessage('请先勾选 1–10 张资源')
+      setMessage(lockedCount ? '所选资源均已锁定，不能去处理' : '请先勾选 1–10 张资源')
       return
     }
-    if (selectedIds.length > 10) {
+    if (lockedCount > 0) {
+      setMessage(`已跳过 ${lockedCount} 张锁定图；去处理最多 10 张`)
+    } else if (unlocked.length > 10) {
       setMessage('去处理最多 10 张，已截取前 10 张')
     }
     router.push(`/realphotos/batch?assetIds=${ids.join(',')}`)
   }
 
-  async function onLocalUpload(file: File | null) {
-    if (!file) return
-    const inspected = await inspectLocalFile(file)
-    if (!inspected.ok) {
-      setMessage(inspected.message)
+  async function onLocalUpload(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return
+    const files = Array.from(fileList)
+    if (files.length > UPLOAD_BATCH_MAX) {
+      setMessage(`单次最多上传 ${UPLOAD_BATCH_MAX} 张，整批已拒绝`)
       return
     }
-    const body = new FormData()
-    body.set('file', file)
+    for (const file of files) {
+      const inspected = await inspectLocalFile(file)
+      if (!inspected.ok) {
+        setMessage(inspected.message)
+        return
+      }
+    }
     try {
-      await apiFetch('/api/v1/realphotos/assets', { method: 'POST', body })
-      setMessage('本地上传已入库，未创建处理任务')
+      if (files.length === 1) {
+        const body = new FormData()
+        body.set('file', files[0])
+        await apiFetch('/api/v1/realphotos/assets', { method: 'POST', body })
+      } else {
+        const body = new FormData()
+        for (const file of files) {
+          body.append('files', file)
+        }
+        await apiFetch('/api/v1/realphotos/assets/batch', { method: 'POST', body })
+      }
+      setMessage(`本地上传已入库 ${files.length} 张，未创建处理任务`)
       await reload()
     } catch (error: unknown) {
       setMessage(error instanceof ApiError ? error.message : '上传失败')
@@ -202,12 +224,16 @@ export default function RealphotosLibraryPage() {
       <section id="local-upload" className="space-y-2 text-sm">
         <p>本地上传（仅入库，不自动处理）</p>
         <label className="inline-flex cursor-pointer items-center border px-3 py-1">
-          选择文件
+          选择文件（最多 {UPLOAD_BATCH_MAX} 张）
           <input
             className="sr-only"
             type="file"
+            multiple
             accept="image/jpeg,image/png,.jpg,.jpeg,.png"
-            onChange={(event) => void onLocalUpload(event.target.files?.[0] || null)}
+            onChange={(event) => {
+              void onLocalUpload(event.target.files)
+              event.target.value = ''
+            }}
           />
         </label>
       </section>
@@ -250,6 +276,7 @@ export default function RealphotosLibraryPage() {
             <th className="text-left">缩略图</th>
             <th className="text-left">拼接文件名</th>
             <th className="text-left">来源</th>
+            <th className="text-left">状态</th>
             <th className="text-left">尺寸</th>
             <th className="text-left">字节</th>
             <th className="text-left">操作</th>
@@ -258,13 +285,18 @@ export default function RealphotosLibraryPage() {
         <tbody>
           {pageItems.length === 0 ? (
             <tr>
-              <td colSpan={7}>暂无资源</td>
+              <td colSpan={8}>暂无资源</td>
             </tr>
           ) : (
             pageItems.map((item) => (
-              <tr key={item.id}>
+              <tr key={item.id} className={item.locked ? 'opacity-70' : undefined}>
                 <td>
-                  <input type="checkbox" checked={Boolean(selected[item.id])} onChange={() => toggle(item.id)} />
+                  <input
+                    type="checkbox"
+                    checked={Boolean(selected[item.id])}
+                    disabled={Boolean(item.locked)}
+                    onChange={() => toggle(item.id)}
+                  />
                 </td>
                 <td>
                   {thumbs[item.id] ? (
@@ -288,6 +320,7 @@ export default function RealphotosLibraryPage() {
                     : ''}
                 </td>
                 <td>{originKindLabel(item.originKind)}</td>
+                <td>{item.locked ? '图片锁定' : '可用'}</td>
                 <td>
                   {item.width}×{item.height}
                 </td>

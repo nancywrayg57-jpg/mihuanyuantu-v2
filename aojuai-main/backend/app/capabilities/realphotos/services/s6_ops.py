@@ -148,6 +148,46 @@ class RealphotosOpsService:
         if profile is not None and bool(profile.pre_review_frozen):
             raise BusinessError(message="账号已因预审冻结，不能新建任务", code="ACCOUNT_FROZEN")
 
+    async def assert_image_unlocked(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        data: bytes,
+    ) -> None:
+        """FR-006 / AC-003：锁定图不可再进入处理；不冻结积分、不入队。"""
+        identity = pixel_identity(data)
+        existing = (
+            await self.db.execute(
+                select(RealphotosImageLock).where(
+                    RealphotosImageLock.tenant_id == int(tenant_id),
+                    RealphotosImageLock.owner_account_id == int(owner_account_id),
+                    RealphotosImageLock.image_identity == identity,
+                    RealphotosImageLock.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if existing is not None:
+            raise BusinessError(
+                message="图片已锁定，不能再进入处理",
+                code="IMAGE_LOCKED",
+                details={"imageIdentity": identity, "reason": existing.reason},
+            )
+
+    async def locked_identities(
+        self, *, tenant_id: int, owner_account_id: int
+    ) -> set[str]:
+        rows = (
+            await self.db.execute(
+                select(RealphotosImageLock.image_identity).where(
+                    RealphotosImageLock.tenant_id == int(tenant_id),
+                    RealphotosImageLock.owner_account_id == int(owner_account_id),
+                    RealphotosImageLock.deleted_at.is_(None),
+                )
+            )
+        ).scalars().all()
+        return {str(item) for item in rows if item}
+
     async def release_held_credit(
         self,
         *,

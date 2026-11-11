@@ -6,7 +6,7 @@
 
 **开工入口**：`docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md`  
 必读：`AGENTS.md`、`handoff.md`、`anchor.md`、`checkpoint.md`。  
-过程权威：`docs/mihuanyuantu-v2/progress.yaml` 的 `next_action`。
+过程权威：`docs/mihuanyuantu-v2/progress.yaml` 的 `next_action` / `vibe_coding.current_loop`。
 
 ## 2. 权威顺序
 
@@ -16,12 +16,14 @@
 
 ## 3. 下一步（摘要）
 
-- **分支 / PR**：`cursor/five-layer-phys-tune-9973` → https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/44（工单 `FIVE-LAYER-PHYS-TUNE-2026-11-11`）
-- **实现**：`PIPELINE_VERSION=s2-five-layer-2`；L1 ISO 弱相关噪声（阻尼封顶）；L2 σ 0.02→0.028
-- **端测结论**：`PHYS_TUNE_NEUTRAL`（保真通过；分数中位数无显著增益）——**不得宣称已解决低分**
-- `PASS_SCORE=75` 未改；未开 S7；`production_billing=false`
+- **分支**：`cursor/product-gap-fix-9973`（工单 `PRODUCT-GAP-FIX-2026-11-11`）
+- **范围**：开发 G1–G5；G6=FR-025 **仅回归**（MODULE-A A2 已交付，不重做）
+- **端测**：`/tmp/product-gap-fix-e2e.log` → `PRODUCT_GAP_FIX_E2E_PASS=true`
+- **合入**：仅非作者 Owner squash；Collaborator 不合并、不打 Tag、不部署
+- **禁止**：开 S7；生产收费；改 `PASS_SCORE`；重做成本计量；AD-009 SDK
 
 ## 4. 证据
 
-- `/tmp/five-layer-phys-tune-e2e.log`（含 `FIVE_LAYER_PHYS_TUNE_E2E_PASS` 与 P0–P3 子标记）
-- 约束台账：`docs/mihuanyuantu-v2/input/FIVE-LAYER-PHYS-TUNE-constraint-ledger.md`
+- `/tmp/product-gap-fix-e2e.log`（含 G1–G6 分项与 `S7_OUT_OF_SCOPE` / `G6_NO_REIMPLEMENT`）
+- 工单：`docs/mihuanyuantu-v2/input/PRODUCT-GAP-FIX-2026-11-11.md`
+- 约束台账：`docs/mihuanyuantu-v2/input/PRODUCT-GAP-FIX-constraint-ledger.md`
