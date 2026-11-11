@@ -22,6 +22,7 @@ from app.capabilities.realphotos.models import (
     RealphotosAuthGuard,
     RealphotosMerchantProfile,
 )
+from app.capabilities.realphotos.services.captcha_image import render_captcha_data_url
 from app.core.exceptions import BusinessError, UnauthorizedError
 from app.core.security import create_access_token, create_refresh_token, verify_password
 from app.domain.users.models import User, UserStatus
@@ -58,9 +59,11 @@ class RealphotosAuthService:
             "challengeId": public_id,
             "expiresAt": row.expires_at.isoformat(),
             "ttlSeconds": CHALLENGE_TTL_SECONDS,
+            # FR-001：图形验证码（浏览器必须展示；生产不得用明文替代）
+            "imageBase64": render_captcha_data_url(code),
         }
         if allow_dev_captcha():
-            # 开发验证码可：明文仅在显式开发/测试开关下返回
+            # 开发验证码可：明文仅在显式开发/测试开关下返回（不得替代图形展示）
             payload["devCode"] = code
         return payload
 

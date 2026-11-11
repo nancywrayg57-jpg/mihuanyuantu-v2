@@ -7,25 +7,28 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
-| branch | `cursor/five-layer-phys-tune-9973` |
-| HEAD | `f32b653`（PR #44） |
+| branch | `cursor/product-gap-fix-9973` |
+| HEAD | `ad53535` · PR [#45](https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/45) |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
-| 代码态 | `s2-five-layer-2`：L1 ISO 弱相关阻尼噪声 + L2 小幅加强；未移植暗角/色差/饱和度 |
-| 验证态 | `/tmp/five-layer-phys-tune-e2e.log`：`P0_BASELINE_FROZEN` `P1_PIPELINE_BUMP_PASS` `P2_FIDELITY_PASS` `P3_GEMINI_COMPARE_PASS` `FIVE_LAYER_PHYS_TUNE_E2E_PASS`；结论 `PHYS_TUNE_NEUTRAL`；`pass_score=75`；`production_billing=false`；`s7_started=false` |
-| 当前阶段 | FIVE-LAYER-PHYS-TUNE（技术完成，待 Owner 决定是否合入） |
-| 下一步 | 开 PR；非作者 Owner squash；不得宣称已解决低分；不得开 S7 |
+| 代码态 | PRODUCT-GAP-FIX G1–G5 已实现；G6 仅回归；FR-025 未重做 |
+| 验证态 | `/tmp/product-gap-fix-e2e.log`：`PRODUCT_GAP_FIX_E2E_PASS=true`；`S7_OUT_OF_SCOPE=true`；`G6_NO_REIMPLEMENT=true`；G1–G6 分项均为 true |
+| 当前阶段 | PRODUCT-GAP-FIX-2026-11-11（端测绿，待 Owner 合入） |
+| 下一步 | 开/更新 PR；非作者 Owner squash；不得开 S7；不得把 FR-025 写成「本单新实现」 |
 
 ## 1. 约束说明
 
-- ND-020：肉眼无可见主体/颜色/文字变化；本地对照 MAD≈1.0–1.6（asset 159 等）。
-- 旧版 `imagePhysicalizer` 仅借鉴 ISO–噪声定性；禁止色差/暗角/饱和度。
-- 分数：v1 中位数 69 → v2 中位数 68（Δ=-1）；≥75 仍为 0 → `PHYS_TUNE_NEUTRAL`。
+- G1：Web 登录必须 captcha → `/api/v1/realphotos/auth/*` + cookie 会话 30 天 refresh。
+- G2：提交前查 `RealphotosImageLock`；命中 `IMAGE_LOCKED`，无冻结/无入队。
+- G3：`POST /assets/batch`；`len>20` → `UPLOAD_BATCH_REJECTED` 整批拒。
+- G4：业务只写 outbox；`python -m scripts.run_realphotos_notify_worker`；最多 3 attempt；补发不扣费。
+- G5：鉴权下载仓内 OpenAPI 制品；商家 API 凭证页入口。
+- G6：仅回归 `opsMetrics.cost`；禁止改 `provider_usage` 口径。
 
 ## 2. 阶段状态（摘要）
 
 | 阶段 | 状态 |
 | --- | --- |
-| FIVE-LAYER-PHYS-TUNE | 端测 PASS；结论 NEUTRAL |
+| PRODUCT-GAP-FIX | 端测 PASS；待 PR 合入 |
+| FIVE-LAYER-PHYS-TUNE | 已合入 #44 |
 | MODEL-API-CONFIG | 已合入 #43 |
-| MODULE-B-CONTRACT | 已合入 #42 |
-| S7 | **须管理员确认** |
+| S7 | **须管理员确认；本工单不纳入** |

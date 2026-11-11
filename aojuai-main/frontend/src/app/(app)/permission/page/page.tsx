@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ApiError } from '@/lib/api'
-import { loginByPassword } from '@/lib/auth-api'
+import { fetchLoginChallenge, loginByPassword } from '@/lib/auth-api'
 import { demoAccounts } from '@/lib/demo-accounts'
 import { useT } from '@/lib/i18n'
 import { useAuth } from '@/hooks/useAuth'
@@ -67,11 +67,30 @@ export default function PermissionPage() {
                   setError(null)
                   setLoading(true)
                   try {
-                    const nextSession = await loginByPassword(selectedAccount.username, selectedAccount.password)
+                    // Demo switch still goes through realphotos login (FR-001 captcha).
+                    const challenge = await fetchLoginChallenge()
+                    const code = String(challenge.devCode || '').trim()
+                    if (!code) {
+                      throw new Error(
+                        '演示账号切换需要开发验证码（REALPHOTOS_ALLOW_DEV_CAPTCHA）；请改用登录页图形验证码',
+                      )
+                    }
+                    const nextSession = await loginByPassword(
+                      selectedAccount.username,
+                      selectedAccount.password,
+                      challenge.challengeId,
+                      code,
+                    )
                     setSession(nextSession)
                     router.refresh()
                   } catch (err) {
-                    setError(err instanceof ApiError ? err.message : t('system.permission.switchFailed'))
+                    setError(
+                      err instanceof ApiError
+                        ? err.message
+                        : err instanceof Error
+                          ? err.message
+                          : t('system.permission.switchFailed'),
+                    )
                   } finally {
                     setLoading(false)
                   }

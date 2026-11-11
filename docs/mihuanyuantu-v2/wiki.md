@@ -92,6 +92,7 @@
 | 17-ux-cn-preset | U1–U7 中文标签 + 预设分页/详情/新增弹窗；C1 撤批量 UI | `/tmp/ux-cn-preset-e2e.log` | merged_#35 | — |
 | 18-fix-task-failure-ux | F1–F6 失败原因映射/详情分数门槛/GPS 提示/替身区分/预审请求可重试 | `/tmp/fix-task-failure-ux-e2e.log` | merged_#36 | — |
 | 19-fix-failure-rate-remain | R1–R6 失败率剩余项；本机即开发机补 R6 | `/tmp/fix-failure-rate-remain-e2e.log` | local_pass_pr_pending | Owner squash #37；PASS_SCORE=75；不开 S7 |
+| 20-product-gap-fix | G1 图形验证码 · G2 lock · G3 upload≤20 · G4 outbox · G5 OpenAPI · G6 cost 回归 | `/tmp/product-gap-fix-e2e.log` | coded_e2e_pass_pr_reopen | #45 已关（无图）；返修 imageBase64+cookie expires；Owner 非作者 squash；S7 不做 |
 
 ## Risks and Watchpoints
 - Risk: 把文档齐全或 CI 绿当成后端已交付。
@@ -102,10 +103,12 @@
 - Mitigation: F8 网关放行 `generation/*`（资产表校验）；「(降级)」仅文件名元数据回退。
 
 ## Backlog Knowledge
-- Next: Owner 非自评自合 PR #37；不得开 S7。
-- Closed this loop: FIX-FAILURE-RATE-TECH R1–R6（`MERGE_READY=True`；R6 证据 task=158 `gpsMode=none` DELIVERED on 本机开发机）。
+- Next: Owner 非自评自合新开 PRODUCT-GAP-FIX PR；不得开 S7；FR-025 保持 MODULE-A A2 已交付（本单仅 G6 回归）。
+- Closed this loop: PRODUCT-GAP-FIX-2026-11-11 G1–G5 开发 + G6 回归；证据 `/tmp/product-gap-fix-e2e.log`（`PRODUCT_GAP_FIX_E2E_PASS=true`，`S7_OUT_OF_SCOPE=true`，`G6_NO_REIMPLEMENT=true`）。
+- PRODUCT-GAP-FIX 要点：Web 登录走 `/realphotos/auth` **图形验证码**（`imageBase64`）+cookie；提交路径 `IMAGE_LOCKED`；`POST /assets/batch` 超 20 整批拒；`_notify` 只写 outbox + `scripts.run_realphotos_notify_worker`；商家页可下载 OpenAPI 制品。
+- 2026-11-11 返修：人工验收无图无法登录 → **关闭 PR #45**；补 `captcha_image` + 登录页 `<img>` + `expires` ISO 修 cookie session；复测后重开 PR。
 - MODULE-A-GAP-2026-11-10：临时图床联调导入（`REALPHOTOS_IMPORT_STAGING`，`formalSupplier=false`）；`cap_realphotos_provider_usage` 调用时成本；worker `inbox_cleanup`/`output_cleanup`。证据 `/tmp/module-a-gap-e2e.log`。ND-012 正式仍 PENDING。
 - MODULE-B-CONTRACT-2026-11-10：B1 FR-033 OpenAPI + 无会话端测 PASS；B2 尺寸门闸 `SUPPORTS_SIZE_CONTROL=false`（1024x768→1448x1086；1024x1024→1254x1254），`B2_SIZE_UNSUPPORTED_RECORDED`。证据 `/tmp/module-b-contract-e2e.log`。
 - MODEL-API-CONFIG-2026-11-11：系统管理「模型 API」四职责可配置（单 Key、不轮询）；`ensure()` 不覆盖管理员配置；运行时预审/生图/优化/最终检测读启用合同；审计落合同 `updated_at`+应用日志（FR-030 不进用户操作日志）。证据 `/tmp/model-api-config-e2e.log`。
 - FIVE-LAYER-PHYS-TUNE-2026-11-11：`s2-five-layer-2` L1 ISO 弱相关阻尼噪声 + L2 σ=0.028；ND-020 保真通过；live Gemini 对照结论 `PHYS_TUNE_NEUTRAL`（中位数 69→68，≥75 仍 0）。证据 `/tmp/five-layer-phys-tune-e2e.log`。不得宣称已解决低分。
-- Deferred: CI 升 3.12/pnpm10；替身改库码 `fixture_technical` 须 Owner 批准；正式导入供应商 / OSS / geocoder；B2-X；第一版不做 Key 轮询；低分策略另开样张/检测工单。
+- Deferred: CI 升 3.12/pnpm10；替身改库码 `fixture_technical` 须 Owner 批准；正式导入供应商 / OSS / geocoder；B2-X；第一版不做 Key 轮询；低分策略另开样张/检测工单；AD-009 SDK；资源库服务端分页。

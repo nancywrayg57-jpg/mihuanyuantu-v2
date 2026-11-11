@@ -63,11 +63,20 @@ function normalizeAuthMode(value: unknown): SessionAuthMode | null {
   return null
 }
 
+function coerceExpiresString(value: unknown): string {
+  if (isNonEmptyString(value)) return value.trim()
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const d = new Date(value)
+    return Number.isNaN(d.getTime()) ? '' : d.toISOString()
+  }
+  return ''
+}
+
 function normalizeSession(input: unknown): Session | null {
   if (!isRecord(input)) return null
 
   const username = isNonEmptyString(input.username) ? input.username.trim() : ''
-  const expires = isNonEmptyString(input.expires) ? input.expires.trim() : ''
+  const expires = coerceExpiresString(input.expires)
   const roles = normalizeStringArray(input.roles)
   const permissions = normalizeStringArray(input.permissions)
   const authMode = normalizeAuthMode(input.authMode)
@@ -78,7 +87,8 @@ function normalizeSession(input: unknown): Session | null {
     rawAccessToken === COOKIE_SESSION_MARKER ||
     rawRefreshToken === COOKIE_SESSION_MARKER
 
-  if (!username || !expires || !roles || !permissions) {
+  // roles/permissions 允许空数组；仅拒绝非数组（normalize 返回 null）
+  if (!username || !expires || roles == null || permissions == null) {
     return null
   }
 

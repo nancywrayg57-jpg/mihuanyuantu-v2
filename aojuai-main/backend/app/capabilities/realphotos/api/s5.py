@@ -104,18 +104,35 @@ async def list_assets(
         tenant_id=int(tenant_ctx.tenant_id),
         owner_account_id=int(current_user.id),
     )
+    from app.capabilities.realphotos.adapters.storage import get_storage_adapter
     from app.capabilities.realphotos.services.asset_naming import (
         compose_download_basename,
         compose_list_filename,
         meta_from_asset,
     )
+    from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService, pixel_identity
 
+    locked_ids = await RealphotosOpsService(db).locked_identities(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+    )
     items = []
     for row in rows:
         meta = meta_from_asset(row)
         naming = compose_list_filename(
             meta=meta, asset_id=int(row.id), origin_kind=str(row.origin_kind)
         )
+        locked = False
+        if locked_ids:
+            try:
+                handle = get_storage_adapter().open_read(row.object_key)
+                try:
+                    data = handle.read()
+                finally:
+                    handle.close()
+                locked = pixel_identity(data) in locked_ids
+            except Exception:  # noqa: BLE001 — 列表态失败不阻断整表
+                locked = False
         items.append(
             {
                 "id": str(int(row.id)),
@@ -131,6 +148,7 @@ async def list_assets(
                     meta=meta, asset_id=int(row.id), origin_kind=str(row.origin_kind)
                 ),
                 "meta": meta,
+                "locked": locked,
                 "requestedWidth": int(row.requested_width) if row.requested_width is not None else None,
                 "requestedHeight": int(row.requested_height) if row.requested_height is not None else None,
                 "actualWidth": int(row.width),

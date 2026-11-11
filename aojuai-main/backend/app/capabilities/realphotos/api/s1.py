@@ -219,6 +219,46 @@ async def upload_asset(
     )
 
 
+@router.post("/assets/batch")
+async def upload_assets_batch(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    files: list[UploadFile] = File(...),
+    _: None = Depends(PermissionChecker([GATEWAY_READ])),
+) -> dict[str, Any]:
+    """FR-028 / AC-002：本地多文件上传；>20 整批拒绝。"""
+    from app.capabilities.realphotos.services.asset_naming import compose_list_filename, meta_from_asset
+
+    payloads: list[bytes] = []
+    for item in files or []:
+        payloads.append(await item.read())
+    assets = await RealphotosS1Service(db).upload_batch(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        files=payloads,
+    )
+    await db.commit()
+    items = []
+    for asset in assets:
+        naming = compose_list_filename(
+            meta=meta_from_asset(asset), asset_id=int(asset.id), origin_kind=str(asset.origin_kind)
+        )
+        items.append(
+            {
+                "id": str(int(asset.id)),
+                "contentType": asset.content_type,
+                "byteSize": int(asset.byte_size),
+                "width": int(asset.width),
+                "height": int(asset.height),
+                "objectKey": asset.object_key,
+                "displayName": naming["displayName"],
+                "degraded": naming["degraded"] == "true",
+            }
+        )
+    return SuccessResponse(data={"items": items, "count": len(items)})
+
+
 @router.post("/processing-tasks/{task_id}/copy")
 async def copy_processing_task(
     task_id: int,
@@ -633,12 +673,17 @@ async def resend_inbox(
         message_id=int(message_id),
     )
     await db.commit()
+    payload = dict(row.payload or {})
     return SuccessResponse(
         data={
             "id": str(int(row.id)),
-            "title": row.title,
-            "body": row.body,
+            "outboxId": str(int(row.id)),
+            "eventKey": row.event_key,
+            "status": row.status,
+            "title": payload.get("title"),
+            "body": payload.get("body"),
             "readAt": None,
+            "queuedForDelivery": True,
         }
     )
 

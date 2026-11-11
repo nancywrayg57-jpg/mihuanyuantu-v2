@@ -263,6 +263,14 @@ async def test_s1_single_image_loop(db) -> None:
         owner_account_id=user_a,
     )
     assert own_body.startswith(b"\xff\xd8\xff")
+    # FR-023：业务路径只写 outbox；单测内 drain notify worker 路径再读收件箱
+    from app.capabilities.realphotos.services.notify_outbox import RealphotosNotifyOutboxService
+
+    notify = RealphotosNotifyOutboxService(db)
+    while True:
+        delivered = await notify.deliver_one()
+        if delivered is None:
+            break
     messages = await loop.list_inbox(tenant_id=tenant1, recipient_user_id=user_a)
     assert messages
     assert admin

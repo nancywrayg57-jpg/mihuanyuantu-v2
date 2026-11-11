@@ -32,12 +32,26 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "FIVE-LAYER-PHYS-TUNE：适度加强 L1/L2 物理化（ND-020 内）"
-    user_value: "交付图更接近细微机成像噪声；同图 Gemini 对照；不降通过线、不刷分"
-    visible_output: "pipeline s2-five-layer-2；ISO 弱相关 L1；L2 σ=0.028"
-    verify: "/tmp/five-layer-phys-tune-e2e.log 含 FIVE_LAYER_PHYS_TUNE_E2E_PASS；结论 PHYS_TUNE_NEUTRAL；pass_score=75"
+    goal: "PRODUCT-GAP-FIX：G1–G5 首版缺口（验证码/锁图/批量20/outbox/OpenAPI）+ G6 成本回归"
+    user_value: "登录必过验证码；锁定图不可再处理；本地≤20 批量上传；消息可重试投递；商家可下载 OpenAPI；成本不重做"
+    visible_output: "realphotos captcha cookie login；IMAGE_LOCKED；POST /assets/batch；notify worker；contracts download；FR-025 regression only"
+    verify: "/tmp/product-gap-fix-e2e.log 含 PRODUCT_GAP_FIX_E2E_PASS；S7_OUT_OF_SCOPE；G6_NO_REIMPLEMENT"
     status: coded_e2e_pass_pr_pending
-    next_user_action: "非作者 Owner 决定合入或回退；不得宣称已解决低分；不得开 S7。"
+    next_user_action: "PR #45 已关；图形验证码+cookie session 已返修；非作者 Owner squash 新 PR；不得自评自合；不得开 S7。"
+  product_gap_fix_2026_11_11:
+    work_order: PRODUCT-GAP-FIX-2026-11-11
+    branch: cursor/product-gap-fix-9973
+    pr_45: closed_no_graphic_captcha
+    g1_login_captcha: done_e2e_pass_graphic
+    g2_image_lock_enforce: done_e2e_pass
+    g3_upload_batch20: done_e2e_pass
+    g4_msg_outbox: done_e2e_pass
+    g5_openapi_reachable: done_e2e_pass
+    g6_ops_cost: regression_only_pass
+    fr025_reimplement: false
+    s7: out_of_scope
+    e2e_log: /tmp/product-gap-fix-e2e.log
+    evidence_marker: PRODUCT_GAP_FIX_E2E_PASS=true
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5

@@ -49,6 +49,11 @@ GENERATION_MIN_EDGE = 256
 GENERATION_MAX_EDGE = 2048
 # 管理员 2026-11-06：URL/JSON 导入单次上限按 AC-002 取 100。本地上传仍是 20。
 URL_IMPORT_MAX = 100
+# FR-028 / AC-002：本地上传单次硬上限；第 21 张起整批拒绝。
+UPLOAD_BATCH_MAX = 20
+# FR-023：站内消息投递最多自动重试 3 次（含首次共 3 次 attempt）。
+NOTIFY_MAX_ATTEMPTS = 3
+NOTIFY_RETRY_SECONDS = (2, 5, 15)
 IMAGE_PROCESSING_SCOPE = "image_processing"
 # FR-019：处理结果 7×24 小时；站内消息 30 天。
 OUTPUT_TTL_HOURS = 7 * 24
