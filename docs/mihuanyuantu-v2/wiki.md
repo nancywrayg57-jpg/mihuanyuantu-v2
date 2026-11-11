@@ -105,4 +105,5 @@
 - Next: Owner 非自评自合 PR #37；不得开 S7。
 - Closed this loop: FIX-FAILURE-RATE-TECH R1–R6（`MERGE_READY=True`；R6 证据 task=158 `gpsMode=none` DELIVERED on 本机开发机）。
 - MODULE-A-GAP-2026-11-10：临时图床联调导入（`REALPHOTOS_IMPORT_STAGING`，`formalSupplier=false`）；`cap_realphotos_provider_usage` 调用时成本；worker `inbox_cleanup`/`output_cleanup`。证据 `/tmp/module-a-gap-e2e.log`。ND-012 正式仍 PENDING。
-- Deferred: CI 升 3.12/pnpm10；替身改库码 `fixture_technical` 须 Owner 批准；正式导入供应商 / OSS / geocoder。
+- MODULE-B-CONTRACT-2026-11-10：B1 FR-033 OpenAPI + 无会话端测 PASS；B2 尺寸门闸 `SUPPORTS_SIZE_CONTROL=false`（1024x768→1448x1086；1024x1024→1254x1254），`B2_SIZE_UNSUPPORTED_RECORDED`。证据 `/tmp/module-b-contract-e2e.log`。
+- Deferred: CI 升 3.12/pnpm10；替身改库码 `fixture_technical` 须 Owner 批准；正式导入供应商 / OSS / geocoder；B2-X（须书面尺寸合同且探测一致）。

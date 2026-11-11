@@ -37,9 +37,16 @@ _SPECS: tuple[dict[str, Any], ...] = (
             "height": "request-256-2048",
             "quantity": "1-10",
             "seed": "gap-not-sent",
+            "sizeControl": "unsupported_or_not_honored",
             "result": "pending-response",
         },
-        "gap_note": "种子参数供应商合同未提供，不发送、不伪造。尺寸按请求原样发送，不在适配器里改写。",
+        "gap_note": (
+            "种子参数供应商合同未提供，不发送、不伪造（AC-009）。"
+            "尺寸：请求体原样发送 size=WxH，适配器不静默改写；"
+            "MODULE-B-CONTRACT-2026-11-10：物料无尺寸书面合同；"
+            "探测 1024x768→1448x1086、1024x1024→1254x1254（无批准映射表）→ "
+            "sizeControl 不得标 enforced；客户路径如实展示请求与实际尺寸。"
+        ),
         "secret_duty": "generation",
     },
     {
@@ -134,12 +141,22 @@ class RealphotosSupplierConfigService:
         staging = import_staging_enabled()
         for spec in _SPECS:
             # import may enable under staging flag without supplier_live.
-            # final_detection is config/settings based; other duties still require supplier live.
-            if spec["duty"] not in {"final_detection", "import"} and not live:
+            # final_detection is config/settings based; generation may refresh honesty notes
+            # even when supplier_live is off (MODULE-B sizeControl gap).
+            if spec["duty"] not in {"final_detection", "import", "generation"} and not live:
                 continue
             if spec["duty"] == "import" and not staging and not live:
                 # Still upsert the honest contract row when staging off, but keep disabled.
                 pass
+            if spec["duty"] == "generation" and not live:
+                existing = await self._row(spec["duty"])
+                if existing is not None:
+                    caps = dict(existing.capabilities or {})
+                    caps.update(dict(spec["capabilities"]))
+                    existing.capabilities = caps
+                    existing.gap_note = spec["gap_note"]
+                    existing.config_version = CONFIG_VERSION
+                continue
             existing = await self._row(spec["duty"])
             model_id = str(spec["model_id"])
             if spec["duty"] == "final_detection":
@@ -170,6 +187,13 @@ class RealphotosSupplierConfigService:
                     existing.enabled = enabled
                     existing.config_version = CONFIG_VERSION
                     existing.gap_note = spec["gap_note"]
+                elif spec["duty"] == "generation":
+                    caps = dict(existing.capabilities or {})
+                    caps.update(dict(spec["capabilities"]))
+                    existing.capabilities = caps
+                    existing.gap_note = spec["gap_note"]
+                    existing.enabled = enabled
+                    existing.config_version = CONFIG_VERSION
                 continue
             self.db.add(
                 RealphotosProviderContract(

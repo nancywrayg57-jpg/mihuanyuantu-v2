@@ -7,25 +7,23 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
-| branch | `cursor/module-a-gap-9973` |
-| HEAD | `3c1971f`（PR #41） |
+| branch | `cursor/module-b-contract-9973` |
+| HEAD | `c9add9c`（PR #42） |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
-| 代码态 | A1 临时图床联调导入（`formalSupplier=false`）；A2 `cap_realphotos_provider_usage` 调用时计量；A3 worker 认领 `inbox_cleanup`/`output_cleanup` |
-| 验证态 | `/tmp/module-a-gap-e2e.log`：`MODULE_A_GAP_E2E_PASS`；`production_billing=false`；`formal_supplier=false`；`s7_started=false` |
-| 当前阶段 | Module A 缺口收口，待非作者 Owner squash |
-| 下一步 | 开/审 PR；不得开 S7；不得宣称 ND-012 正式闭合 |
+| 代码态 | B1：OpenAPI 对接工件 + 无会话 Key 路径端测 PASS；B2：尺寸门闸 `SUPPORTS_SIZE_CONTROL=false`，已诚实登记，**未做 B2-X** |
+| 验证态 | `/tmp/module-b-contract-e2e.log`：`B1_FR033_CONTRACT_PASS` + `B2_SIZE_UNSUPPORTED_RECORDED`；`production_billing=false`；`s7_started=false` |
+| 当前阶段 | Module B 合同收口（B1 必达；B2 条件未达） |
+| 下一步 | Owner 审 PR；可选补充生图尺寸书面合同后再开 B2-X；不得开 S7 |
 
 ## 1. 约束说明
 
-- ND-012 正式供应商仍 PENDING；本轮仅管理员授权临时图床联调（`REALPHOTOS_IMPORT_STAGING` + `stagingAllowed`）。
-- 成本禁止积分倒推；缺单价保持 `cost=null`，禁止假 0。
-- 物理表名 `cap_realphotos_provider_usage` 对齐架构概念 `rp_provider_usage`；建表沿用 realphotos ORM+`create_all`（见约束台账 C3）。
+- B2 探测：`1024x768→1448x1086`、`1024x1024→1254x1254`；物料无尺寸书面合同；无批准映射表 → 不得宣称尺寸合同已收口。
+- 适配器仍按请求发送 `size`，不静默改写；UI 已展示请求/实际尺寸。
 
 ## 2. 阶段状态（摘要）
 
 | 阶段 | 状态 |
 | --- | --- |
-| MODULE-A-GAP | 端测 PASS，PR 待合 |
-| UX-PRESET-LOGS | PR #39 |
-| SCORE-ROOTCAUSE | PR #40（非缺陷，无刷分） |
+| MODULE-B-CONTRACT | B1 PASS；B2 缺口登记 |
+| MODULE-A-GAP | 已合入 #41 |
 | S7 | **须管理员确认** |
