@@ -16,7 +16,7 @@
 
 ## 3. 下一步（摘要）
 
-- **分支**：`cursor/model-api-config-9973`（工单 `MODEL-API-CONFIG-2026-11-11`）
+- **分支 / PR**：`cursor/model-api-config-9973` → https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/43（工单 `MODEL-API-CONFIG-2026-11-11`）
 - **M1–M4**：系统管理「模型 API」可配置四职责渠道（单 Key、不轮询）；`ensure()` 不覆盖管理员配置；运行时读启用合同；RBAC + FR-030 审计落点
 - **跳过**：gpt-image-2 尺寸 / B2-X；S7；生产收费；Key 轮询
 - 不得自评自合；`production_billing=false`；`polling_enabled=false`
