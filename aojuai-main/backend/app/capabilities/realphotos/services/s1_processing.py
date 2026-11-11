@@ -660,6 +660,8 @@ class RealphotosS1Service:
         from app.capabilities.realphotos.services.supplier_clients import SupplierCallError, review_image
         from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
 
+        from app.capabilities.realphotos.services.supplier_secrets import read_duty_secret
+
         contract = await RealphotosSupplierConfigService(self.db).enabled("pre_review")
         if contract is None:
             await self._hold_technical(task, code="pre_review_unconfigured", message="预审合同未启用，未扣处理积分。")
@@ -675,7 +677,13 @@ class RealphotosS1Service:
 
         usage = RealphotosProviderUsageService(self.db)
         try:
-            outcome = await review_image(model_id=contract.model_id, data=data, mime=mime)
+            outcome = await review_image(
+                model_id=contract.model_id,
+                data=data,
+                mime=mime,
+                base_url=str(contract.base_url or "") or None,
+                api_key=read_duty_secret("pre_review") or None,
+            )
         except SupplierCallError as exc:
             await usage.record_call(
                 duty="pre_review",
@@ -1228,18 +1236,69 @@ class RealphotosS1Service:
         return created
 
     async def _settle_gemini(self, task: RealphotosImageTask, jpeg: bytes) -> RealphotosImageTask:
+        from sqlalchemy import select
+
+        from app.capabilities.realphotos.models.s1_loop import RealphotosTaskSnapshot
         from app.capabilities.realphotos.services.gemini_detector import detect_jpeg
         from app.capabilities.realphotos.services.provider_usage import RealphotosProviderUsageService
-        from app.core.config import settings
+        from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
+        from app.capabilities.realphotos.services.supplier_secrets import read_duty_secret
 
         usage = RealphotosProviderUsageService(self.db)
-        model_id = str(settings.GEMINI_MODEL or "gemini-3.1-pro-preview")
+        snap = (
+            await self.db.execute(
+                select(RealphotosTaskSnapshot).where(
+                    RealphotosTaskSnapshot.task_id == int(task.id),
+                    RealphotosTaskSnapshot.tenant_id == int(task.tenant_id),
+                )
+            )
+        ).scalars().all()
+        detector_snap = None
+        for row in snap:
+            payload = row.snapshot if isinstance(row.snapshot, dict) else {}
+            if payload.get("kind") == "final_detection_contract":
+                detector_snap = payload
+                break
+        if detector_snap is None:
+            contract = await RealphotosSupplierConfigService(self.db).enabled("final_detection")
+            if contract is None:
+                await self._hold_technical(
+                    task,
+                    code="SERVICE_NOT_CONFIGURED",
+                    message="最终检测合同未启用，未完成检测。",
+                )
+                return task
+            detector_snap = {
+                "kind": "final_detection_contract",
+                "duty": "final_detection",
+                "provider": str(contract.provider or "google-gemini"),
+                "modelId": str(contract.model_id),
+                "baseUrl": str(contract.base_url or ""),
+                "configVersion": str(contract.config_version or ""),
+            }
+            self.db.add(
+                RealphotosTaskSnapshot(
+                    tenant_id=int(task.tenant_id),
+                    task_id=int(task.id),
+                    snapshot=detector_snap,
+                )
+            )
+            await self.db.flush()
+
+        model_id = str(detector_snap.get("modelId") or "")
+        provider = str(detector_snap.get("provider") or "google-gemini")
+        base_url = str(detector_snap.get("baseUrl") or "")
         try:
-            report = detect_jpeg(jpeg)
+            report = detect_jpeg(
+                jpeg,
+                model_id=model_id or None,
+                base_url=base_url or None,
+                api_key=read_duty_secret("final_detection") or None,
+            )
         except BusinessError as exc:
             await usage.record_call(
                 duty="final_detection",
-                provider="google-gemini",
+                provider=provider,
                 model_id=model_id,
                 tenant_id=int(task.tenant_id),
                 task_id=int(task.id),
@@ -1249,7 +1308,7 @@ class RealphotosS1Service:
             return task
         await usage.record_call(
             duty="final_detection",
-            provider="google-gemini",
+            provider=provider,
             model_id=str(report.get("detector") or model_id),
             tenant_id=int(task.tenant_id),
             task_id=int(task.id),

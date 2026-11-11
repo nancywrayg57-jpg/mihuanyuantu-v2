@@ -182,6 +182,8 @@ class RealphotosGrowthService:
                 reference_asset_id=reference_asset_id,
                 reference_bytes=reference_bytes,
                 model_id=contract.model_id,
+                base_url=str(contract.base_url or ""),
+                provider=str(contract.provider or "aoju"),
                 requested_seed=requested_seed,
             )
         if chosen != FIXTURE_PROVIDER:
@@ -386,6 +388,8 @@ class RealphotosGrowthService:
                 owner_account_id=owner_account_id,
                 original=original,
                 model_id=contract.model_id,
+                base_url=str(contract.base_url or ""),
+                provider=str(contract.provider or "deepseek"),
             )
         if chosen != FIXTURE_PROVIDER:
             raise BusinessError(
@@ -653,6 +657,8 @@ class RealphotosGrowthService:
         reference_asset_id: int | None,
         reference_bytes: bytes | None,
         model_id: str,
+        base_url: str = "",
+        provider: str = "aoju",
         requested_seed: str | None = None,
     ) -> RealphotosGenerationTask:
         from app.capabilities.realphotos.services.supplier_clients import (
@@ -662,6 +668,7 @@ class RealphotosGrowthService:
             prepare_reference_jpeg,
         )
         from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
+        from app.capabilities.realphotos.services.supplier_secrets import read_duty_secret
 
         credits = RealphotosCreditService(self.db)
         wallet = await credits.get_wallet(tenant_id=tenant_id)
@@ -685,6 +692,7 @@ class RealphotosGrowthService:
         from app.capabilities.realphotos.services.provider_usage import RealphotosProviderUsageService
 
         usage = RealphotosProviderUsageService(self.db)
+        gen_provider = str(provider or "aoju")
         try:
             outcome = await generate_images(
                 model_id=model_id,
@@ -694,11 +702,13 @@ class RealphotosGrowthService:
                 quantity=count,
                 reference=reference,
                 seed=None,
+                base_url=base_url or None,
+                api_key=read_duty_secret("generation") or None,
             )
         except SupplierCallError as exc:
             await usage.record_call(
                 duty="generation",
-                provider="aoju",
+                provider=gen_provider,
                 model_id=str(model_id),
                 tenant_id=int(tenant_id),
                 units=1,
@@ -720,7 +730,7 @@ class RealphotosGrowthService:
         stored_n = sum(1 for item in images if item.get("raw"))
         await usage.record_call(
             duty="generation",
-            provider="aoju",
+            provider=gen_provider,
             model_id=str(outcome.get("model_id") or model_id),
             tenant_id=int(tenant_id),
             units=max(stored_n, 1),
@@ -741,7 +751,7 @@ class RealphotosGrowthService:
             height=edge_h,
             positive_prompt=prompt,
             negative_prompt=str(negative_prompt or ""),
-            provider="aoju",
+            provider=gen_provider[:32],
             idempotency_key=key,
             template_id=int(template_id) if template_id else None,
             requested_seed=requested_seed,
@@ -838,6 +848,8 @@ class RealphotosGrowthService:
         )
         from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
 
+        from app.capabilities.realphotos.services.supplier_secrets import read_duty_secret
+
         contract = await RealphotosSupplierConfigService(self.db).enabled("pre_review")
         if contract is None:
             raise BusinessError(message="缺少预审供应商合同与接口证据", code="SERVICE_NOT_CONFIGURED")
@@ -845,7 +857,13 @@ class RealphotosGrowthService:
         review_bytes = prepare_reference_jpeg(data)
         mime = "image/jpeg"
         try:
-            outcome = await review_image(model_id=contract.model_id, data=review_bytes, mime=mime)
+            outcome = await review_image(
+                model_id=contract.model_id,
+                data=review_bytes,
+                mime=mime,
+                base_url=str(contract.base_url or "") or None,
+                api_key=read_duty_secret("pre_review") or None,
+            )
         except SupplierCallError as exc:
             raise BusinessError(
                 message="预审请求失败，未生图也未扣积分",
@@ -881,14 +899,18 @@ class RealphotosGrowthService:
         owner_account_id: int,
         original: str,
         model_id: str,
+        base_url: str = "",
+        provider: str = "deepseek",
     ) -> RealphotosPromptOptimization:
         from app.capabilities.realphotos.services.supplier_clients import SupplierCallError, optimize_text
         from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
+        from app.capabilities.realphotos.services.supplier_secrets import read_duty_secret
 
         credits = RealphotosCreditService(self.db)
         wallet = await credits.get_wallet(tenant_id=tenant_id)
         if int(wallet["availableInteger"]) < PROMPT_OPT_CREDITS:
             raise BusinessError(message="余额不足", code="INSUFFICIENT_CREDITS")
+        opt_provider = str(provider or "deepseek")[:32]
         row = RealphotosPromptOptimization(
             tenant_id=int(tenant_id),
             owner_account_id=int(owner_account_id),
@@ -896,7 +918,7 @@ class RealphotosGrowthService:
             optimized_text="",
             status="failed",
             confirmed=False,
-            provider="deepseek",
+            provider=opt_provider,
         )
         self.db.add(row)
         await self.db.flush()
@@ -911,11 +933,16 @@ class RealphotosGrowthService:
 
         usage = RealphotosProviderUsageService(self.db)
         try:
-            outcome = await optimize_text(model_id=model_id, original=original)
+            outcome = await optimize_text(
+                model_id=model_id,
+                original=original,
+                base_url=base_url or None,
+                api_key=read_duty_secret("prompt_opt") or None,
+            )
         except SupplierCallError as exc:
             await usage.record_call(
                 duty="prompt_opt",
-                provider="deepseek",
+                provider=opt_provider,
                 model_id=str(model_id),
                 tenant_id=int(tenant_id),
                 task_id=int(row.id),
@@ -938,7 +965,7 @@ class RealphotosGrowthService:
             return row
         await usage.record_call(
             duty="prompt_opt",
-            provider="deepseek",
+            provider=opt_provider,
             model_id=str(outcome.get("model_id") or model_id),
             tenant_id=int(tenant_id),
             task_id=int(row.id),

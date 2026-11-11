@@ -1,4 +1,4 @@
-"""Admin-only supplier contract list. Secrets are not accepted or returned."""
+"""Admin-only supplier contract CRUD. Secrets accepted on write; never returned plaintext."""
 
 from __future__ import annotations
 
@@ -23,8 +23,18 @@ class ContractBody(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     duty: str
-    model_id: str = Field(alias="modelId")
+    model_id: str = Field(default="", alias="modelId")
+    provider: str | None = None
+    base_url: str | None = Field(default=None, alias="baseUrl")
     api_key: str | None = Field(default=None, alias="apiKey")
+    enabled: bool | None = None
+
+
+class EnabledBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    duty: str
+    enabled: bool
 
 
 def _reject_key_auth(request: Request) -> None:
@@ -79,7 +89,52 @@ async def save_contract(
         actor_role_codes=roles,
         duty=body.duty,
         model_id=body.model_id,
+        provider=body.provider,
+        base_url=body.base_url,
         api_key=body.api_key,
+        enabled=body.enabled,
+        actor_user_id=int(current_user.id),
+    )
+    await db.commit()
+    return SuccessResponse(data=payload)
+
+
+@router.post("/provider-contracts/enabled")
+async def set_contract_enabled(
+    body: EnabledBody,
+    request: Request,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
+) -> dict[str, Any]:
+    _reject_key_auth(request)
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosSupplierConfigService(db).set_enabled(
+        actor_role_codes=roles,
+        duty=body.duty,
+        enabled=bool(body.enabled),
+        actor_user_id=int(current_user.id),
+    )
+    await db.commit()
+    return SuccessResponse(data=payload)
+
+
+@router.delete("/provider-contracts/{duty}")
+async def delete_contract(
+    duty: str,
+    request: Request,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
+) -> dict[str, Any]:
+    _reject_key_auth(request)
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosSupplierConfigService(db).soft_delete(
+        actor_role_codes=roles,
+        duty=duty,
+        actor_user_id=int(current_user.id),
     )
     await db.commit()
     return SuccessResponse(data=payload)

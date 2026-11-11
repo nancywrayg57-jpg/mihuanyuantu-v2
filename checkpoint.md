@@ -7,23 +7,25 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
-| branch | `cursor/module-b-contract-9973` |
-| HEAD | `c9add9c`（PR #42） |
+| branch | `cursor/model-api-config-9973` |
+| HEAD | （推送前本地未提交/待 PR；以 `git rev-parse HEAD` 为准） |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
-| 代码态 | B1：OpenAPI 对接工件 + 无会话 Key 路径端测 PASS；B2：尺寸门闸 `SUPPORTS_SIZE_CONTROL=false`，已诚实登记，**未做 B2-X** |
-| 验证态 | `/tmp/module-b-contract-e2e.log`：`B1_FR033_CONTRACT_PASS` + `B2_SIZE_UNSUPPORTED_RECORDED`；`production_billing=false`；`s7_started=false` |
-| 当前阶段 | Module B 合同收口（B1 必达；B2 条件未达） |
-| 下一步 | Owner 审 PR；可选补充生图尺寸书面合同后再开 B2-X；不得开 S7 |
+| 代码态 | MODEL-API-CONFIG：管理员可配置四职责渠道；运行时读合同；`ensure()` 仅补缺行；单 Key 不轮询 |
+| 验证态 | `/tmp/model-api-config-e2e.log`：`M1_MODEL_API_UI_PASS` `M2_CONTRACT_PERSIST_PASS` `M3_RUNTIME_SYNC_PASS` `M4_RBAC_AUDIT_PASS`；`SKIP_GPT_IMAGE_SIZE=true`；`production_billing=false`；`s7_started=false`；`polling_enabled=false` |
+| 当前阶段 | MODEL-API-CONFIG-2026-11-11（M1–M4 端测 PASS，待非作者 Owner squash） |
+| 下一步 | 开/更新 PR；Owner 审合；不得开 S7；不得借机做 B2-X |
 
 ## 1. 约束说明
 
-- B2 探测：`1024x768→1448x1086`、`1024x1024→1254x1254`；物料无尺寸书面合同；无批准映射表 → 不得宣称尺寸合同已收口。
-- 适配器仍按请求发送 `size`，不静默改写；UI 已展示请求/实际尺寸。
+- 原型多 Key 轮询 vs PRD FR-012：听 PRD，第一版不轮询。
+- FR-030：模型配置**不进**用户操作日志；审计=合同 `updated_at` + `realphotos.supplier_config` 应用日志（脱敏）。
+- 密钥明文仅写 gitignore 的 `生产物料/realphotos-duty-secrets.json` 或 `.secrets/`；响应只回掩码。
 
 ## 2. 阶段状态（摘要）
 
 | 阶段 | 状态 |
 | --- | --- |
-| MODULE-B-CONTRACT | B1 PASS；B2 缺口登记 |
+| MODEL-API-CONFIG | M1–M4 端测 PASS；待 PR |
+| MODULE-B-CONTRACT | 已合入 #42（B1 PASS；B2 缺口登记） |
 | MODULE-A-GAP | 已合入 #41 |
 | S7 | **须管理员确认** |

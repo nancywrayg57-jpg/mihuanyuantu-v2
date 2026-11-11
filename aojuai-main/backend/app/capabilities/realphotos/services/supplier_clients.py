@@ -10,12 +10,12 @@ from typing import Any
 import httpx
 from PIL import Image
 
-from app.capabilities.realphotos.services.supplier_material import read_material_secret
+from app.capabilities.realphotos.services.supplier_secrets import read_duty_secret
 
 GENERATION_BASE = "https://apis.aoju.ai/v1"
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 DASHSCOPE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
-CONFIG_VERSION = "2026-11-07.blocking-fix"
+CONFIG_VERSION = "2026-11-11.model-api"
 
 
 class SupplierCallError(Exception):
@@ -86,6 +86,15 @@ def prepare_reference_jpeg(data: bytes, *, max_edge: int = 1280, quality: int = 
         return buf.getvalue()
 
 
+def _generation_roots(base_url: str | None) -> str:
+    root = str(base_url or GENERATION_BASE).rstrip("/")
+    # Allow admins to paste either .../v1 or .../v1/images/generations.
+    for suffix in ("/images/generations", "/images/edits"):
+        if root.endswith(suffix):
+            return root[: -len(suffix)]
+    return root
+
+
 async def generate_images(
     *,
     model_id: str,
@@ -95,10 +104,13 @@ async def generate_images(
     quantity: int,
     reference: bytes | None,
     seed: str | int | None = None,
+    base_url: str | None = None,
+    api_key: str | None = None,
 ) -> dict[str, Any]:
-    secret = read_material_secret("generation")
+    secret = str(api_key or "").strip() or read_duty_secret("generation")
     if not secret:
         raise SupplierCallError(kind="missing_credential", status=None, content_type="", detail="generation")
+    root = _generation_roots(base_url)
     size = f"{int(width)}x{int(height)}"
     headers = {"Authorization": f"Bearer {secret}"}
     # Contract gap: seed is not sent and must not be forged as accepted.
@@ -107,13 +119,13 @@ async def generate_images(
         async with httpx.AsyncClient(timeout=_timeout(180.0)) as client:
             if reference is None:
                 response = await client.post(
-                    f"{GENERATION_BASE}/images/generations",
+                    f"{root}/images/generations",
                     headers={**headers, "Content-Type": "application/json"},
                     json={"model": model_id, "prompt": prompt, "n": int(quantity), "size": size},
                 )
             else:
                 response = await client.post(
-                    f"{GENERATION_BASE}/images/edits",
+                    f"{root}/images/edits",
                     headers=headers,
                     data={"model": model_id, "prompt": prompt, "n": str(int(quantity)), "size": size},
                     files={"image": ("reference.jpg", reference, "image/jpeg")},
@@ -185,14 +197,28 @@ def image_size(raw: bytes) -> tuple[int, int]:
         return int(image.size[0]), int(image.size[1])
 
 
-async def optimize_text(*, model_id: str, original: str) -> dict[str, Any]:
-    secret = read_material_secret("prompt_opt")
+def _chat_completions_url(base_url: str | None, default: str) -> str:
+    text = str(base_url or default).rstrip("/")
+    if text.endswith("/chat/completions"):
+        return text
+    return f"{text}/chat/completions"
+
+
+async def optimize_text(
+    *,
+    model_id: str,
+    original: str,
+    base_url: str | None = None,
+    api_key: str | None = None,
+) -> dict[str, Any]:
+    secret = str(api_key or "").strip() or read_duty_secret("prompt_opt")
     if not secret:
         raise SupplierCallError(kind="missing_credential", status=None, content_type="", detail="prompt_opt")
+    endpoint = _chat_completions_url(base_url, DEEPSEEK_URL)
     try:
         async with httpx.AsyncClient(timeout=_timeout(60.0)) as client:
             response = await client.post(
-                DEEPSEEK_URL,
+                endpoint,
                 headers={"Authorization": f"Bearer {secret}", "Content-Type": "application/json"},
                 json={
                     "model": model_id,
@@ -239,15 +265,23 @@ def _message_text(payload: dict[str, Any]) -> str:
     return ""
 
 
-async def review_image(*, model_id: str, data: bytes, mime: str) -> dict[str, Any]:
-    secret = read_material_secret("pre_review")
+async def review_image(
+    *,
+    model_id: str,
+    data: bytes,
+    mime: str,
+    base_url: str | None = None,
+    api_key: str | None = None,
+) -> dict[str, Any]:
+    secret = str(api_key or "").strip() or read_duty_secret("pre_review")
     if not secret:
         raise SupplierCallError(kind="missing_credential", status=None, content_type="", detail="pre_review")
+    endpoint = _chat_completions_url(base_url, DASHSCOPE_URL)
     encoded = base64.b64encode(data).decode("ascii")
     try:
         async with httpx.AsyncClient(timeout=_timeout(90.0)) as client:
             response = await client.post(
-                DASHSCOPE_URL,
+                endpoint,
                 headers={"Authorization": f"Bearer {secret}", "Content-Type": "application/json"},
                 json={
                     "model": model_id,

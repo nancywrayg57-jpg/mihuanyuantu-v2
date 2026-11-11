@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "Module B 合同收口（MODULE-B-CONTRACT B1 + B2-G）"
-    user_value: "FR-033 OpenAPI/无会话端测归档；生图尺寸门闸诚实登记"
-    visible_output: "OpenAPI 工件 + 对接说明；B2 sizeControl=unsupported_or_not_honored"
-    verify: "/tmp/module-b-contract-e2e.log 含 B1_FR033_CONTRACT_PASS 与 B2_SIZE_UNSUPPORTED_RECORDED；production_billing=false"
+    goal: "MODEL-API-CONFIG：系统管理「模型 API」可配置四职责渠道"
+    user_value: "管理员可换预审/生图/优化/最终检测渠道；保存后全站同步；单 Key 不轮询"
+    visible_output: "system?tab=models 表单+列表；合同全字段持久化；运行时读启用合同"
+    verify: "/tmp/model-api-config-e2e.log 含 M1–M4 PASS；SKIP_GPT_IMAGE_SIZE=true；polling_enabled=false；production_billing=false"
     status: coded_e2e_pass_pr_pending
-    next_user_action: "非作者 Owner squash；若有尺寸书面合同可再开 B2-X；不得开 S7。"
+    next_user_action: "非作者 Owner squash；不得开 S7；不得借机做 B2-X / 轮询。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -204,13 +204,26 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "MODULE-B-CONTRACT：B1 PASS；B2 门闸 SUPPORTS_SIZE_CONTROL=false 已登记；推 PR 待非作者 Owner squash。不得开 S7。"
-  work_order: "MODULE-B-CONTRACT-2026-11-10 docs/mihuanyuantu-v2/input/MODULE-B-CONTRACT-2026-11-10.md"
-  prior_work_order: "MODULE-A-GAP-2026-11-10 已合入 #41"
-  branch: cursor/module-b-contract-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/42"
-  prior_branch: cursor/module-a-gap-9973
-  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/41"
+  action: "MODEL-API-CONFIG：M1–M4 端测 PASS；推 PR 待非作者 Owner squash。不得开 S7；不得打开 Key 轮询；跳过 gpt-image 尺寸。"
+  work_order: "MODEL-API-CONFIG-2026-11-11 docs/mihuanyuantu-v2/input/MODEL-API-CONFIG-2026-11-11.md"
+  prior_work_order: "MODULE-B-CONTRACT-2026-11-10 已合入 #42"
+  branch: cursor/model-api-config-9973
+  pr: pending
+  prior_branch: cursor/module-b-contract-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/42"
+  model_api_config_status:
+    M1_ui: done_e2e_pass
+    M2_persist_ensure: done_e2e_pass
+    M3_runtime_sync: done_e2e_pass
+    M4_rbac_audit: done_e2e_pass
+    polling_enabled: false
+    SKIP_GPT_IMAGE_SIZE: true
+    production_billing: false
+    s7_started: false
+    e2e_log: "/tmp/model-api-config-e2e.log"
+    constraint_ledger: docs/mihuanyuantu-v2/input/MODEL-API-CONFIG-constraint-ledger.md
+    audit_sink: "app_log:realphotos.supplier_config + contract.updated_at (FR-030 no user_action_log)"
+    secrets_store: "生产物料/realphotos-duty-secrets.json or .secrets/ (gitignored)"
   module_b_contract_status:
     B1: done_e2e_pass
     B2: gate_unsupported_recorded_not_complete
