@@ -561,9 +561,15 @@ class RealphotosGrowthService:
             host_allowlist_from_base_url,
         )
         from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
+        from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
         from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
         from app.capabilities.realphotos.services.supplier_material import import_staging_enabled
 
+        # FR-002：冻结账号禁止 URL/JSON 导入入库
+        await RealphotosOpsService(self.db).assert_can_create_task(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(owner_account_id),
+        )
         entries = _import_entries(payload)
         if len(entries) > URL_IMPORT_MAX:
             raise BusinessError(message="第 101 条整单拒绝", code="INPUT_INVALID")

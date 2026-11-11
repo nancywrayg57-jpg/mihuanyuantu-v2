@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
+import { allocateDownloadFileName, extensionForContentType } from '@/lib/realphotos-download'
 import { originKindLabel } from '@/lib/realphotos-labels'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
 
@@ -15,6 +16,7 @@ type Asset = {
   height: number
   byteSize: number
   objectKey?: string
+  contentType?: string
   displayName?: string
   downloadBasename?: string
   degraded?: boolean
@@ -38,6 +40,14 @@ export default function RealphotosLibraryPage() {
   const [selected, setSelected] = useState<Record<string, true>>({})
   const [thumbs, setThumbs] = useState<Record<string, string>>({})
   const [preview, setPreview] = useState<{ id: string; url: string } | null>(null)
+  const [frozen, setFrozen] = useState(false)
+  const downloadUsedNames = useRef(new Map<string, number>())
+
+  useEffect(() => {
+    void apiFetch<{ preReviewFrozen?: boolean }>('/api/v1/realphotos/me')
+      .then((data) => setFrozen(Boolean(data.preReviewFrozen)))
+      .catch(() => setFrozen(false))
+  }, [])
 
   const reload = useCallback(async () => {
     const params = new URLSearchParams({
@@ -111,17 +121,20 @@ export default function RealphotosLibraryPage() {
     }
   }
 
-  async function downloadOne(item: Asset) {
+  async function downloadOne(item: Asset, usedNames: Map<string, number> = downloadUsedNames.current) {
     if (!item.objectKey) {
       setMessage('缺少对象键，无法经网关下载')
       return
     }
     try {
       const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${item.objectKey}`)
+      const ext = extensionForContentType(item.contentType || blob.type)
+      const base = item.downloadBasename || item.displayName || `${item.originKind}_${item.id}`
+      const fileName = allocateDownloadFileName(base, ext, usedNames)
       const url = URL.createObjectURL(blob)
       const anchor = document.createElement('a')
       anchor.href = url
-      anchor.download = `${item.downloadBasename || item.displayName || `${item.originKind}_${item.id}`}.jpg`
+      anchor.download = fileName
       anchor.click()
       URL.revokeObjectURL(url)
     } catch (error: unknown) {
@@ -131,8 +144,10 @@ export default function RealphotosLibraryPage() {
 
   async function downloadSelected() {
     const targets = items.filter((item) => selected[item.id])
+    // 同批勾选独立维护 usedNames，避免跨批历史污染本批后缀
+    const batchNames = new Map<string, number>()
     for (const item of targets) {
-      await downloadOne(item)
+      await downloadOne(item, batchNames)
     }
   }
 
@@ -164,6 +179,10 @@ export default function RealphotosLibraryPage() {
 
   async function onLocalUpload(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return
+    if (frozen) {
+      setMessage('账号已因预审冻结，不能上传新资源')
+      return
+    }
     const files = Array.from(fileList)
     if (files.length > UPLOAD_BATCH_MAX) {
       setMessage(`单次最多上传 ${UPLOAD_BATCH_MAX} 张，整批已拒绝`)
@@ -201,20 +220,41 @@ export default function RealphotosLibraryPage() {
       <h1 className="text-xl font-medium">图片资源</h1>
       <p className="text-sm text-muted-foreground">统一入口。四入口进入添加；列表为表格，不是卡片网格。服务端分页约 20/页。</p>
       <p className="text-sm">{message}</p>
+      {frozen ? (
+        <p className="text-sm text-amber-800">
+          账号已因预审冻结：不可上传/导入/生图；仍可登录、列表与经网关下载保留期内资源。
+        </p>
+      ) : null}
       <section className="flex flex-wrap gap-2 text-sm">
         <span className="font-medium">添加图片：</span>
-        <Link className="border px-2 py-1" href="/realphotos/generate?mode=text_to_image">
-          文生图
-        </Link>
-        <Link className="border px-2 py-1" href="/realphotos/generate?mode=image_to_image">
-          图生图
-        </Link>
-        <a className="border px-2 py-1" href="#local-upload">
-          本地上传
-        </a>
-        <Link className="border px-2 py-1" href="/realphotos/imports">
-          URL 导入
-        </Link>
+        {frozen ? (
+          <span className="border px-2 py-1 opacity-50">文生图（已冻结）</span>
+        ) : (
+          <Link className="border px-2 py-1" href="/realphotos/generate?mode=text_to_image">
+            文生图
+          </Link>
+        )}
+        {frozen ? (
+          <span className="border px-2 py-1 opacity-50">图生图（已冻结）</span>
+        ) : (
+          <Link className="border px-2 py-1" href="/realphotos/generate?mode=image_to_image">
+            图生图
+          </Link>
+        )}
+        {frozen ? (
+          <span className="border px-2 py-1 opacity-50">本地上传（已冻结）</span>
+        ) : (
+          <a className="border px-2 py-1" href="#local-upload">
+            本地上传
+          </a>
+        )}
+        {frozen ? (
+          <span className="border px-2 py-1 opacity-50">URL 导入（已冻结）</span>
+        ) : (
+          <Link className="border px-2 py-1" href="/realphotos/imports">
+            URL 导入
+          </Link>
+        )}
         <button className="border px-2 py-1" type="button" onClick={() => goProcess()}>
           去处理（已选 {selectedIds.length}）
         </button>
@@ -230,12 +270,17 @@ export default function RealphotosLibraryPage() {
       </section>
       <section id="local-upload" className="space-y-2 text-sm">
         <p>本地上传（仅入库，不自动处理）</p>
-        <label className="inline-flex cursor-pointer items-center border px-3 py-1">
+        <label
+          className={`inline-flex items-center border px-3 py-1 ${
+            frozen ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+          }`}
+        >
           选择文件（最多 {UPLOAD_BATCH_MAX} 张）
           <input
             className="sr-only"
             type="file"
             multiple
+            disabled={frozen}
             accept="image/jpeg,image/png,.jpg,.jpeg,.png"
             onChange={(event) => {
               void onLocalUpload(event.target.files)

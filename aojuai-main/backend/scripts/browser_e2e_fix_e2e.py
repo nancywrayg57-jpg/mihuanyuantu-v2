@@ -145,7 +145,7 @@ async def _main() -> int:
         ).scalar_one_or_none()
         if profile is not None:
             profile.pre_review_frozen = True
-            profile.copy_latch_active = False
+            # B2: no copy_latch_* writes
         from app.capabilities.realphotos.services.copy_execution_guard import (
             RealphotosCopyExecutionGuardService,
         )

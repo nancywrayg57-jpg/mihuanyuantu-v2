@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { ApiError, apiFetch } from '@/lib/api'
 
@@ -17,8 +17,19 @@ export default function RealphotosImportsPage() {
   const [payload, setPayload] = useState('')
   const [message, setMessage] = useState('')
   const [fileName, setFileName] = useState('')
+  const [frozen, setFrozen] = useState(false)
+
+  useEffect(() => {
+    void apiFetch<{ preReviewFrozen?: boolean }>('/api/v1/realphotos/me')
+      .then((data) => setFrozen(Boolean(data.preReviewFrozen)))
+      .catch(() => setFrozen(false))
+  }, [])
 
   async function submitText() {
+    if (frozen) {
+      setMessage('账号已因预审冻结，不能导入新资源')
+      return
+    }
     try {
       const data = await apiFetch<ImportResult>('/api/v1/realphotos/resource-imports', {
         method: 'POST',
@@ -31,6 +42,10 @@ export default function RealphotosImportsPage() {
   }
 
   async function submitFile(file: File | null) {
+    if (frozen) {
+      setMessage('账号已因预审冻结，不能导入新资源')
+      return
+    }
     if (!file) {
       setMessage('请选择 JSON 文件')
       return
@@ -54,6 +69,9 @@ export default function RealphotosImportsPage() {
       <p className="text-sm text-muted-foreground">
         联调图床可导入；正式供应商未齐。仅允许已授权临时图床主机上的 /images/ 地址；不合格逐条拒绝，合格继续；不扣处理积分、不创建处理任务。
       </p>
+      {frozen ? (
+        <p className="text-sm text-amber-800">账号已因预审冻结：导入入口已禁用（FR-002）。</p>
+      ) : null}
       <p className="text-sm">{message}</p>
       <section className="space-y-3">
         <h2 className="text-sm font-medium">粘贴文本（每行 URL 或 JSON 数组）</h2>
@@ -61,18 +79,25 @@ export default function RealphotosImportsPage() {
           className="block w-full max-w-xl border px-2 py-1 text-sm"
           rows={6}
           value={payload}
+          disabled={frozen}
           onChange={(event) => setPayload(event.target.value)}
         />
-        <button className="border px-3 py-1 text-sm" type="button" onClick={() => void submitText()}>
+        <button
+          className="border px-3 py-1 text-sm disabled:opacity-50"
+          type="button"
+          disabled={frozen}
+          onClick={() => void submitText()}
+        >
           提交导入
         </button>
       </section>
       <section className="space-y-3">
         <h2 className="text-sm font-medium">上传 JSON 文件</h2>
         <input
-          className="block text-sm"
+          className="block text-sm disabled:opacity-50"
           type="file"
           accept="application/json,.json"
+          disabled={frozen}
           onChange={(event) => {
             const file = event.target.files?.[0] ?? null
             setFileName(file?.name || '')

@@ -119,9 +119,7 @@ async def _main() -> int:
         await RealphotosCopyExecutionGuardService(db).force_clear_active(
             tenant_id=int(tenant), owner_account_id=int(merchant_user)
         )
-        if profile is not None and bool(profile.copy_latch_active):
-            profile.copy_latch_active = False
-            profile.copy_latch_batch_id = None
+        # B2: skip legacy copy_latch_* mirror clears.
         await db.commit()
 
     transport = httpx.ASGITransport(app=fastapi_app)

@@ -149,6 +149,7 @@ async def list_assets(
                 "height": int(row.height),
                 "byteSize": int(row.byte_size),
                 "objectKey": row.object_key,
+                "contentType": row.content_type,
                 "displayName": naming["displayName"],
                 "displayNameSource": naming["displayNameSource"],
                 "degraded": naming["degraded"] == "true",

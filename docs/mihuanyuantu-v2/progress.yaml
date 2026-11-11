@@ -32,12 +32,29 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "REMAIN-GAP-PLAN W3+W4：R5 进程拓扑 + R6 FE SDK + R7 OSS stub + R8 架构状态"
-    user_value: "处理/消息/清理可分进程；前端有生成客户端；OSS 可切换类但不接真桶；文档不再写未实现"
-    visible_output: "run_realphotos_{process,notify,cleanup}_worker；generated/realphotos；OssStorageAdapter；s0_s6_coded_partial"
-    verify: "/tmp/remain-gap-e2e.log 含 REMAIN_GAP_W3_PASS + REMAIN_GAP_W4_PASS；R9_S7_BLOCKED"
+    goal: "AUDIT-REMAIN-CLOSEOUT：A1/A2/B1/B2/C1"
+    user_value: "冻结禁新获取；资源库下载扩名；Alembic 0004；lease 书面降级；架构正文一致"
+    visible_output: "upload/import ACCOUNT_FROZEN；realphotos-download.ts；realphotos_0004；LEASE_TTL_DEFERRED"
+    verify: "/tmp/audit-remain-closeout-e2e.log 含 AUDIT_REMAIN_W1/W2/W3_PASS；OUT_ND012_SKIPPED；R9_S7_BLOCKED"
     status: coded_e2e_pass_pr_pending
-    next_user_action: "推 W3+W4 PR；非作者 Owner squash；不得开 S7。"
+    next_user_action: "推 audit-remain-closeout PR；非作者 Owner squash；不得开 S7；不得宣称 ND-012 正式闭合。"
+  audit_remain_closeout_2026_11_11:
+    work_order: AUDIT-REMAIN-CLOSEOUT-2026-11-11
+    branch: cursor/audit-remain-closeout-9973
+    baseline_main: c92fbfd
+    baseline_pr: 49
+    a1_frozen_no_acquire: done_e2e_pass
+    a2_library_download: done_e2e_pass
+    b1_alembic_0004: done_e2e_pass
+    b2_lease_strategy: LEASE_TTL_DEFERRED
+    b2_copy_latch_residual: done_e2e_pass
+    c1_arch_doc: done_e2e_pass
+    out_nd012_skipped: true
+    r9_s7: blocked
+    production_billing: false
+    e2e_log: /tmp/audit-remain-closeout-e2e.log
+    evidence_marker: AUDIT_REMAIN_W1_PASS+W2+W3
+    constraint_ledger: docs/mihuanyuantu-v2/input/AUDIT-REMAIN-CLOSEOUT-constraint-ledger.md
   remain_gap_plan_2026_11_11:
     work_order: REMAIN-GAP-PLAN-2026-11-11
     branch: cursor/remain-gap-w3w4-9973
@@ -243,18 +260,30 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "REMAIN-GAP W3+W4：端测 PASS；推 PR 待非作者 Owner squash。R9_S7_BLOCKED；不得开 S7；不得自评自合。"
-  work_order: "REMAIN-GAP-PLAN-2026-11-11 docs/mihuanyuantu-v2/input/REMAIN-GAP-PLAN-2026-11-11.md"
-  prior_work_order: "REMAIN-GAP W1+W2 已合入 #48"
-  branch: cursor/remain-gap-w3w4-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/49"
-  prior_branch: cursor/remain-gap-w1-9973
-  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/48"
+  action: "AUDIT-REMAIN-CLOSEOUT 端测 PASS；推 PR 待非作者 Owner squash。R9_S7_BLOCKED；OUT_ND012_SKIPPED；不得开 S7；不得自评自合。"
+  work_order: "AUDIT-REMAIN-CLOSEOUT-2026-11-11 docs/mihuanyuantu-v2/input/AUDIT-REMAIN-CLOSEOUT-2026-11-11.md"
+  prior_work_order: "REMAIN-GAP W3+W4 已合入 #49"
+  branch: cursor/audit-remain-closeout-9973
+  pr: pending_push
+  prior_branch: cursor/remain-gap-w3w4-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/49"
+  audit_remain_closeout_status:
+    A1: done_e2e_pass
+    A2: done_e2e_pass
+    B1: done_e2e_pass
+    B2: done_LEASE_TTL_DEFERRED
+    C1: done_e2e_pass
+    R9_S7_BLOCKED: true
+    OUT_ND012_SKIPPED: true
+    production_billing: false
+    e2e_log: /tmp/audit-remain-closeout-e2e.log
+    evidence_marker: AUDIT_REMAIN_W1_PASS+W2+W3
   remain_gap_w3_w4_status:
-    R5_worker_topology: done_e2e_pass
-    R6_fe_sdk: done_e2e_pass
-    R7_oss_stub: done_e2e_pass
-    R8_arch_frontmatter: done_e2e_pass
+    merged_pr: 49
+    R5_worker_topology: done_merged_49
+    R6_fe_sdk: done_merged_49
+    R7_oss_stub: done_merged_49
+    R8_arch_frontmatter: done_merged_49
     R9_S7_BLOCKED: true
     production_billing: false
     e2e_log: /tmp/remain-gap-e2e.log

@@ -165,9 +165,7 @@ async def _main() -> int:
             tenant_id=int(tenant), owner_account_id=int(user)
         ):
             note("cleared_stale_copy_guard=true")
-        if profile is not None and bool(profile.copy_latch_active):
-            profile.copy_latch_active = False
-            note("cleared_legacy_copy_latch_mirror=true")
+        # B2: no merchant.copy_latch_* reads/writes
         presets = await RealphotosOpsService(db).list_enabled_presets()
         must(bool(presets), "presets_enabled")
         preset_code = str(presets[0]["code"])
@@ -341,7 +339,7 @@ async def _main() -> int:
                 )
             ).scalar_one_or_none()
             if row is not None:
-                row.copy_latch_active = False
+                # B2: no copy_latch_* writes on row
                 await db3.commit()
                 note("E-C2-4 cleared_copy_guard_for_submit=true")
             else:

@@ -1,4 +1,10 @@
-"""AD-005 / §6.2 路径 A：复制执行门闩（guard_epoch / ACCOUNT_SPEND_BUSY）。"""
+"""AD-005 / §6.2 路径 A：复制执行门闩（guard_epoch / ACCOUNT_SPEND_BUSY）。
+
+LEASE_TTL_DEFERRED（AUDIT-REMAIN B2 书面降级）：
+首版不启用 lease_until 心跳 / TTL 废止；acquire 写入 lease_until=None；
+仅 batch 全部子项终态后 release_for_batch。架构 §6.2 同步注明。
+业务路径禁止读写 merchant.copy_latch_*（遗留列仅历史兼容）。
+"""
 
 from __future__ import annotations
 
@@ -12,6 +18,7 @@ ACCOUNT_SPEND_BUSY = "ACCOUNT_SPEND_BUSY"
 COPY_BUSY_MESSAGE = "复制任务进行中，请稍后再试"
 GUARD_STATE_ACTIVE = "active"
 GUARD_STATE_RELEASED = "released"
+LEASE_TTL_DEFERRED = True
 
 
 class RealphotosCopyExecutionGuardService:
@@ -62,6 +69,7 @@ class RealphotosCopyExecutionGuardService:
             )
         ).scalar_one_or_none()
         epoch = int(prior.guard_epoch if prior is not None else 0) + 1
+        # LEASE_TTL_DEFERRED：首版不写 TTL；解除仅靠 batch 终态 release。
         row = RealphotosCopyExecutionGuard(
             tenant_id=int(tenant_id),
             owner_account_id=int(owner_account_id),
