@@ -38,7 +38,9 @@ export type LoginChallenge = {
   challengeId: string
   expiresAt: string
   ttlSeconds: number
-  /** 仅开发/测试开关下返回；生产不出现 */
+  /** data:image/png;base64,... 图形验证码（FR-001 必有） */
+  imageBase64: string
+  /** 仅开发/测试开关下返回；不得替代图形展示 */
   devCode?: string
 }
 
@@ -47,16 +49,32 @@ function getApiBaseUrl() {
   return typeof base === 'string' ? base.replace(/\/+$/, '') : ''
 }
 
+function coerceExpires(value: unknown): string {
+  if (typeof value === 'string' && value.trim()) return value.trim()
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString()
+  if (typeof value === 'number' && Number.isFinite(value)) return new Date(value).toISOString()
+  // Backend may occasionally leave a serializable datetime-like object
+  if (value && typeof value === 'object' && 'toISOString' in value) {
+    try {
+      const iso = (value as { toISOString: () => string }).toISOString()
+      if (typeof iso === 'string' && iso.trim()) return iso.trim()
+    } catch {
+      /* ignore */
+    }
+  }
+  throw new Error('Invalid cookie-backed session payload')
+}
+
 function toCookieBackedSession(data: AuthSessionResponseData): Session {
   return createCookieBackedSession({
     avatar: data.avatar,
     username: data.username,
     nickname: data.nickname,
-    roles: data.roles || [],
-    permissions: data.permissions || [],
+    roles: Array.isArray(data.roles) ? data.roles : [],
+    permissions: Array.isArray(data.permissions) ? data.permissions : [],
     isSuperuser: Boolean(data.isSuperuser),
     mustCompleteProfile: Boolean(data.mustCompleteProfile),
-    expires: data.expires,
+    expires: coerceExpires(data.expires),
   })
 }
 

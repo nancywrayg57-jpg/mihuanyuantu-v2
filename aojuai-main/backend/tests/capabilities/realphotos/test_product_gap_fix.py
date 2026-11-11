@@ -35,6 +35,7 @@ async def test_g1_login_rejects_missing_or_wrong_captcha(db) -> None:
             challenge_code="",
         )
     challenge = await auth.create_challenge()
+    assert str(challenge.get("imageBase64") or "").startswith("data:image/png;base64,")
     with pytest.raises(BusinessError) as wrong:
         await auth.login(
             username="rp_merchant_a1",
@@ -44,6 +45,8 @@ async def test_g1_login_rejects_missing_or_wrong_captcha(db) -> None:
         )
     assert wrong.value.code == "INPUT_INVALID"
     ok = await auth.create_challenge()
+    assert str(ok.get("imageBase64") or "").startswith("data:image/png;base64,")
+    assert ok.get("devCode"), "unit tests expect allow_dev_captcha for plaintext code"
     session = await auth.login(
         username="rp_merchant_a1",
         password=DEFAULT_PASSWORD,

@@ -33,15 +33,17 @@ async def _build_cookie_session_payload(*, db: DBSession, user: Any, expires: da
     roles = await user_service.get_user_role_codes(actor.user_id, tenant_id=actor.tenant_id)
     if actor.is_superuser and not roles:
         roles = ["superuser"]
+    # expires 必须是 ISO 字符串：前端 createCookieBackedSession 只接受非空 string
+    expires_iso = expires.isoformat() if expires is not None else None
     return {
         "avatar": user.avatar or "",
         "username": user.username,
         "nickname": user.nickname or user.username,
-        "roles": roles,
-        "permissions": permissions,
+        "roles": list(roles or []),
+        "permissions": list(permissions or []),
         "isSuperuser": actor.is_superuser,
         "mustCompleteProfile": must_complete_profile,
-        "expires": expires,
+        "expires": expires_iso,
         "authMode": "cookie",
     }
 
@@ -82,12 +84,13 @@ async def login(
     session_payload = await _build_cookie_session_payload(db=db, user=user, expires=expires)
     access_token = str(token_data["accessToken"])
     refresh_token = str(token_data["refreshToken"])
+    # 保证根级 expires 与 session_payload 同为 ISO 字符串，避免前端 Invalid cookie-backed session payload
     api_response = SuccessResponse(
         data={
             **session_payload,
             "accessToken": access_token,
             "refreshToken": refresh_token,
-            "expires": expires,
+            "expires": session_payload["expires"],
             "absoluteSessionDays": SESSION_ABSOLUTE_DAYS,
             "user": token_data["user"],
         }

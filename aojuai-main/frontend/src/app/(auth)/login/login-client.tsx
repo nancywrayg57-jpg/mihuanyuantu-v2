@@ -44,8 +44,13 @@ export function LoginClient() {
   async function refreshChallenge() {
     try {
       const next = await fetchLoginChallenge('web-login')
+      if (!next.imageBase64) {
+        throw new Error('验证码图片未返回')
+      }
       setChallenge(next)
-      setCaptcha(next.devCode || '')
+      // 生产不得预填；开发态可提示但不自动填入，避免「看不见图也能登」
+      setCaptcha('')
+      setError(null)
     } catch (err) {
       setChallenge(null)
       setError(err instanceof Error ? err.message : '验证码加载失败')
@@ -130,21 +135,37 @@ export function LoginClient() {
         </div>
         <div className="grid gap-2">
           <Label htmlFor="captcha">验证码</Label>
-          <div className="flex gap-2">
-            <Input
-              id="captcha"
-              autoComplete="one-time-code"
-              value={captcha}
-              onChange={(e) => setCaptcha(e.target.value)}
-              placeholder="6 位数字"
-              required
-            />
+          <div className="flex items-center gap-2">
+            {challenge?.imageBase64 ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={challenge.imageBase64}
+                alt="登录验证码"
+                width={160}
+                height={52}
+                className="h-[52px] w-[160px] shrink-0 rounded border bg-white object-contain"
+              />
+            ) : (
+              <div className="flex h-[52px] w-[160px] shrink-0 items-center justify-center rounded border text-xs text-muted-foreground">
+                加载中…
+              </div>
+            )}
             <Button type="button" variant="outline" onClick={() => void refreshChallenge()}>
               刷新
             </Button>
           </div>
+          <Input
+            id="captcha"
+            autoComplete="one-time-code"
+            value={captcha}
+            onChange={(e) => setCaptcha(e.target.value)}
+            placeholder="请输入图中 6 位数字"
+            required
+          />
           {challenge?.devCode ? (
-            <p className="text-xs text-muted-foreground">开发验证码已预填（仅 DEBUG/测试开关）</p>
+            <p className="text-xs text-muted-foreground">
+              开发提示码：{challenge.devCode}（仅 DEBUG/测试开关；正式环境不返回）
+            </p>
           ) : null}
         </div>
         {error ? <div className="text-sm text-destructive">{error}</div> : null}

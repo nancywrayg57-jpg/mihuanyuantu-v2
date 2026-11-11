@@ -45,6 +45,8 @@ async def _challenge_login(client: httpx.AsyncClient, username: str, password: s
     challenge = await client.post("/api/v1/realphotos/auth/challenges")
     assert challenge.status_code == 200, challenge.text
     data = challenge.json()["data"]
+    img = str(data.get("imageBase64") or "")
+    assert img.startswith("data:image/png;base64,"), f"g1_missing_captcha_image keys={list(data)}"
     return await client.post(
         "/api/v1/realphotos/auth/login",
         json={
@@ -130,12 +132,21 @@ async def main() -> int:
     transport = httpx.ASGITransport(app=fastapi_app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test", timeout=120.0) as client:
         # —— G1 ——
+        probe = await client.post("/api/v1/realphotos/auth/challenges")
+        must(probe.status_code == 200, f"g1_challenge_http={probe.status_code}")
+        probe_data = probe.json()["data"]
+        must(
+            str(probe_data.get("imageBase64") or "").startswith("data:image/png;base64,"),
+            "g1_captcha_image_present",
+        )
+        note("PASS g1_captcha_image_present")
         bad = await _challenge_login(client, "rp_merchant_a1", DEFAULT_PASSWORD, code="000000")
         must(bad.status_code in {400, 401, 422}, f"g1_wrong_captcha_status={bad.status_code}")
         good = await _challenge_login(client, "rp_merchant_a1", DEFAULT_PASSWORD)
         must(good.status_code == 200, f"g1_ok_login={good.status_code}")
         g1_data = good.json()["data"]
         must(bool(g1_data.get("accessToken")), "g1_access_token")
+        must(isinstance(g1_data.get("expires"), str) and bool(g1_data.get("expires")), "g1_expires_iso_string")
         must(bool(g1_data.get("roles")), "g1_roles_present")
         must(int(g1_data.get("absoluteSessionDays") or 0) == 30, "g1_session_30d")
         set_cookie = good.headers.get("set-cookie") or ""
