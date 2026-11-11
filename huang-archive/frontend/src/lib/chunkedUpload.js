@@ -381,6 +381,9 @@ export async function uploadDirect(files, fields, { coverFile } = {}) {
     const cf = normalizeUploadFile(coverFile)
     form.append('cover_file', cf, safeUploadFilename(cf, 'jpg') || 'cover.jpg')
   }
+  // Visible by default (PB bool defaults false without this)
+  form.append('listed', true)
+  form.append('sort_order', 0)
   try {
     return await pb.collection('archives').create(form, { requestKey: null })
   } catch (e) {

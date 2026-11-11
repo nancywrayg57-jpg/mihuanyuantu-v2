@@ -37,6 +37,9 @@ const blobUrls = ref([])
 
 const isLink = computed(() => props.archive?.category === 'link')
 const isImageLike = computed(() => ['image', 'scan'].includes(props.archive?.category))
+const isVideo = computed(() => props.archive?.category === 'video')
+/** Cover UI for image/scan/link/video — video only writes cover_file, never media/playback. */
+const showCoverSection = computed(() => isImageLike.value || isLink.value || isVideo.value)
 
 watch(
   () => [props.open, props.archive],
@@ -256,27 +259,32 @@ async function save() {
     form.append('related_persons', relatedPersons.value.trim())
     form.append('description', description.value.trim())
 
-    if (isImageLike.value || isLink.value) {
-      // Persist cropped / new cover to server cover_file
+    if (showCoverSection.value) {
+      // Persist cropped / new cover to server cover_file only (never touch video playback fields)
       if (newCoverFile.value) {
         const cf = normalizeUploadFile(newCoverFile.value)
         form.append('cover_file', cf, safeUploadFilename(cf, 'jpg') || `cover-${Date.now()}.jpg`)
       } else if (removeCover.value) {
         form.append('cover_file', '')
       } else if (
+        !isVideo.value &&
         pendingFiles.value.length === 1 &&
         mediaNames.value.length === 0 &&
         !coverName.value
       ) {
         const cf = normalizeUploadFile(pendingFiles.value[0])
         form.append('cover_file', cf, 'cover.jpg')
-      } else if (coverDirty.value && coverName.value && !newCoverFile.value) {
-        // User picked an existing media as cover — copy ORIGINAL bytes into cover_file
+      } else if (
+        !isVideo.value &&
+        coverDirty.value &&
+        coverName.value &&
+        !newCoverFile.value
+      ) {
+        // Image/scan: pick existing media as cover — copy ORIGINAL bytes into cover_file
         const blob = await fetchArchiveBlob(coverName.value, { original: true })
         let file = new File([blob], coverName.value || 'cover.jpg', {
           type: blob.type || 'image/jpeg',
         })
-        // cover_file maxSize is 5MB — compress when needed
         if (file.size > 5 * 1024 * 1024) {
           const prepared = await prepareUploadFiles([file], 'image')
           file = prepared.files[0] || file
@@ -290,9 +298,12 @@ async function save() {
       }
     }
 
-    for (const f of pendingFiles.value) {
-      const nf = normalizeUploadFile(f)
-      form.append('media_files+', nf, nf.name || `img-${Date.now()}.jpg`)
+    // Video edit never appends media here from cover flow; only explicit pending adds for image/scan
+    if (!isVideo.value) {
+      for (const f of pendingFiles.value) {
+        const nf = normalizeUploadFile(f)
+        form.append('media_files+', nf, nf.name || `img-${Date.now()}.jpg`)
+      }
     }
 
     const updated = await pb.collection('archives').update(props.archive.id, form)
@@ -344,9 +355,9 @@ function close() {
             <textarea v-model="description" rows="3" class="mt-1 w-full px-3 py-3 border border-clay bg-rice" />
           </label>
 
-          <div v-if="isImageLike || isLink" class="space-y-3" data-testid="edit-media-section">
+          <div v-if="showCoverSection" class="space-y-3" data-testid="edit-media-section">
             <div class="flex items-center justify-between gap-2 flex-wrap">
-              <h3 class="font-song text-lg">{{ i18n.t('imagesCover') }}</h3>
+              <h3 class="font-song text-lg">{{ isVideo ? i18n.t('videoCover') : i18n.t('imagesCover') }}</h3>
               <label
                 v-if="isImageLike"
                 class="min-h-tap px-3 border border-clay bg-rice inline-flex items-center cursor-pointer text-sm"
@@ -356,7 +367,7 @@ function close() {
               </label>
             </div>
 
-            <div class="grid grid-cols-3 gap-2">
+            <div v-if="isImageLike" class="grid grid-cols-3 gap-2">
               <div
                 v-for="name in mediaNames"
                 :key="name"
@@ -390,8 +401,12 @@ function close() {
               </div>
             </div>
 
+            <p v-if="isVideo" class="text-mute text-sm" data-testid="video-cover-hint">
+              {{ i18n.t('videoCoverHint') }}
+            </p>
+
             <label class="block">
-              <span class="text-mute">{{ isLink ? i18n.t('coverOptional') : i18n.t('changeCover') }}</span>
+              <span class="text-mute">{{ isLink || isVideo ? i18n.t('coverOptional') : i18n.t('changeCover') }}</span>
               <input
                 type="file"
                 accept="image/*"

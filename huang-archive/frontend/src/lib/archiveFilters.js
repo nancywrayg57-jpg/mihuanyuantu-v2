@@ -18,8 +18,14 @@ export function occurredKey(value) {
   return y * 10000 + mo * 100 + d
 }
 
-export function matchArchive(archive, { q, person, dateFrom, dateTo, category } = {}) {
+export function isListedArchive(archive) {
+  // Missing/undefined listed → visible (pre-migration rows). Explicit false → hidden from all tabs.
+  return archive?.listed !== false
+}
+
+export function matchArchive(archive, { q, person, dateFrom, dateTo, category, requireListed = true } = {}) {
   if (!archive) return false
+  if (requireListed && !isListedArchive(archive)) return false
   if (category && category !== 'all' && archive.category !== category) return false
 
   const query = normalizeQuery(q)

@@ -75,7 +75,9 @@ function goPage(p) {
 async function load() {
   loading.value = true
   try {
-    const list = await pb.collection('archives').getList(1, 500, { sort: '-created' })
+    const list = await pb.collection('archives').getList(1, 500, {
+      sort: 'sort_order,-created',
+    })
     archives.value = list.items
     const mem = await pb.collection('memories').getFullList({ fields: 'id,archive_id' }).catch(() => [])
     const counts = {}

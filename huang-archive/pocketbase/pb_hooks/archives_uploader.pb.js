@@ -44,6 +44,18 @@ onRecordBeforeCreateRequest((e) => {
       try { name = String(user.get("display_name") || "") } catch (err6) {}
     }
     if (name) e.record.set("uploader_name", name)
+
+    // New archives appear on all tabs unless admin later unlists them.
+    // PB bool defaults to false — force true on create.
+    try {
+      e.record.set("listed", true)
+    } catch (errListed) {}
+    try {
+      var so = e.record.get("sort_order")
+      if (so === null || so === undefined || so === "") e.record.set("sort_order", 0)
+    } catch (errSort) {
+      try { e.record.set("sort_order", 0) } catch (errSort2) {}
+    }
   } catch (err) {
     if (err instanceof BadRequestError) throw err
     console.log("archives_uploader fatal:", err)
