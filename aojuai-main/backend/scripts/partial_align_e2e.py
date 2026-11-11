@@ -71,8 +71,6 @@ async def _main() -> int:
     note("partial_align_e2e start")
     note("production_billing=false s7_started=false url_import_connected=false")
 
-    from sqlalchemy import select
-
     import app.capabilities.realphotos.models  # noqa: F401
     import app.domain  # noqa: F401
     from app.capabilities.realphotos.seed import reconcile
@@ -100,8 +98,6 @@ async def _main() -> int:
 
     stamp = str(int(datetime.now(UTC).timestamp()))
     async with async_session_factory() as db:
-        from app.capabilities.realphotos.models import RealphotosMerchantProfile
-
         summary = await bootstrap_s0_accounts(db)
         tenant = int(summary["rp_merchant_a1"]["tenantId"])
         merchant_user = int(summary["rp_merchant_a1"]["userId"])
@@ -110,14 +106,6 @@ async def _main() -> int:
         await reconcile(db, tenant_id=tenant)
         await RealphotosSupplierConfigService(db).ensure()
         # Clear leftover ND-025 latch from prior interrupted runs so A live path can proceed.
-        profile = (
-            await db.execute(
-                select(RealphotosMerchantProfile).where(
-                    RealphotosMerchantProfile.tenant_id == tenant,
-                    RealphotosMerchantProfile.user_id == merchant_user,
-                )
-            )
-        ).scalar_one_or_none()
         from app.capabilities.realphotos.services.copy_execution_guard import (
             RealphotosCopyExecutionGuardService,
         )

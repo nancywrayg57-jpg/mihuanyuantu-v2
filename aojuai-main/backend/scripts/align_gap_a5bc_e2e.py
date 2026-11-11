@@ -82,7 +82,6 @@ async def _main() -> int:
         RealphotosGenerationItem,
         RealphotosGenerationTask,
         RealphotosImageTask,
-        RealphotosMerchantProfile,
     )
     from app.capabilities.realphotos.openapi_contract import image_processing_contract
     from app.capabilities.realphotos.permissions import ROLE_ADMIN
@@ -284,14 +283,6 @@ async def _main() -> int:
         assert missing >= 1
         ok_payload = await ops.enabled_preset(preset_fixed_ok)
         assert ok_payload is not None and ok_payload["gpsWritable"] is True
-        profile = (
-            await db.execute(
-                select(RealphotosMerchantProfile).where(
-                    RealphotosMerchantProfile.tenant_id == tenant,
-                    RealphotosMerchantProfile.user_id == merchant_user,
-                )
-            )
-        ).scalar_one_or_none()
         from app.capabilities.realphotos.services.copy_execution_guard import (
             RealphotosCopyExecutionGuardService,
         )

@@ -110,8 +110,6 @@ async def _main() -> int:
     must("apiFetchBlob" in batch and "createObjectURL" in batch and "revokeObjectURL" in batch, "C2_batch_gateway_thumbs")
     must("assetIds" in batch and "gateway/objects" in batch, "C2_assetids_gateway_path")
 
-    from sqlalchemy import select
-
     import app.capabilities.realphotos.models  # noqa: F401
     import app.domain  # noqa: F401
     from app.capabilities.realphotos.permissions import ROLE_ADMIN, ROLE_MERCHANT
@@ -147,17 +145,6 @@ async def _main() -> int:
         await reconcile(db, tenant_id=tenant)
         await RealphotosSupplierConfigService(db).ensure()
         # Clear leftover copy latch from prior e2e runs on shared PG.
-        from app.capabilities.realphotos.models import RealphotosMerchantProfile
-
-        profile = (
-            await db.execute(
-                select(RealphotosMerchantProfile).where(
-                    RealphotosMerchantProfile.tenant_id == tenant,
-                    RealphotosMerchantProfile.user_id == user,
-                    RealphotosMerchantProfile.deleted_at.is_(None),
-                )
-            )
-        ).scalar_one_or_none()
         from app.capabilities.realphotos.services.copy_execution_guard import (
             RealphotosCopyExecutionGuardService,
         )
@@ -321,7 +308,6 @@ async def _main() -> int:
 
         # Clear copy guard left by E-C1-3 so batch submit proves GPS/submit path still works.
         async with async_session_factory() as db3:
-            from app.capabilities.realphotos.models import RealphotosMerchantProfile
             from app.capabilities.realphotos.services.copy_execution_guard import (
                 RealphotosCopyExecutionGuardService,
             )
@@ -329,22 +315,9 @@ async def _main() -> int:
             await RealphotosCopyExecutionGuardService(db3).force_clear_active(
                 tenant_id=int(tenant), owner_account_id=int(user)
             )
-            row = (
-                await db3.execute(
-                    select(RealphotosMerchantProfile).where(
-                        RealphotosMerchantProfile.tenant_id == tenant,
-                        RealphotosMerchantProfile.user_id == user,
-                        RealphotosMerchantProfile.deleted_at.is_(None),
-                    )
-                )
-            ).scalar_one_or_none()
-            if row is not None:
-                # B2: no copy_latch_* writes on row
-                await db3.commit()
-                note("E-C2-4 cleared_copy_guard_for_submit=true")
-            else:
-                await db3.commit()
-                note("E-C2-4 cleared_copy_guard_for_submit=true")
+            # B2: no copy_latch_* writes on merchant profile
+            await db3.commit()
+            note("E-C2-4 cleared_copy_guard_for_submit=true")
 
         multi = await client.post(
             "/api/v1/realphotos/processing-batches",
