@@ -4,6 +4,11 @@ import { ChevronDown } from 'lucide-vue-next'
 import { useLocaleStore } from '../stores/locale'
 import FlagIcon from './FlagIcon.vue'
 
+const props = defineProps({
+  /** default = parchment home chrome; login = dark field matching login ops */
+  variant: { type: String, default: 'default' },
+})
+
 const locale = useLocaleStore()
 const open = ref(false)
 const root = ref(null)
@@ -17,7 +22,7 @@ function placeMenu() {
     position: 'fixed',
     top: `${Math.round(r.bottom + 8)}px`,
     right: `${Math.round(window.innerWidth - r.right)}px`,
-    zIndex: 80,
+    zIndex: 90,
   }
 }
 
@@ -62,19 +67,24 @@ onUnmounted(() => {
   <div ref="root" class="relative shrink-0" data-testid="lang-switcher">
     <button
       type="button"
-      class="min-h-tap px-2 sm:px-3 border border-clay bg-parchment inline-flex items-center gap-1.5 text-sm"
+      class="inline-flex items-center gap-1.5 text-sm whitespace-nowrap"
+      :class="
+        props.variant === 'login'
+          ? 'login-lang-btn min-h-[52px] px-2.5 sm:px-3 rounded-2xl'
+          : 'min-h-tap px-2 sm:px-3 border border-clay bg-parchment'
+      "
       data-testid="lang-switcher-trigger"
       :aria-expanded="open"
       @click="toggle"
     >
       <FlagIcon :code="locale.localeMeta.flag" :size="18" />
       <span>{{ locale.localeMeta.native }}</span>
-      <ChevronDown class="w-4 h-4 text-mute" />
+      <ChevronDown class="w-4 h-4 opacity-70" />
     </button>
     <Teleport to="body">
       <div
         v-if="open"
-        class="min-w-[11rem] bg-white border border-clay/60 shadow-lg rounded-md py-1"
+        class="min-w-[11rem] bg-white border border-clay/60 shadow-lg rounded-md py-1 text-ink"
         data-testid="lang-switcher-menu"
         :style="menuStyle"
       >
@@ -94,3 +104,14 @@ onUnmounted(() => {
     </Teleport>
   </div>
 </template>
+
+<style scoped>
+.login-lang-btn {
+  background: rgba(12, 10, 9, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  color: #fff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35) inset;
+}
+</style>

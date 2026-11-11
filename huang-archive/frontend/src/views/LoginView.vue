@@ -3,12 +3,15 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ChevronDown, RefreshCw } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
+import { useLocaleStore } from '../stores/locale'
 import { FAMILY_ROSTER } from '../lib/roster'
 import { GUEST_DISPLAY_NAME, isGuestName } from '../lib/guest'
 import { fetchCaptcha, fetchSiteSettings, SITE_TITLE, verifyCaptcha } from '../lib/siteSettings'
 import { zhError } from '../lib/errors'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 
 const auth = useAuthStore()
+const i18n = useLocaleStore()
 const router = useRouter()
 const route = useRoute()
 
@@ -36,8 +39,14 @@ const coupletLeftChars = COUPLET_LEFT.split('')
 
 const isGuestSelected = computed(() => isGuestName(name.value))
 
+/** Only 吊唁贵宾 translates with locale; family names stay Chinese. */
+const displayIdentity = computed(() => {
+  if (isGuestSelected.value) return i18n.t('guestName')
+  return name.value
+})
+
 const stepHint = computed(() => {
-  if (step.value === 1) return isGuestSelected.value ? GUEST_DISPLAY_NAME : '选择姓名'
+  if (step.value === 1) return isGuestSelected.value ? i18n.t('guestName') : '选择姓名'
   if (step.value === 2) return '输入密码'
   return '进入纪念馆'
 })
@@ -261,7 +270,7 @@ onMounted(async () => {
           title="点击可重新选择身份"
           @click="backToName"
         >
-          {{ name }}
+          {{ displayIdentity }}
         </button>
 
         <p v-if="localError" class="text-center text-sm text-red-200" data-testid="login-error">
@@ -270,28 +279,34 @@ onMounted(async () => {
 
         <div
           v-if="step === 1"
-          class="login-field w-full min-h-[52px] rounded-2xl inline-flex items-stretch overflow-hidden"
-          data-testid="login-identity"
+          class="w-full flex flex-nowrap items-stretch gap-2"
+          data-testid="login-identity-row"
         >
-          <button
-            type="button"
-            class="flex-1 min-h-[52px] px-4 text-left"
-            :class="name ? 'text-white' : 'text-white/55'"
-            data-testid="login-pick-name"
-            @click="onIdentityClick"
+          <div
+            class="login-field flex-1 min-w-0 min-h-[52px] rounded-2xl inline-flex items-stretch overflow-hidden"
+            data-testid="login-identity"
           >
-            {{ name || '选择姓名' }}
-          </button>
-          <button
-            type="button"
-            class="min-h-[52px] px-3 border-l border-white/20 text-white/70"
-            data-testid="login-open-roster"
-            title="选择家族成员"
-            aria-label="选择家族成员"
-            @click="openPicker"
-          >
-            <ChevronDown class="w-5 h-5" />
-          </button>
+            <button
+              type="button"
+              class="flex-1 min-w-0 min-h-[52px] px-3 sm:px-4 text-left truncate"
+              :class="name ? 'text-white' : 'text-white/55'"
+              data-testid="login-pick-name"
+              @click="onIdentityClick"
+            >
+              {{ displayIdentity || '选择姓名' }}
+            </button>
+            <button
+              type="button"
+              class="min-h-[52px] px-3 border-l border-white/20 text-white/70 shrink-0"
+              data-testid="login-open-roster"
+              title="选择家族成员"
+              aria-label="选择家族成员"
+              @click="openPicker"
+            >
+              <ChevronDown class="w-5 h-5" />
+            </button>
+          </div>
+          <LanguageSwitcher variant="login" data-testid="login-lang-switcher" />
         </div>
 
         <form v-else-if="step === 2" @submit.prevent="goEnterStep">
@@ -376,7 +391,7 @@ onMounted(async () => {
             data-testid="login-pick-guest"
             @click="pickGuest"
           >
-            {{ GUEST_DISPLAY_NAME }}
+            {{ i18n.t('guestName') }}
             <span class="text-white/45 text-sm ml-2">免密进入</span>
           </button>
           <button

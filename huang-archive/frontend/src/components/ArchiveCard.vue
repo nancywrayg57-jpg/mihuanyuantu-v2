@@ -3,6 +3,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { Heart, MessageCircle, Trash2, ExternalLink, Pencil, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
+import { useLocaleStore } from '../stores/locale'
 import { zhError } from '../lib/errors'
 import VoiceRecorder from './VoiceRecorder.vue'
 import EditArchiveModal from './EditArchiveModal.vue'
@@ -16,6 +17,7 @@ const props = defineProps({
 const emit = defineEmits(['deleted', 'updated', 'memory'])
 
 const auth = useAuthStore()
+const i18n = useLocaleStore()
 const liked = ref(false)
 const likeId = ref('')
 const likes = ref(props.archive.likes_count || 0)
@@ -393,11 +395,7 @@ async function deleteMemory(m) {
             :class="listCoverUrl ? 'bg-ink/55 text-parchment px-4 py-3' : ''"
           >
             <ExternalLink class="w-10 h-10" :class="listCoverUrl ? 'text-parchment' : 'text-celadon'" />
-            <span class="font-song text-lg">{{ listCoverUrl ? '新闻链接' : '新闻剪报' }}</span>
-            <span
-              class="text-sm break-all line-clamp-3"
-              :class="listCoverUrl ? 'text-parchment/90' : 'text-mute'"
-            >{{ archive.external_link }}</span>
+            <span class="font-song text-lg">{{ listCoverUrl ? i18n.t('newsLink') : i18n.t('newsClip') }}</span>
           </div>
         </a>
       </template>
@@ -502,17 +500,20 @@ async function deleteMemory(m) {
     <div class="p-4 flex-1 flex flex-col gap-3">
       <h3 class="font-song text-xl leading-snug">{{ archive.title }}</h3>
       <dl class="text-sm text-mute space-y-1">
-        <div>时间：{{ archive.occurred_time }}</div>
-        <div>关系人：{{ archive.related_persons }}</div>
-        <div>上传：{{ archive.uploader_name || '—' }}</div>
+        <div>{{ i18n.t('time') }}：{{ archive.occurred_time }}</div>
+        <div>{{ i18n.t('related') }}：{{ archive.related_persons }}</div>
+        <div>{{ i18n.t('uploader') }}：{{ archive.uploader_name || '—' }}</div>
       </dl>
       <p v-if="archive.description" class="text-ink/90">{{ archive.description }}</p>
       <p v-if="actionError" class="text-cinnabar text-sm">{{ actionError }}</p>
 
-      <div class="mt-auto flex flex-wrap items-center gap-2 pt-2">
+      <div
+        class="mt-auto flex flex-nowrap items-center gap-1 sm:gap-2 pt-2 overflow-x-auto"
+        data-testid="archive-actions"
+      >
         <button
           type="button"
-          class="inline-flex items-center gap-1.5 min-h-tap px-3 border border-clay"
+          class="inline-flex items-center gap-1 sm:gap-1.5 min-h-tap px-2 sm:px-3 border border-clay shrink-0"
           :class="liked ? 'text-cinnabar' : ''"
           @click="toggleLike"
         >
@@ -521,7 +522,7 @@ async function deleteMemory(m) {
         </button>
         <button
           type="button"
-          class="inline-flex items-center gap-1.5 min-h-tap px-3 border border-clay"
+          class="inline-flex items-center gap-1 sm:gap-1.5 min-h-tap px-2 sm:px-3 border border-clay shrink-0"
           @click="loadMemories"
         >
           <MessageCircle class="w-5 h-5" />
@@ -531,19 +532,19 @@ async function deleteMemory(m) {
           v-if="canEdit"
           type="button"
           data-testid="edit-archive"
-          class="inline-flex items-center gap-1.5 min-h-tap px-3 border border-celadon text-celadon"
+          class="inline-flex items-center gap-1 sm:gap-1.5 min-h-tap px-2 sm:px-3 border border-celadon text-celadon shrink-0"
           @click="editOpen = true"
         >
-          <Pencil class="w-5 h-5" /> 编辑
+          <Pencil class="w-5 h-5" /> {{ i18n.t('edit') }}
         </button>
         <button
           v-if="auth.isAdmin"
           type="button"
           data-testid="delete-archive"
-          class="ml-auto inline-flex items-center gap-1.5 min-h-tap px-3 border border-cinnabar text-cinnabar"
+          class="inline-flex items-center gap-1 sm:gap-1.5 min-h-tap px-2 sm:px-3 border border-cinnabar text-cinnabar shrink-0"
           @click="askDelete"
         >
-          <Trash2 class="w-5 h-5" /> 删除
+          <Trash2 class="w-5 h-5" /> {{ i18n.t('delete') }}
         </button>
       </div>
 

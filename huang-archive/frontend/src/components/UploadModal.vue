@@ -2,29 +2,33 @@
 import { computed, ref } from 'vue'
 import { X, Image, Video, FileText, Link2, Mic, Boxes } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
+import { useLocaleStore } from '../stores/locale'
 import { useUploadQueueStore } from '../stores/uploadQueue'
 import { FILE_ACCEPT, UPLOAD_LIMIT_LABELS, validateUploadFiles } from '../lib/uploadLimits'
 import { shouldUseChunked } from '../lib/chunkedUpload'
 import { formatDuration, prepareUploadFiles } from '../lib/mediaPrepare'
 import { zhError } from '../lib/errors'
+import { CATEGORY_I18N_KEYS } from '../lib/i18n'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
-  heading: { type: String, default: '上传资料' },
+  heading: { type: String, default: '' },
 })
 const emit = defineEmits(['close', 'queued'])
 
 const auth = useAuthStore()
+const i18n = useLocaleStore()
 const queue = useUploadQueueStore()
 
 const categories = [
-  { key: 'image', label: '图片', icon: Image },
-  { key: 'video', label: '视频', icon: Video },
-  { key: 'scan', label: '扫描件', icon: FileText },
-  { key: 'link', label: '新闻链接', icon: Link2 },
-  { key: 'audio', label: '录音', icon: Mic },
-  { key: 'other', label: '其他', icon: Boxes },
+  { key: 'image', icon: Image },
+  { key: 'video', icon: Video },
+  { key: 'scan', icon: FileText },
+  { key: 'link', icon: Link2 },
+  { key: 'audio', icon: Mic },
+  { key: 'other', icon: Boxes },
 ]
+const modalHeading = computed(() => props.heading || i18n.t('uploadHeading'))
 
 const category = ref('image')
 const archiveTitle = ref('')
@@ -216,7 +220,7 @@ async function onLinkCoverChange(e) {
     >
       <div class="w-full max-w-xl max-h-[92vh] overflow-auto bg-parchment border border-clay">
         <div class="sticky top-0 flex items-center justify-between px-5 py-4 border-b border-clay bg-parchment">
-          <h2 class="font-song text-xl">{{ heading }}</h2>
+          <h2 class="font-song text-xl">{{ modalHeading }}</h2>
           <button type="button" class="min-h-tap min-w-[48px] grid place-items-center" @click="close">
             <X class="w-6 h-6" />
           </button>
@@ -233,16 +237,16 @@ async function onLinkCoverChange(e) {
               @click="onCategory(c.key)"
             >
               <component :is="c.icon" class="w-6 h-6" />
-              <span class="text-sm">{{ c.label }}</span>
+              <span class="text-sm">{{ i18n.t(CATEGORY_I18N_KEYS[c.key]) }}</span>
             </button>
           </div>
 
           <label class="block">
-            <span class="text-mute">标题</span>
+            <span class="text-mute">{{ i18n.t('title') }}</span>
             <input v-model="archiveTitle" class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice" />
           </label>
           <label class="block">
-            <span class="text-mute">发生时间</span>
+            <span class="text-mute">{{ i18n.t('occurredTime') }}</span>
             <input
               v-model="occurredTime"
               type="date"
@@ -250,7 +254,7 @@ async function onLinkCoverChange(e) {
             />
           </label>
           <label class="block">
-            <span class="text-mute">关系人</span>
+            <span class="text-mute">{{ i18n.t('related') }}</span>
             <input
               v-model="relatedPersons"
               class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice"
@@ -258,12 +262,12 @@ async function onLinkCoverChange(e) {
             />
           </label>
           <label class="block">
-            <span class="text-mute">说明（选填）</span>
+            <span class="text-mute">{{ i18n.t('descriptionOptional') }}</span>
             <textarea v-model="description" rows="3" class="mt-1 w-full px-3 py-3 border border-clay bg-rice" />
           </label>
 
           <label v-if="isLink" class="block">
-            <span class="text-mute">外部链接</span>
+            <span class="text-mute">{{ i18n.t('newsLink') }}</span>
             <input
               v-model="externalLink"
               type="url"
@@ -274,7 +278,7 @@ async function onLinkCoverChange(e) {
           </label>
 
           <label v-if="isLink" class="block">
-            <span class="text-mute">首图 / 封面（选填）</span>
+            <span class="text-mute">{{ i18n.t('coverOptional') }}</span>
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp,image/*"

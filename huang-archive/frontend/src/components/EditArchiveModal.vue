@@ -31,7 +31,9 @@ const newCoverPreview = ref('')
 const cropOpen = ref(false)
 const cropSrc = ref('')
 const cropTarget = ref(null)
-const cropCanvas = ref(null)
+const cropStageRef = ref(null)
+const coverDirty = ref(false)
+const blobUrls = ref([])
 
 const isLink = computed(() => props.archive?.category === 'link')
 const isImageLike = computed(() => ['image', 'scan'].includes(props.archive?.category))
@@ -50,14 +52,26 @@ watch(
     coverName.value = Array.isArray(cf) ? cf[0] || '' : cf || ''
     error.value = ''
     removeCover.value = false
+    coverDirty.value = false
     clearPending()
   },
   { immediate: true },
 )
 
+function trackBlob(url) {
+  if (url) blobUrls.value.push(url)
+  return url
+}
+
 function clearPending() {
   for (const p of pendingPreviews.value) if (p) URL.revokeObjectURL(p)
   if (newCoverPreview.value) URL.revokeObjectURL(newCoverPreview.value)
+  for (const u of blobUrls.value) {
+    try {
+      URL.revokeObjectURL(u)
+    } catch (_) {}
+  }
+  blobUrls.value = []
   pendingFiles.value = []
   pendingPreviews.value = []
   newCoverFile.value = null
@@ -72,12 +86,34 @@ function toDateInput(value) {
 
 function existingUrl(name) {
   if (!props.archive || !name) return ''
-  return thumbUrl(pb, props.archive, name, '600x0') || pb.files.getURL(props.archive, name)
+  return thumbUrl(pb, props.archive, name, '1200x0') || pb.files.getURL(props.archive, name)
+}
+
+/** Fetch PB file as blob URL so canvas crop is not CORS-tainted. */
+async function toLocalCropSrc(urlOrName) {
+  let url = urlOrName
+  if (urlOrName && !/^https?:|^blob:|^data:/i.test(urlOrName)) {
+    url = existingUrl(urlOrName)
+  }
+  if (!url) return ''
+  if (url.startsWith('blob:') || url.startsWith('data:')) return url
+  try {
+    const headers = {}
+    if (pb.authStore?.token) headers.Authorization = pb.authStore.token
+    const res = await fetch(url, { headers, credentials: 'include' })
+    if (!res.ok) throw new Error(`fetch ${res.status}`)
+    const blob = await res.blob()
+    return trackBlob(URL.createObjectURL(blob))
+  } catch (e) {
+    // Fallback: still try direct URL (may fail toBlob if tainted)
+    return url
+  }
 }
 
 function setCoverExisting(name) {
   coverName.value = name
   removeCover.value = false
+  coverDirty.value = true
   if (newCoverPreview.value) URL.revokeObjectURL(newCoverPreview.value)
   newCoverFile.value = null
   newCoverPreview.value = ''
@@ -100,6 +136,7 @@ async function onAddFiles(e) {
       newCoverFile.value = pendingFiles.value[0]
       newCoverPreview.value = URL.createObjectURL(pendingFiles.value[0])
       removeCover.value = false
+      coverDirty.value = true
     }
   } catch (err) {
     error.value = zhError(err, '图片处理失败')
@@ -117,21 +154,26 @@ async function onCoverPick(e) {
     newCoverPreview.value = URL.createObjectURL(newCoverFile.value)
     removeCover.value = false
     coverName.value = ''
+    coverDirty.value = true
   } catch (err) {
     error.value = zhError(err, '封面处理失败')
   }
   e.target.value = ''
 }
 
-function openCropForCover() {
-  const src = newCoverPreview.value || (coverName.value ? existingUrl(coverName.value) : '')
-  if (!src) return
-  cropSrc.value = src
-  cropTarget.value = 'cover'
-  cropOpen.value = true
+async function openCropForCover() {
+  const srcHint = newCoverPreview.value || (coverName.value ? coverName.value : '')
+  if (!srcHint) return
+  try {
+    cropSrc.value = await toLocalCropSrc(srcHint)
+    cropTarget.value = 'cover'
+    cropOpen.value = true
+  } catch (e) {
+    error.value = zhError(e, '无法打开裁剪')
+  }
 }
 
-function openCropForPending(i) {
+async function openCropForPending(i) {
   cropSrc.value = pendingPreviews.value[i]
   cropTarget.value = i
   cropOpen.value = true
@@ -139,6 +181,7 @@ function openCropForPending(i) {
 
 function clearCover() {
   removeCover.value = true
+  coverDirty.value = true
   coverName.value = ''
   if (newCoverPreview.value) URL.revokeObjectURL(newCoverPreview.value)
   newCoverPreview.value = ''
@@ -146,22 +189,37 @@ function clearCover() {
 }
 
 async function applyCrop() {
-  const canvas = cropCanvas.value
-  if (!canvas) return
-  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92))
-  if (!blob) return
-  const file = new File([blob], 'crop.jpg', { type: 'image/jpeg' })
+  error.value = ''
+  const stage = cropStageRef.value
+  if (!stage?.exportBlob) {
+    error.value = '裁剪未就绪'
+    return
+  }
+  const blob = await stage.exportBlob(0.92)
+  if (!blob || blob.size < 32) {
+    error.value = '裁剪失败：请重试（图片可能未加载）'
+    return
+  }
+  const file = new File([blob], `cover-crop-${Date.now()}.jpg`, { type: 'image/jpeg' })
   if (cropTarget.value === 'cover') {
     if (newCoverPreview.value) URL.revokeObjectURL(newCoverPreview.value)
     newCoverFile.value = file
     newCoverPreview.value = URL.createObjectURL(file)
     coverName.value = ''
     removeCover.value = false
+    coverDirty.value = true
   } else if (typeof cropTarget.value === 'number') {
     const i = cropTarget.value
     if (pendingPreviews.value[i]) URL.revokeObjectURL(pendingPreviews.value[i])
     pendingFiles.value[i] = file
     pendingPreviews.value[i] = URL.createObjectURL(file)
+    // If this pending image is also the cover source, refresh cover file
+    if (newCoverFile.value && i === 0 && pendingFiles.value.length === 1) {
+      newCoverFile.value = file
+      if (newCoverPreview.value) URL.revokeObjectURL(newCoverPreview.value)
+      newCoverPreview.value = URL.createObjectURL(file)
+      coverDirty.value = true
+    }
   }
   cropOpen.value = false
 }
@@ -181,9 +239,10 @@ async function save() {
     form.append('description', description.value.trim())
 
     if (isImageLike.value || isLink.value) {
+      // Persist cropped / new cover to server cover_file
       if (newCoverFile.value) {
         const cf = normalizeUploadFile(newCoverFile.value)
-        form.append('cover_file', cf, safeUploadFilename(cf, 'jpg') || 'cover.jpg')
+        form.append('cover_file', cf, safeUploadFilename(cf, 'jpg') || `cover-${Date.now()}.jpg`)
       } else if (removeCover.value) {
         form.append('cover_file', '')
       } else if (
@@ -193,6 +252,21 @@ async function save() {
       ) {
         const cf = normalizeUploadFile(pendingFiles.value[0])
         form.append('cover_file', cf, 'cover.jpg')
+      } else if (coverDirty.value && coverName.value && !newCoverFile.value) {
+        // User picked an existing media as cover without cropping — copy that file to cover_file
+        try {
+          const url = existingUrl(coverName.value)
+          const headers = {}
+          if (pb.authStore?.token) headers.Authorization = pb.authStore.token
+          const res = await fetch(url, { headers, credentials: 'include' })
+          if (res.ok) {
+            const blob = await res.blob()
+            const file = new File([blob], coverName.value || 'cover.jpg', {
+              type: blob.type || 'image/jpeg',
+            })
+            form.append('cover_file', file, safeUploadFilename(file, 'jpg'))
+          }
+        } catch (_) {}
       }
     }
 
@@ -234,30 +308,30 @@ function close() {
         </div>
         <div class="p-5 space-y-4">
           <label class="block">
-            <span class="text-mute">标题</span>
+            <span class="text-mute">{{ i18n.t('title') }}</span>
             <input v-model="title" class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice" />
           </label>
           <label class="block">
-            <span class="text-mute">发生时间</span>
+            <span class="text-mute">{{ i18n.t('occurredTime') }}</span>
             <input v-model="occurredTime" type="date" class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice" />
           </label>
           <label class="block">
-            <span class="text-mute">关系人</span>
+            <span class="text-mute">{{ i18n.t('related') }}</span>
             <input v-model="relatedPersons" class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice" />
           </label>
           <label class="block">
-            <span class="text-mute">说明（选填）</span>
+            <span class="text-mute">{{ i18n.t('descriptionOptional') }}</span>
             <textarea v-model="description" rows="3" class="mt-1 w-full px-3 py-3 border border-clay bg-rice" />
           </label>
 
           <div v-if="isImageLike || isLink" class="space-y-3" data-testid="edit-media-section">
             <div class="flex items-center justify-between gap-2 flex-wrap">
-              <h3 class="font-song text-lg">图片 / 封面</h3>
+              <h3 class="font-song text-lg">{{ i18n.t('imagesCover') }}</h3>
               <label
                 v-if="isImageLike"
                 class="min-h-tap px-3 border border-clay bg-rice inline-flex items-center cursor-pointer text-sm"
               >
-                添加图片
+                {{ i18n.t('addImages') }}
                 <input type="file" accept="image/*" multiple class="hidden" data-testid="edit-add-images" @change="onAddFiles" />
               </label>
             </div>
@@ -276,7 +350,7 @@ function close() {
                   data-testid="set-cover-existing"
                   @click="setCoverExisting(name)"
                 >
-                  <Star class="w-3 h-3" /> 封面
+                  <Star class="w-3 h-3" /> {{ i18n.t('setAsCover') }}
                 </button>
               </div>
               <div
@@ -291,13 +365,13 @@ function close() {
                   data-testid="crop-pending"
                   @click="openCropForPending(i)"
                 >
-                  <Crop class="w-3 h-3" /> 裁剪
+                  <Crop class="w-3 h-3" /> {{ i18n.t('crop') }}
                 </button>
               </div>
             </div>
 
             <label class="block">
-              <span class="text-mute">{{ isLink ? '首图 / 封面（选填）' : '更换封面（选填）' }}</span>
+              <span class="text-mute">{{ isLink ? i18n.t('coverOptional') : i18n.t('changeCover') }}</span>
               <input
                 type="file"
                 accept="image/*"
@@ -320,21 +394,21 @@ function close() {
                   data-testid="crop-cover"
                   @click="openCropForCover"
                 >
-                  <Crop class="w-4 h-4" /> 裁剪封面
+                  <Crop class="w-4 h-4" /> {{ i18n.t('cropCover') }}
                 </button>
                 <button
                   type="button"
                   class="min-h-tap px-3 border border-cinnabar text-cinnabar text-sm"
                   @click="clearCover"
                 >
-                  清除封面
+                  {{ i18n.t('clearCover') }}
                 </button>
               </div>
             </div>
-            <p class="text-mute text-sm">单张图片时自动设为封面；可点「封面」指定默认首图。</p>
+            <p class="text-mute text-sm">{{ i18n.t('coverHint') }}</p>
           </div>
 
-          <p v-if="error" class="text-cinnabar">{{ error }}</p>
+          <p v-if="error" class="text-cinnabar" data-testid="edit-error">{{ error }}</p>
           <button
             type="button"
             class="w-full min-h-tap bg-cinnabar text-parchment disabled:opacity-60"
@@ -342,7 +416,7 @@ function close() {
             :disabled="saving"
             @click="save"
           >
-            {{ saving ? '保存中…' : i18n.t('save') }}
+            {{ saving ? i18n.t('saving') : i18n.t('save') }}
           </button>
         </div>
       </div>
@@ -355,8 +429,8 @@ function close() {
       @click.self="cropOpen = false"
     >
       <div class="bg-parchment border border-clay p-4 max-w-lg w-full space-y-3">
-        <h3 class="font-song text-lg">裁剪</h3>
-        <CropStage :src="cropSrc" @ready="(c) => (cropCanvas = c)" />
+        <h3 class="font-song text-lg">{{ i18n.t('crop') }}</h3>
+        <CropStage ref="cropStageRef" :src="cropSrc" />
         <div class="flex gap-2">
           <button type="button" class="flex-1 min-h-tap border border-clay" @click="cropOpen = false">
             {{ i18n.t('cancel') }}
@@ -367,7 +441,7 @@ function close() {
             data-testid="crop-apply"
             @click="applyCrop"
           >
-            应用裁剪
+            {{ i18n.t('applyCrop') }}
           </button>
         </div>
       </div>

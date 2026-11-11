@@ -8,6 +8,7 @@ import { useUploadQueueStore } from '../stores/uploadQueue'
 import { useA11yStore } from '../stores/a11y'
 import { useLocaleStore } from '../stores/locale'
 import { CATEGORY_TABS, uploadLabelFor } from '../lib/roster'
+import { CATEGORY_I18N_KEYS } from '../lib/i18n'
 import { filterArchives } from '../lib/archiveFilters'
 import { downloadFullBackup } from '../lib/exportArchives'
 import { zhError } from '../lib/errors'
@@ -190,7 +191,8 @@ onMounted(load)
             {{ i18n.t('siteTitle') }}
           </h1>
           <p class="text-ink sm:text-mute text-lg sm:text-sm font-medium sm:font-normal truncate" data-testid="home-welcome">
-            {{ i18n.t('welcome') }} {{ auth.displayName }}<span class="hidden sm:inline">{{ auth.isAdmin ? '（管理员）' : '' }}</span>
+            {{ i18n.t('welcome') }}
+            {{ auth.isGuest ? i18n.t('guestName') : auth.displayName }}<span class="hidden sm:inline">{{ auth.isAdmin ? '（管理员）' : '' }}</span>
           </p>
         </div>
         <div class="flex items-center gap-2 overflow-x-auto shrink-0">
@@ -220,7 +222,7 @@ onMounted(load)
             title="放大字号"
             @click="a11y.cycleFont()"
           >
-            <Type class="w-5 h-5" /> <span class="hidden sm:inline">字号</span>
+            <Type class="w-5 h-5" /> <span class="hidden sm:inline">{{ i18n.t('fontSize') }}</span>
           </button>
           <button
             type="button"
@@ -243,7 +245,7 @@ onMounted(load)
             @click="doExport"
           >
             <Download class="w-5 h-5" />
-            <span class="hidden sm:inline">{{ exporting ? '打包中…' : '备份导出' }}</span>
+            <span class="hidden sm:inline">{{ exporting ? i18n.t('exporting') : i18n.t('exportBackup') }}</span>
           </button>
           <button
             v-if="!auth.isGuest"
@@ -252,7 +254,7 @@ onMounted(load)
             data-testid="change-password"
             @click="pwdOpen = true"
           >
-            <KeyRound class="w-5 h-5" /> <span class="hidden sm:inline">修改密码</span>
+            <KeyRound class="w-5 h-5" /> <span class="hidden sm:inline">{{ i18n.t('changePassword') }}</span>
           </button>
           <button
             type="button"
@@ -278,8 +280,7 @@ onMounted(load)
       </div>
       <div class="border border-clay bg-parchment p-5 sm:p-7 relative overflow-hidden" data-testid="home-intro">
         <p class="text-ink/90 max-w-3xl leading-relaxed text-base sm:text-lg">
-          本馆由家人共同守护，汇集图片、录像、扫描件、新闻与口述录音，
-          使后辈得以回望他的风骨与温度。此处仅为家族内部珍藏空间——每一帧、每一段声音，皆是不可复刻的传承。
+          {{ i18n.t('homeIntro') }}
         </p>
       </div>
     </section>
@@ -298,7 +299,7 @@ onMounted(load)
           :data-tab="t.key"
           @click="tab = t.key"
         >
-          {{ t.label }}
+          {{ i18n.t(CATEGORY_I18N_KEYS[t.key] || t.label) }}
         </button>
       </div>
     </nav>
@@ -377,7 +378,7 @@ onMounted(load)
             :disabled="page <= 1"
             data-testid="page-prev"
             @click="goPage(page - 1)"
-          >上一页</button>
+          >{{ i18n.t('prevPage') }}</button>
           <span class="text-mute text-sm">{{ page }} / {{ totalPages }}</span>
           <button
             type="button"
@@ -385,7 +386,7 @@ onMounted(load)
             :disabled="page >= totalPages"
             data-testid="page-next"
             @click="goPage(page + 1)"
-          >下一页</button>
+          >{{ i18n.t('nextPage') }}</button>
         </div>
       </template>
     </main>
