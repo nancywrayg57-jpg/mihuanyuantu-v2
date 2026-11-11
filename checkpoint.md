@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
 | branch | `cursor/module-a-gap-9973` |
-| HEAD | 待推 PR（MODULE-A-GAP 实现 + 端测 PASS） |
+| HEAD | `3c1971f`（PR #41） |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 未开 |
 | 代码态 | A1 临时图床联调导入（`formalSupplier=false`）；A2 `cap_realphotos_provider_usage` 调用时计量；A3 worker 认领 `inbox_cleanup`/`output_cleanup` |
 | 验证态 | `/tmp/module-a-gap-e2e.log`：`MODULE_A_GAP_E2E_PASS`；`production_billing=false`；`formal_supplier=false`；`s7_started=false` |
