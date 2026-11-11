@@ -46,9 +46,8 @@ async def main() -> int:
 
     import app.capabilities.realphotos.models  # noqa: F401
     import app.domain  # noqa: F401
-
-    from app.capabilities.realphotos.services.bootstrap import DEFAULT_PASSWORD, bootstrap_s0_accounts
     from app.capabilities.realphotos.seed import reconcile
+    from app.capabilities.realphotos.services.bootstrap import DEFAULT_PASSWORD, bootstrap_s0_accounts
     from app.core.config import settings
     from app.infrastructure.database.session import Base, async_session_factory, engine, init_db
     from app.main import app as fastapi_app

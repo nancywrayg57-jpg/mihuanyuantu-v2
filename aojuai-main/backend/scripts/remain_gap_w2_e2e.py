@@ -11,10 +11,11 @@ import io
 from datetime import UTC, datetime
 from pathlib import Path
 
-from alembic import command
 from alembic.config import Config
 from PIL import Image
 from sqlalchemy import text
+
+from alembic import command
 
 LOG = Path("/tmp/remain-gap-e2e.log")
 REPO = Path(__file__).resolve().parents[3]
@@ -71,7 +72,6 @@ async def main() -> int:
 
     import app.capabilities.realphotos.models  # noqa: F401
     import app.domain  # noqa: F401
-
     from app.capabilities.realphotos.permissions import ROLE_MERCHANT
     from app.capabilities.realphotos.seed import reconcile
     from app.capabilities.realphotos.services.bootstrap import bootstrap_s0_accounts
@@ -180,8 +180,9 @@ async def main() -> int:
         await RealphotosCopyExecutionGuardService(db).force_clear_active(
             tenant_id=tenant, owner_account_id=user
         )
-        from app.capabilities.realphotos.models import RealphotosMerchantProfile
         from sqlalchemy import select
+
+        from app.capabilities.realphotos.models import RealphotosMerchantProfile
 
         profile = (
             await db.execute(
