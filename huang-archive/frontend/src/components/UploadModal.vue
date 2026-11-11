@@ -46,7 +46,7 @@ const sizeHint = computed(() => {
   if (category.value === 'video') return UPLOAD_LIMIT_LABELS.video + '；自动提取封面与时长'
   if (category.value === 'image') return UPLOAD_LIMIT_LABELS.image + '；上传前自动压缩'
   if (category.value === 'scan') return '扫描图片自动压缩（≤30MB）；PDF 等不超过 100MB'
-  if (isLink.value) return '填写可访问的 https 链接即可'
+  if (isLink.value) return '填写可访问的 https 链接；可选用一张首图/封面（选填）'
   return UPLOAD_LIMIT_LABELS.other + '；超过 1MB 自动分片'
 })
 const chunkHint = computed(() => {
@@ -185,6 +185,26 @@ function onCategory(key) {
   durationSec.value = 0
   prepNotes.value = []
 }
+
+async function onLinkCoverChange(e) {
+  error.value = ''
+  if (coverPreview.value) URL.revokeObjectURL(coverPreview.value)
+  coverPreview.value = ''
+  coverFile.value = null
+  const raw = e.target.files?.[0]
+  if (!raw) return
+  preparing.value = true
+  try {
+    const prepared = await prepareUploadFiles([raw], 'image')
+    coverFile.value = prepared.files[0] || raw
+    coverPreview.value = URL.createObjectURL(coverFile.value)
+    prepNotes.value = prepared.notes?.length ? prepared.notes : ['已选择新闻首图']
+  } catch (err) {
+    error.value = zhError(err, '首图处理失败')
+  } finally {
+    preparing.value = false
+  }
+}
 </script>
 
 <template>
@@ -249,7 +269,20 @@ function onCategory(key) {
               type="url"
               class="mt-1 w-full min-h-tap px-3 border border-clay bg-rice"
               placeholder="https://"
+              data-testid="upload-external-link"
             />
+          </label>
+
+          <label v-if="isLink" class="block">
+            <span class="text-mute">首图 / 封面（选填）</span>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/*"
+              class="mt-1 w-full min-h-tap px-3 py-2 border border-clay bg-rice"
+              data-testid="upload-link-cover"
+              @change="onLinkCoverChange"
+            />
+            <p class="text-mute text-sm mt-1">{{ sizeHint }}</p>
           </label>
 
           <label v-else class="block">

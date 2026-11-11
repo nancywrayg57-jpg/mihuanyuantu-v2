@@ -379,10 +379,26 @@ async function deleteMemory(m) {
           target="_blank"
           rel="noopener"
           class="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center hover:bg-clay/20"
+          data-testid="archive-link-card"
         >
-          <ExternalLink class="w-10 h-10 text-celadon" />
-          <span class="font-song text-lg">新闻剪报</span>
-          <span class="text-mute text-sm break-all line-clamp-3">{{ archive.external_link }}</span>
+          <img
+            v-if="listCoverUrl"
+            :src="listCoverUrl"
+            alt=""
+            class="absolute inset-0 w-full h-full object-cover"
+            data-testid="archive-link-cover"
+          />
+          <div
+            class="relative z-10 flex flex-col items-center gap-2"
+            :class="listCoverUrl ? 'bg-ink/55 text-parchment px-4 py-3' : ''"
+          >
+            <ExternalLink class="w-10 h-10" :class="listCoverUrl ? 'text-parchment' : 'text-celadon'" />
+            <span class="font-song text-lg">{{ listCoverUrl ? '新闻链接' : '新闻剪报' }}</span>
+            <span
+              class="text-sm break-all line-clamp-3"
+              :class="listCoverUrl ? 'text-parchment/90' : 'text-mute'"
+            >{{ archive.external_link }}</span>
+          </div>
         </a>
       </template>
       <template v-else-if="isPdf">

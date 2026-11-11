@@ -85,7 +85,7 @@ export const useUploadQueueStore = defineStore('uploadQueue', () => {
         duration_sec: next.durationSec ? String(next.durationSec) : '',
       }
       if (next.category === 'link' || !next.files.length) {
-        record = await uploadDirect([], metaFields)
+        record = await uploadDirect([], metaFields, { coverFile: next.coverFile })
       } else {
         // One archive keeps ALL selected files (unique names + multi media_files).
         next.sessionId = ''

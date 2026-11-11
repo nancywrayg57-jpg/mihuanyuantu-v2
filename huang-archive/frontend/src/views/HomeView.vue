@@ -1,11 +1,12 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { LogOut, KeyRound, Upload, Users, Search, Download, Type, Maximize2 } from 'lucide-vue-next'
+import { LogOut, KeyRound, Upload, Users, Search, Download, Type, Maximize2, Settings } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import pb from '../lib/pb'
 import { useAuthStore } from '../stores/auth'
 import { useUploadQueueStore } from '../stores/uploadQueue'
 import { useA11yStore } from '../stores/a11y'
+import { useLocaleStore } from '../stores/locale'
 import { CATEGORY_TABS, uploadLabelFor } from '../lib/roster'
 import { filterArchives } from '../lib/archiveFilters'
 import { downloadFullBackup } from '../lib/exportArchives'
@@ -13,12 +14,14 @@ import { zhError } from '../lib/errors'
 import ArchiveCard from '../components/ArchiveCard.vue'
 import UploadModal from '../components/UploadModal.vue'
 import TimelineView from '../components/TimelineView.vue'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 
 const PAGE_SIZE = 10
 
 const auth = useAuthStore()
 const queue = useUploadQueueStore()
 const a11y = useA11yStore()
+const i18n = useLocaleStore()
 const router = useRouter()
 
 const tab = ref('all')
@@ -184,20 +187,31 @@ onMounted(load)
       <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
         <div class="min-w-0 flex-1">
           <h1 class="hidden sm:block font-song text-lg sm:text-xl truncate" data-testid="home-brand">
-            黄志松人生纪念馆
+            {{ i18n.t('siteTitle') }}
           </h1>
           <p class="text-ink sm:text-mute text-lg sm:text-sm font-medium sm:font-normal truncate" data-testid="home-welcome">
-            欢迎 {{ auth.displayName }}<span class="hidden sm:inline">{{ auth.isAdmin ? '（管理员）' : '' }}</span>
+            {{ i18n.t('welcome') }} {{ auth.displayName }}<span class="hidden sm:inline">{{ auth.isAdmin ? '（管理员）' : '' }}</span>
           </p>
         </div>
         <div class="flex items-center gap-2 overflow-x-auto shrink-0">
+          <LanguageSwitcher />
           <button
             v-if="auth.isAdmin"
             type="button"
             class="min-h-tap px-3 border border-clay inline-flex items-center gap-1 shrink-0"
+            data-testid="nav-members"
             @click="router.push('/members')"
           >
-            <Users class="w-5 h-5" /> <span class="hidden sm:inline">家族成员管理</span>
+            <Users class="w-5 h-5" /> <span class="hidden sm:inline">{{ i18n.t('members') }}</span>
+          </button>
+          <button
+            v-if="auth.isAdmin"
+            type="button"
+            class="min-h-tap px-3 border border-clay inline-flex items-center gap-1 shrink-0"
+            data-testid="nav-settings"
+            @click="router.push('/settings')"
+          >
+            <Settings class="w-5 h-5" /> <span class="hidden sm:inline">{{ i18n.t('settings') }}</span>
           </button>
           <button
             type="button"
@@ -245,7 +259,7 @@ onMounted(load)
             class="min-h-tap px-3 border border-clay inline-flex items-center gap-1 shrink-0"
             @click="logout"
           >
-            <LogOut class="w-5 h-5" /> <span class="hidden sm:inline">退出</span>
+            <LogOut class="w-5 h-5" /> <span class="hidden sm:inline">{{ i18n.t('logout') }}</span>
           </button>
         </div>
       </div>
@@ -297,7 +311,7 @@ onMounted(load)
             v-model="searchQ"
             type="search"
             class="w-full min-h-tap pl-10 pr-3 border border-clay bg-parchment"
-            placeholder="搜索标题、关系人、说明、上传者…"
+            :placeholder="i18n.t('searchPlaceholder')"
             data-testid="search-input"
           />
         </label>
@@ -308,27 +322,27 @@ onMounted(load)
             :class="viewMode === 'grid' ? 'bg-cinnabar text-parchment' : 'bg-parchment'"
             data-testid="view-grid"
             @click="viewMode = 'grid'"
-          >卡片</button>
+          >{{ i18n.t('cards') }}</button>
           <button
             type="button"
             class="min-h-tap px-3 border-l border-clay"
             :class="viewMode === 'timeline' ? 'bg-cinnabar text-parchment' : 'bg-parchment'"
             data-testid="view-timeline"
             @click="viewMode = 'timeline'"
-          >年表</button>
+          >{{ i18n.t('timeline') }}</button>
         </div>
       </div>
       <p class="text-mute text-sm" data-testid="result-count">
-        共 {{ filtered.length }} 条
+        {{ i18n.t('resultCount', { n: filtered.length }) }}
         <template v-if="viewMode === 'grid' && filtered.length">
-          · 第 {{ page }} / {{ totalPages }} 页（每页 {{ PAGE_SIZE }} 条）
+          · {{ i18n.t('pageOf', { page, total: totalPages, size: PAGE_SIZE }) }}
         </template>
       </p>
     </section>
 
     <main class="max-w-6xl mx-auto px-4 py-6">
-      <p v-if="loading" class="text-mute">载入珍藏中…</p>
-      <p v-else-if="!filtered.length" class="text-mute py-12 text-center">没有符合条件的档案，欢迎上传或调整筛选。</p>
+      <p v-if="loading" class="text-mute">{{ i18n.t('loading') }}</p>
+      <p v-else-if="!filtered.length" class="text-mute py-12 text-center">{{ i18n.t('empty') }}</p>
       <TimelineView
         v-else-if="viewMode === 'timeline'"
         :archives="filtered"
