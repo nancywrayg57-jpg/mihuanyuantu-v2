@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
 | branch | `cursor/remain-gap-w1-9973` |
-| HEAD | （推送后填）· 基线 `main`=`f86b6af`（#46） |
+| HEAD | `96a25d7` · PR [#47](https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/47) · 基线 `main`=`f86b6af`（#46） |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 **BLOCKED**；Web 登录入口见 `WEB_LOGIN_ENTRY.md` |
 | 代码态 | REMAIN W1：R1 底座旁路关闭 + R2 资源库服务端分页；R3–R8 未做；R4 待管理员选 A/B |
 | 验证态 | `/tmp/remain-gap-e2e.log`：`REMAIN_GAP_W1_PASS=true`；`R1_AUTH_BYPASS_CLOSED_PASS=true`；`R2_ASSET_SERVER_PAGE_PASS=true`；`R9_S7_BLOCKED=true`；`production_billing=false`；`R4_NEEDS_ADMIN_CHOICE=true` |

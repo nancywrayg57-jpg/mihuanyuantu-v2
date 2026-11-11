@@ -17,8 +17,8 @@
 ## 3. 下一步（摘要）
 
 - **工单**：`REMAIN-GAP-PLAN-2026-11-11`（九项剩余缺口；本会话交付 **W1 = R1+R2**）
-- **分支 / PR**：`cursor/remain-gap-w1-9973`（基线 `main` 含 #46 `f86b6af`）
-- **合入注意**：按 AGENTS §7 **不得自评自合**——仅非作者 Owner squash。
+- **分支 / PR**：`cursor/remain-gap-w1-9973` → https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/47（基线 `main` 含 #46 `f86b6af`；提交作者 `xtzhou247`）
+- **合入注意**：PR 由本机 `nancywrayg57-jpg` 创建；按 AGENTS §7 **不得自评自合**——仅非作者 Owner squash。
 - **端测**：`/tmp/remain-gap-e2e.log` → `REMAIN_GAP_W1_PASS=true`
 - **证据闸门**：`R9_S7_BLOCKED=true`；`production_billing=false`；`R4_NEEDS_ADMIN_CHOICE=true`
 - **禁止**：开 S7；生产收费；改 `PASS_SCORE`；重做 FR-025；ZIP；Key 轮询；正式 ND-012；自选 R4 路径 A/B
