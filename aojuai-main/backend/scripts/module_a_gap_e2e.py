@@ -9,7 +9,6 @@ from __future__ import annotations
 import asyncio
 import io
 import json
-import os
 import subprocess
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
@@ -74,27 +73,9 @@ async def _upload_staging() -> str:
 
 async def main() -> int:
     LOG.write_text("", encoding="utf-8")
-    # Gate must be set before Settings consumers in this process; live API may
-    # still need the same env in its process — ASGI path uses this process.
-    os.environ["REALPHOTOS_IMPORT_STAGING"] = "true"
-    os.environ.setdefault(
-        "REALPHOTOS_UNIT_COSTS_JSON",
-        json.dumps(
-            {
-                "pre_review|qwen3-vl-plus": {
-                    "unit_cost": "0.02",
-                    "currency": "CNY",
-                    "unit_name": "call",
-                }
-            }
-        ),
-    )
-
     from dotenv import load_dotenv
 
     load_dotenv(REPO / "aojuai-main/backend/.env")
-    # Re-apply after dotenv so work-order flags win for this evidence run.
-    os.environ["REALPHOTOS_IMPORT_STAGING"] = "true"
 
     from sqlalchemy import func, select
 
@@ -125,10 +106,18 @@ async def main() -> int:
     from app.infrastructure.database.session import Base, async_session_factory, engine, init_db
     from app.main import app as fastapi_app
 
-    # pydantic settings may have been constructed before env flip
+    # Work-order gates via Settings only (GOV-10 forbids scripts touching os.environ).
     settings.REALPHOTOS_IMPORT_STAGING = "true"
     if not str(settings.REALPHOTOS_UNIT_COSTS_JSON or "").strip():
-        settings.REALPHOTOS_UNIT_COSTS_JSON = os.environ["REALPHOTOS_UNIT_COSTS_JSON"]
+        settings.REALPHOTOS_UNIT_COSTS_JSON = json.dumps(
+            {
+                "pre_review|qwen3-vl-plus": {
+                    "unit_cost": "0.02",
+                    "currency": "CNY",
+                    "unit_name": "call",
+                }
+            }
+        )
 
     branch = subprocess.check_output(
         ["git", "-C", str(REPO), "rev-parse", "--abbrev-ref", "HEAD"], text=True
