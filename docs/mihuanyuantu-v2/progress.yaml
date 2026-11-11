@@ -247,7 +247,7 @@ next_action:
   work_order: "REMAIN-GAP-PLAN-2026-11-11 docs/mihuanyuantu-v2/input/REMAIN-GAP-PLAN-2026-11-11.md"
   prior_work_order: "REMAIN-GAP W1+W2 已合入 #48"
   branch: cursor/remain-gap-w3w4-9973
-  pr: pending_push
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/49"
   prior_branch: cursor/remain-gap-w1-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/48"
   remain_gap_w3_w4_status:
