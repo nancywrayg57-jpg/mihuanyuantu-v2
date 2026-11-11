@@ -20,9 +20,15 @@ from PIL import Image
 
 from app.core.exceptions import BusinessError
 
-PIPELINE_VERSION = "s2-five-layer-1"
+PIPELINE_VERSION = "s2-five-layer-2"
 ENCODE_PROFILE = "s2-ecommerce-1"
 _QUALITIES = (90, 93, 96, 98, 100)
+# ND-020 fidelity regression: mean abs RGB delta after decode vs source pixels.
+# Logged in FIVE-LAYER-PHYS-TUNE e2e; do not raise silently without ticket.
+FIDELITY_MAD_MAX = 3.5
+# L2 high-frequency relative amplitude sigma (was 0.02 on s2-five-layer-1).
+_L2_SIGMA = 0.028
+_L2_RADIUS = 0.35
 
 
 @dataclass(frozen=True)
@@ -48,11 +54,38 @@ def _byte_floor(source: bytes) -> int:
     return len(_encode(rgb, quality=100))
 
 
+def l1_noise_sigma(iso: object) -> float:
+    """ISO-linked CMOS-like L1 sigma for s2-five-layer-2 (ND-020 damped).
+
+    Qualitative reference only from legacy ``isoToNoiseSigma ≈ 0.5*sqrt(ISO/100)``.
+    This curve is weaker and capped so ISO100 is modestly above v1's fixed 0.8
+    without importing vignette / chromatic aberration / saturation paths.
+    """
+    raw = str(iso or "100").strip().split()[0]
+    try:
+        value = float(raw)
+    except ValueError:
+        value = 100.0
+    value = max(50.0, min(value, 6400.0))
+    # ISO100 → ~1.10; ISO400 → ~1.50; ISO1600 → ~2.30 → capped 1.85
+    sigma = 0.40 * math.sqrt(value / 100.0) + 0.70
+    return float(min(1.85, max(1.05, sigma)))
+
+
+def mean_abs_delta(before: np.ndarray, after: np.ndarray) -> float:
+    """Mean absolute per-channel delta; used by fidelity regression tests."""
+    a = np.asarray(before, dtype=np.float32)
+    b = np.asarray(after, dtype=np.float32)
+    if a.shape != b.shape:
+        raise ValueError("shape mismatch")
+    return float(np.mean(np.abs(a - b)))
+
+
 def run_five_layer(*, source: bytes, preset: dict, seed: int) -> FiveLayerOutput:
     """Run L1–L5 and return the final JPEG plus the EXIF field ledger."""
     baseline = _decode_baseline(source)
     height, width = int(baseline.shape[0]), int(baseline.shape[1])
-    pixels = _l1_l3(baseline, seed=int(seed))
+    pixels = _l1_l3(baseline, seed=int(seed), iso=preset.get("iso"))
     if pixels.shape[0] != height or pixels.shape[1] != width:
         raise BusinessError(message="五层改变了宽高", code="OUTPUT_CONSTRAINT_UNSATISFIED")
     image = Image.fromarray(pixels.astype(np.uint8), mode="RGB")
@@ -97,22 +130,23 @@ def _decode_baseline(source: bytes) -> np.ndarray:
         return np.asarray(rgb, dtype=np.float32)
 
 
-def _l1_l3(baseline: np.ndarray, *, seed: int) -> np.ndarray:
+def _l1_l3(baseline: np.ndarray, *, seed: int, iso: object = "100") -> np.ndarray:
     rng = np.random.default_rng(int(seed))
     arr = np.array(baseline, copy=True)
-    # L1 细微像素噪声。不旋转、不裁切、不缩放。
-    arr += rng.normal(0.0, 0.8, size=arr.shape)
-    # L2 高频幅度的小幅扰动。
+    # L1 细微像素噪声（ISO 弱相关）。不旋转、不裁切、不缩放；无暗角/色差。
+    sigma = l1_noise_sigma(iso)
+    arr += rng.normal(0.0, sigma, size=arr.shape)
+    # L2 高频幅度的小幅扰动（s2-five-layer-2 略强于 0.02，仍须肉眼不可见）。
     for channel in range(3):
         freq = np.fft.rfft2(arr[:, :, channel])
         height, width = freq.shape
         yy, xx = np.ogrid[:height, :width]
         radius = np.sqrt((yy / max(height, 1)) ** 2 + (xx / max(width, 1)) ** 2)
-        mask = radius > 0.35
-        delta = rng.normal(0.0, 0.02, size=freq.shape)
+        mask = radius > _L2_RADIUS
+        delta = rng.normal(0.0, _L2_SIGMA, size=freq.shape)
         freq = freq * (1.0 + mask * delta)
         arr[:, :, channel] = np.fft.irfft2(freq, s=arr.shape[:2])
-    # L3 稀疏一档像素扰动，宽高保持基线。
+    # L3 稀疏一档像素扰动，宽高保持基线；禁止借 L3 做大面积改图。
     count = min(512, arr.shape[0] * arr.shape[1])
     ys = rng.integers(0, arr.shape[0], size=count)
     xs = rng.integers(0, arr.shape[1], size=count)

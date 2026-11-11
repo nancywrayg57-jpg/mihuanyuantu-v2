@@ -107,4 +107,5 @@
 - MODULE-A-GAP-2026-11-10：临时图床联调导入（`REALPHOTOS_IMPORT_STAGING`，`formalSupplier=false`）；`cap_realphotos_provider_usage` 调用时成本；worker `inbox_cleanup`/`output_cleanup`。证据 `/tmp/module-a-gap-e2e.log`。ND-012 正式仍 PENDING。
 - MODULE-B-CONTRACT-2026-11-10：B1 FR-033 OpenAPI + 无会话端测 PASS；B2 尺寸门闸 `SUPPORTS_SIZE_CONTROL=false`（1024x768→1448x1086；1024x1024→1254x1254），`B2_SIZE_UNSUPPORTED_RECORDED`。证据 `/tmp/module-b-contract-e2e.log`。
 - MODEL-API-CONFIG-2026-11-11：系统管理「模型 API」四职责可配置（单 Key、不轮询）；`ensure()` 不覆盖管理员配置；运行时预审/生图/优化/最终检测读启用合同；审计落合同 `updated_at`+应用日志（FR-030 不进用户操作日志）。证据 `/tmp/model-api-config-e2e.log`。
-- Deferred: CI 升 3.12/pnpm10；替身改库码 `fixture_technical` 须 Owner 批准；正式导入供应商 / OSS / geocoder；B2-X（须书面尺寸合同且探测一致）；第一版不做 Key 轮询。
+- FIVE-LAYER-PHYS-TUNE-2026-11-11：`s2-five-layer-2` L1 ISO 弱相关阻尼噪声 + L2 σ=0.028；ND-020 保真通过；live Gemini 对照结论 `PHYS_TUNE_NEUTRAL`（中位数 69→68，≥75 仍 0）。证据 `/tmp/five-layer-phys-tune-e2e.log`。不得宣称已解决低分。
+- Deferred: CI 升 3.12/pnpm10；替身改库码 `fixture_technical` 须 Owner 批准；正式导入供应商 / OSS / geocoder；B2-X；第一版不做 Key 轮询；低分策略另开样张/检测工单。
