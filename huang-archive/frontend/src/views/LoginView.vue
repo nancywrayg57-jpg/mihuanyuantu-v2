@@ -306,7 +306,7 @@ onMounted(async () => {
               <ChevronDown class="w-5 h-5" />
             </button>
           </div>
-          <LanguageSwitcher variant="login" data-testid="login-lang-switcher" />
+          <LanguageSwitcher variant="login" />
         </div>
 
         <form v-else-if="step === 2" @submit.prevent="goEnterStep">
