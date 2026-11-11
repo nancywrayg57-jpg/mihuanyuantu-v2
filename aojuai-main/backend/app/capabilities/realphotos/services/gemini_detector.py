@@ -74,10 +74,7 @@ def detect_jpeg(
     if not key or not model:
         raise BusinessError(message="最终检测未配置", code="GEMINI_NOT_CONFIGURED")
     root = str(base_url or settings.GEMINI_API_BASE or "").rstrip("/")
-    if root.endswith(":generateContent"):
-        url = root
-    else:
-        url = f"{root}/models/{model}:generateContent"
+    url = root if root.endswith(":generateContent") else f"{root}/models/{model}:generateContent"
     body = {
         "contents": [
             {

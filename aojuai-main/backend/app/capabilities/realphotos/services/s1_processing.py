@@ -659,7 +659,6 @@ class RealphotosS1Service:
         from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
         from app.capabilities.realphotos.services.supplier_clients import SupplierCallError, review_image
         from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
-
         from app.capabilities.realphotos.services.supplier_secrets import read_duty_secret
 
         contract = await RealphotosSupplierConfigService(self.db).enabled("pre_review")

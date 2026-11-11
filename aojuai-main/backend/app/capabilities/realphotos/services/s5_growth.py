@@ -847,7 +847,6 @@ class RealphotosGrowthService:
             review_image,
         )
         from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
-
         from app.capabilities.realphotos.services.supplier_secrets import read_duty_secret
 
         contract = await RealphotosSupplierConfigService(self.db).enabled("pre_review")
