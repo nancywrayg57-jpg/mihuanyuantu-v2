@@ -427,11 +427,20 @@ class RealphotosS1Service:
         needed = len(requested) * PROCESS_UNIT_CREDITS
         if int(wallet["availableInteger"]) < needed:
             raise BusinessError(message="余额不足，整单拒绝", code="INSUFFICIENT_CREDITS")
-        # FR-006：批量提交前逐张校验锁；命中则整单拒、不冻结
+        # FR-006：批量提交前对「仍存在」的资源校验锁；命中则整单拒、不冻结。
+        # 软删/缺失资源留给 _open_batch 的 per-image precheck（不合格逐张拒绝）。
         for asset_id in requested:
-            asset = await self._asset(tenant_id=int(tenant_id), asset_id=int(asset_id))
-            if asset.deleted_at is not None:
-                raise NotFoundError(message="资源不存在")
+            asset = (
+                await self.db.execute(
+                    select(RealphotosAsset).where(
+                        RealphotosAsset.id == int(asset_id),
+                        RealphotosAsset.tenant_id == int(tenant_id),
+                        RealphotosAsset.deleted_at.is_(None),
+                    )
+                )
+            ).scalar_one_or_none()
+            if asset is None:
+                continue
             await self._assert_asset_unlocked(
                 tenant_id=int(tenant_id),
                 owner_account_id=int(owner_account_id),

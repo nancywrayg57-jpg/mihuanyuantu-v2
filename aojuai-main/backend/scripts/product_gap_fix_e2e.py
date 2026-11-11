@@ -9,7 +9,6 @@ from __future__ import annotations
 import asyncio
 import io
 import json
-import os
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
@@ -324,7 +323,7 @@ async def main() -> int:
         note("G2_IMAGE_LOCK_ENFORCE_PASS=true")
 
         # —— G4 ——
-        os.environ["REALPHOTOS_NOTIFY_FORCE_FAIL_UNTIL"] = "2"
+        settings.REALPHOTOS_NOTIFY_FORCE_FAIL_UNTIL = "2"
         async with async_session_factory() as db:
             notify = RealphotosNotifyOutboxService(db)
             row = await notify.enqueue_inbox(
@@ -353,7 +352,7 @@ async def main() -> int:
             assert row is not None
             row.next_attempt_at = None
             await db.commit()
-        os.environ.pop("REALPHOTOS_NOTIFY_FORCE_FAIL_UNTIL", None)
+        settings.REALPHOTOS_NOTIFY_FORCE_FAIL_UNTIL = ""
         async with async_session_factory() as db:
             notify = RealphotosNotifyOutboxService(db)
             row = await db.get(RealphotosOutbox, outbox_id)

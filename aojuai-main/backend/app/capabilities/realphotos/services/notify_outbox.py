@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -11,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.capabilities.realphotos.constants import INBOX_TTL_DAYS, NOTIFY_MAX_ATTEMPTS, NOTIFY_RETRY_SECONDS
 from app.capabilities.realphotos.models import RealphotosInboxMessage, RealphotosOutbox
+from app.core.config import settings
 
 
 def _utcnow() -> datetime:
@@ -19,7 +19,7 @@ def _utcnow() -> datetime:
 
 def _force_fail_until() -> int:
     """E2E 钩：REALPHOTOS_NOTIFY_FORCE_FAIL_UNTIL=N 时前 N 次 attempt 强制失败。"""
-    raw = str(os.environ.get("REALPHOTOS_NOTIFY_FORCE_FAIL_UNTIL") or "").strip()
+    raw = str(settings.REALPHOTOS_NOTIFY_FORCE_FAIL_UNTIL or "").strip()
     if not raw:
         return 0
     try:

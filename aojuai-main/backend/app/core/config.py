@@ -333,6 +333,8 @@ class Settings(BaseSettings):
     REALPHOTOS_IMPORT_STAGING: str = ""
     # duty|model_id → {unit_cost, currency, unit_name}; empty = no known unit price.
     REALPHOTOS_UNIT_COSTS_JSON: str = ""
+    # E2E only: force notify outbox deliver to fail for the first N attempts.
+    REALPHOTOS_NOTIFY_FORCE_FAIL_UNTIL: str = ""
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.1-pro-preview"
     GEMINI_API_BASE: str = "https://generativelanguage.googleapis.com/v1beta"
