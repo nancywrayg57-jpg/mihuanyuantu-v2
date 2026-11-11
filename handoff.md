@@ -18,7 +18,7 @@
 
 - **工单**：`REMAIN-GAP-PLAN-2026-11-11` · **W1+W2**（R1/R2/R3/R4A）
 - **分支**：`cursor/remain-gap-w1-9973`（基线 `main` #46 `f86b6af`）
-- **PR #47**：已按管理员要求**关闭**；本波统一再开 PR
+- **PR**：https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/48（统一 W1+W2；**#47 已关**）
 - **R4 裁决**：管理员选 **路径 A**（`guard_epoch` / `ACCOUNT_SPEND_BUSY`）
 - **端测**：`/tmp/remain-gap-e2e.log` → `REMAIN_GAP_W1_PASS` + `REMAIN_GAP_W2_PASS`
 - **禁止**：开 S7；自评自合；改 `PASS_SCORE`；重做 FR-025
