@@ -108,10 +108,12 @@ async def test_g3_upload_batch_hard_limit(db) -> None:
 
 @pytest.mark.asyncio
 async def test_g4_outbox_retry_then_sent(db, monkeypatch) -> None:
+    from app.core.config import settings
+
     summary = await bootstrap_s0_accounts(db)
     tenant_id = int(summary["rp_merchant_a1"]["tenantId"])
     owner_id = int(summary["rp_merchant_a1"]["userId"])
-    monkeypatch.setenv("REALPHOTOS_NOTIFY_FORCE_FAIL_UNTIL", "2")
+    monkeypatch.setattr(settings, "REALPHOTOS_NOTIFY_FORCE_FAIL_UNTIL", "2")
     notify = RealphotosNotifyOutboxService(db)
     row = await notify.enqueue_inbox(
         tenant_id=tenant_id,
@@ -130,7 +132,7 @@ async def test_g4_outbox_retry_then_sent(db, monkeypatch) -> None:
     assert second is not None and second["status"] == "pending" and second["attemptCount"] == 2
     row.next_attempt_at = None
     await db.flush()
-    monkeypatch.delenv("REALPHOTOS_NOTIFY_FORCE_FAIL_UNTIL", raising=False)
+    monkeypatch.setattr(settings, "REALPHOTOS_NOTIFY_FORCE_FAIL_UNTIL", "")
     third = await notify.deliver_one()
     assert third is not None and third["status"] == "sent" and third["attemptCount"] == 3
     out = (
