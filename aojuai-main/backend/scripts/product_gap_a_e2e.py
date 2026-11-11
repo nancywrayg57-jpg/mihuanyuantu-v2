@@ -113,6 +113,12 @@ async def _main() -> int:
                 )
             )
         ).scalar_one_or_none()
+        from app.capabilities.realphotos.services.copy_execution_guard import (
+            RealphotosCopyExecutionGuardService,
+        )
+        await RealphotosCopyExecutionGuardService(db).force_clear_active(
+            tenant_id=int(tenant), owner_account_id=int(merchant_user)
+        )
         if profile is not None and bool(profile.copy_latch_active):
             profile.copy_latch_active = False
             profile.copy_latch_batch_id = None

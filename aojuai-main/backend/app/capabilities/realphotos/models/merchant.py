@@ -30,6 +30,8 @@ class RealphotosMerchantProfile(TenantBaseModel):
         Boolean, nullable=False, default=False, server_default="false"
     )
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+    # 遗留列：REMAIN-GAP R4 路径 A 后业务门闩改走 cap_realphotos_copy_execution_guards；
+    # 保留列仅为存量库兼容，禁止新业务读写（见 copy_execution_guard 服务）。
     copy_latch_batch_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     copy_latch_active: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="false"

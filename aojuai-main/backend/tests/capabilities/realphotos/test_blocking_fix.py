@@ -193,5 +193,5 @@ async def test_copy_no_reserve_and_latch(db):
             idempotency_key="copy-blocked",
             detection_mode="gemini",
         )
-    assert exc.value.code == "COPY_LATCH_ACTIVE"
+    assert exc.value.code == "ACCOUNT_SPEND_BUSY"
     assert await db.scalar(select(func.count()).select_from(RealphotosImageTask)) >= 2

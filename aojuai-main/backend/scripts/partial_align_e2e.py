@@ -118,10 +118,17 @@ async def _main() -> int:
                 )
             )
         ).scalar_one_or_none()
+        from app.capabilities.realphotos.services.copy_execution_guard import (
+            RealphotosCopyExecutionGuardService,
+        )
+        if await RealphotosCopyExecutionGuardService(db).force_clear_active(
+            tenant_id=int(tenant), owner_account_id=int(merchant_user)
+        ):
+            note("cleared_stale_copy_guard=true")
         if profile is not None and bool(profile.copy_latch_active):
             profile.copy_latch_active = False
             profile.copy_latch_batch_id = None
-            note("cleared_stale_copy_latch=true")
+            note("cleared_legacy_copy_latch_mirror=true")
         await db.commit()
         wallet_before = await RealphotosCreditService(db).get_wallet(tenant_id=tenant)
 

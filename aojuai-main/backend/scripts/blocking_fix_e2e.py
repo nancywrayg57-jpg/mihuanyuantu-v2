@@ -493,7 +493,7 @@ async def _main() -> int:
             },
         )
         note(f"A_latch_block status={blocked.status_code} code={blocked.json().get('code')}")
-        assert blocked.json().get("code") == "COPY_LATCH_ACTIVE"
+        assert blocked.json().get("code") == "ACCOUNT_SPEND_BUSY"
 
         # recharge still available during latch
         recharge = await client.post(

@@ -1503,11 +1503,14 @@ class RealphotosS1Service:
             )
             self.db.add(profile)
             await self.db.flush()
-        if bool(profile.copy_latch_active):
-            raise BusinessError(
-                message="复制处理任务执行中，暂缓本账号其他扣分与冻结；充值可用",
-                code="COPY_LATCH_ACTIVE",
-            )
+        from app.capabilities.realphotos.services.copy_execution_guard import (
+            RealphotosCopyExecutionGuardService,
+        )
+
+        guard_svc = RealphotosCopyExecutionGuardService(self.db)
+        await guard_svc.reject_if_busy(
+            tenant_id=int(tenant_id), owner_account_id=int(owner_account_id)
+        )
         # ND-025 still skips live pre-review (pre_review_mode=pass on copied row).
         batch = RealphotosBatch(
             tenant_id=int(tenant_id),
@@ -1553,8 +1556,11 @@ class RealphotosS1Service:
                 origin="copy",
             )
         )
-        profile.copy_latch_active = True
-        profile.copy_latch_batch_id = int(batch.id)
+        await guard_svc.acquire(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(owner_account_id),
+            batch_id=int(batch.id),
+        )
         profile.version = int(profile.version or 1) + 1
         await self.jobs.enqueue_process(
             tenant_id=int(tenant_id),
@@ -1730,13 +1736,16 @@ class RealphotosS1Service:
             operator_user_id=int(task.owner_account_id),
             event_key=f"consume:copy:{int(task.id)}",
             reference={"taskId": int(task.id), "disposition": disposition, "copiedFrom": task.copied_from_task_id},
-            allow_during_copy_latch=True,
+            allow_during_copy_guard=True,
         )
         task.credit_disposition = disposition
         await self._maybe_clear_copy_latch(task)
 
     async def _maybe_clear_copy_latch(self, task: RealphotosImageTask) -> None:
-        from app.capabilities.realphotos.models import RealphotosMerchantProfile
+        """批次子项全部终态后解除 AD-005 guard（函数名保留兼容调用点）。"""
+        from app.capabilities.realphotos.services.copy_execution_guard import (
+            RealphotosCopyExecutionGuardService,
+        )
 
         if str(getattr(task, "billing_mode", "normal") or "normal") != "copy_no_reserve":
             return
@@ -1751,22 +1760,11 @@ class RealphotosS1Service:
         terminal = {TASK_DELIVERED, TASK_FAILED, TASK_PRE_REVIEW_FAILED}
         if any(str(row.status) not in terminal for row in siblings):
             return
-        profile = (
-            await self.db.execute(
-                select(RealphotosMerchantProfile).where(
-                    RealphotosMerchantProfile.tenant_id == int(task.tenant_id),
-                    RealphotosMerchantProfile.user_id == int(task.owner_account_id),
-                    RealphotosMerchantProfile.deleted_at.is_(None),
-                )
-            )
-        ).scalar_one_or_none()
-        if profile is None:
-            return
-        if int(profile.copy_latch_batch_id or 0) == int(task.batch_id):
-            profile.copy_latch_active = False
-            profile.copy_latch_batch_id = None
-            profile.version = int(profile.version or 1) + 1
-            await self.db.flush()
+        await RealphotosCopyExecutionGuardService(self.db).release_for_batch(
+            tenant_id=int(task.tenant_id),
+            owner_account_id=int(task.owner_account_id),
+            batch_id=int(task.batch_id),
+        )
 
     async def _notify(self, task: RealphotosImageTask, *, title: str, body: str) -> None:
         from app.capabilities.realphotos.services.notify_outbox import RealphotosNotifyOutboxService
