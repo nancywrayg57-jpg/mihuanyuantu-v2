@@ -18,12 +18,22 @@ function placeMenu() {
   const el = root.value
   if (!el) return
   const r = el.getBoundingClientRect()
-  menuStyle.value = {
+  const menuH = 170
+  const spaceBelow = window.innerHeight - r.bottom
+  const openUp = spaceBelow < menuH + 16
+  const style = {
     position: 'fixed',
-    top: `${Math.round(r.bottom + 8)}px`,
-    right: `${Math.round(window.innerWidth - r.right)}px`,
+    right: `${Math.max(8, Math.round(window.innerWidth - r.right))}px`,
     zIndex: 90,
   }
+  if (openUp) {
+    style.bottom = `${Math.round(window.innerHeight - r.top + 8)}px`
+    style.top = 'auto'
+  } else {
+    style.top = `${Math.round(r.bottom + 8)}px`
+    style.bottom = 'auto'
+  }
+  menuStyle.value = style
 }
 
 async function toggle() {
