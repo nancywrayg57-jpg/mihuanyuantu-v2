@@ -92,7 +92,8 @@
 | 17-ux-cn-preset | U1–U7 中文标签 + 预设分页/详情/新增弹窗；C1 撤批量 UI | `/tmp/ux-cn-preset-e2e.log` | merged_#35 | — |
 | 18-fix-task-failure-ux | F1–F6 失败原因映射/详情分数门槛/GPS 提示/替身区分/预审请求可重试 | `/tmp/fix-task-failure-ux-e2e.log` | merged_#36 | — |
 | 19-fix-failure-rate-remain | R1–R6 失败率剩余项；本机即开发机补 R6 | `/tmp/fix-failure-rate-remain-e2e.log` | local_pass_pr_pending | Owner squash #37；PASS_SCORE=75；不开 S7 |
-| 20-product-gap-fix | G1 图形验证码 · G2 lock · G3 upload≤20 · G4 outbox · G5 OpenAPI · G6 cost 回归 | `/tmp/product-gap-fix-e2e.log` | coded_e2e_pass_pr_reopen | #45 已关（无图）；返修 imageBase64+cookie expires；Owner 非作者 squash；S7 不做 |
+| 20-product-gap-fix | G1 图形验证码 · G2 lock · G3 upload≤20 · G4 outbox · G5 OpenAPI · G6 cost 回归 | `/tmp/product-gap-fix-e2e.log` | merged_#46 | 基线 main `f86b6af` |
+| 21-remain-gap-w1w2 | R1/R2 + R3 Alembic0003 + R4 路径 A；R9 闸门 | `/tmp/remain-gap-e2e.log` | coded_e2e_pass_unified_pr | #47 已关；统一新 PR；R4=A；`R9_S7_BLOCKED` |
 
 ## Risks and Watchpoints
 - Risk: 把文档齐全或 CI 绿当成后端已交付。
@@ -103,10 +104,11 @@
 - Mitigation: F8 网关放行 `generation/*`（资产表校验）；「(降级)」仅文件名元数据回退。
 
 ## Backlog Knowledge
-- Next: Owner 非自评自合新开 PRODUCT-GAP-FIX PR；不得开 S7；FR-025 保持 MODULE-A A2 已交付（本单仅 G6 回归）。
-- Closed this loop: PRODUCT-GAP-FIX-2026-11-11 G1–G5 开发 + G6 回归；证据 `/tmp/product-gap-fix-e2e.log`（`PRODUCT_GAP_FIX_E2E_PASS=true`，`S7_OUT_OF_SCOPE=true`，`G6_NO_REIMPLEMENT=true`）。
-- PRODUCT-GAP-FIX 要点：Web 登录走 `/realphotos/auth` **图形验证码**（`imageBase64`）+cookie；提交路径 `IMAGE_LOCKED`；`POST /assets/batch` 超 20 整批拒；`_notify` 只写 outbox + `scripts.run_realphotos_notify_worker`；商家页可下载 OpenAPI 制品。
-- 2026-11-11 返修：人工验收无图无法登录 → **关闭 PR #45**；补 `captcha_image` + 登录页 `<img>` + `expires` ISO 修 cookie session；复测后重开 PR。
+- Next: Owner 非自评自合 REMAIN-GAP **W1+W2 统一 PR**（#47 已关）；不得开 S7；`R9_S7_BLOCKED=true`。
+- Closed this loop (W1+W2): R1/R2/R3/R4A；证据 `/tmp/remain-gap-e2e.log`（`REMAIN_GAP_W1_PASS` + `REMAIN_GAP_W2_PASS`；`R3_ALEMBIC_SCHEMA_PASS`；`R4_COPY_GUARD_CONTRACT_PASS`）。
+- REMAIN W1：底座 login 对 `rp_*` → `AUTH_CAPTCHA_REQUIRED`；资产服务端分页。
+- REMAIN W2：`realphotos_0003`（outbox 投递列 + `cap_realphotos_copy_execution_guards`）；管理员选 **路径 A** → `ACCOUNT_SPEND_BUSY` / `guard_epoch`；业务路径不再用 `COPY_LATCH_ACTIVE`。
+- Prior closed: PRODUCT-GAP-FIX #46；本单不重复 G1–G5。
 - MODULE-A-GAP-2026-11-10：临时图床联调导入（`REALPHOTOS_IMPORT_STAGING`，`formalSupplier=false`）；`cap_realphotos_provider_usage` 调用时成本；worker `inbox_cleanup`/`output_cleanup`。证据 `/tmp/module-a-gap-e2e.log`。ND-012 正式仍 PENDING。
 - MODULE-B-CONTRACT-2026-11-10：B1 FR-033 OpenAPI + 无会话端测 PASS；B2 尺寸门闸 `SUPPORTS_SIZE_CONTROL=false`（1024x768→1448x1086；1024x1024→1254x1254），`B2_SIZE_UNSUPPORTED_RECORDED`。证据 `/tmp/module-b-contract-e2e.log`。
 - MODEL-API-CONFIG-2026-11-11：系统管理「模型 API」四职责可配置（单 Key、不轮询）；`ensure()` 不覆盖管理员配置；运行时预审/生图/优化/最终检测读启用合同；审计落合同 `updated_at`+应用日志（FR-030 不进用户操作日志）。证据 `/tmp/model-api-config-e2e.log`。

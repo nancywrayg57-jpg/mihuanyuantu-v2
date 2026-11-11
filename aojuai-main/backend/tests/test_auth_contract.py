@@ -66,6 +66,10 @@ def _install_auth_service_mocks(monkeypatch: pytest.MonkeyPatch, *, user: Simple
         async def get_user_by_id_any_tenant(self, user_id: int) -> SimpleNamespace | None:
             return user if int(user_id) == int(user.id) else None
 
+        async def get_user_role_codes(self, user_id: int, tenant_id: int | None = None) -> list[str]:
+            # 平台超管无 rp_* 岗位：允许底座登录；蜜獾业务角色由专项单测覆盖旁路关闭
+            return []
+
     class _FakeInvitationService:
         def __init__(self, db: Any) -> None:
             self.db = db

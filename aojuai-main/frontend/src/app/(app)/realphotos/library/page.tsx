@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
@@ -26,12 +26,12 @@ type Asset = {
 }
 
 const UPLOAD_BATCH_MAX = 20
-
 const PAGE_SIZE = 20
 
 export default function RealphotosLibraryPage() {
   const router = useRouter()
   const [items, setItems] = useState<Asset[]>([])
+  const [total, setTotal] = useState(0)
   const [message, setMessage] = useState('')
   const [originFilter, setOriginFilter] = useState('all')
   const [page, setPage] = useState(1)
@@ -39,23 +39,31 @@ export default function RealphotosLibraryPage() {
   const [thumbs, setThumbs] = useState<Record<string, string>>({})
   const [preview, setPreview] = useState<{ id: string; url: string } | null>(null)
 
-  async function reload() {
-    const data = await apiFetch<{ items: Asset[] }>('/api/v1/realphotos/assets')
+  const reload = useCallback(async () => {
+    const params = new URLSearchParams({
+      page: String(page),
+      pageSize: String(PAGE_SIZE),
+    })
+    if (originFilter !== 'all') {
+      params.set('originKind', originFilter)
+    }
+    const data = await apiFetch<{ items: Asset[]; total: number; page: number; pageSize: number }>(
+      `/api/v1/realphotos/assets?${params.toString()}`,
+    )
     setItems(data.items || [])
-  }
+    setTotal(Number(data.total || 0))
+  }, [page, originFilter])
 
   useEffect(() => {
     void reload().catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '资源加载失败'))
-  }, [])
+  }, [reload])
 
   useEffect(() => {
     let cancelled = false
     const created: string[] = []
     async function loadThumbs() {
-      // Progressive updates: waiting for all 60 (incl. multi-MB generation PNGs)
-      // before setState left the column stuck on 「图」 even when the gateway was healthy (F8).
       setThumbs({})
-      for (const item of items.slice(0, 60)) {
+      for (const item of items) {
         if (cancelled) return
         if (!item.objectKey) continue
         try {
@@ -76,13 +84,7 @@ export default function RealphotosLibraryPage() {
     }
   }, [items])
 
-  const filtered = useMemo(() => {
-    if (originFilter === 'all') return items
-    return items.filter((item) => item.originKind === originFilter)
-  }, [items, originFilter])
-
-  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const selectedIds = Object.keys(selected)
 
   function toggle(id: string) {
@@ -141,7 +143,11 @@ export default function RealphotosLibraryPage() {
   }
 
   function goProcess() {
-    const unlocked = selectedIds.filter((id) => !items.find((item) => item.id === id)?.locked)
+    const unlocked = selectedIds.filter((id) => {
+      const onPage = items.find((item) => item.id === id)
+      if (onPage) return !onPage.locked
+      return true
+    })
     const lockedCount = selectedIds.length - unlocked.length
     const ids = unlocked.slice(0, 10)
     if (!ids.length) {
@@ -183,6 +189,7 @@ export default function RealphotosLibraryPage() {
         await apiFetch('/api/v1/realphotos/assets/batch', { method: 'POST', body })
       }
       setMessage(`本地上传已入库 ${files.length} 张，未创建处理任务`)
+      setPage(1)
       await reload()
     } catch (error: unknown) {
       setMessage(error instanceof ApiError ? error.message : '上传失败')
@@ -192,7 +199,7 @@ export default function RealphotosLibraryPage() {
   return (
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">图片资源</h1>
-      <p className="text-sm text-muted-foreground">统一入口。四入口进入添加；列表为表格，不是卡片网格。</p>
+      <p className="text-sm text-muted-foreground">统一入口。四入口进入添加；列表为表格，不是卡片网格。服务端分页约 20/页。</p>
       <p className="text-sm">{message}</p>
       <section className="flex flex-wrap gap-2 text-sm">
         <span className="font-medium">添加图片：</span>
@@ -255,9 +262,14 @@ export default function RealphotosLibraryPage() {
           </select>
         </label>
         <span>
-          第 {page} / {pageCount} 页 · 默认 20 条 · 跨筛选勾选保留 {selectedIds.length} 张
+          第 {page} / {pageCount} 页 · 共 {total} 条 · 服务端 {PAGE_SIZE}/页 · 跨页勾选保留 {selectedIds.length} 张
         </span>
-        <button className="border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+        <button
+          className="border px-2 py-1"
+          type="button"
+          disabled={page <= 1}
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+        >
           上一页
         </button>
         <button
@@ -283,12 +295,12 @@ export default function RealphotosLibraryPage() {
           </tr>
         </thead>
         <tbody>
-          {pageItems.length === 0 ? (
+          {items.length === 0 ? (
             <tr>
               <td colSpan={8}>暂无资源</td>
             </tr>
           ) : (
-            pageItems.map((item) => (
+            items.map((item) => (
               <tr key={item.id} className={item.locked ? 'opacity-70' : undefined}>
                 <td>
                   <input

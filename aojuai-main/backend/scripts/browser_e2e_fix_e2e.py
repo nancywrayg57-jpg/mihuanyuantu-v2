@@ -146,6 +146,13 @@ async def _main() -> int:
         if profile is not None:
             profile.pre_review_frozen = True
             profile.copy_latch_active = False
+        from app.capabilities.realphotos.services.copy_execution_guard import (
+            RealphotosCopyExecutionGuardService,
+        )
+
+        await RealphotosCopyExecutionGuardService(db).force_clear_active(
+            tenant_id=int(tenant), owner_account_id=int(merchant_user)
+        )
         freeze_ticket = await ops.create_ticket(
             tenant_id=tenant,
             owner_account_id=merchant_user,

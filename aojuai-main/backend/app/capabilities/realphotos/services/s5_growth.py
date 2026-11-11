@@ -12,7 +12,7 @@ import io
 import json
 
 from PIL import Image
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.capabilities.realphotos.adapters.storage import get_storage_adapter
@@ -360,6 +360,44 @@ class RealphotosGrowthService:
             .order_by(RealphotosAsset.id.desc())
         )
         return list(rows.scalars().all())
+
+    async def list_assets_page(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        page: int = 1,
+        page_size: int = 20,
+        origin_kind: str | None = None,
+    ) -> tuple[list[RealphotosAsset], int, int, int]:
+        """FR-028：服务端分页。返回 (items, total, page, page_size)。"""
+        from app.capabilities.realphotos.constants import ASSET_PAGE_SIZE_DEFAULT, ASSET_PAGE_SIZE_MAX
+
+        page_n = max(1, int(page or 1))
+        size = int(page_size or ASSET_PAGE_SIZE_DEFAULT)
+        if size < 1:
+            size = ASSET_PAGE_SIZE_DEFAULT
+        if size > ASSET_PAGE_SIZE_MAX:
+            size = ASSET_PAGE_SIZE_MAX
+        filters = [
+            RealphotosAsset.tenant_id == int(tenant_id),
+            RealphotosAsset.owner_account_id == int(owner_account_id),
+            RealphotosAsset.deleted_at.is_(None),
+        ]
+        kind = str(origin_kind or "").strip()
+        if kind and kind != "all":
+            filters.append(RealphotosAsset.origin_kind == kind)
+        total = int(
+            await self.db.scalar(select(func.count()).select_from(RealphotosAsset).where(*filters)) or 0
+        )
+        rows = await self.db.execute(
+            select(RealphotosAsset)
+            .where(*filters)
+            .order_by(RealphotosAsset.id.desc())
+            .offset((page_n - 1) * size)
+            .limit(size)
+        )
+        return list(rows.scalars().all()), total, page_n, size
 
     async def optimize_prompt(
         self,

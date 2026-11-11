@@ -158,9 +158,16 @@ async def _main() -> int:
                 )
             )
         ).scalar_one_or_none()
+        from app.capabilities.realphotos.services.copy_execution_guard import (
+            RealphotosCopyExecutionGuardService,
+        )
+        if await RealphotosCopyExecutionGuardService(db).force_clear_active(
+            tenant_id=int(tenant), owner_account_id=int(user)
+        ):
+            note("cleared_stale_copy_guard=true")
         if profile is not None and bool(profile.copy_latch_active):
             profile.copy_latch_active = False
-            note("cleared_stale_copy_latch=true")
+            note("cleared_legacy_copy_latch_mirror=true")
         presets = await RealphotosOpsService(db).list_enabled_presets()
         must(bool(presets), "presets_enabled")
         preset_code = str(presets[0]["code"])
@@ -314,10 +321,16 @@ async def _main() -> int:
         must(len(matched) >= 2, f"E-C2_assets_matched={len(matched)}")
         must(all(row.get("objectKey") for row in matched), "E-C2_objectKey_present")
 
-        # Clear copy latch left by E-C1-3 so batch submit proves GPS/submit path still works.
+        # Clear copy guard left by E-C1-3 so batch submit proves GPS/submit path still works.
         async with async_session_factory() as db3:
             from app.capabilities.realphotos.models import RealphotosMerchantProfile
+            from app.capabilities.realphotos.services.copy_execution_guard import (
+                RealphotosCopyExecutionGuardService,
+            )
 
+            await RealphotosCopyExecutionGuardService(db3).force_clear_active(
+                tenant_id=int(tenant), owner_account_id=int(user)
+            )
             row = (
                 await db3.execute(
                     select(RealphotosMerchantProfile).where(
@@ -330,7 +343,10 @@ async def _main() -> int:
             if row is not None:
                 row.copy_latch_active = False
                 await db3.commit()
-                note("E-C2-4 cleared_copy_latch_for_submit=true")
+                note("E-C2-4 cleared_copy_guard_for_submit=true")
+            else:
+                await db3.commit()
+                note("E-C2-4 cleared_copy_guard_for_submit=true")
 
         multi = await client.post(
             "/api/v1/realphotos/processing-batches",

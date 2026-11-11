@@ -10,7 +10,23 @@ from app.capabilities.realphotos import models as realphotos_models  # noqa: F40
 from app.core.config import settings
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL_SYNC)
+
+
+def _sync_url() -> str:
+    """Alembic 需要同步驱动；本仓安装的是 psycopg2-binary，不是 psycopg v3。"""
+    url = str(settings.DATABASE_URL_SYNC)
+    if "+psycopg2://" in url or url.startswith("sqlite"):
+        return url
+    if url.startswith("postgresql+psycopg://"):
+        return url.replace("postgresql+psycopg://", "postgresql+psycopg2://", 1)
+    if url.startswith("postgresql+asyncpg://"):
+        return url.replace("postgresql+asyncpg://", "postgresql+psycopg2://", 1)
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+psycopg2://", 1)
+    return url
+
+
+config.set_main_option("sqlalchemy.url", _sync_url())
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -25,6 +41,7 @@ OWNED_TABLES = {
     "cap_realphotos_credit_ledger_entries",
     "cap_realphotos_execution_jobs",
     "cap_realphotos_outbox",
+    "cap_realphotos_copy_execution_guards",
 }
 
 
