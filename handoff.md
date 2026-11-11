@@ -16,13 +16,12 @@
 
 ## 3. 下一步（摘要）
 
-- **分支**：`cursor/module-b-contract-9973`（工单 `MODULE-B-CONTRACT-2026-11-10`）
-- **B1**：OpenAPI `contracts/realphotos_image_processing.openapi.json` + `docs/mihuanyuantu-v2/FR-033-image-processing-对接说明.md`；无会话端测 PASS
-- **B2**：门闸 `SUPPORTS_SIZE_CONTROL=false`（探测尺寸不符 + 物料无书面合同）→ `B2_SIZE_UNSUPPORTED_RECORDED`；**未标 B2 完成**
-- **管理员待办（可选）**：提供 gpt-image-2 / aoju 尺寸控制书面说明后，再考虑 B2-X
-- 不得开 S7；不得自评自合；`production_billing=false`
+- **分支 / PR**：`cursor/model-api-config-9973` → https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/43（工单 `MODEL-API-CONFIG-2026-11-11`）
+- **M1–M4**：系统管理「模型 API」可配置四职责渠道（单 Key、不轮询）；`ensure()` 不覆盖管理员配置；运行时读启用合同；RBAC + FR-030 审计落点
+- **跳过**：gpt-image-2 尺寸 / B2-X；S7；生产收费；Key 轮询
+- 不得自评自合；`production_billing=false`；`polling_enabled=false`
 
 ## 4. 证据
 
-- `/tmp/module-b-contract-e2e.log`
-- 约束台账：`docs/mihuanyuantu-v2/input/MODULE-B-CONTRACT-constraint-ledger.md`
+- `/tmp/model-api-config-e2e.log`（含 `M1_MODEL_API_UI_PASS` `M2_CONTRACT_PERSIST_PASS` `M3_RUNTIME_SYNC_PASS` `M4_RBAC_AUDIT_PASS`）
+- 约束台账：`docs/mihuanyuantu-v2/input/MODEL-API-CONFIG-constraint-ledger.md`

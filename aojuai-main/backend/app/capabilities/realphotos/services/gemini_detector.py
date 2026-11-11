@@ -61,12 +61,20 @@ def parse_gemini_report(payload: str) -> dict:
     return parsed
 
 
-def detect_jpeg(jpeg: bytes) -> dict:
-    key = str(settings.GEMINI_API_KEY or "").strip()
-    model = str(settings.GEMINI_MODEL or "gemini-3.1-pro-preview").strip()
+def detect_jpeg(
+    jpeg: bytes,
+    *,
+    model_id: str | None = None,
+    base_url: str | None = None,
+    api_key: str | None = None,
+) -> dict:
+    """Call Gemini. Prefer explicit contract args; settings are seed fallback only."""
+    key = str(api_key or settings.GEMINI_API_KEY or "").strip()
+    model = str(model_id or settings.GEMINI_MODEL or "gemini-3.1-pro-preview").strip()
     if not key or not model:
         raise BusinessError(message="最终检测未配置", code="GEMINI_NOT_CONFIGURED")
-    url = f"{str(settings.GEMINI_API_BASE).rstrip('/')}/models/{model}:generateContent"
+    root = str(base_url or settings.GEMINI_API_BASE or "").rstrip("/")
+    url = root if root.endswith(":generateContent") else f"{root}/models/{model}:generateContent"
     body = {
         "contents": [
             {
