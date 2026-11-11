@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "Module A 缺口收口（MODULE-A-GAP A1–A3）"
-    user_value: "临时图床联调导入；调用时成本账本；过期消息/结果入队清理"
-    visible_output: "imports 联调文案；opsMetrics.cost 来自 usage；worker 认领 inbox/output_cleanup"
-    verify: "/tmp/module-a-gap-e2e.log 含 A1/A2/A3 PASS 与 AC009_SKIPPED；production_billing=false；formal_supplier=false"
+    goal: "Module B 合同收口（MODULE-B-CONTRACT B1 + B2-G）"
+    user_value: "FR-033 OpenAPI/无会话端测归档；生图尺寸门闸诚实登记"
+    visible_output: "OpenAPI 工件 + 对接说明；B2 sizeControl=unsupported_or_not_honored"
+    verify: "/tmp/module-b-contract-e2e.log 含 B1_FR033_CONTRACT_PASS 与 B2_SIZE_UNSUPPORTED_RECORDED；production_billing=false"
     status: coded_e2e_pass_pr_pending
-    next_user_action: "非作者 Owner squash PR；不得自评自合；不得开 S7；不得宣称 ND-012 正式闭合。"
+    next_user_action: "非作者 Owner squash；若有尺寸书面合同可再开 B2-X；不得开 S7。"
   agent_rules:
     explain_next_step: true
     ask_max_questions: 5
@@ -204,13 +204,32 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "MODULE-A-GAP A1–A3 端测 PASS；推 PR 待非作者 Owner squash。不得开 S7；不得宣称 ND-012 正式闭合。"
-  work_order: "MODULE-A-GAP-2026-11-10 docs/mihuanyuantu-v2/input/MODULE-A-GAP-2026-11-10.md"
-  prior_work_order: "UX-PRESET-LOGS-2026-11-10 PR #39；SCORE-ROOTCAUSE PR #40"
-  branch: cursor/module-a-gap-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/41"
-  prior_branch: cursor/score-rootcause-9973
-  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/40"
+  action: "MODULE-B-CONTRACT：B1 PASS；B2 门闸 SUPPORTS_SIZE_CONTROL=false 已登记；推 PR 待非作者 Owner squash。不得开 S7。"
+  work_order: "MODULE-B-CONTRACT-2026-11-10 docs/mihuanyuantu-v2/input/MODULE-B-CONTRACT-2026-11-10.md"
+  prior_work_order: "MODULE-A-GAP-2026-11-10 已合入 #41"
+  branch: cursor/module-b-contract-9973
+  pr: pending
+  prior_branch: cursor/module-a-gap-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/41"
+  module_b_contract_status:
+    B1: done_e2e_pass
+    B2: gate_unsupported_recorded_not_complete
+    B2_G_supplier_doc_checked: false
+    B2_G_probe_sizes: "1024x768->1448x1086;1024x1024->1254x1254"
+    SUPPORTS_SIZE_CONTROL: false
+    B2_exit: B2_SIZE_UNSUPPORTED_RECORDED
+    openapi_artifact: aojuai-main/backend/contracts/realphotos_image_processing.openapi.json
+    integration_doc: docs/mihuanyuantu-v2/FR-033-image-processing-对接说明.md
+    e2e_log: "/tmp/module-b-contract-e2e.log"
+    e2e_mark: MODULE_B_CONTRACT_E2E_PASS_PARTIAL
+    production_billing: false
+    s7_started: false
+    OUT_SCORE: true
+    OUT_ND011: true
+    OUT_AC009: true
+    OUT_ND012_FORMAL: true
+    admin_request_size_doc: "请提供 aoju/gpt-image-2 尺寸控制书面/接口说明（是否支持、枚举/范围、不支持行为）"
+    constraint_ledger: docs/mihuanyuantu-v2/input/MODULE-B-CONTRACT-constraint-ledger.md
   module_a_gap_status:
     A1_url_import_staging: done_e2e_pass
     A2_cost_metering: done_e2e_pass
