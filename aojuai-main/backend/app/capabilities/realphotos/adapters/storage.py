@@ -1,6 +1,7 @@
-"""StorageAdapter contract + LocalDisk implementation (S0).
+"""StorageAdapter contract + LocalDisk default + OSS stub (AD-007).
 
-OSS 仅预留接口位，首版不启用。网关经适配器流式读取，禁止向客户暴露裸路径。
+OSS 仅预留实现类；未配置凭证时不得启用。首版默认 LocalDisk。
+网关经适配器流式读取，禁止向客户暴露裸路径。本工单禁止接真桶上线。
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ from app.capabilities.realphotos.constants import (
     SEED_OBJECT_KEY,
     storage_root,
 )
+from app.core.config import settings
 from app.core.exceptions import BusinessError, NotFoundError
 
 _OBJECT_KEY_RE = re.compile(r"^[A-Za-z0-9._/-]+$")
@@ -101,5 +103,105 @@ class LocalDiskStorageAdapter:
         )
 
 
-def get_storage_adapter() -> LocalDiskStorageAdapter:
-    return LocalDiskStorageAdapter()
+class OssStorageAdapter:
+    """AD-007 OSS 适配器预留。
+
+    未配置 endpoint/bucket/access_key/secret 时构造即失败，禁止静默当 LocalDisk。
+    本工单不实现真上传下载；方法调用抛 OSS_NOT_IMPLEMENTED，避免误接生产桶。
+    """
+
+    def __init__(
+        self,
+        *,
+        endpoint: str,
+        bucket: str,
+        access_key_id: str,
+        access_key_secret: str,
+        prefix: str = "",
+    ) -> None:
+        missing = [
+            name
+            for name, value in (
+                ("endpoint", endpoint),
+                ("bucket", bucket),
+                ("access_key_id", access_key_id),
+                ("access_key_secret", access_key_secret),
+            )
+            if not str(value or "").strip()
+        ]
+        if missing:
+            raise BusinessError(
+                message="OSS 凭证未配置完整，不得启用 OssStorageAdapter",
+                code="OSS_NOT_CONFIGURED",
+                details={"missing": missing},
+            )
+        self.endpoint = str(endpoint).strip()
+        self.bucket = str(bucket).strip()
+        self.access_key_id = str(access_key_id).strip()
+        self.access_key_secret = str(access_key_secret).strip()
+        self.prefix = str(prefix or "").strip().strip("/")
+
+    def _nyi(self) -> None:
+        raise BusinessError(
+            message="OSS 适配器仅预留，本工单禁止真桶读写",
+            code="OSS_NOT_IMPLEMENTED",
+            details={"endpoint": self.endpoint, "bucket": self.bucket},
+        )
+
+    def put_bytes(
+        self, object_key: str, data: bytes, *, content_type: str = "application/octet-stream"
+    ) -> StoredObject:
+        self._nyi()
+        raise AssertionError("unreachable")
+
+    def open_read(self, object_key: str) -> BinaryIO:
+        self._nyi()
+        raise AssertionError("unreachable")
+
+    def exists(self, object_key: str) -> bool:
+        self._nyi()
+        raise AssertionError("unreachable")
+
+    def delete(self, object_key: str) -> bool:
+        self._nyi()
+        raise AssertionError("unreachable")
+
+    def ensure_seed_file(self) -> StoredObject:
+        self._nyi()
+        raise AssertionError("unreachable")
+
+
+def _oss_settings_configured() -> bool:
+    return all(
+        str(getattr(settings, name, "") or "").strip()
+        for name in (
+            "REALPHOTOS_OSS_ENDPOINT",
+            "REALPHOTOS_OSS_BUCKET",
+            "REALPHOTOS_OSS_ACCESS_KEY_ID",
+            "REALPHOTOS_OSS_ACCESS_KEY_SECRET",
+        )
+    )
+
+
+def get_storage_adapter() -> LocalDiskStorageAdapter | OssStorageAdapter:
+    """默认 LocalDisk。仅当 backend=oss 且凭证齐全时返回 OssStorageAdapter（仍不接真桶）。"""
+    backend = str(getattr(settings, "REALPHOTOS_STORAGE_BACKEND", "") or "local").strip().lower()
+    if backend in {"", "local", "localdisk", "disk"}:
+        return LocalDiskStorageAdapter()
+    if backend == "oss":
+        if not _oss_settings_configured():
+            raise BusinessError(
+                message="REALPHOTOS_STORAGE_BACKEND=oss 但凭证缺失，拒绝启用",
+                code="OSS_NOT_CONFIGURED",
+            )
+        return OssStorageAdapter(
+            endpoint=str(settings.REALPHOTOS_OSS_ENDPOINT),
+            bucket=str(settings.REALPHOTOS_OSS_BUCKET),
+            access_key_id=str(settings.REALPHOTOS_OSS_ACCESS_KEY_ID),
+            access_key_secret=str(settings.REALPHOTOS_OSS_ACCESS_KEY_SECRET),
+            prefix=str(getattr(settings, "REALPHOTOS_OSS_PREFIX", "") or ""),
+        )
+    raise BusinessError(
+        message=f"未知存储后端 {backend!r}，仅支持 local|oss",
+        code="STORAGE_BACKEND_INVALID",
+    )

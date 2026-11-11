@@ -329,6 +329,13 @@ class Settings(BaseSettings):
     REALPHOTOS_ALLOW_DEV_CAPTCHA: str = ""
     REALPHOTOS_SUPPLIER_LIVE: str = ""
     REALPHOTOS_STORAGE_ROOT: str = ""
+    # AD-007：local（默认）| oss；oss 须配齐下方凭证，且本工单不接真桶读写
+    REALPHOTOS_STORAGE_BACKEND: str = "local"
+    REALPHOTOS_OSS_ENDPOINT: str = ""
+    REALPHOTOS_OSS_BUCKET: str = ""
+    REALPHOTOS_OSS_ACCESS_KEY_ID: str = ""
+    REALPHOTOS_OSS_ACCESS_KEY_SECRET: str = ""
+    REALPHOTOS_OSS_PREFIX: str = ""
     # MODULE-A-GAP: admin-authorized staging image-host import (formalSupplier stays false).
     REALPHOTOS_IMPORT_STAGING: str = ""
     # duty|model_id → {unit_cost, currency, unit_name}; empty = no known unit price.
