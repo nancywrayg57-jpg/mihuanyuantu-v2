@@ -8,7 +8,7 @@
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
 | branch | `cursor/remain-gap-w1-9973`（W1+W2 同分支） |
-| HEAD | （推送后填）· 基线 `main`=`f86b6af`（#46） |
+| HEAD | `4376e78`· 基线 `main`=`f86b6af`（#46） |
 | 文档态 | PRD **2.10**；架构 **1.7**；S7 **BLOCKED**；R4=**路径 A**（管理员确认） |
 | 代码态 | W1 R1+R2 + W2 R3 Alembic `realphotos_0003` + R4 `guard_epoch`/`ACCOUNT_SPEND_BUSY` |
 | 验证态 | `/tmp/remain-gap-e2e.log`：`REMAIN_GAP_W1_PASS` / `REMAIN_GAP_W2_PASS`；`R9_S7_BLOCKED=true`；`production_billing=false` |
