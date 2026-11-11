@@ -56,11 +56,9 @@ async def _main() -> int:
     note("ops_quality_d_e2e start")
     note("production_billing=false url_import_connected=false s7_started=false")
 
-    from sqlalchemy import select
-
     import app.capabilities.realphotos.models  # noqa: F401
     import app.domain  # noqa: F401
-    from app.capabilities.realphotos.models import RealphotosImageTask, RealphotosMerchantProfile
+    from app.capabilities.realphotos.models import RealphotosImageTask
     from app.capabilities.realphotos.permissions import ROLE_ADMIN
     from app.capabilities.realphotos.seed import reconcile
     from app.capabilities.realphotos.services.bootstrap import DEFAULT_PASSWORD, bootstrap_s0_accounts
@@ -155,23 +153,13 @@ async def _main() -> int:
             focal_length="26mm",
             source="admin",
         )
-        profile = (
-            await db.execute(
-                select(RealphotosMerchantProfile).where(
-                    RealphotosMerchantProfile.tenant_id == tenant,
-                    RealphotosMerchantProfile.user_id == merchant_user,
-                )
-            )
-        ).scalar_one_or_none()
         from app.capabilities.realphotos.services.copy_execution_guard import (
             RealphotosCopyExecutionGuardService,
         )
         await RealphotosCopyExecutionGuardService(db).force_clear_active(
             tenant_id=int(tenant), owner_account_id=int(merchant_user)
         )
-        if profile is not None and bool(profile.copy_latch_active):
-            profile.copy_latch_active = False
-            profile.copy_latch_batch_id = None
+        # B2: skip legacy copy_latch_* mirror clears.
         credits = RealphotosCreditService(db)
         wallet_before = await credits.get_wallet(tenant_id=tenant)
         await db.commit()

@@ -192,15 +192,10 @@ async def test_second_failure_locks_and_third_distinct_freezes(db):
         )
     ).scalar_one()
     assert profile.pre_review_frozen is False
-    asset = await ctx["loop"].upload(tenant_id=ctx["tenant"], owner_account_id=ctx["user"], data=_jpeg())
+    # FR-002/031：冻结后上传/入库类获取即拒绝（不必等到 submit）
     with pytest.raises(BusinessError) as frozen:
-        await ctx["loop"].submit_batch(
-            tenant_id=ctx["tenant"],
-            owner_account_id=ctx["user"],
-            actor_role_codes={ROLE_MERCHANT},
-            asset_ids=[int(asset.id)],
-            preset_code=S1_ENABLED_PRESETS[0]["code"],
-            idempotency_key="s6-frozen",
+        await ctx["loop"].upload(
+            tenant_id=ctx["tenant"], owner_account_id=ctx["user"], data=_jpeg()
         )
     assert frozen.value.code == "ACCOUNT_FROZEN"
     with pytest.raises(BusinessError) as generated:

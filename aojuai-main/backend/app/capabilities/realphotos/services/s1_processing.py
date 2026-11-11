@@ -165,6 +165,11 @@ class RealphotosS1Service:
     ) -> RealphotosAsset:
         from app.capabilities.realphotos.services.asset_naming import ensure_sku
 
+        # FR-002：冻结账号禁止新资源获取（本地上传与批量共用本入口）
+        await RealphotosOpsService(self.db).assert_can_create_task(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(owner_account_id),
+        )
         meta = inspect_upload(data)
         token = secrets.token_hex(8)
         key = f"tenant/{int(tenant_id)}/upload/{token}.{meta['extension']}"
@@ -235,6 +240,11 @@ class RealphotosS1Service:
                 code="UPLOAD_BATCH_REJECTED",
                 details={"count": len(items), "max": UPLOAD_BATCH_MAX},
             )
+        # FR-002：批量入口先拦冻结，避免无意义硬校验
+        await RealphotosOpsService(self.db).assert_can_create_task(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(owner_account_id),
+        )
         # 先整批硬校验，全部通过后再写库，避免部分脏写
         for data in items:
             inspect_upload(data)

@@ -7,26 +7,25 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
-| branch | `cursor/remain-gap-w3w4-9973` |
-| HEAD | tip · 基线 `main`=`a2f2003`（#48） |
-| 文档态 | PRD **2.10**；架构 **1.7** front-matter=`s0_s6_coded_partial`；S7 **BLOCKED** |
-| 代码态 | W3 R5 三入口 worker；W4 R6 generated SDK、R7 OSS stub、R8 文档 |
-| 验证态 | `/tmp/remain-gap-e2e.log`：`REMAIN_GAP_W3_PASS` / `REMAIN_GAP_W4_PASS`；`R9_S7_BLOCKED=true` |
-| 当前阶段 | REMAIN-GAP-PLAN W3+W4（端测绿，待统一 PR） |
-| 下一步 | 推 PR；非作者 Owner squash；**不得开 S7** |
+| branch | `cursor/audit-remain-closeout-9973` |
+| HEAD | tip · 基线 `main`=`c92fbfd`（#49） |
+| 文档态 | PRD **2.10**；架构 **1.7** front-matter=`s0_s6_coded_partial`；§14.1 已去 NOT_IMPLEMENTED；`LEASE_TTL_DEFERRED` |
+| 代码态 | A1 冻结禁获取；A2 下载扩展名；B1 `realphotos_0004`；B2 lease 书面降级 |
+| 验证态 | `/tmp/audit-remain-closeout-e2e.log`：`AUDIT_REMAIN_W1/W2/W3_PASS`；闸门三联 |
+| 当前阶段 | AUDIT-REMAIN-CLOSEOUT 端测绿，待统一 PR |
+| 下一步 | 推 PR；非作者 Owner squash；**不得开 S7**；**不得宣称 ND-012 正式闭合** |
 
 ## 1. 约束说明
 
-- R5：`process` / `notify` / `cleanup` 分进程；heartbeat 注册入口仅 process 白名单
-- R6：`openapi-typescript@7.4.4` → `frontend/src/generated/realphotos/`
-- R7：`OssStorageAdapter` 未配凭证不可用；默认 LocalDisk；禁止真桶
-- R8：架构不再标 `NOT_IMPLEMENTED`
-- R9：仍 BLOCKED
+- OUT-ND012 / OUT-S7 / OUT-OSS-LIVE / OUT-ZIP / OUT-PHYS 本单均跳过或阻塞
+- B2 选书面降级：`LEASE_TTL_DEFERRED=true`；忙码 `ACCOUNT_SPEND_BUSY`
+- 推送前本地 ruff/pytest·sqlite + FE typecheck + download 单测
 
 ## 2. 阶段状态
 
-| 阶段 | 状态 |
+| 波次 | 状态 |
 | --- | --- |
-| W1+W2 | 已合入 #48 |
-| W3+W4 | 端测 PASS；待 PR |
+| W1 A1/A2 | PASS |
+| W2 B1/B2 | PASS |
+| W3 C1 | PASS |
 | S7 | BLOCKED |

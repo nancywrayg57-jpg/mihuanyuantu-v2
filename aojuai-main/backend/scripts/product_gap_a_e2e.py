@@ -69,11 +69,9 @@ async def _main() -> int:
     note("product_gap_a_e2e start")
     note("production_billing=false s7_started=false url_import_connected=false a5_cost=deferred")
 
-    from sqlalchemy import select
-
     import app.capabilities.realphotos.models  # noqa: F401
     import app.domain  # noqa: F401
-    from app.capabilities.realphotos.models import RealphotosInboxMessage, RealphotosMerchantProfile
+    from app.capabilities.realphotos.models import RealphotosInboxMessage
     from app.capabilities.realphotos.permissions import ROLE_ADMIN, ROLE_MERCHANT
     from app.capabilities.realphotos.seed import reconcile
     from app.capabilities.realphotos.services.bootstrap import DEFAULT_PASSWORD, bootstrap_s0_accounts
@@ -105,23 +103,13 @@ async def _main() -> int:
         await reconcile(db, tenant_id=platform)
         await reconcile(db, tenant_id=tenant)
         await RealphotosSupplierConfigService(db).ensure()
-        profile = (
-            await db.execute(
-                select(RealphotosMerchantProfile).where(
-                    RealphotosMerchantProfile.tenant_id == tenant,
-                    RealphotosMerchantProfile.user_id == merchant_user,
-                )
-            )
-        ).scalar_one_or_none()
         from app.capabilities.realphotos.services.copy_execution_guard import (
             RealphotosCopyExecutionGuardService,
         )
         await RealphotosCopyExecutionGuardService(db).force_clear_active(
             tenant_id=int(tenant), owner_account_id=int(merchant_user)
         )
-        if profile is not None and bool(profile.copy_latch_active):
-            profile.copy_latch_active = False
-            profile.copy_latch_batch_id = None
+        # B2: skip legacy copy_latch_* mirror clears.
         await db.commit()
 
     transport = httpx.ASGITransport(app=fastapi_app)

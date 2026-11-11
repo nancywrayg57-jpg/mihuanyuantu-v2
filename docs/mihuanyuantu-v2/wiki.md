@@ -105,9 +105,10 @@
 - Mitigation: F8 网关放行 `generation/*`（资产表校验）；「(降级)」仅文件名元数据回退。
 
 ## Backlog Knowledge
-- Next: Owner 非自评自合 REMAIN-GAP **W3+W4 PR**；不得开 S7；`R9_S7_BLOCKED=true`。
+- Next: Owner 非自评自合 **AUDIT-REMAIN-CLOSEOUT PR**；不得开 S7；`OUT_ND012_SKIPPED=true`；`R9_S7_BLOCKED=true`。
+- Closed prior (#49): REMAIN-GAP W3+W4 R5–R8。
+- This loop (AUDIT-REMAIN-CLOSEOUT): A1 冻结禁 upload/batch/import；A2 资源库扩名+`_2` 后缀；B1 `realphotos_0004`+OWNED 前缀；B2 `LEASE_TTL_DEFERRED`；C1 §14.1 去 `NOT_IMPLEMENTED`。证据 `/tmp/audit-remain-closeout-e2e.log`。
 - Closed prior (#48): W1+W2 R1/R2/R3/R4A。
-- This loop (W3+W4): R5 process/notify/cleanup；R6 `generated/realphotos`（openapi-typescript@7.4.4）；R7 OSS stub；R8 `s0_s6_coded_partial`；证据 `REMAIN_GAP_W3_PASS`+`REMAIN_GAP_W4_PASS`。
 - MODULE-A-GAP-2026-11-10：临时图床联调导入（`REALPHOTOS_IMPORT_STAGING`，`formalSupplier=false`）；`cap_realphotos_provider_usage` 调用时成本；worker `inbox_cleanup`/`output_cleanup`。证据 `/tmp/module-a-gap-e2e.log`。ND-012 正式仍 PENDING。
 - MODULE-B-CONTRACT-2026-11-10：B1 FR-033 OpenAPI + 无会话端测 PASS；B2 尺寸门闸 `SUPPORTS_SIZE_CONTROL=false`（1024x768→1448x1086；1024x1024→1254x1254），`B2_SIZE_UNSUPPORTED_RECORDED`。证据 `/tmp/module-b-contract-e2e.log`。
 - MODEL-API-CONFIG-2026-11-11：系统管理「模型 API」四职责可配置（单 Key、不轮询）；`ensure()` 不覆盖管理员配置；运行时预审/生图/优化/最终检测读启用合同；审计落合同 `updated_at`+应用日志（FR-030 不进用户操作日志）。证据 `/tmp/model-api-config-e2e.log`。

@@ -33,23 +33,19 @@ if config.config_file_name is not None:
 
 target_metadata = realphotos_models.RealphotosMerchantProfile.metadata
 
-OWNED_TABLES = {
-    "cap_realphotos_merchant_profiles",
-    "cap_realphotos_auth_challenges",
-    "cap_realphotos_auth_guards",
-    "cap_realphotos_credit_accounts",
-    "cap_realphotos_credit_ledger_entries",
-    "cap_realphotos_execution_jobs",
-    "cap_realphotos_outbox",
-    "cap_realphotos_copy_execution_guards",
-}
+# AD-011：realphotos 链拥有全部 cap_realphotos_* 表（前缀策略，避免 OWNED 名单落后于 ORM）。
+OWNED_TABLE_PREFIX = "cap_realphotos_"
+
+
+def _owned_table_name(name: str | None) -> bool:
+    return bool(name) and str(name).startswith(OWNED_TABLE_PREFIX)
 
 
 def include_object(object_, name, type_, reflected, compare_to):
     if type_ == "table":
-        return name in OWNED_TABLES
+        return _owned_table_name(name)
     table = getattr(object_, "table", None)
-    return table is None or table.name in OWNED_TABLES
+    return table is None or _owned_table_name(getattr(table, "name", None))
 
 
 def run_migrations_offline() -> None:

@@ -1,4 +1,9 @@
-"""Ensure BLOCKING-FIX columns exist on the development PostgreSQL database."""
+"""DEPRECATED compatibility helper for older e2e scripts.
+
+Prefer ``alembic upgrade head`` on the realphotos chain
+(``realphotos_0004+``). Do not treat this module as the schema source of truth.
+Does not create or write ``copy_latch_*`` (AD-005 residual retired to guard table).
+"""
 
 from __future__ import annotations
 
@@ -21,8 +26,6 @@ ALTERS = (
     "ALTER TABLE cap_realphotos_generation_tasks ADD COLUMN IF NOT EXISTS supplier_trace JSONB DEFAULT '{}'::jsonb",
     "ALTER TABLE cap_realphotos_generation_items ADD COLUMN IF NOT EXISTS actual_width INTEGER",
     "ALTER TABLE cap_realphotos_generation_items ADD COLUMN IF NOT EXISTS actual_height INTEGER",
-    "ALTER TABLE cap_realphotos_merchant_profiles ADD COLUMN IF NOT EXISTS copy_latch_batch_id BIGINT",
-    "ALTER TABLE cap_realphotos_merchant_profiles ADD COLUMN IF NOT EXISTS copy_latch_active BOOLEAN DEFAULT false",
     "ALTER TABLE cap_realphotos_detection_results ALTER COLUMN detector TYPE VARCHAR(128)",
 )
 
