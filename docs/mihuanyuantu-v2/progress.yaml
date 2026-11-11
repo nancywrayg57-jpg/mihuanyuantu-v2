@@ -264,7 +264,7 @@ next_action:
   work_order: "AUDIT-REMAIN-CLOSEOUT-2026-11-11 docs/mihuanyuantu-v2/input/AUDIT-REMAIN-CLOSEOUT-2026-11-11.md"
   prior_work_order: "REMAIN-GAP W3+W4 已合入 #49"
   branch: cursor/audit-remain-closeout-9973
-  pr: pending_push
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/50"
   prior_branch: cursor/remain-gap-w3w4-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/49"
   audit_remain_closeout_status:
