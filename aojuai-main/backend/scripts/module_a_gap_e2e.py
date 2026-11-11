@@ -96,10 +96,10 @@ async def main() -> int:
     # Re-apply after dotenv so work-order flags win for this evidence run.
     os.environ["REALPHOTOS_IMPORT_STAGING"] = "true"
 
-    import app.capabilities.realphotos.models  # noqa: F401
-    import app.domain  # noqa: F401
     from sqlalchemy import func, select
 
+    import app.capabilities.realphotos.models  # noqa: F401
+    import app.domain  # noqa: F401
     from app.capabilities.realphotos.constants import (
         JOB_KIND_INBOX_CLEANUP,
         JOB_KIND_OUTPUT_CLEANUP,
@@ -330,10 +330,7 @@ async def main() -> int:
         support_ws = await client.get("/api/v1/realphotos/workspace", headers=order_support)
         must(not (support_ws.json()["data"] or {}).get("opsMetrics"), "A2_order_support_no_opsMetrics")
 
-        # Fixture generation must not create known cost rows.
-        async with async_session_factory() as db:
-            usage_before = await RealphotosProviderUsageService(db).count_rows()
-        # Direct fixture-skip proof:
+        # Fixture / non-egress paths must not create known cost rows.
         async with async_session_factory() as db:
             skipped = await RealphotosProviderUsageService(db).record_call(
                 duty="generation",
@@ -397,8 +394,8 @@ async def main() -> int:
             )
             db.add(inbox)
             # Minimal delivered task with expired output
-            from app.capabilities.realphotos.models import RealphotosBatch, RealphotosTaskChain
             from app.capabilities.realphotos.adapters.storage import get_storage_adapter
+            from app.capabilities.realphotos.models import RealphotosBatch, RealphotosTaskChain
 
             batch = RealphotosBatch(
                 tenant_id=tenant,
