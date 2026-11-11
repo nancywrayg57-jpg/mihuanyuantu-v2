@@ -8,7 +8,6 @@ production_billing=false. No S7. Secrets never logged.
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import io
 import json
 import re
@@ -167,10 +166,10 @@ async def main() -> int:
 
     load_dotenv(REPO / "aojuai-main/backend/.env")
 
-    import app.capabilities.realphotos.models  # noqa: F401
-    import app.domain  # noqa: F401
     from sqlalchemy import select
 
+    import app.capabilities.realphotos.models  # noqa: F401
+    import app.domain  # noqa: F401
     from app.capabilities.realphotos.models import RealphotosProviderContract
     from app.capabilities.realphotos.seed import reconcile
     from app.capabilities.realphotos.services.bootstrap import DEFAULT_PASSWORD, bootstrap_s0_accounts
