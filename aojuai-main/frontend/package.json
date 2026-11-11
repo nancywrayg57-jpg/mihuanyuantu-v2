@@ -14,7 +14,9 @@
     "lint": "eslint .",
     "test:routing": "node --experimental-test-isolation=none --test tests/public-site-routing.test.mjs",
     "typecheck": "tsc --pretty false --noEmit",
-    "test": "node --experimental-test-isolation=none --test \"tests/*.test.mjs\""
+    "test": "node --experimental-test-isolation=none --test \"tests/*.test.mjs\"",
+    "gen:realphotos-sdk": "node scripts/generate-realphotos-sdk.mjs",
+    "check:realphotos-sdk": "node scripts/generate-realphotos-sdk.mjs --check"
   },
   "dependencies": {
     "qrcode": "^1.5.4",

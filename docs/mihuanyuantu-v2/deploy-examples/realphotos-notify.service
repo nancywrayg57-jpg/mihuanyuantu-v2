@@ -1,0 +1,17 @@
+# 开发机示例 · 非 S7。
+[Unit]
+Description=realphotos notify worker (AD-001)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=hbs
+WorkingDirectory=/home/hbs/hbs-projects/mihuanyuantu-v2/aojuai-main/backend
+EnvironmentFile=-/home/hbs/hbs-projects/mihuanyuantu-v2/aojuai-main/backend/.env
+Environment=AOJ_ENABLED_MODULES=realphotos
+ExecStart=/home/hbs/hbs-projects/mihuanyuantu-v2/aojuai-main/backend/.venv/bin/python -m scripts.run_realphotos_notify_worker
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

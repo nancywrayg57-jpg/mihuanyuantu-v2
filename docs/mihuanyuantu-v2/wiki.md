@@ -93,7 +93,8 @@
 | 18-fix-task-failure-ux | F1–F6 失败原因映射/详情分数门槛/GPS 提示/替身区分/预审请求可重试 | `/tmp/fix-task-failure-ux-e2e.log` | merged_#36 | — |
 | 19-fix-failure-rate-remain | R1–R6 失败率剩余项；本机即开发机补 R6 | `/tmp/fix-failure-rate-remain-e2e.log` | local_pass_pr_pending | Owner squash #37；PASS_SCORE=75；不开 S7 |
 | 20-product-gap-fix | G1 图形验证码 · G2 lock · G3 upload≤20 · G4 outbox · G5 OpenAPI · G6 cost 回归 | `/tmp/product-gap-fix-e2e.log` | merged_#46 | 基线 main `f86b6af` |
-| 21-remain-gap-w1w2 | R1/R2 + R3 Alembic0003 + R4 路径 A；R9 闸门 | `/tmp/remain-gap-e2e.log` | coded_e2e_pass_unified_pr | #47 已关；统一新 PR；R4=A；`R9_S7_BLOCKED` |
+| 21-remain-gap-w1w2 | R1/R2 + R3 Alembic0003 + R4 路径 A；R9 闸门 | `/tmp/remain-gap-e2e.log` | merged_#48 | R4=A |
+| 22-remain-gap-w3w4 | R5 拓扑 · R6 SDK · R7 OSS stub · R8 架构状态 | `/tmp/remain-gap-e2e.log` | coded_e2e_pass_pr_pending | Owner squash；`R9_S7_BLOCKED` |
 
 ## Risks and Watchpoints
 - Risk: 把文档齐全或 CI 绿当成后端已交付。
@@ -104,11 +105,9 @@
 - Mitigation: F8 网关放行 `generation/*`（资产表校验）；「(降级)」仅文件名元数据回退。
 
 ## Backlog Knowledge
-- Next: Owner 非自评自合 REMAIN-GAP **W1+W2 统一 PR**（#47 已关）；不得开 S7；`R9_S7_BLOCKED=true`。
-- Closed this loop (W1+W2): R1/R2/R3/R4A；证据 `/tmp/remain-gap-e2e.log`（`REMAIN_GAP_W1_PASS` + `REMAIN_GAP_W2_PASS`；`R3_ALEMBIC_SCHEMA_PASS`；`R4_COPY_GUARD_CONTRACT_PASS`）。
-- REMAIN W1：底座 login 对 `rp_*` → `AUTH_CAPTCHA_REQUIRED`；资产服务端分页。
-- REMAIN W2：`realphotos_0003`（outbox 投递列 + `cap_realphotos_copy_execution_guards`）；管理员选 **路径 A** → `ACCOUNT_SPEND_BUSY` / `guard_epoch`；业务路径不再用 `COPY_LATCH_ACTIVE`。
-- Prior closed: PRODUCT-GAP-FIX #46；本单不重复 G1–G5。
+- Next: Owner 非自评自合 REMAIN-GAP **W3+W4 PR**；不得开 S7；`R9_S7_BLOCKED=true`。
+- Closed prior (#48): W1+W2 R1/R2/R3/R4A。
+- This loop (W3+W4): R5 process/notify/cleanup；R6 `generated/realphotos`（openapi-typescript@7.4.4）；R7 OSS stub；R8 `s0_s6_coded_partial`；证据 `REMAIN_GAP_W3_PASS`+`REMAIN_GAP_W4_PASS`。
 - MODULE-A-GAP-2026-11-10：临时图床联调导入（`REALPHOTOS_IMPORT_STAGING`，`formalSupplier=false`）；`cap_realphotos_provider_usage` 调用时成本；worker `inbox_cleanup`/`output_cleanup`。证据 `/tmp/module-a-gap-e2e.log`。ND-012 正式仍 PENDING。
 - MODULE-B-CONTRACT-2026-11-10：B1 FR-033 OpenAPI + 无会话端测 PASS；B2 尺寸门闸 `SUPPORTS_SIZE_CONTROL=false`（1024x768→1448x1086；1024x1024→1254x1254），`B2_SIZE_UNSUPPORTED_RECORDED`。证据 `/tmp/module-b-contract-e2e.log`。
 - MODEL-API-CONFIG-2026-11-11：系统管理「模型 API」四职责可配置（单 Key、不轮询）；`ensure()` 不覆盖管理员配置；运行时预审/生图/优化/最终检测读启用合同；审计落合同 `updated_at`+应用日志（FR-030 不进用户操作日志）。证据 `/tmp/model-api-config-e2e.log`。

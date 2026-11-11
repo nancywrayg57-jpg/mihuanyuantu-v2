@@ -32,35 +32,37 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "REMAIN-GAP-PLAN W1+W2：R1/R2 + R3 Alembic + R4 路径 A（guard_epoch/ACCOUNT_SPEND_BUSY）"
-    user_value: "关底座旁路；资源库服务端分页；迁移可复现；复制门闩合同形对齐架构"
-    visible_output: "AUTH_CAPTCHA_REQUIRED；assets page/pageSize；realphotos_0003；ACCOUNT_SPEND_BUSY"
-    verify: "/tmp/remain-gap-e2e.log 含 REMAIN_GAP_W1_PASS + REMAIN_GAP_W2_PASS；R9_S7_BLOCKED；production_billing=false"
-    status: coded_e2e_pass_unified_pr_pending
-    next_user_action: "统一推送开 PR（#47 已关）；非作者 Owner squash；不得开 S7；不得自评自合。"
+    goal: "REMAIN-GAP-PLAN W3+W4：R5 进程拓扑 + R6 FE SDK + R7 OSS stub + R8 架构状态"
+    user_value: "处理/消息/清理可分进程；前端有生成客户端；OSS 可切换类但不接真桶；文档不再写未实现"
+    visible_output: "run_realphotos_{process,notify,cleanup}_worker；generated/realphotos；OssStorageAdapter；s0_s6_coded_partial"
+    verify: "/tmp/remain-gap-e2e.log 含 REMAIN_GAP_W3_PASS + REMAIN_GAP_W4_PASS；R9_S7_BLOCKED"
+    status: coded_e2e_pass_pr_pending
+    next_user_action: "推 W3+W4 PR；非作者 Owner squash；不得开 S7。"
   remain_gap_plan_2026_11_11:
     work_order: REMAIN-GAP-PLAN-2026-11-11
-    branch: cursor/remain-gap-w1-9973
-    baseline_main: f86b6af
-    baseline_pr: 46
-    pr_47: closed_per_admin_unify_after_w2
-    w1_r1_auth_bypass: done_e2e_pass
-    w1_r2_asset_server_page: done_e2e_pass
-    w2_r3_alembic: done_e2e_pass
-    w2_r4_copy_guard: done_path_a_e2e_pass
+    branch: cursor/remain-gap-w3w4-9973
+    baseline_main: a2f2003
+    baseline_pr: 48
+    pr_47: closed
+    pr_48: merged
+    w1_r1_auth_bypass: done_merged_48
+    w1_r2_asset_server_page: done_merged_48
+    w2_r3_alembic: done_merged_48
+    w2_r4_copy_guard: done_path_a_merged_48
     r4_admin_choice: path_A
-    w3_r5_worker_topology: not_started
-    w4_r6_fe_sdk: not_started
-    w4_r7_oss_stub: not_started
-    w4_r8_arch_frontmatter: not_started
+    w3_r5_worker_topology: done_e2e_pass
+    w4_r6_fe_sdk: done_e2e_pass
+    w4_r7_oss_stub: done_e2e_pass
+    w4_r8_arch_frontmatter: done_e2e_pass
     r9_s7: blocked
     r9_marker: R9_S7_BLOCKED=true
     r9_checklist_draft: docs/mihuanyuantu-v2/S7-开工检查清单-草稿.md
     production_billing: false
     e2e_log: /tmp/remain-gap-e2e.log
-    evidence_marker: REMAIN_GAP_W1_PASS+REMAIN_GAP_W2_PASS
+    evidence_marker: REMAIN_GAP_W3_PASS+REMAIN_GAP_W4_PASS
     constraint_ledger: docs/mihuanyuantu-v2/input/REMAIN-GAP-PLAN-constraint-ledger.md
     web_login_entry_doc: docs/mihuanyuantu-v2/WEB_LOGIN_ENTRY.md
+    worker_topology_doc: docs/mihuanyuantu-v2/WORKER_TOPOLOGY.md
   product_gap_fix_2026_11_11:
     work_order: PRODUCT-GAP-FIX-2026-11-11
     branch: cursor/product-gap-fix-9973
@@ -241,23 +243,25 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "REMAIN-GAP W1+W2：端测 PASS；#47 已关；统一开新 PR 待非作者 Owner squash。R4=路径 A；R9_S7_BLOCKED；不得开 S7；不得自评自合。"
+  action: "REMAIN-GAP W3+W4：端测 PASS；推 PR 待非作者 Owner squash。R9_S7_BLOCKED；不得开 S7；不得自评自合。"
   work_order: "REMAIN-GAP-PLAN-2026-11-11 docs/mihuanyuantu-v2/input/REMAIN-GAP-PLAN-2026-11-11.md"
-  prior_work_order: "PRODUCT-GAP-FIX-2026-11-11 已合入 #46"
-  branch: cursor/remain-gap-w1-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/48"
-  pr_47: closed
-  prior_branch: cursor/product-gap-fix-9973
-  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/46"
-  remain_gap_w1_w2_status:
-    R1_auth_bypass: done_e2e_pass
-    R2_asset_server_page: done_e2e_pass
-    R3_alembic: done_e2e_pass
-    R4_path: A
-    R4_copy_guard: done_e2e_pass
+  prior_work_order: "REMAIN-GAP W1+W2 已合入 #48"
+  branch: cursor/remain-gap-w3w4-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/49"
+  prior_branch: cursor/remain-gap-w1-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/48"
+  remain_gap_w3_w4_status:
+    R5_worker_topology: done_e2e_pass
+    R6_fe_sdk: done_e2e_pass
+    R7_oss_stub: done_e2e_pass
+    R8_arch_frontmatter: done_e2e_pass
     R9_S7_BLOCKED: true
     production_billing: false
     e2e_log: /tmp/remain-gap-e2e.log
+    evidence_marker: REMAIN_GAP_W3_PASS+REMAIN_GAP_W4_PASS
+  remain_gap_w1_w2_status:
+    merged_pr: 48
+    R4_path: A
     evidence_marker: REMAIN_GAP_W1_PASS+REMAIN_GAP_W2_PASS
   five_layer_phys_tune_prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/44"
   five_layer_phys_tune_status:

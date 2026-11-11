@@ -7,27 +7,26 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-11 CST（Asia/Shanghai） |
-| branch | `cursor/remain-gap-w1-9973`（W1+W2 同分支） |
-| HEAD | tip on `cursor/remain-gap-w1-9973` · PR [#48](https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/48) · 基线 `main`=`f86b6af`（#46）；#47 已关 |
-| 文档态 | PRD **2.10**；架构 **1.7**；S7 **BLOCKED**；R4=**路径 A**（管理员确认） |
-| 代码态 | W1 R1+R2 + W2 R3 Alembic `realphotos_0003` + R4 `guard_epoch`/`ACCOUNT_SPEND_BUSY` |
-| 验证态 | `/tmp/remain-gap-e2e.log`：`REMAIN_GAP_W1_PASS` / `REMAIN_GAP_W2_PASS`；`R9_S7_BLOCKED=true`；`production_billing=false` |
-| 当前阶段 | REMAIN-GAP-PLAN W1+W2（端测绿；**统一开 PR**；#47 已关） |
-| 下一步 | 非作者 Owner squash 新 PR；不得开 S7；W3+ 未授权不抢跑 |
+| branch | `cursor/remain-gap-w3w4-9973` |
+| HEAD | tip · 基线 `main`=`a2f2003`（#48） |
+| 文档态 | PRD **2.10**；架构 **1.7** front-matter=`s0_s6_coded_partial`；S7 **BLOCKED** |
+| 代码态 | W3 R5 三入口 worker；W4 R6 generated SDK、R7 OSS stub、R8 文档 |
+| 验证态 | `/tmp/remain-gap-e2e.log`：`REMAIN_GAP_W3_PASS` / `REMAIN_GAP_W4_PASS`；`R9_S7_BLOCKED=true` |
+| 当前阶段 | REMAIN-GAP-PLAN W3+W4（端测绿，待统一 PR） |
+| 下一步 | 推 PR；非作者 Owner squash；**不得开 S7** |
 
 ## 1. 约束说明
 
-- R1：`rp_*` → 底座 login 403 `AUTH_CAPTCHA_REQUIRED`
-- R2：资源库服务端 `page`/`pageSize`（默认 20，钳制 100）+ `total`
-- R3：`realphotos_0003` outbox 投递列 + `cap_realphotos_copy_execution_guards`
-- R4：**路径 A** — `ACCOUNT_SPEND_BUSY` + `guard_epoch`；禁止长期 `COPY_LATCH_ACTIVE` 双轨
-- R9：`R9_S7_BLOCKED=true`；不部署
+- R5：`process` / `notify` / `cleanup` 分进程；heartbeat 注册入口仅 process 白名单
+- R6：`openapi-typescript@7.4.4` → `frontend/src/generated/realphotos/`
+- R7：`OssStorageAdapter` 未配凭证不可用；默认 LocalDisk；禁止真桶
+- R8：架构不再标 `NOT_IMPLEMENTED`
+- R9：仍 BLOCKED
 
-## 2. 阶段状态（摘要）
+## 2. 阶段状态
 
 | 阶段 | 状态 |
 | --- | --- |
-| REMAIN-GAP W1（R1+R2） | 端测 PASS；#47 已关，并入统一 PR |
-| REMAIN-GAP W2（R3+R4A） | 端测 PASS；待统一 PR |
-| PRODUCT-GAP-FIX | 已合入 #46 |
-| S7 | **BLOCKED** |
+| W1+W2 | 已合入 #48 |
+| W3+W4 | 端测 PASS；待 PR |
+| S7 | BLOCKED |

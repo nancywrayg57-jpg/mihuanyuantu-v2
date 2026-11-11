@@ -11,7 +11,8 @@
 | C3 | 前置 | 「PR #46 已合入」；开干前 pull main 含缺口修复 | 校验 merge 后再切 `cursor/remain-gap-9973` |
 | C4 | 推送纪律 | 「推送前必须本地对齐 CI 门禁」；配置读法变更须同改测试 | W1 PR 推送前跑 ruff+pytest(sqlite)+前端 typecheck/test（若触达） |
 | C5 | 范围 | 不重复 PRODUCT-GAP-FIX（captcha/锁图/batch20/outbox/OpenAPI 可达） | W1 只做旁路关闭 + 服务端分页 |
-| C6 | 波次 | 「W1 可同一 PR」；R3 宜在 R4 前或同 PR | 本会话优先交付 **W1（R1+R2）**；W2+ 待 R4 裁决后再开 |
+| C6 | 波次 | 「W1 可同一 PR」；R3 宜在 R4 前或同 PR；W3/W4 可拆 PR | W1+W2 已合入 #48；本波交付 **W3+W4（R5–R8）**；R9 仍 BLOCKED |
+| C7 | 声明 | R6 合同 OpenAPI 缺 `components.schemas`（7 个 $ref） | 生成脚本注入最小 stub；正式补齐合同后去掉 stub；已写入 GENERATED.md |
 
 ## 声明假设
 
@@ -36,4 +37,15 @@
 | R3 | PASS | `realphotos_0003`；`/tmp/remain-gap-e2e.log` `R3_ALEMBIC_SCHEMA_PASS=true`（upgrade 0002→0003；outbox 四列 + guard 表） |
 | R4 路径 A | PASS | 同日志 `R4_COPY_GUARD_CONTRACT_PASS=true`；二次复制/冻结 → `ACCOUNT_SPEND_BUSY`；`guard_epoch` |
 | R9 | BLOCKED | `R9_S7_BLOCKED=true`；`production_billing=false` |
-| 汇总 | PASS | `REMAIN_GAP_W2_PASS=true` |
+| 汇总 | PASS | `REMAIN_GAP_W2_PASS=true`；已合入 #48 |
+
+## W3/W4 交付核对（2026-11-11）
+
+| 项 | 状态 | 证据 |
+| --- | --- | --- |
+| R5 | PASS | `/tmp/remain-gap-e2e.log` `R5_WORKER_TOPOLOGY_PASS`；process/cleanup/notify CLI + systemd 示例 |
+| R6 | PASS | `frontend/src/generated/realphotos/` + `openapi-typescript@7.4.4`；`R6_FE_SDK_GENERATED_PASS` |
+| R7 | PASS | `OssStorageAdapter` 预留；默认 LocalDisk；`R7_OSS_ADAPTER_STUB_PASS` |
+| R8 | PASS | 架构 front-matter `s0_s6_coded_partial`；`R8_ARCH_STATUS_DOC_PASS` |
+| R9 | BLOCKED | `R9_S7_BLOCKED=true`；`production_billing=false` |
+| 汇总 | PASS | `REMAIN_GAP_W3_PASS` + `REMAIN_GAP_W4_PASS` |
