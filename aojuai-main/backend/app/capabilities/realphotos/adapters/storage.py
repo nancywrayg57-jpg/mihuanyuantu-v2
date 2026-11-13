@@ -94,6 +94,34 @@ class LocalDiskStorageAdapter:
         path.unlink()
         return True
 
+    def list_library_object_keys(self, *, prefixes: tuple[str, ...] = ("upload", "generation")) -> list[str]:
+        """List LocalDisk keys under tenant/*/upload|generation (server-only; never expose paths)."""
+        allowed = {str(p).strip() for p in prefixes if str(p).strip()}
+        if not allowed:
+            return []
+        keys: list[str] = []
+        tenant_root = self._root / "tenant"
+        if not tenant_root.is_dir():
+            return keys
+        for tenant_dir in tenant_root.iterdir():
+            if not tenant_dir.is_dir():
+                continue
+            for purpose in allowed:
+                purpose_dir = tenant_dir / purpose
+                if not purpose_dir.is_dir():
+                    continue
+                for path in purpose_dir.rglob("*"):
+                    if not path.is_file():
+                        continue
+                    try:
+                        rel = path.relative_to(self._root).as_posix()
+                    except ValueError:
+                        continue
+                    if ".." in rel.split("/"):
+                        continue
+                    keys.append(rel)
+        return keys
+
     def ensure_seed_file(self) -> StoredObject:
         """grill Q6：开发种子文件（非客户数据）供网关取证。"""
         return self.put_bytes(

@@ -16,6 +16,7 @@ from app.capabilities.realphotos.constants import (
     DETECT_NOT_PASSED,
     DETECT_PASS,
     DETECT_TECHNICAL,
+    LIBRARY_OBJECT_PREFIXES,
     OUTPUT_TTL_HOURS,
     PRE_REVIEW_REJECT,
     PROCESS_UNIT_CREDITS,
@@ -923,6 +924,10 @@ class RealphotosS1Service:
         return task
 
     async def soft_delete_asset(self, *, tenant_id: int, asset_id: int) -> None:
+        """Soft-delete library row and purge the LocalDisk object copy (PRD §9.3).
+
+        Idempotent on the file: missing object still succeeds after deleted_at is set.
+        """
         asset = await self._asset(tenant_id=tenant_id, asset_id=asset_id)
         running = await self.db.execute(
             select(RealphotosImageTask.id).where(
@@ -935,6 +940,9 @@ class RealphotosS1Service:
         if running.first() is not None:
             raise BusinessError(message="运行中任务占用该资源，禁止删除", code="ASSET_IN_USE")
         asset.deleted_at = _utcnow()
+        key = str(asset.object_key or "").strip()
+        if key:
+            get_storage_adapter().delete(key)
         await self.db.flush()
 
     async def read_object_for_gateway(
@@ -1063,6 +1071,63 @@ class RealphotosS1Service:
             "status": "ok",
             "ledger_intact": True,
             "library_intact": True,
+        }
+
+    async def cleanup_library_orphans(self) -> dict[str, int | str | bool]:
+        """Purge library object copies that are no longer live in the asset library.
+
+        Path A: soft-deleted asset rows whose object_key still exists on disk.
+        Path B: LocalDisk files under tenant/*/upload|generation with no asset
+        object_key reference at all (including soft-deleted rows).
+
+        Never touches output/, seed, ledger, detection, or live (undeleted) assets.
+        """
+        storage = get_storage_adapter()
+        soft_purged = 0
+        soft_already_gone = 0
+        soft_rows = (
+            await self.db.execute(
+                select(RealphotosAsset).where(RealphotosAsset.deleted_at.is_not(None))
+            )
+        ).scalars().all()
+        referenced: set[str] = set()
+        all_keys = (
+            await self.db.execute(select(RealphotosAsset.object_key))
+        ).scalars().all()
+        for raw in all_keys:
+            key = str(raw or "").strip()
+            if key:
+                referenced.add(key)
+        for asset in soft_rows:
+            key = str(asset.object_key or "").strip()
+            if not key:
+                continue
+            if storage.exists(key):
+                if storage.delete(key):
+                    soft_purged += 1
+                else:
+                    soft_already_gone += 1
+            else:
+                soft_already_gone += 1
+        disk_orphans = 0
+        disk_kept_referenced = 0
+        list_fn = getattr(storage, "list_library_object_keys", None)
+        if callable(list_fn):
+            for key in list_fn(prefixes=LIBRARY_OBJECT_PREFIXES):
+                if key in referenced:
+                    disk_kept_referenced += 1
+                    continue
+                if storage.delete(key):
+                    disk_orphans += 1
+        return {
+            "library_orphan_cleanup": soft_purged + disk_orphans,
+            "soft_deleted_purged": soft_purged,
+            "soft_deleted_already_gone": soft_already_gone,
+            "disk_orphans_purged": disk_orphans,
+            "disk_kept_referenced": disk_kept_referenced,
+            "status": "ok",
+            "ledger_intact": True,
+            "output_intact": True,
         }
 
     async def get_task(

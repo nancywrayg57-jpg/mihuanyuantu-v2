@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AD-001 cleanup 入口：仅认领 inbox_cleanup / output_cleanup。
+"""AD-001 cleanup 入口：认领 inbox_cleanup / output_cleanup / library_orphan_cleanup。
 
 用法：
   python -m scripts.run_realphotos_cleanup_worker

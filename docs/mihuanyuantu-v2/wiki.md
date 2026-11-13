@@ -105,9 +105,10 @@
 - Mitigation: F8 网关放行 `generation/*`（资产表校验）；「(降级)」仅文件名元数据回退。
 
 ## Backlog Knowledge
-- Next: Owner 非自评自合 **AUDIT-REMAIN-CLOSEOUT PR**；不得开 S7；`OUT_ND012_SKIPPED=true`；`R9_S7_BLOCKED=true`。
+- Next: Owner 非自评自合 **LIBRARY-ASSET-PURGE PR**；不得开 S7。
+- This loop (LIBRARY-ASSET-PURGE): 资源库 `DELETE` 同步 `storage.delete`；`library_orphan_cleanup` 清软删残留与 `upload`/`generation` 真孤儿；不扫 `output/`。证据 `/tmp/library-asset-purge-e2e.log` → `LIBRARY_ASSET_PURGE_E2E_PASS`。
+- Closed prior (#50): AUDIT-REMAIN-CLOSEOUT A1/A2/B1/B2/C1。
 - Closed prior (#49): REMAIN-GAP W3+W4 R5–R8。
-- This loop (AUDIT-REMAIN-CLOSEOUT): A1 冻结禁 upload/batch/import；A2 资源库扩名+`_2` 后缀；B1 `realphotos_0004`+OWNED 前缀；B2 `LEASE_TTL_DEFERRED`；C1 §14.1 去 `NOT_IMPLEMENTED`。证据 `/tmp/audit-remain-closeout-e2e.log`。
 - Closed prior (#48): W1+W2 R1/R2/R3/R4A。
 - MODULE-A-GAP-2026-11-10：临时图床联调导入（`REALPHOTOS_IMPORT_STAGING`，`formalSupplier=false`）；`cap_realphotos_provider_usage` 调用时成本；worker `inbox_cleanup`/`output_cleanup`。证据 `/tmp/module-a-gap-e2e.log`。ND-012 正式仍 PENDING。
 - MODULE-B-CONTRACT-2026-11-10：B1 FR-033 OpenAPI + 无会话端测 PASS；B2 尺寸门闸 `SUPPORTS_SIZE_CONTROL=false`（1024x768→1448x1086；1024x1024→1254x1254），`B2_SIZE_UNSUPPORTED_RECORDED`。证据 `/tmp/module-b-contract-e2e.log`。
