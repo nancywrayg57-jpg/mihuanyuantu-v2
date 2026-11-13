@@ -28,10 +28,12 @@ function normalizeText(value: string | null | undefined) {
 }
 
 function buildBrandTitle(config: SitePublicConfig | null | undefined, fallbackTitle: string | undefined, defaultTitle: string) {
+  // Product brand (fallbackTitle / defaultTitle) wins over tenant display name for the app chrome.
   return (
-    normalizeText(config?.seo?.title) ||
-    normalizeText(config?.tenantName) ||
     normalizeText(fallbackTitle) ||
+    normalizeText(config?.seo?.title) ||
+    normalizeText(defaultTitle) ||
+    normalizeText(config?.tenantName) ||
     defaultTitle
   )
 }

@@ -15,6 +15,7 @@ from app.capabilities.realphotos.services.five_layer import (
     PIPELINE_VERSION,
     l1_noise_sigma,
     mean_abs_delta,
+    optional_exif_assignments,
     run_five_layer,
 )
 from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
@@ -68,8 +69,8 @@ def test_five_layer_keeps_size_writes_preset_and_meets_byte_floor() -> None:
         capture_output=True,
     )
     row = json.loads(raw.stdout.decode())[0]
-    assert row["Make"] == "RuntimeCam"
-    assert row["Model"] == "RC-Phone-1"
+    assert row["Make"] == "Apple"
+    assert row["Model"] == "iPhone 15 Pro"
     assert "GPSLatitude" not in row
     assert "MakerNote" not in row
 
@@ -89,3 +90,72 @@ def test_byte_floor_fails_without_padding() -> None:
     with pytest.raises(BusinessError) as exc:
         run_five_layer(source=source, preset=dict(S1_ENABLED_PRESETS[0]), seed=3)
     assert exc.value.code == "OUTPUT_CONSTRAINT_UNSATISFIED"
+
+
+def test_optional_exif_assignments_skip_empty_and_placeholders() -> None:
+    preset = {
+        "brand": "Apple",
+        "model": "iPhone",
+        "legacyParameters": {
+            "software": "Luminar AI",
+            "author": "",
+            "copyright": None,
+            "lens_model": "-",
+            "lens_make": "   ",
+            "white_balance": "Auto",
+            "metering_mode": "",
+            "flash_mode": "Off",
+            "scene_mode": None,
+        },
+    }
+    tags = dict(optional_exif_assignments(preset))
+    assert tags["Software"] == "Luminar AI"
+    assert tags["WhiteBalance"] == "0"
+    assert tags["Flash"] == "0"
+    assert "Artist" not in tags
+    assert "Copyright" not in tags
+    assert "LensModel" not in tags
+    assert "LensMake" not in tags
+    assert "MeteringMode" not in tags
+    assert "SceneCaptureType" not in tags
+
+
+def test_five_layer_skips_empty_optional_exif_writes_filled() -> None:
+    source = _source(quality=40)
+    preset = dict(S1_ENABLED_PRESETS[0])
+    preset["legacyParameters"] = {
+        "software": "Luminar AI",
+        "author": "",
+        "copyright": None,
+        "lens_model": "",
+        "lens_make": "-",
+        "white_balance": "Auto",
+    }
+    result = run_five_layer(source=source, preset=preset, seed=11)
+    raw = subprocess.run(
+        [
+            "exiftool",
+            "-json",
+            "-Software",
+            "-Artist",
+            "-Copyright",
+            "-LensModel",
+            "-LensMake",
+            "-WhiteBalance",
+            "-",
+        ],
+        input=result.jpeg,
+        check=True,
+        capture_output=True,
+    )
+    row = json.loads(raw.stdout.decode())[0]
+    assert row.get("Software") == "Luminar AI"
+    assert "Artist" not in row
+    assert "Copyright" not in row
+    assert "LensModel" not in row
+    assert "LensMake" not in row
+    assert row.get("WhiteBalance") in {"Auto", "0", 0}
+    ledger = {field["tag"]: field for field in result.fields}
+    assert ledger["Software"]["verification_status"] == "verified"
+    assert "Artist" not in ledger
+    assert "LensModel" not in ledger

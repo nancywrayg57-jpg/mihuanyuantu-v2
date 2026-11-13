@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
 import { RECHARGE_CREDITS_BY_YUAN, RECHARGE_TIERS_YUAN } from '@/lib/realphotos-s1'
 
@@ -15,6 +16,7 @@ export default function RealphotosWalletPage() {
   const [tier, setTier] = useState<number>(100)
   const [note, setNote] = useState('线下凭证')
   const [message, setMessage] = useState('')
+  const [search, setSearch] = useState('')
 
   async function reload() {
     const data = await apiFetch<Wallet>('/api/v1/realphotos/wallet')
@@ -49,6 +51,10 @@ export default function RealphotosWalletPage() {
   }
 
   const credits = RECHARGE_CREDITS_BY_YUAN[tier]
+  const visibleLedger = useMemo(
+    () => ledger.filter((row) => matchSearchText(search, row.id, row.entryType, row.deltaAvailable, row.operatorUserId)),
+    [ledger, search],
+  )
 
   return (
     <main className="space-y-6 p-6">
@@ -103,27 +109,30 @@ export default function RealphotosWalletPage() {
         </div>
       </section>
       <section className="space-y-3">
-        <h2 className="text-sm font-medium">流水</h2>
-      <table className="w-full text-sm">
-        <thead>
-          <tr>
-            <th className="text-left">流水</th>
-            <th className="text-left">类型</th>
-            <th className="text-left">可用变动</th>
-            <th className="text-left">操作账号</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ledger.map((row) => (
-            <tr key={row.id}>
-              <td>{row.id}</td>
-              <td>{row.entryType}</td>
-              <td>{row.deltaAvailable}</td>
-              <td>{row.operatorUserId || ''}</td>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-medium">流水</h2>
+          <ListSearch value={search} placeholder="流水 / 类型 / 账号" onChange={setSearch} />
+        </div>
+        <table className="w-full text-sm">
+          <thead>
+            <tr>
+              <th className="text-left">流水</th>
+              <th className="text-left">类型</th>
+              <th className="text-left">可用变动</th>
+              <th className="text-left">操作账号</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {visibleLedger.map((row) => (
+              <tr key={row.id}>
+                <td>{row.id}</td>
+                <td>{row.entryType}</td>
+                <td>{row.deltaAvailable}</td>
+                <td>{row.operatorUserId || ''}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </section>
     </main>
   )

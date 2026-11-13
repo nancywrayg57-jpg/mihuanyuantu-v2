@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
 import { taskStatusLabel } from '@/lib/realphotos-labels'
 
@@ -18,6 +19,7 @@ export default function RealphotosOrderSupportPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [reason, setReason] = useState('')
   const [message, setMessage] = useState('')
+  const [search, setSearch] = useState('')
 
   async function reload() {
     const data = await apiFetch<{ items: Order[] }>('/api/v1/realphotos/recharge-orders')
@@ -49,12 +51,32 @@ export default function RealphotosOrderSupportPage() {
     await reload()
   }
 
+  const visibleOrders = useMemo(
+    () =>
+      orders.filter((item) =>
+        matchSearchText(
+          search,
+          item.id,
+          item.tenantId,
+          item.tierYuan,
+          item.creditPoints,
+          item.voucherNote,
+          item.status,
+          taskStatusLabel(item.status),
+        ),
+      ),
+    [orders, search],
+  )
+
   return (
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">订单客服</h1>
       <p className="text-sm text-muted-foreground">{message}</p>
       <section className="space-y-3">
-        <h2 className="text-sm font-medium">充值单</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-medium">充值单</h2>
+          <ListSearch value={search} placeholder="单号 / 租户 / 凭证" onChange={setSearch} />
+        </div>
         <label className="block text-sm">
           拒单原因
           <input
@@ -76,12 +98,12 @@ export default function RealphotosOrderSupportPage() {
             </tr>
           </thead>
           <tbody>
-            {orders.length === 0 ? (
+            {visibleOrders.length === 0 ? (
               <tr>
                 <td colSpan={7}>暂无充值单</td>
               </tr>
             ) : (
-              orders.map((order) => (
+              visibleOrders.map((order) => (
                 <tr key={order.id}>
                   <td>{order.id}</td>
                   <td>{order.tenantId}</td>

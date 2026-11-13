@@ -167,11 +167,6 @@ export function LoginClient() {
             placeholder="请输入图中 6 位数字"
             required
           />
-          {challenge?.devCode ? (
-            <p className="text-xs text-muted-foreground">
-              开发提示码：{challenge.devCode}（仅 DEBUG/测试开关；正式环境不返回）
-            </p>
-          ) : null}
         </div>
         {error ? <div className="text-sm text-destructive">{error}</div> : null}
         <Button type="submit" disabled={submitting || !challenge}>

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
@@ -32,10 +32,12 @@ const PAGE_SIZE = 20
 
 export default function RealphotosLibraryPage() {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [items, setItems] = useState<Asset[]>([])
   const [total, setTotal] = useState(0)
   const [message, setMessage] = useState('')
   const [originFilter, setOriginFilter] = useState('all')
+  const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<Record<string, true>>({})
   const [thumbs, setThumbs] = useState<Record<string, string>>({})
@@ -96,12 +98,43 @@ export default function RealphotosLibraryPage() {
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const selectedIds = Object.keys(selected)
+  const query = search.trim().toLowerCase()
+  const visibleItems = useMemo(() => {
+    if (!query) return items
+    return items.filter((item) => {
+      const name = String(item.displayName || item.downloadBasename || '').toLowerCase()
+      const origin = String(item.originKind || '').toLowerCase()
+      const id = String(item.id || '').toLowerCase()
+      return name.includes(query) || origin.includes(query) || id.includes(query) || originKindLabel(item.originKind).includes(search.trim())
+    })
+  }, [items, query, search])
+
+  const selectableOnPage = visibleItems.filter((item) => !item.locked)
+  const allPageSelected =
+    selectableOnPage.length > 0 && selectableOnPage.every((item) => Boolean(selected[item.id]))
+  const somePageSelected = selectableOnPage.some((item) => Boolean(selected[item.id]))
 
   function toggle(id: string) {
     setSelected((prev) => {
       const next = { ...prev }
       if (next[id]) delete next[id]
       else next[id] = true
+      return next
+    })
+  }
+
+  function toggleSelectAllPage() {
+    setSelected((prev) => {
+      const next = { ...prev }
+      if (allPageSelected) {
+        for (const item of selectableOnPage) {
+          delete next[item.id]
+        }
+      } else {
+        for (const item of selectableOnPage) {
+          next[item.id] = true
+        }
+      }
       return next
     })
   }
@@ -144,7 +177,6 @@ export default function RealphotosLibraryPage() {
 
   async function downloadSelected() {
     const targets = items.filter((item) => selected[item.id])
-    // 同批勾选独立维护 usedNames，避免跨批历史污染本批后缀
     const batchNames = new Map<string, number>()
     for (const item of targets) {
       await downloadOne(item, batchNames)
@@ -207,7 +239,7 @@ export default function RealphotosLibraryPage() {
         }
         await apiFetch('/api/v1/realphotos/assets/batch', { method: 'POST', body })
       }
-      setMessage(`本地上传已入库 ${files.length} 张，未创建处理任务`)
+      setMessage(`本地上传已入库 ${files.length} 张`)
       setPage(1)
       await reload()
     } catch (error: unknown) {
@@ -218,15 +250,46 @@ export default function RealphotosLibraryPage() {
   return (
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">图片资源</h1>
-      <p className="text-sm text-muted-foreground">统一入口。四入口进入添加；列表为表格，不是卡片网格。服务端分页约 20/页。</p>
       <p className="text-sm">{message}</p>
       {frozen ? (
         <p className="text-sm text-amber-800">
           账号已因预审冻结：不可上传/导入/生图；仍可登录、列表与经网关下载保留期内资源。
         </p>
       ) : null}
-      <section className="flex flex-wrap gap-2 text-sm">
+
+      <input
+        ref={fileInputRef}
+        className="sr-only"
+        type="file"
+        multiple
+        disabled={frozen}
+        accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+        onChange={(event) => {
+          void onLocalUpload(event.target.files)
+          event.target.value = ''
+        }}
+      />
+
+      <section className="flex flex-wrap items-center gap-2 text-sm">
         <span className="font-medium">添加图片：</span>
+        {frozen ? (
+          <span className="border px-2 py-1 opacity-50">URL 导入（已冻结）</span>
+        ) : (
+          <Link className="border px-2 py-1" href="/realphotos/imports">
+            URL 导入
+          </Link>
+        )}
+        {frozen ? (
+          <span className="border px-2 py-1 opacity-50">本地上传（已冻结）</span>
+        ) : (
+          <button
+            className="border px-2 py-1"
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            本地上传
+          </button>
+        )}
         {frozen ? (
           <span className="border px-2 py-1 opacity-50">文生图（已冻结）</span>
         ) : (
@@ -241,26 +304,12 @@ export default function RealphotosLibraryPage() {
             图生图
           </Link>
         )}
-        {frozen ? (
-          <span className="border px-2 py-1 opacity-50">本地上传（已冻结）</span>
-        ) : (
-          <a className="border px-2 py-1" href="#local-upload">
-            本地上传
-          </a>
-        )}
-        {frozen ? (
-          <span className="border px-2 py-1 opacity-50">URL 导入（已冻结）</span>
-        ) : (
-          <Link className="border px-2 py-1" href="/realphotos/imports">
-            URL 导入
-          </Link>
-        )}
+      </section>
+
+      <section className="flex flex-wrap gap-2 text-sm">
         <button className="border px-2 py-1" type="button" onClick={() => goProcess()}>
           去处理（已选 {selectedIds.length}）
         </button>
-        <span className="text-xs text-muted-foreground">
-          单张/批量均进入处理页；GPS 不可用将拦截，缺坐标会提示跳过写入
-        </span>
         <button className="border px-2 py-1" type="button" onClick={() => void downloadSelected()}>
           批量下载
         </button>
@@ -268,28 +317,17 @@ export default function RealphotosLibraryPage() {
           批量删除
         </button>
       </section>
-      <section id="local-upload" className="space-y-2 text-sm">
-        <p>本地上传（仅入库，不自动处理）</p>
-        <label
-          className={`inline-flex items-center border px-3 py-1 ${
-            frozen ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-          }`}
-        >
-          选择文件（最多 {UPLOAD_BATCH_MAX} 张）
+
+      <section className="flex flex-wrap items-center gap-3 text-sm">
+        <label>
+          搜索
           <input
-            className="sr-only"
-            type="file"
-            multiple
-            disabled={frozen}
-            accept="image/jpeg,image/png,.jpg,.jpeg,.png"
-            onChange={(event) => {
-              void onLocalUpload(event.target.files)
-              event.target.value = ''
-            }}
+            className="ml-2 border px-2 py-1"
+            value={search}
+            placeholder="文件名 / 来源 / ID"
+            onChange={(event) => setSearch(event.target.value)}
           />
         </label>
-      </section>
-      <section className="flex flex-wrap items-center gap-3 text-sm">
         <label>
           来源
           <select
@@ -307,7 +345,7 @@ export default function RealphotosLibraryPage() {
           </select>
         </label>
         <span>
-          第 {page} / {pageCount} 页 · 共 {total} 条 · 服务端 {PAGE_SIZE}/页 · 跨页勾选保留 {selectedIds.length} 张
+          第 {page} / {pageCount} 页 · 共 {total} 条 · 已选 {selectedIds.length} 张
         </span>
         <button
           className="border px-2 py-1"
@@ -329,7 +367,21 @@ export default function RealphotosLibraryPage() {
       <table className="w-full text-sm">
         <thead>
           <tr>
-            <th className="text-left">勾选</th>
+            <th className="text-left">
+              <label className="inline-flex items-center gap-1">
+                <input
+                  type="checkbox"
+                  checked={allPageSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = !allPageSelected && somePageSelected
+                  }}
+                  disabled={selectableOnPage.length === 0}
+                  onChange={() => toggleSelectAllPage()}
+                  aria-label="全选本页"
+                />
+                全选
+              </label>
+            </th>
             <th className="text-left">缩略图</th>
             <th className="text-left">拼接文件名</th>
             <th className="text-left">来源</th>
@@ -340,12 +392,12 @@ export default function RealphotosLibraryPage() {
           </tr>
         </thead>
         <tbody>
-          {items.length === 0 ? (
+          {visibleItems.length === 0 ? (
             <tr>
               <td colSpan={8}>暂无资源</td>
             </tr>
           ) : (
-            items.map((item) => (
+            visibleItems.map((item) => (
               <tr key={item.id} className={item.locked ? 'opacity-70' : undefined}>
                 <td>
                   <input
@@ -401,9 +453,6 @@ export default function RealphotosLibraryPage() {
           <img src={preview.url} alt={`资源 ${preview.id}`} className="max-h-full max-w-full border bg-white" />
         </div>
       ) : null}
-      <p className="text-xs text-muted-foreground">
-        元数据字段未齐时文件名按「来源_尺寸_id」降级显示。缩略图经鉴权网关读取，不暴露 LocalDisk 裸路径。运行中资源删除会被后端拒绝。
-      </p>
     </main>
   )
 }

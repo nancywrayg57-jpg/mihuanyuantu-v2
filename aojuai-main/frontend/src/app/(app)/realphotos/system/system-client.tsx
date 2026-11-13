@@ -1,9 +1,9 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
 
 type Contract = {
@@ -66,8 +66,6 @@ export function RealphotosSystemClient() {
   const [redoThreshold, setRedoThreshold] = useState(70)
   const [redoRounds, setRedoRounds] = useState(1)
   const [contracts, setContracts] = useState<Contract[]>([])
-  const [passHint, setPassHint] = useState('total_score≥75 且 passed=true（不因换 model id 改变）')
-
   const [duty, setDuty] = useState('pre_review')
   const [providerChoice, setProviderChoice] = useState('阿里千问')
   const [providerCustom, setProviderCustom] = useState('')
@@ -75,6 +73,7 @@ export function RealphotosSystemClient() {
   const [baseUrl, setBaseUrl] = useState(DUTY_DEFAULT_BASE.pre_review)
   const [apiKey, setApiKey] = useState('')
   const [saving, setSaving] = useState(false)
+  const [channelSearch, setChannelSearch] = useState('')
 
   const isAdmin = useMemo(
     () => roles.includes('rp_admin') || roles.includes('admin'),
@@ -88,8 +87,23 @@ export function RealphotosSystemClient() {
   const canEditRedo = !isTechOnly
 
   const editableContracts = useMemo(
-    () => contracts.filter((item) => PURPOSES.some((p) => p.duty === item.duty)),
-    [contracts],
+    () =>
+      contracts
+        .filter((item) => PURPOSES.some((p) => p.duty === item.duty))
+        .filter((item) =>
+          matchSearchText(
+            channelSearch,
+            item.duty,
+            item.purpose,
+            purposeLabel(item.duty),
+            item.provider,
+            item.modelId,
+            item.baseUrl,
+            item.keyPrefix,
+            item.masked,
+          ),
+        ),
+    [contracts, channelSearch],
   )
 
   function purposeLabel(code: string) {
@@ -107,7 +121,6 @@ export function RealphotosSystemClient() {
         '/api/v1/realphotos/provider-contracts',
       )
       setContracts(data.items || [])
-      if (data.passScoreHint) setPassHint(data.passScoreHint)
     } catch (error: unknown) {
       setMessage(error instanceof ApiError ? error.message : '合同读取失败')
     }
@@ -247,7 +260,6 @@ export function RealphotosSystemClient() {
   return (
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">系统管理</h1>
-      <p className="text-sm text-muted-foreground">入口对授权角色可见；内容按角色裁剪。运营指标在工作台，不在本页。</p>
       <p className="text-sm">{message}</p>
       <div className="flex gap-2 text-sm">
         <button className={`border px-3 py-1 ${tab === 'redo' ? 'bg-muted' : ''}`} type="button" onClick={() => setTab('redo')}>
@@ -265,9 +277,8 @@ export function RealphotosSystemClient() {
 
       {tab === 'redo' ? (
         <section className="space-y-3 text-sm">
-          <p>默认关；阈值 70；追加 1。越界由后端拒绝。</p>
           {isTechOnly ? (
-            <p className="text-muted-foreground">技术客服只读：可查看本租户快照，不可改写。</p>
+            <p className="text-muted-foreground">技术客服只读，不可改写。</p>
           ) : null}
           <label className="block">
             <input
@@ -316,19 +327,11 @@ export function RealphotosSystemClient() {
       {tab === 'models' ? (
         <section className="space-y-5 text-sm">
           {!isAdmin ? (
-            <p>只有平台管理员可以查看和登记模型合同。列表不显示上游 Key。</p>
+            <p>仅平台管理员可配置模型 API。</p>
           ) : (
             <>
-              <div className="space-y-1 border p-3">
-                <h2 className="font-medium">检测基线 · Gemini Vision</h2>
-                <p className="text-muted-foreground">{passHint}</p>
-              </div>
-
               <div className="space-y-3 border p-3">
-                <div className="flex items-baseline justify-between gap-2">
-                  <h2 className="font-medium">大模型 API Key 配置与管理</h2>
-                  <span className="text-xs text-muted-foreground">平台范围 · 第一版不轮询</span>
-                </div>
+                <h2 className="font-medium">大模型 API Key 配置与管理</h2>
                 <div className="grid gap-3 md:grid-cols-2">
                   <label className="block">
                     提供商
@@ -386,7 +389,7 @@ export function RealphotosSystemClient() {
                     />
                   </label>
                   <label className="block md:col-span-2">
-                    API Key（单槽；保存后清空；列表仅掩码）
+                    API Key
                     <input
                       className="mt-1 w-full border px-2 py-1"
                       type="password"
@@ -397,13 +400,6 @@ export function RealphotosSystemClient() {
                     />
                   </label>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  原型多 Key 权重轮询按 PRD 第一版不做。也可打开
-                  <Link className="mx-1 underline" href="/realphotos/provider-contracts">
-                    模型合同
-                  </Link>
-                  只读明细。
-                </p>
                 <button
                   className="border px-3 py-1 disabled:opacity-50"
                   type="button"
@@ -415,7 +411,10 @@ export function RealphotosSystemClient() {
               </div>
 
               <div className="space-y-2">
-                <h2 className="font-medium">已登记渠道</h2>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="font-medium">已登记渠道</h2>
+                  <ListSearch value={channelSearch} placeholder="提供商 / 模型 / 用途" onChange={setChannelSearch} />
+                </div>
                 <table className="w-full border-collapse">
                   <thead>
                     <tr>

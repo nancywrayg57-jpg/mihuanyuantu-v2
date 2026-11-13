@@ -42,7 +42,7 @@ async def db(storage_tmpdir: Path) -> AsyncIterator[AsyncSession]:
 
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
     async with session_factory() as session:
-        # PRESET-BULK-IMPORT B1 stops catalog injection; seed RuntimeCam rows so S1/S2/S3/S4/S6
+        # PRESET-BULK-IMPORT B1 stops catalog injection; seed S1 catalog rows so S1/S2/S3/S4/S6
         # unit tests that still reference S1_ENABLED_PRESETS codes keep a real enabled preset.
         from app.capabilities.realphotos.permissions import ROLE_ADMIN
         from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
@@ -54,7 +54,7 @@ async def db(storage_tmpdir: Path) -> AsyncIterator[AsyncSession]:
                 actor_role_codes={ROLE_ADMIN, "admin"},
                 code=str(item["code"]),
                 device_type=str(item["deviceType"]),
-                brand="RuntimeCam",
+                brand=str(item["brand"]),
                 model_name=str(item["model"]),
                 gps_mode=str(item.get("gpsMode") or "none"),
                 enabled=True,

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { gpsSubmitGuard } from '@/lib/realphotos-gps-submit'
 import { deviceTypeLabel } from '@/lib/realphotos-labels'
@@ -32,6 +33,7 @@ export function RealphotosBatchClient() {
   const [notice, setNotice] = useState('')
   const [frozen, setFrozen] = useState(false)
   const [library, setLibrary] = useState<PendingAsset[]>([])
+  const [presetSearch, setPresetSearch] = useState('')
   const gatewayPreviewUrls = useRef<Set<string>>(new Set())
 
   useEffect(() => {
@@ -142,9 +144,11 @@ export function RealphotosBatchClient() {
     () =>
       presets.filter(
         (item) =>
-          (!deviceType || item.deviceType === deviceType) && (!brand || item.brand === brand),
+          (!deviceType || item.deviceType === deviceType) &&
+          (!brand || item.brand === brand) &&
+          matchSearchText(presetSearch, item.code, item.model, item.brand, item.deviceType),
       ),
-    [presets, deviceType, brand],
+    [presets, deviceType, brand, presetSearch],
   )
 
   useEffect(() => {
@@ -160,8 +164,6 @@ export function RealphotosBatchClient() {
   const gpsGuard = useMemo(() => gpsSubmitGuard(selectedPreset), [selectedPreset])
   const gpsSubmitBlocked = gpsGuard.blocked
   const gpsSkipHint = gpsGuard.skipHint
-  const singleEntry = library.length === 1
-
   async function onFile(next: File | null) {
     setFile(null)
     if (!next) return
@@ -236,19 +238,15 @@ export function RealphotosBatchClient() {
   return (
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">批量原图</h1>
-      <p className="text-sm text-muted-foreground">
-        主路径：从图片资源勾选后「去处理」。本页不配置 GPS。自动重做请到
-        <Link className="mx-1 underline" href="/realphotos/system?tab=redo">
-          系统管理
-        </Link>
-        。
-      </p>
       {frozen ? (
         <p className="text-sm text-destructive">账号已冻结：可查看历史，不能提交新处理。</p>
       ) : null}
       <p className="text-sm">{notice}</p>
       <section className="space-y-3">
-        <h2 className="text-sm font-medium">设备预设（类型 → 品牌 → 型号）</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-medium">设备预设（类型 → 品牌 → 型号）</h2>
+          <ListSearch value={presetSearch} placeholder="型号 / 品牌 / 编码" onChange={setPresetSearch} />
+        </div>
         <div className="flex flex-wrap gap-3 text-sm">
           <label>
             类型
@@ -296,9 +294,6 @@ export function RealphotosBatchClient() {
             </select>
           </label>
         </div>
-        {singleEntry ? (
-          <p className="text-xs text-muted-foreground">单张入口（资源库带入 1 张）：GPS 规则与批量一致。</p>
-        ) : null}
         {gpsSubmitBlocked ? (
           <p className="text-sm text-destructive">GPS 不可用，已禁止提交：{gpsGuard.blockReason}</p>
         ) : null}
@@ -312,7 +307,6 @@ export function RealphotosBatchClient() {
           <Link className="underline" href="/realphotos/library">
             打开图片资源勾选
           </Link>
-          。本地上传仅作入库辅助，须进入本批列表后再提交。
         </p>
         <div className="flex flex-wrap items-end gap-3 text-sm">
           <label>

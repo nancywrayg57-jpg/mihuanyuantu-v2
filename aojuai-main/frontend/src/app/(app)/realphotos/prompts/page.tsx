@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
 
 type Template = {
@@ -25,6 +26,7 @@ export default function RealphotosPromptsPage() {
   const [message, setMessage] = useState('')
   const [page, setPage] = useState(1)
   const [roleHint, setRoleHint] = useState('')
+  const [search, setSearch] = useState('')
 
   async function reload() {
     const data = await apiFetch<{ items: Template[] }>('/api/v1/realphotos/prompt-templates')
@@ -43,8 +45,15 @@ export default function RealphotosPromptsPage() {
       .catch(() => undefined)
   }, [])
 
-  const pageCount = Math.max(1, Math.ceil(items.length / PAGE_SIZE))
-  const pageItems = useMemo(() => items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [items, page])
+  const filteredItems = useMemo(
+    () => items.filter((item) => matchSearchText(search, item.name, item.mode, item.scope, item.positivePrompt)),
+    [items, search],
+  )
+  const pageCount = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE))
+  const pageItems = useMemo(
+    () => filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filteredItems, page],
+  )
   const isAdmin = roleHint.includes('rp_admin') || roleHint.includes('admin')
 
   async function save() {
@@ -69,9 +78,6 @@ export default function RealphotosPromptsPage() {
   return (
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">AI 提示词模板</h1>
-      <p className="text-sm text-muted-foreground">
-        列表默认 10 条/页。平台模板仅管理员可改；商家维护本租户。订单客服不可见本菜单。
-      </p>
       <p className="text-sm">{message}</p>
       <section className="space-y-3">
         <h2 className="text-sm font-medium">新建</h2>
@@ -110,8 +116,16 @@ export default function RealphotosPromptsPage() {
       </section>
       <section className="space-y-3">
         <div className="flex flex-wrap items-center gap-3 text-sm">
+          <ListSearch
+            value={search}
+            placeholder="名称 / 模式 / 提示词"
+            onChange={(value) => {
+              setSearch(value)
+              setPage(1)
+            }}
+          />
           <span>
-            第 {page} / {pageCount} 页 · 共 {items.length}
+            第 {page} / {pageCount} 页 · 共 {filteredItems.length}
           </span>
           <button className="border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
             上一页

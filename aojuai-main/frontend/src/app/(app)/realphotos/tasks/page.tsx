@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import {
   DETECTION_PASS_SCORE,
@@ -160,6 +161,8 @@ export default function RealphotosTasksPage() {
   const [notice, setNotice] = useState('')
   const [downloadNote, setDownloadNote] = useState('')
   const [unreadHint, setUnreadHint] = useState(0)
+  const [procSearch, setProcSearch] = useState('')
+  const [genSearch, setGenSearch] = useState('')
 
   const loadProcessing = useCallback(async () => {
     const qs = new URLSearchParams({
@@ -207,7 +210,30 @@ export default function RealphotosTasksPage() {
     )
   }, [tab, loadGeneration])
 
-  const selected = procItems.filter((item) => checked[item.id])
+  const visibleProcItems = useMemo(
+    () =>
+      procItems.filter((item) =>
+        matchSearchText(
+          procSearch,
+          item.id,
+          item.status,
+          taskStatusLabel(item.status),
+          item.presetCode,
+          item.failureClass,
+          item.failureMessage,
+          item.failureTitle,
+        ),
+      ),
+    [procItems, procSearch],
+  )
+  const visibleGenItems = useMemo(
+    () =>
+      genItems.filter((item) =>
+        matchSearchText(genSearch, item.id, item.mode, generationModeLabel(item.mode), item.provider, item.positivePrompt),
+      ),
+    [genItems, genSearch],
+  )
+  const selected = visibleProcItems.filter((item) => checked[item.id])
   const procPageCount = Math.max(1, Math.ceil(procTotal / PAGE_SIZE))
   const genPageCount = Math.max(1, Math.ceil(genTotal / PAGE_SIZE))
 
@@ -430,6 +456,7 @@ export default function RealphotosTasksPage() {
                 <option value="DETECTION">检测中</option>
               </select>
             </label>
+            <ListSearch value={procSearch} placeholder="任务 ID / 预设 / 状态" onChange={setProcSearch} />
             <span>
               第 {procPage} / {procPageCount} 页 · 共 {procTotal} · 默认 10 条
             </span>
@@ -484,12 +511,12 @@ export default function RealphotosTasksPage() {
               </tr>
             </thead>
             <tbody>
-              {procItems.length === 0 ? (
+              {visibleProcItems.length === 0 ? (
                 <tr>
                   <td colSpan={6}>暂无处理任务</td>
                 </tr>
               ) : (
-                procItems.map((item) => (
+                visibleProcItems.map((item) => (
                   <tr key={item.id}>
                     <td>
                       <input
@@ -631,6 +658,7 @@ export default function RealphotosTasksPage() {
                 <option value="image_to_image">图生图</option>
               </select>
             </label>
+            <ListSearch value={genSearch} placeholder="任务 ID / 模式 / 提示词" onChange={setGenSearch} />
             <span>
               第 {genPage} / {genPageCount} 页 · 共 {genTotal} · 默认 10 条
             </span>
@@ -658,12 +686,12 @@ export default function RealphotosTasksPage() {
               </tr>
             </thead>
             <tbody>
-              {genItems.length === 0 ? (
+              {visibleGenItems.length === 0 ? (
                 <tr>
                   <td colSpan={6}>暂无生图任务</td>
                 </tr>
               ) : (
-                genItems.map((item) => (
+                visibleGenItems.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
                     <td>{generationModeLabel(item.mode)}</td>

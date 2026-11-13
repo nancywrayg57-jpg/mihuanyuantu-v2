@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
 import {
   creditDispositionLabel,
@@ -46,6 +47,7 @@ export default function RealphotosTechDeskPage() {
   const [heldReason, setHeldReason] = useState('')
   const [message, setMessage] = useState('')
   const [ticketType, setTicketType] = useState('all')
+  const [search, setSearch] = useState('')
   const [detail, setDetail] = useState<Ticket | null>(null)
   const [canUnfreeze, setCanUnfreeze] = useState(false)
   const [canAppeal, setCanAppeal] = useState(false)
@@ -74,7 +76,26 @@ export default function RealphotosTechDeskPage() {
   }, [])
 
   const source = canUnfreeze ? items : myItems
-  const visible = source.filter((item) => ticketType === 'all' || item.ticketType === ticketType)
+  const visible = useMemo(
+    () =>
+      source.filter(
+        (item) =>
+          (ticketType === 'all' || item.ticketType === ticketType) &&
+          matchSearchText(
+            search,
+            item.id,
+            item.tenantId,
+            item.ownerAccountId,
+            item.ticketType,
+            ticketTypeLabel(item.ticketType),
+            item.status,
+            ticketStatusLabel(item.status),
+            item.reason,
+            item.resolutionNote,
+          ),
+      ),
+    [source, ticketType, search],
+  )
   const openCount = source.filter((item) => item.status === 'open').length
 
   async function unfreeze() {
@@ -144,23 +165,22 @@ export default function RealphotosTechDeskPage() {
   return (
     <main className="space-y-4 p-6">
       <h1 className="text-lg font-medium">工单管理</h1>
-      <p className="text-sm text-muted-foreground">
-        类型含 order / image_appeal / account_freeze。无数据时空态，不造假工单。解冻仅技术客服与平台管理员。
-        办结申诉不等于解锁图片；释放技术失败冻结与预审解冻分开。
-      </p>
       <p className="text-sm">
         {message}
         {canUnfreeze ? ` · 待处理 open=${openCount}` : ''}
       </p>
-      <label className="text-sm">
-        类型筛选
-        <select className="ml-2 border px-2 py-1" value={ticketType} onChange={(event) => setTicketType(event.target.value)}>
-          <option value="all">全部</option>
-          <option value="account_freeze">{ticketTypeLabel('account_freeze')}</option>
-          <option value="image_appeal">{ticketTypeLabel('image_appeal')}</option>
-          <option value="order">{ticketTypeLabel('order')}</option>
-        </select>
-      </label>
+      <div className="flex flex-wrap items-center gap-3 text-sm">
+        <label>
+          类型筛选
+          <select className="ml-2 border px-2 py-1" value={ticketType} onChange={(event) => setTicketType(event.target.value)}>
+            <option value="all">全部</option>
+            <option value="account_freeze">{ticketTypeLabel('account_freeze')}</option>
+            <option value="image_appeal">{ticketTypeLabel('image_appeal')}</option>
+            <option value="order">{ticketTypeLabel('order')}</option>
+          </select>
+        </label>
+        <ListSearch value={search} placeholder="编号 / 原因 / 账号" onChange={setSearch} />
+      </div>
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
@@ -257,7 +277,6 @@ export default function RealphotosTechDeskPage() {
           <button className="border px-3 py-1 text-sm" type="button" onClick={() => void createAppeal()}>
             提交申诉
           </button>
-          <p className="text-xs text-muted-foreground">商家无解冻按钮、无释放冻结积分入口。</p>
         </section>
       ) : null}
       {canUnfreeze ? (
@@ -273,7 +292,7 @@ export default function RealphotosTechDeskPage() {
           </section>
           <section className="space-y-2">
             <h2 className="text-sm font-medium">技术失败冻结积分释放</h2>
-            <p className="text-xs text-muted-foreground">与预审解冻分开。当前 held 任务 {heldItems.length} 条。</p>
+            <p className="text-xs text-muted-foreground">当前 held 任务 {heldItems.length} 条。</p>
             <table className="w-full max-w-3xl border-collapse text-sm">
               <thead>
                 <tr>

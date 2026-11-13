@@ -184,6 +184,219 @@ _EXIF_REQUIRED: tuple[tuple[str, str], ...] = (
     ("focalLength", "焦距"),
 )
 
+# Empty / placeholder values must not become exiftool `-Tag=` writes.
+_EMPTY_MARKERS = frozenset({"", "-", "—", "n/a", "na", "null", "none", "undefined"})
+# Coded EXIF enums: write with Tag#=N so PrintConv does not reject raw numbers.
+_NUMERIC_EXIF_TAGS = frozenset(
+    {
+        "WhiteBalance",
+        "Flash",
+        "LightSource",
+        "MeteringMode",
+        "ExposureMode",
+        "ExposureProgram",
+        "SceneCaptureType",
+        "FocalPlaneResolutionUnit",
+        "FocalLengthIn35mmFormat",
+        "MaxApertureValue",
+        "FocalPlaneXResolution",
+        "FocalPlaneYResolution",
+    }
+)
+
+
+def _is_empty_param(value: object) -> bool:
+    if value is None:
+        return True
+    text = str(value).strip()
+    if not text:
+        return True
+    return text.lower() in _EMPTY_MARKERS
+
+
+def _legacy_parameters(preset: dict) -> dict:
+    raw = preset.get("legacyParameters")
+    return dict(raw) if isinstance(raw, dict) else {}
+
+
+def _param(preset: dict, *keys: str) -> object | None:
+    """First non-empty value from top-level preset or legacyParameters."""
+    legacy = _legacy_parameters(preset)
+    for key in keys:
+        if key in preset and not _is_empty_param(preset.get(key)):
+            return preset.get(key)
+        if key in legacy and not _is_empty_param(legacy.get(key)):
+            return legacy.get(key)
+    return None
+
+
+def _metering_mode_code(mode: str) -> int | None:
+    mapping = {
+        "evaluative": 5,
+        "center": 2,
+        "spot": 3,
+        "matrix": 5,
+        "average": 1,
+        "partial": 6,
+        "multi": 5,
+        "multi-segment": 5,
+        "pattern": 5,
+    }
+    return mapping.get(mode.strip().lower())
+
+
+def _exposure_mode_code(mode: str) -> int | None:
+    mapping = {"auto": 0, "M": 1, "manual": 1, "bracket": 2}
+    if mode in mapping:
+        return mapping[mode]
+    return mapping.get(mode.strip().lower())
+
+
+def _flash_code(flash: str) -> int | None:
+    lowered = flash.strip().lower()
+    if lowered in {"off", "无", "关闭"}:
+        return 0
+    if lowered in {"on", "fired", "开启"}:
+        return 1
+    return None
+
+
+def _exposure_program_code(mode: str) -> int | None:
+    mapping = {
+        "auto": 2,
+        "m": 1,
+        "manual": 1,
+        "a": 3,
+        "s": 4,
+        "p": 2,
+        "aperture priority": 3,
+        "shutter priority": 4,
+        "normal program": 2,
+    }
+    return mapping.get(mode.strip().lower())
+
+
+def _scene_capture_type(scene: str) -> int | None:
+    """Only known EXIF scene codes; unknown non-empty labels are skipped (not forced to 0)."""
+    lowered = scene.strip().lower()
+    if lowered == "portrait":
+        return 2
+    if lowered == "landscape":
+        return 1
+    if lowered == "night":
+        return 3
+    return None
+
+
+def _light_source_code(white_balance: str) -> int | None:
+    mapping = {
+        "auto": 0,
+        "daylight": 1,
+        "fluorescent": 2,
+        "tungsten": 3,
+        "flash": 4,
+        "shade": 11,
+        "cloudy": 10,
+    }
+    return mapping.get(white_balance.strip().lower())
+
+
+def optional_exif_assignments(preset: dict) -> list[tuple[str, str]]:
+    """Map optional preset params → EXIF tags; skip blanks (do not write empty strings).
+
+    Aligns with legacy exifToolWriter ``if (preset.field)`` guards: absent/empty/placeholder
+    values are omitted entirely rather than written as ``-Tag=``.
+    """
+    out: list[tuple[str, str]] = []
+
+    def add(tag: str, value: object) -> None:
+        if _is_empty_param(value):
+            return
+        out.append((tag, str(value).strip()))
+
+    add("Software", _param(preset, "software"))
+    add("Artist", _param(preset, "author"))
+    add("Copyright", _param(preset, "copyright"))
+    add("LensModel", _param(preset, "lens_model"))
+    add("LensMake", _param(preset, "lens_make"))
+    add("ImageDescription", _param(preset, "image_description"))
+
+    lens_max = _param(preset, "lens_max_aperture")
+    if lens_max is not None:
+        try:
+            add("MaxApertureValue", float(str(lens_max).strip().removeprefix("f/").removeprefix("F/")))
+        except ValueError:
+            pass
+
+    focal_equiv = _param(preset, "focal_length_equiv")
+    if focal_equiv is not None:
+        try:
+            equiv_text = str(focal_equiv).strip()
+            if equiv_text.lower().endswith("mm"):
+                equiv_text = equiv_text[:-2].strip()
+            add("FocalLengthIn35mmFormat", int(round(float(equiv_text))))
+        except ValueError:
+            pass
+
+    fp_x = _param(preset, "focal_plane_x_res")
+    fp_y = _param(preset, "focal_plane_y_res")
+    if fp_x is not None and fp_y is not None:
+        try:
+            add("FocalPlaneXResolution", float(fp_x))
+            add("FocalPlaneYResolution", float(fp_y))
+            unit = _param(preset, "focal_plane_res_unit")
+            if unit is not None:
+                add("FocalPlaneResolutionUnit", int(float(unit)))
+            else:
+                add("FocalPlaneResolutionUnit", 2)
+        except ValueError:
+            pass
+
+    metering = _param(preset, "metering_mode")
+    if metering is not None:
+        code = _metering_mode_code(str(metering))
+        if code is not None:
+            add("MeteringMode", code)
+
+    white_balance = _param(preset, "white_balance")
+    if white_balance is not None:
+        wb = str(white_balance)
+        add("WhiteBalance", 0 if wb.strip().lower() == "auto" else 1)
+        light = _light_source_code(wb)
+        if light is not None:
+            add("LightSource", light)
+
+    exposure_mode = _param(preset, "exposure_mode")
+    if exposure_mode is not None:
+        exp = str(exposure_mode)
+        code = _exposure_mode_code(exp)
+        if code is not None:
+            add("ExposureMode", code)
+        program = _exposure_program_code(exp)
+        if program is not None:
+            add("ExposureProgram", program)
+
+    flash_mode = _param(preset, "flash_mode")
+    if flash_mode is not None:
+        code = _flash_code(str(flash_mode))
+        if code is not None:
+            add("Flash", code)
+
+    scene_mode = _param(preset, "scene_mode", "scene_type")
+    if scene_mode is not None:
+        code = _scene_capture_type(str(scene_mode))
+        if code is not None:
+            add("SceneCaptureType", code)
+
+    color_space = _param(preset, "color_space")
+    if color_space is not None:
+        # Core path still writes ColorSpace=sRGB as encode default; optional override only
+        # when the preset explicitly carries a value (adobeRGB → Uncalibrated/65535).
+        if str(color_space).strip().lower() in {"adobergb", "adobe rgb"}:
+            add("ColorSpace", "Uncalibrated")
+
+    return out
+
 
 def missing_exif_fields(preset: dict) -> list[str]:
     """Return Chinese labels of missing brand/model/exposure fields (R2)."""
@@ -237,6 +450,7 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
         "ShutterSpeedValue": f"{tv:.6f}",
         "ApertureValue": f"{av:.6f}",
     }
+    optional = optional_exif_assignments(preset)
     maker_note = str(preset.get("makerNote") or "").strip()
     # exiftool 13.x rejects ExifIFD:ApertureValue when APEX < 1 (e.g. f/1.4 → ~0.97)
     # with "Must be a positive number"; FNumber remains the writable source of truth.
@@ -260,6 +474,12 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
         ]
         if write_aperture_value:
             command.append(f"-ApertureValue={av:.6f}")
+        for tag, value in optional:
+            # Only non-empty optional params reach here; never emit `-Tag=` blanks.
+            if tag in _NUMERIC_EXIF_TAGS:
+                command.append(f"-{tag}#={value}")
+            else:
+                command.append(f"-{tag}={value}")
         if maker_note:
             # PRODUCT-GAP A7：管理员 2026-11-07 授权写入；必须可回读，失败不静默。
             command.append(f"-MakerNote={maker_note}")
@@ -290,25 +510,30 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
                 message=("EXIF 写入失败" + (f"：{detail[:200]}" if detail else "")),
                 code="EXIF_WRITE_FAILED",
             )
+        read_tags = [
+            "exiftool",
+            "-json",
+            "-Make",
+            "-Model",
+            "-ISO",
+            "-ExposureTime",
+            "-FNumber",
+            "-FocalLength",
+            "-ColorSpace",
+            "-ShutterSpeedValue#",
+            "-ApertureValue#",
+            "-GPSLatitude#",
+            "-GPSLongitude#",
+            "-GPSAltitude#",
+            "-MakerNote",
+        ]
+        for tag, _value in optional:
+            flag = f"-{tag}"
+            if flag not in read_tags:
+                read_tags.append(flag)
+        read_tags.append(str(path))
         read = subprocess.run(
-            [
-                "exiftool",
-                "-json",
-                "-Make",
-                "-Model",
-                "-ISO",
-                "-ExposureTime",
-                "-FNumber",
-                "-FocalLength",
-                "-ColorSpace",
-                "-ShutterSpeedValue#",
-                "-ApertureValue#",
-                "-GPSLatitude#",
-                "-GPSLongitude#",
-                "-GPSAltitude#",
-                "-MakerNote",
-                str(path),
-            ],
+            read_tags,
             check=False,
             capture_output=True,
         )
@@ -330,6 +555,8 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
             )
         else:
             fields.append(_verified(tag, requested[tag], row.get(tag)))
+    for tag, value in optional:
+        fields.append(_verified_optional(tag, value, row.get(tag)))
     fields.append(_gps_field(gps_plan, row))
     maker_read = str(row.get("MakerNote") or "")
     if maker_note:
@@ -370,6 +597,57 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
     if not final.startswith(b"\xff\xd8\xff"):
         raise BusinessError(message="最终文件不是 JPEG", code="OUTPUT_CONSTRAINT_UNSATISFIED")
     return final, fields
+
+
+def _verified_optional(tag: str, requested: str, read_back: object) -> dict:
+    """Verify an optional tag that was intentionally written (non-empty source only)."""
+    actual = "" if read_back is None else str(read_back)
+    head = actual.split()[0] if actual.split() else actual
+    if tag in {"MaxApertureValue", "FocalPlaneXResolution", "FocalPlaneYResolution", "FocalLengthIn35mmFormat"}:
+        ok = _close(head, requested) if head else False
+    elif tag == "WhiteBalance":
+        lowered = actual.strip().lower()
+        ok = (
+            head == requested
+            or actual == requested
+            or (requested == "0" and lowered in {"0", "auto"})
+            or (requested == "1" and lowered in {"1", "manual"})
+        )
+    elif tag == "Flash":
+        lowered = actual.strip().lower()
+        ok = (
+            head == requested
+            or actual == requested
+            or (requested == "0" and ("no" in lowered or "off" in lowered or lowered == "0"))
+            or (requested == "1" and ("fired" in lowered or "on" in lowered or lowered == "1"))
+        )
+    elif tag == "LightSource":
+        lowered = actual.strip().lower()
+        ok = (
+            head == requested
+            or actual == requested
+            or (requested == "0" and lowered in {"0", "unknown"})
+            or (requested == "1" and "daylight" in lowered)
+            or (requested == "2" and "fluorescent" in lowered)
+            or (requested == "3" and "tungsten" in lowered)
+            or (requested == "4" and "flash" in lowered)
+            or (requested == "10" and "cloud" in lowered)
+            or (requested == "11" and "shade" in lowered)
+        )
+    elif tag in {"MeteringMode", "ExposureMode", "ExposureProgram", "SceneCaptureType", "FocalPlaneResolutionUnit"}:
+        ok = head == requested or actual == requested or (requested in actual if actual else False)
+    elif tag == "ColorSpace":
+        ok = requested.lower() in actual.lower() or actual.lower() in {"uncalibrated", "65535"}
+    else:
+        ok = bool(actual) and (actual == requested or requested in actual)
+    return {
+        "tag": tag,
+        "requested": requested,
+        "written": requested,
+        "read_back": actual,
+        "verification_status": "verified" if ok else "failed",
+        "reason": "" if ok else "回读与请求不一致",
+    }
 
 
 def _gps_field(plan: dict, row: dict) -> dict:

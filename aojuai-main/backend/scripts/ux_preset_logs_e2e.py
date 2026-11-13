@@ -150,10 +150,11 @@ async def main() -> int:
         presets_page = (REPO / "aojuai-main/frontend/src/app/(app)/realphotos/presets/page.tsx").read_text(
             encoding="utf-8"
         )
-        must("导入记录" not in presets_page or "导入记录区已移除" in presets_page, "R1_fe_import_section_removed")
+        must("导入记录" not in presets_page, "R1_fe_import_section_removed")
         must("device-preset-imports" not in presets_page, "R1_fe_no_import_api_call")
         must("brand: ''" in presets_page or "brand: \"\"" in presets_page, "R1_fe_brand_default_empty")
         must("Honeybadger" not in presets_page or "禁止使用 Honeybadger" in presets_page, "R1_fe_no_default_honeybadger")
+        must("运行台账启停" not in presets_page, "R1_fe_no_prototype_banner")
 
         # Decision: 405 already activated; merchant never reads imports; ops bulk UI already withdrawn.
         note(
@@ -191,17 +192,19 @@ async def main() -> int:
         must(len(lp) >= 40, "R2_legacy_param_volume")
         must(bool(lp.get("camera_make") or d.get("brand")), "R2_brand_visible")
         must(bool(lp.get("white_balance") or lp.get("color_space")), "R2_extended_keys_visible")
-        must(d.get("copyrightPolicy") == "excluded_prd_no_author_copyright_ip_geo", "R2_copyright_excluded_policy")
-        must("author" not in lp or lp.get("author") in (None, ""), "R2_no_author_in_legacy_payload")
+        must(
+            d.get("copyrightPolicy") == "admin_ledger_author_copyright_allowed_ip_geo_excluded",
+            "R2_copyright_admin_ledger_policy",
+        )
+        must("ip_geo" not in lp and "ipGeo" not in lp, "R2_no_ip_geo_in_legacy_payload")
 
         fields_ts = (REPO / "aojuai-main/frontend/src/lib/realphotos-preset-fields.ts").read_text(encoding="utf-8")
-        must("copyright_excluded" in fields_ts, "R2_fe_copyright_excluded_tab")
+        must("'copyright'" in fields_ts or '"copyright"' in fields_ts, "R2_fe_copyright_tab")
         must("white_balance" in fields_ts and "sensor_size" in fields_ts, "R2_fe_extended_fields")
         must("data-preset-form-tab" in presets_page, "R2_fe_tabbed_form")
-        must("sparse" in fields_ts and "lighting" in fields_ts, "R2_sparse_prototype_only_marked")
-        note(
-            "R2.excluded_list=author,copyright,ip_geo;sparse_prototype_only=lighting,background,post_processing,is_public"
-        )
+        must("lighting" not in fields_ts and "background" not in fields_ts, "R2_prototype_only_keys_removed")
+        must("REMOVED_PROTOTYPE_ONLY_KEYS" in fields_ts, "R2_removed_proto_keys_marked")
+        note("R2.excluded_list=ip_geo;removed_prototype_only=lighting,background,post_processing")
         mark("R2_PRESET_FIELDS", True, f"detail={code} lp_keys={len(lp)}")
 
         # --- R3 ---

@@ -52,7 +52,7 @@ GPS_MODES = {"none", "fixed", "random_by_scene"}
 # PRESET-BULK-IMPORT B1: stop injecting Honeybadger s1-* into merchant enabled list.
 INJECT_S1_CATALOG_INTO_ENABLED = False
 PROTECTED_USERNAME = "rp_admin"
-PLACEHOLDER_BRAND_BLOCKLIST = {"honeybadger"}
+PLACEHOLDER_BRAND_BLOCKLIST = {"honeybadger", "runtimecam", "bizcam"}
 ACCOUNT_LOG_ACTION_ZH = {
     "create": "创建账号",
     "credit": "加减积分",
@@ -520,8 +520,15 @@ class RealphotosOpsService:
         for code, row in rows.items():
             if str(row.brand or "").strip().lower() in PLACEHOLDER_BRAND_BLOCKLIST:
                 continue
-            gps_config = await self._latest_gps_config(code)
-            items.append(self._preset_dict(row, gps_config=gps_config))
+            snap = await self._latest_snapshot(code)
+            gps_config = None
+            if isinstance(snap.get("gpsConfig"), dict):
+                gps_config = dict(snap["gpsConfig"])
+            display_name = ""
+            legacy = snap.get("legacyParameters")
+            if isinstance(legacy, dict):
+                display_name = str(legacy.get("name") or "").strip()
+            items.append(self._preset_dict(row, gps_config=gps_config, name=display_name or None))
             seen.add(code)
         if INJECT_S1_CATALOG_INTO_ENABLED:
             for item in S1_ENABLED_PRESETS:
@@ -543,16 +550,22 @@ class RealphotosOpsService:
         gps_config = None
         if isinstance(snap.get("gpsConfig"), dict):
             gps_config = dict(snap["gpsConfig"])
-        payload = self._preset_dict(row, gps_config=gps_config)
+        display_name = ""
+        if isinstance(snap.get("legacyParameters"), dict):
+            display_name = str(snap["legacyParameters"].get("name") or "").strip()
+        payload = self._preset_dict(row, gps_config=gps_config, name=display_name or None)
         if isinstance(snap.get("legacyParameters"), dict):
             payload["legacyParameters"] = dict(snap["legacyParameters"])
+            if not payload.get("name"):
+                payload["name"] = str(payload["legacyParameters"].get("name") or "").strip() or None
         else:
             payload["legacyParameters"] = {}
         if isinstance(snap.get("legacyGpsMeta"), dict):
             payload["legacyGpsMeta"] = dict(snap["legacyGpsMeta"])
         if "gpsWriteConnected" in snap:
             payload["gpsWriteConnected"] = bool(snap["gpsWriteConnected"])
-        payload["copyrightPolicy"] = "excluded_prd_no_author_copyright_ip_geo"
+        # Admin ledger may store author/copyright; IP-GEO still excluded (EXIF write path unchanged).
+        payload["copyrightPolicy"] = "admin_ledger_author_copyright_allowed_ip_geo_excluded"
         return payload
 
     async def list_enabled_presets(self) -> list[dict]:
@@ -637,9 +650,14 @@ class RealphotosOpsService:
     ) -> dict[str, Any]:
         if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
             raise ForbiddenError(message="只有平台管理员可以维护设备预设")
-        # PRODUCT-GAP A7：管理员 2026-11-07 授权 MakerNote 写入；作者/IP-GEO 仍禁止。
-        if author or ip_geo:
-            raise BusinessError(message="第一版不接收作者或 IP-GEO", code="INPUT_INVALID")
+        # Top-level author kwarg still rejected (use legacyParameters.author). IP-GEO always rejected.
+        if ip_geo:
+            raise BusinessError(message="第一版不接收 IP-GEO", code="INPUT_INVALID")
+        if author:
+            raise BusinessError(
+                message="请通过 legacyParameters.author 写入作者，勿使用独立 author 字段",
+                code="INPUT_INVALID",
+            )
         mode = str(gps_mode or "none").strip()
         if mode not in GPS_MODES:
             raise BusinessError(message="GPS 模式无效", code="INPUT_INVALID")
@@ -649,7 +667,7 @@ class RealphotosOpsService:
             raise BusinessError(message="预设编号、品牌和型号必填", code="INPUT_INVALID")
         if str(brand).strip().lower() in PLACEHOLDER_BRAND_BLOCKLIST:
             raise BusinessError(
-                message="禁止使用 Honeybadger 占位品牌；请填写真实设备品牌",
+                message="禁止使用占位品牌（Honeybadger / RuntimeCam / BizCam）；请填写真实设备品牌",
                 code="INPUT_INVALID",
             )
         row = await self._preset_row(label)
@@ -718,12 +736,13 @@ class RealphotosOpsService:
         if snapshot_extra:
             for key, value in dict(snapshot_extra).items():
                 snapshot[key] = value
-        # Merge legacy parameter snapshot; strip PRD-forbidden author/copyright/ip_geo keys.
+        # Merge legacy parameter snapshot; strip IP-GEO only. Author/copyright allowed in admin ledger.
         if legacy_parameters is not None:
             cleaned = {
                 str(k): v
                 for k, v in dict(legacy_parameters).items()
-                if str(k).lower() not in {"author", "copyright", "ip_geo", "ipgeo"}
+                if str(k).lower() not in {"ip_geo", "ipgeo"}
+                and str(k).lower() not in {"lighting", "background", "post_processing"}
             }
             # Keep column mirrors honest when present.
             cleaned.setdefault("camera_make", row.brand)
@@ -1359,6 +1378,7 @@ class RealphotosOpsService:
         row: RealphotosDevicePreset,
         *,
         gps_config: dict | None = None,
+        name: str | None = None,
     ) -> dict:
         from app.capabilities.realphotos.services.gps_write import gps_writability
 
@@ -1375,6 +1395,7 @@ class RealphotosOpsService:
         writable = gps_writability(gps_mode=mode, gps_config=config)
         payload = {
             "code": row.code,
+            "name": str(name or "").strip() or None,
             "deviceType": dtype if dtype in DEVICE_TYPES else str(row.device_type or ""),
             "brand": row.brand,
             "model": row.model_name,

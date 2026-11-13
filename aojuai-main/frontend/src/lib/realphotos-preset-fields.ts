@@ -1,17 +1,18 @@
-/** Device preset form/detail fields aligned to prototype tabs ∩ legacy 55-key map.
- * Copyright / IP-GEO excluded per PRD. Prototype-only keys marked sparse (empty ok, no fake legacy).
+/** Device preset form/detail fields aligned to legacy 55-key map + admin copyright ledger.
+ * IP-GEO remains excluded. Prototype-only keys (lighting/background/post_processing) removed.
+ * Selectable params use options from realphotos-preset-options (legacy UI candidates).
  */
+
+import { PRESET_SELECT_FIELD_KEYS } from '@/lib/realphotos-preset-options'
 
 export type PresetFieldDef = {
   key: string
   label: string
   /** Maps into legacyParameters unless column/top-level */
-  group: 'basic' | 'shooting' | 'exif' | 'ai' | 'copyright_excluded'
+  group: 'basic' | 'shooting' | 'exif' | 'ai' | 'copyright'
   kind?: 'text' | 'textarea' | 'select'
   options?: { value: string; label: string }[]
   required?: boolean
-  /** Not in legacy 55-key map / rare — show empty honestly, do not invent */
-  sparse?: boolean
   /** Bound to row-level column instead of legacyParameters */
   column?:
     | 'code'
@@ -26,20 +27,36 @@ export type PresetFieldDef = {
     | 'makerNote'
     | 'aiPositivePrompt'
     | 'aiNegativePrompt'
+  /** Hide from create/edit form (still may appear in detail when valued) */
+  formHidden?: boolean
 }
 
-export const PRESET_FORM_TABS: { id: 'basic' | 'shooting' | 'exif' | 'ai' | 'copyright_excluded'; label: string }[] = [
+export const PRESET_FORM_TABS: { id: 'basic' | 'shooting' | 'exif' | 'ai' | 'copyright'; label: string }[] = [
   { id: 'basic', label: '基本信息' },
   { id: 'shooting', label: '拍摄参数' },
   { id: 'exif', label: 'EXIF 增强' },
   { id: 'ai', label: 'AI 提示词' },
-  { id: 'copyright_excluded', label: '版权信息' },
+  { id: 'copyright', label: '版权信息' },
 ]
 
-export const PRESET_FIELD_DEFS: PresetFieldDef[] = [
-  // basic
-  { key: 'code', label: '预设编号', group: 'basic', column: 'code', required: true },
-  { key: 'name', label: '预设名称', group: 'basic' },
+export const GPS_COORD_LABELS = {
+  latitude: '纬度',
+  longitude: '经度',
+  altitude: '海拔(m)',
+} as const
+
+function withSelectKind(def: PresetFieldDef): PresetFieldDef {
+  if (def.kind === 'textarea' || def.kind === 'select') return def
+  if (PRESET_SELECT_FIELD_KEYS.has(def.key) || (def.column && PRESET_SELECT_FIELD_KEYS.has(def.column))) {
+    return { ...def, kind: 'select' }
+  }
+  return def
+}
+
+const RAW_PRESET_FIELD_DEFS: PresetFieldDef[] = [
+  // basic — 展示用「预设名称」；内部 code 仅编辑时只读隐藏（API 主键）
+  { key: 'name', label: '预设名称', group: 'basic', required: true },
+  { key: 'code', label: '内部编码', group: 'basic', column: 'code', formHidden: true },
   { key: 'description', label: '描述', group: 'basic', kind: 'textarea' },
   {
     key: 'deviceType',
@@ -57,7 +74,7 @@ export const PRESET_FIELD_DEFS: PresetFieldDef[] = [
   },
   { key: 'brand', label: '品牌', group: 'basic', column: 'brand', required: true },
   { key: 'model', label: '型号', group: 'basic', column: 'model', required: true },
-  { key: 'is_public', label: '可见性（旧版键极少）', group: 'basic', sparse: true },
+  { key: 'is_public', label: '可见性', group: 'basic' },
 
   // shooting — core + legacy
   { key: 'iso', label: 'ISO', group: 'shooting', column: 'iso', required: true },
@@ -84,8 +101,6 @@ export const PRESET_FIELD_DEFS: PresetFieldDef[] = [
   { key: 'lens_max_aperture', label: '镜头最大光圈', group: 'shooting' },
   { key: 'flash_mode', label: '闪光模式', group: 'shooting' },
   { key: 'ambient_light', label: '环境光', group: 'shooting' },
-  { key: 'lighting', label: '光线条件（原型有 / 旧版 55 键无）', group: 'shooting', sparse: true },
-  { key: 'background', label: '背景（原型有 / 旧版 55 键无）', group: 'shooting', sparse: true },
   { key: 'image_width', label: '图像宽度', group: 'shooting' },
   { key: 'image_height', label: '图像高度', group: 'shooting' },
   { key: 'color_depth', label: '色深', group: 'shooting' },
@@ -97,7 +112,6 @@ export const PRESET_FIELD_DEFS: PresetFieldDef[] = [
   { key: 'compression_ratio', label: '压缩比', group: 'shooting' },
   { key: 'sharpening', label: '锐化', group: 'shooting' },
   { key: 'noise_reduction', label: '降噪', group: 'shooting' },
-  { key: 'post_processing', label: '后期处理（原型有 / 旧版 55 键无）', group: 'shooting', sparse: true },
   { key: 'image_description', label: '图像描述', group: 'shooting' },
   { key: 'keywords', label: '关键词', group: 'shooting' },
 
@@ -109,16 +123,16 @@ export const PRESET_FIELD_DEFS: PresetFieldDef[] = [
     column: 'gpsMode',
     kind: 'select',
     options: [
-      { value: 'none', label: '不写入' },
-      { value: 'fixed', label: '固定坐标' },
-      { value: 'random_by_scene', label: '按场景随机' },
+      { value: 'none', label: '不写入 GPS' },
+      { value: 'fixed', label: '固定坐标（手动填写）' },
+      { value: 'random_by_scene', label: '按场景随机生成' },
     ],
   },
   { key: 'scene_type', label: 'GPS 场景类型', group: 'exif' },
-  { key: 'makerNote', label: 'MakerNote', group: 'exif', column: 'makerNote', kind: 'textarea' },
-  { key: 'focal_plane_x_res', label: 'FocalPlane X', group: 'exif' },
-  { key: 'focal_plane_y_res', label: 'FocalPlane Y', group: 'exif' },
-  { key: 'focal_plane_res_unit', label: 'FocalPlane 单位', group: 'exif' },
+  { key: 'makerNote', label: 'MakerNote', group: 'exif', column: 'makerNote' },
+  { key: 'focal_plane_x_res', label: '焦平面 X 分辨率', group: 'exif' },
+  { key: 'focal_plane_y_res', label: '焦平面 Y 分辨率', group: 'exif' },
+  { key: 'focal_plane_res_unit', label: '焦平面分辨率单位', group: 'exif' },
   { key: 'burst_sequence', label: '连拍序号', group: 'exif' },
   { key: 'file_number', label: '文件编号', group: 'exif' },
   { key: 'raw_version', label: 'RAW 版本', group: 'exif' },
@@ -129,10 +143,12 @@ export const PRESET_FIELD_DEFS: PresetFieldDef[] = [
   { key: 'ai_strength', label: 'AI 强度', group: 'ai' },
   { key: 'ai_img2img_strength', label: '图生图强度', group: 'ai' },
 
-  // excluded — display only
-  { key: 'author', label: '作者（PRD 排除）', group: 'copyright_excluded', sparse: true },
-  { key: 'copyright', label: '版权声明（PRD 排除）', group: 'copyright_excluded', sparse: true },
+  // copyright — admin ledger (IP-GEO still excluded)
+  { key: 'author', label: '作者', group: 'copyright' },
+  { key: 'copyright', label: '版权声明', group: 'copyright', kind: 'textarea' },
 ]
+
+export const PRESET_FIELD_DEFS: PresetFieldDef[] = RAW_PRESET_FIELD_DEFS.map(withSelectKind)
 
 /** Legacy parameter keys that sync into row columns on save */
 export const LEGACY_TO_COLUMN: Record<string, string> = {
@@ -148,6 +164,27 @@ export const LEGACY_TO_COLUMN: Record<string, string> = {
   ai_negative_prompt: 'aiNegativePrompt',
 }
 
-export const EXCLUDED_COPYRIGHT_KEYS = ['author', 'copyright', 'ip_geo', 'ipGeo'] as const
+/** Still stripped on save / never shown as form fields */
+export const EXCLUDED_IP_GEO_KEYS = ['ip_geo', 'ipGeo'] as const
 
-export const SPARSE_PROTOTYPE_ONLY_KEYS = ['lighting', 'background', 'post_processing', 'is_public', 'prompt_template_id', 'is_default'] as const
+/** @deprecated use EXCLUDED_IP_GEO_KEYS; author/copyright now editable in admin ledger */
+export const EXCLUDED_COPYRIGHT_KEYS = ['ip_geo', 'ipGeo'] as const
+
+export const REMOVED_PROTOTYPE_ONLY_KEYS = ['lighting', 'background', 'post_processing'] as const
+
+export function presetDisplayName(preset: {
+  name?: string | null
+  code?: string
+  brand?: string
+  model?: string
+  legacyParameters?: Record<string, unknown> | null
+}): string {
+  const fromTop = String(preset.name || '').trim()
+  if (fromTop) return fromTop
+  const fromLegacy = String(preset.legacyParameters?.name || '').trim()
+  if (fromLegacy) return fromLegacy
+  const brand = String(preset.brand || '').trim()
+  const model = String(preset.model || '').trim()
+  if (brand || model) return [brand, model].filter(Boolean).join(' ')
+  return String(preset.code || '').trim() || '未命名预设'
+}
