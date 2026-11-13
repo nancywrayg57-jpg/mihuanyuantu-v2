@@ -539,6 +539,38 @@ async def cleanup_expired_outputs(
     return SuccessResponse(data=payload)
 
 
+@router.post("/assets/cleanup-orphans")
+async def cleanup_library_orphans(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
+) -> dict[str, Any]:
+    """Purge soft-deleted / disk-orphan library object copies (PRD §9.3 / AD-007)."""
+    roles = await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    if ROLE_ADMIN not in roles and "admin" not in roles:
+        from app.core.exceptions import ForbiddenError
+
+        raise ForbiddenError(message="只有平台管理员可以清理资源库孤儿对象")
+    from app.capabilities.realphotos.constants import JOB_KIND_LIBRARY_ORPHAN_CLEANUP
+    from app.capabilities.realphotos.services.job_service import RealphotosJobService
+
+    payload = await RealphotosS1Service(db).cleanup_library_orphans()
+    job = await RealphotosJobService(db).enqueue_cleanup(
+        tenant_id=int(tenant_ctx.tenant_id),
+        owner_account_id=int(current_user.id),
+        job_kind=JOB_KIND_LIBRARY_ORPHAN_CLEANUP,
+        payload={"source": "admin_api_sync_and_enqueue"},
+    )
+    payload = {
+        **payload,
+        "enqueuedJobId": str(int(job.id)),
+        "jobKind": JOB_KIND_LIBRARY_ORPHAN_CLEANUP,
+    }
+    await db.commit()
+    return SuccessResponse(data=payload)
+
+
 @router.get("/inbox")
 async def inbox(
     current_user: CurrentUser,

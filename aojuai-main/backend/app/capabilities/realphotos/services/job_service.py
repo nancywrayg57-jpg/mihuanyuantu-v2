@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.capabilities.realphotos.constants import (
     JOB_KIND_HEARTBEAT,
     JOB_KIND_INBOX_CLEANUP,
+    JOB_KIND_LIBRARY_ORPHAN_CLEANUP,
     JOB_KIND_NOOP,
     JOB_KIND_OUTPUT_CLEANUP,
     JOB_KIND_PROCESS_IMAGE,
@@ -59,10 +60,11 @@ class RealphotosJobService:
             JOB_KIND_NOOP,
             JOB_KIND_INBOX_CLEANUP,
             JOB_KIND_OUTPUT_CLEANUP,
+            JOB_KIND_LIBRARY_ORPHAN_CLEANUP,
         }
         if kind not in allowed:
             raise BusinessError(
-                message="仅允许 heartbeat/noop/inbox_cleanup/output_cleanup",
+                message="仅允许 heartbeat/noop/inbox_cleanup/output_cleanup/library_orphan_cleanup",
                 code="INPUT_INVALID",
             )
         job = RealphotosExecutionJob(
@@ -86,7 +88,11 @@ class RealphotosJobService:
         payload: dict | None = None,
     ) -> RealphotosExecutionJob:
         kind = str(job_kind or "").strip()
-        if kind not in {JOB_KIND_INBOX_CLEANUP, JOB_KIND_OUTPUT_CLEANUP}:
+        if kind not in {
+            JOB_KIND_INBOX_CLEANUP,
+            JOB_KIND_OUTPUT_CLEANUP,
+            JOB_KIND_LIBRARY_ORPHAN_CLEANUP,
+        }:
             raise BusinessError(message="清理任务类型无效", code="INPUT_INVALID")
         return await self.enqueue(
             tenant_id=tenant_id,

@@ -3,7 +3,7 @@
 三入口（工单 R5）：
 - process → 图片处理
 - notify  → outbox 投递（独立脚本，不走 execution_jobs claim）
-- cleanup → inbox/output 清理
+- cleanup → inbox/output/library_orphan 清理
 
 `realphotos_heartbeat` 保留为兼容入口，但默认仅认领 process 侧 kinds，
 不再与 cleanup 抢同一队列（完整分进程见 scripts/run_realphotos_*）。
@@ -25,6 +25,7 @@ PROCESS_JOB_KINDS: Final[tuple[str, ...]] = (
 CLEANUP_JOB_KINDS: Final[tuple[str, ...]] = (
     "inbox_cleanup",
     "output_cleanup",
+    "library_orphan_cleanup",
 )
 
 ROLE_JOB_KINDS: Final[dict[str, tuple[str, ...]]] = {

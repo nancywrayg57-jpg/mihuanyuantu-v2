@@ -112,6 +112,11 @@ class RealphotosRoleTaskSource:
 
                 cleanup = await RealphotosS1Service(db).cleanup_expired_outputs()
                 result.update(cleanup)
+            elif job.job_kind == "library_orphan_cleanup":
+                from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
+
+                cleanup = await RealphotosS1Service(db).cleanup_library_orphans()
+                result.update(cleanup)
             await service.complete_success(job=job, result=result)
             await db.commit()
             logger.info(

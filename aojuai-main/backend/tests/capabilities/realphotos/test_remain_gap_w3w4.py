@@ -14,6 +14,7 @@ from app.capabilities.realphotos.adapters.storage import (
 )
 from app.capabilities.realphotos.constants import (
     JOB_KIND_INBOX_CLEANUP,
+    JOB_KIND_LIBRARY_ORPHAN_CLEANUP,
     JOB_KIND_OUTPUT_CLEANUP,
     JOB_KIND_PROCESS_IMAGE,
     JOB_STATUS_QUEUED,
@@ -30,6 +31,7 @@ def test_r5_role_kind_whitelists() -> None:
     assert JOB_KIND_PROCESS_IMAGE in PROCESS_JOB_KINDS
     assert JOB_KIND_INBOX_CLEANUP not in PROCESS_JOB_KINDS
     assert JOB_KIND_OUTPUT_CLEANUP in CLEANUP_JOB_KINDS
+    assert JOB_KIND_LIBRARY_ORPHAN_CLEANUP in CLEANUP_JOB_KINDS
     assert JOB_KIND_PROCESS_IMAGE not in CLEANUP_JOB_KINDS
 
 

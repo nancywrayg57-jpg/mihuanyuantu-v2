@@ -32,12 +32,25 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "AUDIT-REMAIN-CLOSEOUT：A1/A2/B1/B2/C1"
-    user_value: "冻结禁新获取；资源库下载扩名；Alembic 0004；lease 书面降级；架构正文一致"
-    visible_output: "upload/import ACCOUNT_FROZEN；realphotos-download.ts；realphotos_0004；LEASE_TTL_DEFERRED"
-    verify: "/tmp/audit-remain-closeout-e2e.log 含 AUDIT_REMAIN_W1/W2/W3_PASS；OUT_ND012_SKIPPED；R9_S7_BLOCKED"
+    goal: "LIBRARY-ASSET-PURGE：删除覆盖对象副本 + 孤儿清理"
+    user_value: "资源库删除真正清盘；历史软删/无行孤儿一并清"
+    visible_output: "soft_delete_asset→storage.delete；cleanup_library_orphans；POST /assets/cleanup-orphans"
+    verify: "/tmp/library-asset-purge-e2e.log 含 LIBRARY_ASSET_PURGE_E2E_PASS"
     status: coded_e2e_pass_pr_pending
-    next_user_action: "推 audit-remain-closeout PR；非作者 Owner squash；不得开 S7；不得宣称 ND-012 正式闭合。"
+    next_user_action: "推 library-asset-purge PR；非作者 Owner squash；不得开 S7。"
+  library_asset_purge_2026_11_13:
+    work_order: LIBRARY-ASSET-PURGE
+    branch: cursor/library-asset-purge-9973
+    baseline_main: 6a471ac
+    baseline_pr: 50
+    delete_purges_object: done
+    orphan_cleanup_job: library_orphan_cleanup
+    admin_api: POST /assets/cleanup-orphans
+    e2e_log: /tmp/library-asset-purge-e2e.log
+    evidence_marker: LIBRARY_ASSET_PURGE_E2E_PASS
+    constraint_ledger: docs/mihuanyuantu-v2/input/LIBRARY-ASSET-PURGE-constraint-ledger.md
+    production_billing: false
+    r9_s7: blocked
   audit_remain_closeout_2026_11_11:
     work_order: AUDIT-REMAIN-CLOSEOUT-2026-11-11
     branch: cursor/audit-remain-closeout-9973
