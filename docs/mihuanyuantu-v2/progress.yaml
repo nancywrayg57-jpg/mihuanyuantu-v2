@@ -32,12 +32,33 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "LIBRARY-ASSET-PURGE：删除覆盖对象副本 + 孤儿清理"
-    user_value: "资源库删除真正清盘；历史软删/无行孤儿一并清"
-    visible_output: "soft_delete_asset→storage.delete；cleanup_library_orphans；POST /assets/cleanup-orphans"
-    verify: "/tmp/library-asset-purge-e2e.log 含 LIBRARY_ASSET_PURGE_E2E_PASS"
-    status: coded_e2e_pass_pr_pending
-    next_user_action: "推 library-asset-purge PR；非作者 Owner squash；不得开 S7。"
+    goal: "FIVE-LAYER-LEGACY-ALIGN：五层对齐旧版提分 ≥10"
+    user_value: "同样本真 Gemini 均分相对 s2-five-layer-2 提升 ≥10；pipeline s2-five-layer-3"
+    visible_output: "five_layer v3 + camera_specs + ALIGN e2e 证据"
+    verify: "/tmp/five-layer-legacy-align-e2e.log 含 ALIGN_W5_E2E_PASS"
+    status: e2e_shortfall_blocked
+    next_user_action: "审阅瓶颈纪要；若放宽 Q3–Q8/Q11 或改对照基线后再跑 W5；未达标前不推 PR（Q12）；不得开 S7。"
+  five_layer_legacy_align_2026_11_13:
+    work_order: FIVE-LAYER-LEGACY-ALIGN
+    branch: cursor/five-layer-legacy-align-9973
+    pipeline_version: s2-five-layer-3
+    w0_confirmed: true
+    w1_baseline: logged
+    w2_pixel_fft: coded
+    w3_exif: coded
+    w4_encode: coded
+    w5_e2e: shortfall
+    w5_gain_observed: 1.42
+    w5_gain_target: 10
+    w6_pr: blocked_until_w5_pass
+    constraint_ledger: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-constraint-ledger.md
+    sample_sha256: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-sample-sha256.json
+    e2e_log: /tmp/five-layer-legacy-align-e2e.log
+    evidence_marker: ALIGN_W5_E2E_SHORTFALL
+    bottleneck_note: "真 Gemini 下 v3−v2 均分增益约 0–5，达不到 ≥10；禁色差/Layer0/MAD≤6 限制旧版强手段；检测器方差大。见 constraint-ledger 端测瓶颈纪要。"
+    production_billing: false
+    r9_s7: blocked
+    pass_score_unchanged: 75
   library_asset_purge_2026_11_13:
     work_order: LIBRARY-ASSET-PURGE
     branch: cursor/library-asset-purge-9973

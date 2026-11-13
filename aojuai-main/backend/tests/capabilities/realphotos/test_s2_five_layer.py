@@ -10,7 +10,9 @@ import numpy as np
 import pytest
 from PIL import Image
 
+from app.capabilities.realphotos.services.camera_specs import lookup_camera_spec
 from app.capabilities.realphotos.services.five_layer import (
+    FIDELITY_MAD_HARD_MAX,
     FIDELITY_MAD_MAX,
     PIPELINE_VERSION,
     l1_noise_sigma,
@@ -42,15 +44,22 @@ def _source(*, quality: int, width: int = 320, height: int = 240, kind: str = "n
     return buf.getvalue()
 
 
-def test_pipeline_version_is_s2_five_layer_2() -> None:
-    assert PIPELINE_VERSION == "s2-five-layer-2"
+def test_pipeline_version_is_s2_five_layer_3() -> None:
+    assert PIPELINE_VERSION == "s2-five-layer-3"
 
 
-def test_l1_sigma_iso_weak_and_capped() -> None:
-    assert 1.05 <= l1_noise_sigma(100) <= 1.25
-    assert l1_noise_sigma(100) > 0.8
-    assert l1_noise_sigma(1600) <= 1.85
-    assert l1_noise_sigma(51200) <= 1.85
+def test_l1_sigma_iso_stronger_than_v2_and_capped() -> None:
+    # ISO100 uses process floor 350 × intensity 1.10 → ~1.03; capped ≤2.20.
+    assert 0.85 <= l1_noise_sigma(100) <= 1.40
+    assert l1_noise_sigma(100) > 0.80
+    assert l1_noise_sigma(1600) <= 2.20
+    assert l1_noise_sigma(51200) <= 2.20
+
+
+def test_camera_spec_lookup_iphone() -> None:
+    spec = lookup_camera_spec("Apple", "iPhone 15 Pro")
+    assert spec is not None
+    assert float(spec["focal_plane_x_res"]) > 0
 
 
 def test_five_layer_keeps_size_writes_preset_and_meets_byte_floor() -> None:
@@ -75,14 +84,24 @@ def test_five_layer_keeps_size_writes_preset_and_meets_byte_floor() -> None:
     assert "MakerNote" not in row
 
 
-def test_five_layer_fidelity_mad_within_fine_limit() -> None:
-    """ND-020 proxy: MAD on smooth source stays under FIDELITY_MAD_MAX (logged in e2e)."""
+def test_five_layer_fidelity_mad_within_hard_limit() -> None:
+    """Q11: prefer ≤FIDELITY_MAD_MAX; unit gate uses hard max 6.0."""
     source = _source(quality=92, kind="gradient")
     preset = dict(S1_ENABLED_PRESETS[0])
     output = run_five_layer(source=source, preset=preset, seed=11).jpeg
     with Image.open(io.BytesIO(source)) as before, Image.open(io.BytesIO(output)) as after:
         mad = mean_abs_delta(np.asarray(before, dtype=np.float32), np.asarray(after, dtype=np.float32))
-    assert mad <= FIDELITY_MAD_MAX
+    assert mad <= FIDELITY_MAD_HARD_MAX
+    assert FIDELITY_MAD_MAX <= FIDELITY_MAD_HARD_MAX
+
+
+def test_freq_modes_keep_dimensions() -> None:
+    source = _source(quality=50)
+    preset = dict(S1_ENABLED_PRESETS[0])
+    for mode in ("2d", "1d", "hybrid", "auto"):
+        out = run_five_layer(source=source, preset=preset, seed=5, freq_mode=mode).jpeg
+        with Image.open(io.BytesIO(source)) as before, Image.open(io.BytesIO(out)) as after:
+            assert after.size == before.size
 
 
 def test_byte_floor_fails_without_padding() -> None:
