@@ -116,7 +116,8 @@ async def generate_images(
     # Contract gap: seed is not sent and must not be forged as accepted.
     _ = seed
     try:
-        async with httpx.AsyncClient(timeout=_timeout(180.0)) as client:
+        # trust_env=False: avoid broken corporate HTTP(S)_PROXY 403 on supplier hosts.
+        async with httpx.AsyncClient(timeout=_timeout(180.0), trust_env=False) as client:
             if reference is None:
                 response = await client.post(
                     f"{root}/images/generations",
@@ -155,7 +156,7 @@ async def _inline_urls(images: list[dict[str, Any]]) -> None:
     if not pending:
         return
     try:
-        async with httpx.AsyncClient(timeout=_timeout(60.0)) as client:
+        async with httpx.AsyncClient(timeout=_timeout(60.0), trust_env=False) as client:
             for item in pending:
                 response = await client.get(str(item["url"]))
                 content_type = response.headers.get("content-type", "")

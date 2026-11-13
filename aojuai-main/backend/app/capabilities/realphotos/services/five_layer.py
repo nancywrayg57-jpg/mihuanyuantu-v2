@@ -23,45 +23,45 @@ from app.core.exceptions import BusinessError
 PIPELINE_VERSION = "s2-five-layer-3"
 PIPELINE_VERSION_BASELINE = "s2-five-layer-2"
 ENCODE_PROFILE = "s2-ecommerce-1"
-_QUALITIES = (88, 90, 93, 96, 98, 100)
-# Prefer MAD ≤ 3.5; hard stop 6.0 (admin Q11: not an absolute score veto at 3.5).
+_QUALITIES = (85, 88, 90, 93, 96, 98, 100)
+# Q11 复裁：MAD 仅观测（日志/排序参考），不否决参数组、不 fail 端测。
 FIDELITY_MAD_MAX = 3.5
 FIDELITY_MAD_HARD_MAX = 6.0
-# L2 2D: high-frequency only (protect logo/structure).
-_L2_SIGMA = 0.024
-_L2_RADIUS = 0.48
-# Legacy-like 1D row phase perturbation (frequencyProcessor ~0.004).
-_L2_1D_PHASE = 0.0035
-_L2_1D_LOW_CUT = 0.10
-_L2_1D_HIGH_CUT = 0.38
-# L3 sparse ±1; spectral ripple kept very weak (Q7).
-_L3_SPARSE_MAX = 1600
-_L3_SPECTRAL_SIGMA = 0.003
-# L1 vignette uses legacy cos^4 curve scaled for 「弱、可测」(Q3); no CA (Q4).
-_VIGNETTE_LEGACY_SCALE = 0.22
-_SHARPEN_RADIUS = 0.55
-_SHARPEN_PERCENT = 40
-_MID_JPEG_QUALITY = 91
-_MAD_PREFER_TARGET = 2.50
-_ISO_PROCESS_FLOOR = 350.0
-_NOISE_INTENSITY = 1.10
-_FIXED_MODE_SCALE = 0.50
-# Smoothness (Laplacian variance) → pick light vs strong packs (avoid hurting detailed shots).
+FIDELITY_MAD_OBSERVE_ONLY = True
+# L2 2D toward legacy effect (Q4/Q8 reopen → allow stronger packs).
+_L2_SIGMA = 0.036
+_L2_RADIUS = 0.35
+_L2_1D_PHASE = 0.0045
+_L2_1D_LOW_CUT = 0.05
+_L2_1D_HIGH_CUT = 0.45
+_L3_SPARSE_MAX = 2500
+_L3_SPECTRAL_SIGMA = 0.012
+# L1 vignette (Q3) + CA (Q4 reopen) + Layer0 (Q8 reopen).
+_VIGNETTE_LEGACY_SCALE = 0.85
+_SHARPEN_RADIUS = 0.6
+_SHARPEN_PERCENT = 48
+_MID_JPEG_QUALITY = 85
+_MAD_PREFER_TARGET = 3.0
+_ISO_PROCESS_FLOOR = 400.0
+_NOISE_INTENSITY = 1.55
+_FIXED_MODE_SCALE = 0.85
+_LAYER0_OPTICAL_STRENGTH = 0.32
+_LAYER0_IMG2IMG_STRENGTH = 0.12
+_CA_INTENSITY = 1.15
 _SMOOTH_LAP_VAR_THR = 12.0
-# Intensity tiers: (noise, vignette, l2, sparse) — light / mid / strong
 _AUTO_TIERS_LIGHT: tuple[tuple[float, float, float, float], ...] = (
-    (0.65, 0.50, 0.35, 0.50),
-    (0.85, 0.70, 0.50, 0.65),
+    (1.00, 0.90, 0.75, 0.85),
+    (1.20, 1.10, 0.90, 1.00),
 )
 _AUTO_TIERS_STRONG: tuple[tuple[float, float, float, float], ...] = (
-    (1.00, 0.95, 0.70, 0.85),
-    (1.20, 1.15, 0.85, 1.00),
+    (1.25, 1.15, 1.00, 1.10),
+    (1.45, 1.35, 1.10, 1.25),
 )
-_AUTO_TIERS = _AUTO_TIERS_STRONG  # default table for ledger/tests
-# Optional Gemini rerank packs (e2e / explicit score_fn only).
+_AUTO_TIERS = _AUTO_TIERS_STRONG
 _RERANK_PACKS: tuple[tuple[str, float, float, float, float], ...] = (
-    ("2d", 1.15, 1.10, 0.70, 0.90),
-    ("2d", 0.90, 1.50, 0.45, 0.70),
+    ("2d", 0.90, 0.85, 0.55, 0.65),  # milder — avoid artifact regressions
+    ("2d", 1.30, 1.25, 1.00, 1.10),
+    ("2d", 1.10, 1.55, 0.70, 0.95),  # lighting-weighted vignette
 )
 
 
@@ -71,6 +71,7 @@ class FiveLayerOutput:
     fields: list[dict]
     width: int
     height: int
+    detector_score: int | None = None
 
 
 def _byte_floor(source: bytes) -> int:
@@ -110,7 +111,7 @@ def l1_noise_sigma(iso: object) -> float:
 
 
 def aperture_vignette_strength(aperture: object) -> float:
-    """Legacy aperture→vignette table × weak scale (Q3 弱、可测)."""
+    """Legacy aperture→vignette table × scale (Q3)."""
     try:
         f_number = float(str(aperture or "2.8").strip().removeprefix("f/").removeprefix("F/"))
     except ValueError:
@@ -130,6 +131,133 @@ def aperture_vignette_strength(aperture: object) -> float:
     else:
         raw = 0.04
     return float(raw * float(_VIGNETTE_LEGACY_SCALE))
+
+
+def focal_length_to_ca_strength(focal_length: object) -> float:
+    """Legacy focalLengthToCAStrength (imagePhysicalizer)."""
+    try:
+        text = str(focal_length or "50").strip().lower().removesuffix("mm")
+        value = float(text)
+    except ValueError:
+        value = 50.0
+    if value <= 14:
+        return 2.0
+    if value <= 24:
+        return 1.5
+    if value <= 35:
+        return 1.0
+    if value <= 50:
+        return 0.7
+    if value <= 85:
+        return 0.5
+    if value <= 135:
+        return 0.4
+    return 0.3
+
+
+def _layer0_optical(arr: np.ndarray, rng: np.random.Generator, *, strength: float) -> np.ndarray:
+    """Local Layer0 stand-in (Q8): micro-contrast + fine texture. Not Node img2img."""
+    if strength <= 1e-9:
+        return arr
+    out = np.array(arr, copy=True, dtype=np.float32)
+    # 5x5 box blur residual for local contrast (camera-like micro detail).
+    pad = np.pad(out, ((2, 2), (2, 2), (0, 0)), mode="edge")
+    blur = np.zeros_like(out)
+    for dy in range(5):
+        for dx in range(5):
+            blur += pad[dy : dy + out.shape[0], dx : dx + out.shape[1], :]
+    blur /= 25.0
+    detail = out - blur
+    out = out + float(strength) * detail
+    grain = rng.normal(0.0, 0.55 * float(strength), size=out.shape).astype(np.float32)
+    out = out + grain
+    return np.clip(out, 0, 255)
+
+
+def _apply_chromatic_aberration(
+    arr: np.ndarray, *, focal_length: object, intensity: float = 1.0
+) -> np.ndarray:
+    """Legacy-inspired R/B channel shift (Q4). Keeps width/height unchanged."""
+    ca = float(focal_length_to_ca_strength(focal_length)) * float(intensity) * float(_CA_INTENSITY)
+    # Python banker's round(0.5)==0 would skip mid-focal CA; use ceil for measurable shift.
+    shift = int(math.ceil(ca * 0.55)) if ca >= 0.35 else 0
+    if shift < 1:
+        return arr
+    image = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), mode="RGB")
+    width, height = image.size
+    r_ch, g_ch, b_ch = image.split()
+    r_big = r_ch.resize((width + 2 * shift, height + 2 * shift), Image.Resampling.BICUBIC)
+    r_ch = r_big.crop((shift, shift, shift + width, shift + height))
+    inner_w = max(1, width - 2 * shift)
+    inner_h = max(1, height - 2 * shift)
+    b_small = b_ch.resize((inner_w, inner_h), Image.Resampling.BICUBIC)
+    b_canvas = Image.new("L", (width, height), color=0)
+    b_canvas.paste(b_small, (shift, shift))
+    merged = Image.merge("RGB", (r_ch, g_ch, b_canvas))
+    # Legacy fallback also nudged saturation slightly.
+    arr_out = np.asarray(merged, dtype=np.float32)
+    mean = np.mean(arr_out, axis=2, keepdims=True)
+    arr_out = mean + (arr_out - mean) * 1.02
+    return np.clip(arr_out, 0, 255)
+
+
+def _maybe_layer0_img2img(source: bytes, *, preset: dict) -> bytes | None:
+    """Supplier img2img Layer0 (Q8). Default on when generation key exists; set ALIGN_LAYER0_IMG2IMG=0 to disable."""
+    import os
+
+    flag = str(os.environ.get("ALIGN_LAYER0_IMG2IMG") or "auto").strip().lower()
+    if flag in {"0", "false", "off", "no"}:
+        return None
+    try:
+        import asyncio
+        import base64
+
+        from app.capabilities.realphotos.services.supplier_clients import (
+            generate_images,
+            prepare_reference_jpeg,
+        )
+        from app.capabilities.realphotos.services.supplier_secrets import read_duty_secret
+    except Exception:  # noqa: BLE001
+        return None
+    if not str(read_duty_secret("generation") or "").strip():
+        return None
+    _ = preset  # reserved for future strength/prompt from preset snapshot
+    with Image.open(io.BytesIO(source)) as image:
+        width, height = image.size
+    ref = prepare_reference_jpeg(source, max_edge=1280, quality=85)
+    prompt = (
+        "Photorealistic camera capture texture only. Preserve exact composition, "
+        "product geometry, logo text, and colors. Add natural CMOS grain, mild lens "
+        f"vignetting character, and optical realism. Strength {float(_LAYER0_IMG2IMG_STRENGTH):.2f}."
+    )
+    try:
+        outcome = asyncio.run(
+            generate_images(
+                model_id="gpt-image-2",
+                prompt=prompt,
+                width=int(width),
+                height=int(height),
+                quantity=1,
+                reference=ref,
+            )
+        )
+    except Exception:  # noqa: BLE001
+        return None
+    images = list(outcome.get("images") or [])
+    if not images or not images[0].get("raw"):
+        return None
+    raw = images[0]["raw"]
+    if isinstance(raw, str):
+        raw = base64.b64decode(raw)
+    if not isinstance(raw, (bytes, bytearray)):
+        return None
+    with Image.open(io.BytesIO(bytes(raw))) as out_img:
+        rgb = out_img.convert("RGB")
+        if rgb.size != (width, height):
+            rgb = rgb.resize((width, height), Image.Resampling.LANCZOS)
+        buf = io.BytesIO()
+        rgb.save(buf, format="JPEG", quality=95, subsampling=0)
+        return buf.getvalue()
 
 
 def mean_abs_delta(before: np.ndarray, after: np.ndarray) -> float:
@@ -196,64 +324,63 @@ def _pick_v3_pixels(
     seed: int,
     iso: object,
     aperture: object,
+    focal_length: object,
     requested: str,
 ) -> tuple[str, np.ndarray]:
-    """Q6 dual-path + intensity tiers; ``auto`` picks by MAD prefer (no stack-hybrid)."""
+    """Q6 dual-path + intensity tiers; ``auto`` prefers stronger packs (MAD observe-only)."""
     mode = str(requested or "auto").strip().lower()
     if mode not in {"2d", "1d", "hybrid", "auto"}:
         mode = "auto"
     if mode != "auto":
         return mode, _l1_l3(
-            baseline, seed=seed, iso=iso, aperture=aperture, freq_mode=mode
+            baseline,
+            seed=seed,
+            iso=iso,
+            aperture=aperture,
+            focal_length=focal_length,
+            freq_mode=mode,
         )
     smooth = _laplacian_var(baseline) < float(_SMOOTH_LAP_VAR_THR)
     tiers = _AUTO_TIERS_STRONG if smooth else _AUTO_TIERS_LIGHT
     best_mode = "2d"
     best_pixels: np.ndarray | None = None
     best_rank = float("inf")
-    for mad_cap in (FIDELITY_MAD_MAX, FIDELITY_MAD_HARD_MAX):
-        best_rank = float("inf")
-        best_pixels = None
-        for candidate in ("2d", "1d"):
-            for noise_m, vig_m, l2_m, sparse_m in tiers:
-                pixels = _l1_l3(
-                    baseline,
-                    seed=seed,
-                    iso=iso,
-                    aperture=aperture,
-                    freq_mode=candidate,
-                    noise_mult=noise_m,
-                    vignette_mult=vig_m,
-                    l2_mult=l2_m,
-                    sparse_mult=sparse_m,
-                )
-                mad = mean_abs_delta(baseline, pixels)
-                if mad > mad_cap:
-                    continue
-                rank = (
-                    abs(mad - _MAD_PREFER_TARGET)
-                    + (0.0 if candidate == "2d" else 0.04)
-                    + abs(noise_m - 0.95) * 0.03
-                )
-                if rank < best_rank:
-                    best_rank = rank
-                    best_mode = candidate
-                    best_pixels = pixels
-        if best_pixels is not None:
-            return best_mode, best_pixels
-    # Emergency light path — still must stay under hard MAD when possible.
-    best_mode = "2d"
-    best_pixels = _l1_l3(
-        baseline,
-        seed=seed,
-        iso=iso,
-        aperture=aperture,
-        freq_mode="2d",
-        noise_mult=0.55,
-        vignette_mult=0.35,
-        l2_mult=0.35,
-        sparse_mult=0.45,
-    )
+    for candidate in ("2d", "1d"):
+        for noise_m, vig_m, l2_m, sparse_m in tiers:
+            pixels = _l1_l3(
+                baseline,
+                seed=seed,
+                iso=iso,
+                aperture=aperture,
+                focal_length=focal_length,
+                freq_mode=candidate,
+                noise_mult=noise_m,
+                vignette_mult=vig_m,
+                l2_mult=l2_m,
+                sparse_mult=sparse_m,
+            )
+            mad = mean_abs_delta(baseline, pixels)
+            # Q11 observe-only: MAD is a soft ranking hint, never a veto.
+            rank = (
+                -float(noise_m) * 0.15
+                - float(vig_m) * 0.10
+                + abs(mad - _MAD_PREFER_TARGET) * 0.02
+                + (0.0 if candidate == "2d" else 0.03)
+            )
+            if rank < best_rank:
+                best_rank = rank
+                best_mode = candidate
+                best_pixels = pixels
+    if best_pixels is None:
+        best_mode = "2d"
+        best_pixels = _l1_l3(
+            baseline,
+            seed=seed,
+            iso=iso,
+            aperture=aperture,
+            focal_length=focal_length,
+            freq_mode="2d",
+        )
     return best_mode, best_pixels
 
 
@@ -292,7 +419,7 @@ def _finalize_jpeg(
         )
     ranked.sort(key=lambda row: (0 if row[0] <= FIDELITY_MAD_HARD_MAX else 1, row[0]))
     _mad, final, fields = ranked[0]
-    return FiveLayerOutput(jpeg=final, fields=fields, width=width, height=height)
+    return FiveLayerOutput(jpeg=final, fields=fields, width=width, height=height, detector_score=None)
 
 
 def _pixels_to_output(
@@ -348,11 +475,28 @@ def run_five_layer(
     algorithm: ``v3`` (default) or ``v2`` frozen baseline pixel path for score deltas.
 
     score_fn: optional ``callable(jpeg_bytes) -> dict`` with ``total_score``; when set on
-    v3/auto, builds a few MAD-safe packs and keeps the highest Gemini score (Q1).
+    v3/auto, builds a few packs and keeps the highest Gemini score (Q1).
     """
-    baseline = _decode_baseline(source)
-    height, width = int(baseline.shape[0]), int(baseline.shape[1])
+    work_source = source
     algo = str(algorithm or "v3").strip().lower()
+    if algo != "v2":
+        img2 = _maybe_layer0_img2img(source, preset=preset)
+        if img2 is not None:
+            work_source = img2
+    baseline = _decode_baseline(work_source)
+    # Byte floor / size constraints still keyed to the original upload bytes.
+    height, width = int(baseline.shape[0]), int(baseline.shape[1])
+    with Image.open(io.BytesIO(source)) as src_img:
+        src_w, src_h = src_img.size
+    if (width, height) != (src_w, src_h):
+        # Keep contract: never change output geometry vs original source.
+        baseline = np.asarray(
+            Image.fromarray(baseline.astype(np.uint8), mode="RGB").resize(
+                (src_w, src_h), Image.Resampling.LANCZOS
+            ),
+            dtype=np.float32,
+        )
+        height, width = src_h, src_w
     if algo == "v2":
         pixels = _l1_l3_v2(baseline, seed=int(seed), iso=preset.get("iso"))
         return _pixels_to_output(
@@ -368,6 +512,7 @@ def run_five_layer(
             sharpen=False,
         )
 
+    focal = preset.get("focalLength") or preset.get("focal_length") or "50mm"
     requested = str(freq_mode or "auto").strip().lower()
     if requested != "auto":
         mode = requested if requested in {"2d", "1d", "hybrid"} else "2d"
@@ -376,6 +521,7 @@ def run_five_layer(
             seed=int(seed),
             iso=preset.get("iso"),
             aperture=preset.get("aperture"),
+            focal_length=focal,
             freq_mode=mode,
         )
         return _pixels_to_output(
@@ -393,6 +539,7 @@ def run_five_layer(
         seed=int(seed),
         iso=preset.get("iso"),
         aperture=preset.get("aperture"),
+        focal_length=focal,
         requested="auto",
     )
     auto_out = _pixels_to_output(
@@ -404,29 +551,6 @@ def run_five_layer(
         width=width,
         height=height,
     )
-    # If JPEG-stage MAD overshoots hard top, fall back to lightest pack.
-    if _output_mad(baseline, auto_out.jpeg) > FIDELITY_MAD_HARD_MAX:
-        light_pixels = _l1_l3(
-            baseline,
-            seed=int(seed),
-            iso=preset.get("iso"),
-            aperture=preset.get("aperture"),
-            freq_mode="2d",
-            noise_mult=0.55,
-            vignette_mult=0.40,
-            l2_mult=0.35,
-            sparse_mult=0.45,
-        )
-        auto_out = _pixels_to_output(
-            light_pixels,
-            source=source,
-            preset=preset,
-            seed=int(seed),
-            baseline=baseline,
-            width=width,
-            height=height,
-            mid_q=93,
-        )
     if score_fn is None or not callable(score_fn):
         return auto_out
 
@@ -437,39 +561,45 @@ def run_five_layer(
             seed=int(seed),
             iso=preset.get("iso"),
             aperture=preset.get("aperture"),
+            focal_length=focal,
             freq_mode=mode,
             noise_mult=n_m,
             vignette_mult=v_m,
             l2_mult=l_m,
             sparse_mult=s_m,
         )
-        out = _pixels_to_output(
-            pixels,
-            source=source,
-            preset=preset,
-            seed=int(seed),
-            baseline=baseline,
-            width=width,
-            height=height,
+        candidates.append(
+            _pixels_to_output(
+                pixels,
+                source=source,
+                preset=preset,
+                seed=int(seed),
+                baseline=baseline,
+                width=width,
+                height=height,
+            )
         )
-        if _output_mad(baseline, out.jpeg) <= FIDELITY_MAD_HARD_MAX:
-            candidates.append(out)
 
     best = auto_out
     best_score = -1
     for cand in candidates:
-        mad = _output_mad(baseline, cand.jpeg)
-        if mad > FIDELITY_MAD_HARD_MAX:
-            continue
         try:
             report = score_fn(cand.jpeg)
             score = int(report.get("total_score", 0))
-        except Exception:  # noqa: BLE001 — fall back to MAD-auto candidate
+        except Exception:  # noqa: BLE001 — fall back to auto candidate
             continue
         if score > best_score:
             best_score = score
             best = cand
-    return best
+    if best_score < 0:
+        return best
+    return FiveLayerOutput(
+        jpeg=best.jpeg,
+        fields=best.fields,
+        width=best.width,
+        height=best.height,
+        detector_score=int(best_score),
+    )
 
 
 def shutter_seconds(value: str) -> float:
@@ -583,18 +713,19 @@ def _l1_l3(
     seed: int,
     iso: object = "100",
     aperture: object = "f/2.8",
+    focal_length: object = "50mm",
     freq_mode: str = "hybrid",
     noise_mult: float = 1.0,
     vignette_mult: float = 1.0,
     l2_mult: float = 1.0,
     sparse_mult: float = 1.0,
+    layer0: bool = True,
 ) -> np.ndarray:
     rng = np.random.default_rng(int(seed))
     arr = np.array(baseline, copy=True, dtype=np.float32)
     mode = str(freq_mode or "hybrid").strip().lower()
     if mode not in {"2d", "1d", "hybrid"}:
         mode = "hybrid"
-    # Explicit mults from auto tiers; fixed-mode callers keep defaults then apply scale.
     n_m = float(noise_mult)
     v_m = float(vignette_mult)
     l_m = float(l2_mult)
@@ -607,16 +738,16 @@ def _l1_l3(
     ):
         scale = float(_FIXED_MODE_SCALE)
         n_m = v_m = l_m = s_m = scale
-    # L1 noise + vignette (Q3). No chromatic aberration (Q4). No rotate/crop/resize.
-    # Legacy: stronger noise in dark regions (poissonFactor 1.5 when <64).
-    # Mix fine CMOS grain with mild 3x3 structured grain for natural texture.
+    # Layer0 optical prepass (Q8); optional supplier img2img applied earlier on bytes.
+    if layer0:
+        arr = _layer0_optical(arr, rng, strength=float(_LAYER0_OPTICAL_STRENGTH))
+    # L1 noise + vignette (Q3) + chromatic aberration (Q4). No rotate/crop/resize.
     sigma = l1_noise_sigma(iso) * n_m
     fine = rng.normal(0.0, sigma, size=arr.shape).astype(np.float32)
     coarse = rng.normal(0.0, sigma * 0.85, size=arr.shape).astype(np.float32)
     kernel = np.ones((3, 3), dtype=np.float32) / 9.0
     for ch in range(3):
         pad = np.pad(coarse[:, :, ch], 1, mode="edge")
-        # Manual 3x3 box filter (avoid scipy dependency).
         acc = np.zeros_like(coarse[:, :, ch])
         for dy in range(3):
             for dx in range(3):
@@ -628,12 +759,11 @@ def _l1_l3(
     arr = arr + noise
     vig = aperture_vignette_strength(aperture) * v_m
     arr = _apply_vignette(arr, strength=vig)
-    # L2 frequency
+    arr = _apply_chromatic_aberration(arr, focal_length=focal_length, intensity=1.0)
     if mode in {"2d", "hybrid"}:
         arr = _l2_freq_2d(arr, rng, sigma_mult=l_m)
     if mode in {"1d", "hybrid"}:
         arr = _l2_freq_1d_luminance(arr, rng, phase_mult=l_m)
-    # L3 fingerprint (sparse + weak spectral)
     arr = _l3_sparse_and_spectral(arr, rng, sparse_mult=s_m)
     return np.clip(arr, 0, 255)
 

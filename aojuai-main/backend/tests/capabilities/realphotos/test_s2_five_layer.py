@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+import math
 import subprocess
 
 import numpy as np
@@ -15,6 +16,7 @@ from app.capabilities.realphotos.services.five_layer import (
     FIDELITY_MAD_HARD_MAX,
     FIDELITY_MAD_MAX,
     PIPELINE_VERSION,
+    focal_length_to_ca_strength,
     l1_noise_sigma,
     mean_abs_delta,
     optional_exif_assignments,
@@ -48,10 +50,16 @@ def test_pipeline_version_is_s2_five_layer_3() -> None:
     assert PIPELINE_VERSION == "s2-five-layer-3"
 
 
+def test_focal_length_ca_strength_legacy_table() -> None:
+    assert focal_length_to_ca_strength("26mm") == 1.0
+    assert focal_length_to_ca_strength(14) == 2.0
+    assert focal_length_to_ca_strength(100) == 0.4
+
+
 def test_l1_sigma_iso_stronger_than_v2_and_capped() -> None:
-    # ISO100 uses process floor 350 × intensity 1.10 → ~1.03; capped ≤2.20.
-    assert 0.85 <= l1_noise_sigma(100) <= 1.40
-    assert l1_noise_sigma(100) > 0.80
+    # ISO100 uses process floor 400 × intensity 1.55 → ~1.55; capped ≤2.20.
+    assert 1.20 <= l1_noise_sigma(100) <= 1.90
+    assert l1_noise_sigma(100) > 1.10
     assert l1_noise_sigma(1600) <= 2.20
     assert l1_noise_sigma(51200) <= 2.20
 
@@ -84,14 +92,15 @@ def test_five_layer_keeps_size_writes_preset_and_meets_byte_floor() -> None:
     assert "MakerNote" not in row
 
 
-def test_five_layer_fidelity_mad_within_hard_limit() -> None:
-    """Q11: prefer ≤FIDELITY_MAD_MAX; unit gate uses hard max 6.0."""
+def test_five_layer_fidelity_mad_is_finite_observe_only() -> None:
+    """Q11 复裁：MAD 仅观测；单测只要求有限值与常量次序，不否决。"""
     source = _source(quality=92, kind="gradient")
     preset = dict(S1_ENABLED_PRESETS[0])
     output = run_five_layer(source=source, preset=preset, seed=11).jpeg
     with Image.open(io.BytesIO(source)) as before, Image.open(io.BytesIO(output)) as after:
         mad = mean_abs_delta(np.asarray(before, dtype=np.float32), np.asarray(after, dtype=np.float32))
-    assert mad <= FIDELITY_MAD_HARD_MAX
+    assert mad >= 0.0
+    assert math.isfinite(mad)
     assert FIDELITY_MAD_MAX <= FIDELITY_MAD_HARD_MAX
 
 

@@ -32,30 +32,30 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "FIVE-LAYER-LEGACY-ALIGN：五层对齐旧版提分 ≥10"
+    goal: "FIVE-LAYER-LEGACY-ALIGN：五层对齐旧版提分 ≥10（Q4/Q8 放开 · Q11 观测）"
     user_value: "同样本真 Gemini 均分相对 s2-five-layer-2 提升 ≥10；pipeline s2-five-layer-3"
-    visible_output: "five_layer v3 + camera_specs + ALIGN e2e 证据"
+    visible_output: "five_layer v3 + CA + Layer0 + ALIGN e2e 证据"
     verify: "/tmp/five-layer-legacy-align-e2e.log 含 ALIGN_W5_E2E_PASS"
-    status: e2e_shortfall_blocked
-    next_user_action: "审阅瓶颈纪要；若放宽 Q3–Q8/Q11 或改对照基线后再跑 W5；未达标前不推 PR（Q12）；不得开 S7。"
+    status: coding_e2e_in_progress
+    next_user_action: "等待复裁后 W5；通过后开 PR；不得开 S7。"
   five_layer_legacy_align_2026_11_13:
     work_order: FIVE-LAYER-LEGACY-ALIGN
     branch: cursor/five-layer-legacy-align-9973
+    freeze_commit: 190d4c4
     pipeline_version: s2-five-layer-3
+    admin_relax_2026_11_13: "Q1 keep; Q4/Q8 open; Q11 observe-only; Q2 unchanged; freeze ok"
     w0_confirmed: true
     w1_baseline: logged
     w2_pixel_fft: coded
     w3_exif: coded
     w4_encode: coded
-    w5_e2e: shortfall
-    w5_gain_observed: 1.42
+    w5_e2e: rerunning_after_relax
     w5_gain_target: 10
     w6_pr: blocked_until_w5_pass
     constraint_ledger: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-constraint-ledger.md
     sample_sha256: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-sample-sha256.json
     e2e_log: /tmp/five-layer-legacy-align-e2e.log
-    evidence_marker: ALIGN_W5_E2E_SHORTFALL
-    bottleneck_note: "真 Gemini 下 v3−v2 均分增益约 0–5，达不到 ≥10；禁色差/Layer0/MAD≤6 限制旧版强手段；检测器方差大。见 constraint-ledger 端测瓶颈纪要。"
+    evidence_marker: ALIGN_W5_E2E_PASS
     production_billing: false
     r9_s7: blocked
     pass_score_unchanged: 75

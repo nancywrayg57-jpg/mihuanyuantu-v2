@@ -16,7 +16,7 @@
 | exifToolWriter | 多 tag + CAMERA_SPECS FocalPlane | 核心 + 部分可选 | 对照清单 + FocalPlane 库；空值跳过 |
 | uploadSimulator | 平台矩阵/resize | 通用电商 profile | 保持通用；不迁平台矩阵 |
 | sizeOptimizer | 60%–80% 体积 | 字节下限 | 保持下限 |
-| Layer0 aiImageProcessor | 图生图 | 不跑 | **本单不做**（Q8）；快照亦缺该文件 |
+| Layer0 aiImageProcessor | 图生图 | 光学 Layer0 默认；可选供应商 img2img | **Q8 复裁放开**；快照仍缺文件 → ASSUMPTION 本地光学 + `ALIGN_LAYER0_IMG2IMG=1` |
 
 ## 层序差异（不得回迁旧「入口内先频域」）
 
