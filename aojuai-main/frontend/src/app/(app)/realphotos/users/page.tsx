@@ -1,7 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
 
 type Account = {
@@ -17,8 +18,8 @@ type MeInfo = { roleCodes?: string[]; tenantId?: number | string }
 export default function RealphotosUsersPage() {
   const [items, setItems] = useState<Account[]>([])
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
   const [message, setMessage] = useState('')
+  const [search, setSearch] = useState('')
   const [operatorTenantId, setOperatorTenantId] = useState<number | null>(null)
 
   const [newUsername, setNewUsername] = useState('')
@@ -47,7 +48,6 @@ export default function RealphotosUsersPage() {
       `/api/v1/realphotos/managed-users?page=${page}`,
     )
     setItems(data.items)
-    setPageSize(data.pageSize)
   }, [page])
 
   useEffect(() => {
@@ -168,13 +168,19 @@ export default function RealphotosUsersPage() {
     }
   }
 
+  const visibleItems = useMemo(
+    () =>
+      items.filter((item) =>
+        matchSearchText(search, item.id, item.username, item.tenantId, ...(item.roleCodes || [])),
+      ),
+    [items, search],
+  )
+
   return (
     <main className="space-y-4 p-6">
       <h1 className="text-lg font-medium">用户管理</h1>
-      <p className="text-sm text-muted-foreground">
-        每页 {pageSize} 条。密码只保存散列，不出现在本页与系统日志。当前操作者租户 {operatorTenantId ?? '（读中）'}。
-      </p>
       <p className="text-sm">{message}</p>
+      <ListSearch value={search} placeholder="登录名 / 编号 / 租户" onChange={setSearch} />
 
       <section className="space-y-2 border p-3 text-sm">
         <h2 className="font-medium">创建账号</h2>
@@ -201,7 +207,7 @@ export default function RealphotosUsersPage() {
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => (
+          {visibleItems.map((item) => (
             <tr key={item.id}>
               <td className="border px-2 py-1">{item.id}</td>
               <td className="border px-2 py-1">{item.username}</td>

@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
 
@@ -33,10 +34,21 @@ export function RealphotosGenerateClient() {
   const [height, setHeight] = useState('768')
   const [seed, setSeed] = useState('')
   const [lastSizes, setLastSizes] = useState('')
+  const [templateSearch, setTemplateSearch] = useState('')
 
   useEffect(() => {
     setMode(initialMode)
   }, [initialMode])
+
+  const filteredTemplates = useMemo(
+    () =>
+      templates.filter(
+        (item) =>
+          (item.mode === 'general' || item.mode === mode) &&
+          matchSearchText(templateSearch, item.name, item.mode, item.scope, item.positivePrompt),
+      ),
+    [templates, mode, templateSearch],
+  )
 
   useEffect(() => {
     void apiFetch<{ items: Template[] }>('/api/v1/realphotos/prompt-templates')
@@ -178,22 +190,18 @@ export function RealphotosGenerateClient() {
   return (
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">生图入库</h1>
-      <p className="text-sm text-muted-foreground">
-        成功结果只写入图片资源，不创建处理任务。未配置时不外呼。客户文案固定「提示词优化」。
-      </p>
       <p className="text-sm">{message}</p>
       <section className="space-y-3">
         <h2 className="text-sm font-medium">选用 AI 提示词模板</h2>
         <div className="flex flex-wrap gap-2 text-sm">
+          <ListSearch value={templateSearch} placeholder="模板名称 / 提示词" onChange={setTemplateSearch} />
           <select className="border px-2 py-1" value={templateId} onChange={(event) => setTemplateId(event.target.value)}>
             <option value="">选择模板</option>
-            {templates
-              .filter((item) => item.mode === 'general' || item.mode === mode)
-              .map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}（{item.scope}/{item.mode}）
-                </option>
-              ))}
+            {filteredTemplates.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}（{item.scope}/{item.mode}）
+              </option>
+            ))}
           </select>
           <button className="border px-3 py-1" type="button" onClick={applyTemplate}>
             选用
@@ -259,9 +267,6 @@ export function RealphotosGenerateClient() {
               placeholder="留空则不传"
             />
           </label>
-          <p className="w-full text-xs text-muted-foreground">
-            当前渠道不支持种子：填写后会返回明确拒绝，不会假装已发送。
-          </p>
         </div>
         {lastSizes ? <p className="text-xs text-muted-foreground">{lastSizes}</p> : null}
         <div className="space-y-2 text-sm">

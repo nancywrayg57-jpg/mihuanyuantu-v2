@@ -143,7 +143,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { session, logout } = useAuth()
   const { theme, setTheme } = useTheme()
   const { tenants, targetTenant, targetTenantId, setTargetTenantId, loading: tenantLoading } = useTenant()
-  const branding = useSiteBranding(targetTenant?.name || undefined)
+  const branding = useSiteBranding('蜜獾原图')
   const { routes: menuRoutes, loading: menuRoutesLoading, error: menuRoutesError } = useMenuRoutes()
   const router = useRouter()
   const pathname = usePathname()

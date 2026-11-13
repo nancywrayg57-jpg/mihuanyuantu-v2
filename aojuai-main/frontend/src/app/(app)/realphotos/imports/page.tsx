@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
+import { ListSearch } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
 
 type ImportResult = {
@@ -18,6 +19,7 @@ export default function RealphotosImportsPage() {
   const [message, setMessage] = useState('')
   const [fileName, setFileName] = useState('')
   const [frozen, setFrozen] = useState(false)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     void apiFetch<{ preReviewFrozen?: boolean }>('/api/v1/realphotos/me')
@@ -66,15 +68,20 @@ export default function RealphotosImportsPage() {
   return (
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">URL 导入</h1>
-      <p className="text-sm text-muted-foreground">
-        联调图床可导入；正式供应商未齐。仅允许已授权临时图床主机上的 /images/ 地址；不合格逐条拒绝，合格继续；不扣处理积分、不创建处理任务。
-      </p>
       {frozen ? (
-        <p className="text-sm text-amber-800">账号已因预审冻结：导入入口已禁用（FR-002）。</p>
+        <p className="text-sm text-amber-800">账号已因预审冻结：导入入口已禁用。</p>
       ) : null}
       <p className="text-sm">{message}</p>
       <section className="space-y-3">
-        <h2 className="text-sm font-medium">粘贴文本（每行 URL 或 JSON 数组）</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-medium">粘贴文本（每行 URL 或 JSON 数组）</h2>
+          <ListSearch value={search} placeholder="在已粘贴内容中定位" onChange={setSearch} />
+        </div>
+        {search.trim() ? (
+          <p className="text-xs text-muted-foreground">
+            命中 {payload.split(/\r?\n/).filter((line) => line.toLowerCase().includes(search.trim().toLowerCase())).length} 行
+          </p>
+        ) : null}
         <textarea
           className="block w-full max-w-xl border px-2 py-1 text-sm"
           rows={6}
@@ -127,7 +134,7 @@ function summarize(data: ImportResult | null | undefined) {
     return `未导入（失败 ${failed.length}）：${reasons}`
   }
   if (failed.length === 0) {
-    return `已入库 ${imported} 条（联调；正式供应商未齐）`
+    return `已入库 ${imported} 条`
   }
   const reasons = failed
     .slice(0, 5)

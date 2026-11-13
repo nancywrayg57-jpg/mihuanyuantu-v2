@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
 
 type Contract = {
@@ -20,6 +21,7 @@ type Contract = {
 export default function RealphotosProviderContractsPage() {
   const [items, setItems] = useState<Contract[]>([])
   const [message, setMessage] = useState('')
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     void apiFetch<{ items: Contract[] }>('/api/v1/realphotos/provider-contracts')
@@ -27,11 +29,19 @@ export default function RealphotosProviderContractsPage() {
       .catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '读取失败'))
   }, [])
 
+  const visibleItems = useMemo(
+    () =>
+      items.filter((item) =>
+        matchSearchText(search, item.duty, item.provider, item.modelId, item.configVersion, item.region, item.gapNote),
+      ),
+    [items, search],
+  )
+
   return (
     <main className="space-y-4 p-6">
       <h1 className="text-lg font-medium">模型合同</h1>
-      <p className="text-sm text-muted-foreground">每项职责只有一套配置。这里不显示上游 Key。</p>
       <p className="text-sm">{message}</p>
+      <ListSearch value={search} placeholder="职责 / 提供商 / 模型" onChange={setSearch} />
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
@@ -47,7 +57,7 @@ export default function RealphotosProviderContractsPage() {
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => (
+          {visibleItems.map((item) => (
             <tr key={item.duty}>
               <td className="border px-2 py-1">{item.duty}</td>
               <td className="border px-2 py-1">{item.provider}</td>

@@ -454,7 +454,7 @@ async def list_preset_imports(
 
     data = await browse_legacy_imports(db, page=page, page_size=page_size)
     data["uiRetired"] = True
-    data["deprecatedNote"] = "导入记录区已从设备预设页移除；405 已全量激活进运行台账"
+    data["deprecatedNote"] = "device-preset-imports API retained for scripts; UI ledger is device-presets"
     return SuccessResponse(data=data)
 
 

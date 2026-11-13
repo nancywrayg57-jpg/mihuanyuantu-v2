@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
 
 type LogRow = {
@@ -23,25 +24,44 @@ type LogRow = {
 
 export default function RealphotosLogsPage() {
   const [items, setItems] = useState<LogRow[]>([])
-  const [pageSize, setPageSize] = useState(20)
   const [message, setMessage] = useState('')
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     void apiFetch<{ items: LogRow[]; pageSize: number }>('/api/v1/realphotos/account-logs')
       .then((data) => {
         setItems(data.items)
-        setPageSize(data.pageSize)
       })
       .catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '日志读取失败'))
   }, [])
 
+  const visibleItems = useMemo(
+    () =>
+      items.filter((item) =>
+        matchSearchText(
+          search,
+          item.id,
+          item.operatorDisplay,
+          item.targetDisplay,
+          item.tenantDisplay,
+          item.action,
+          item.actionLabel,
+          item.reason,
+          item.result,
+          item.resultLabel,
+          item.operatorUserId,
+          item.targetUserId,
+          item.tenantId,
+        ),
+      ),
+    [items, search],
+  )
+
   return (
     <main className="space-y-4 p-6">
       <h1 className="text-lg font-medium">系统日志</h1>
-      <p className="text-sm text-muted-foreground">
-        每页 {pageSize} 条。只记录成功的用户账号变更。主列显示名称；编号保留在次行便于运维核对。
-      </p>
       <p className="text-sm">{message}</p>
+      <ListSearch value={search} placeholder="操作者 / 目标 / 动作 / 原因" onChange={setSearch} />
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
@@ -55,7 +75,7 @@ export default function RealphotosLogsPage() {
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => (
+          {visibleItems.map((item) => (
             <tr key={item.id}>
               <td className="border px-2 py-1">{item.id}</td>
               <td className="border px-2 py-1">

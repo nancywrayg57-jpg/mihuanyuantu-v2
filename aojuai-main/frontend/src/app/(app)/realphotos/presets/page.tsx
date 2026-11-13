@@ -2,19 +2,25 @@
 
 import { useEffect, useMemo, useState } from 'react'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
 import { deviceTypeLabel, gpsModeLabel } from '@/lib/realphotos-labels'
 import {
-  EXCLUDED_COPYRIGHT_KEYS,
+  EXCLUDED_IP_GEO_KEYS,
+  GPS_COORD_LABELS,
   PRESET_FIELD_DEFS,
   PRESET_FORM_TABS,
+  REMOVED_PROTOTYPE_ONLY_KEYS,
+  presetDisplayName,
   type PresetFieldDef,
 } from '@/lib/realphotos-preset-fields'
+import { optionsForPresetField } from '@/lib/realphotos-preset-options'
 
 const PRESET_PAGE_SIZE = 20
 
 type Preset = {
   code: string
+  name?: string | null
   deviceType: string
   brand: string
   model: string
@@ -45,6 +51,7 @@ type VersionRow = {
 
 type FormState = {
   code: string
+  name: string
   deviceType: string
   brand: string
   model: string
@@ -65,6 +72,7 @@ type FormState = {
 
 const emptyForm = (): FormState => ({
   code: '',
+  name: '',
   deviceType: 'phone',
   brand: '',
   model: '',
@@ -83,8 +91,21 @@ const emptyForm = (): FormState => ({
   legacy: {},
 })
 
+function slugCodeFromName(name: string): string {
+  const base = String(name || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\u4e00-\u9fff]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48)
+  const stamp = Date.now().toString(36).slice(-4)
+  return `admin-${base || 'preset'}-${stamp}`.slice(0, 64)
+}
+
 function fieldValue(preset: Preset, field: PresetFieldDef): string {
-  if (field.group === 'copyright_excluded') return ''
+  if (field.key === 'name') {
+    return String(preset.name || preset.legacyParameters?.name || '').trim()
+  }
   if (field.column === 'code') return preset.code || ''
   if (field.column === 'deviceType') return preset.deviceType || ''
   if (field.column === 'brand') return preset.brand || ''
@@ -105,11 +126,12 @@ function fieldValue(preset: Preset, field: PresetFieldDef): string {
 function formFromPreset(item: Preset): FormState {
   const legacy: Record<string, string> = {}
   for (const field of PRESET_FIELD_DEFS) {
-    if (field.column || field.group === 'copyright_excluded') continue
+    if (field.column || field.key === 'name') continue
     legacy[field.key] = fieldValue(item, field)
   }
   return {
     code: item.code,
+    name: String(item.name || item.legacyParameters?.name || ''),
     deviceType: item.deviceType,
     brand: item.brand,
     model: item.model,
@@ -141,6 +163,7 @@ export default function RealphotosPresetsPage() {
   const [formTab, setFormTab] = useState<(typeof PRESET_FORM_TABS)[number]['id']>('basic')
   const [detail, setDetail] = useState<Preset | null>(null)
   const [detailTab, setDetailTab] = useState<(typeof PRESET_FORM_TABS)[number]['id']>('basic')
+  const [search, setSearch] = useState('')
 
   async function load() {
     const data = await apiFetch<{ items: Preset[] }>('/api/v1/realphotos/device-presets')
@@ -151,10 +174,25 @@ export default function RealphotosPresetsPage() {
     void load().catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '预设读取失败'))
   }, [])
 
-  const pageCount = Math.max(1, Math.ceil(items.length / PRESET_PAGE_SIZE))
+  const filteredItems = useMemo(
+    () =>
+      items.filter((item) =>
+        matchSearchText(
+          search,
+          presetDisplayName(item),
+          item.code,
+          item.brand,
+          item.model,
+          item.deviceType,
+          deviceTypeLabel(item.deviceType),
+        ),
+      ),
+    [items, search],
+  )
+  const pageCount = Math.max(1, Math.ceil(filteredItems.length / PRESET_PAGE_SIZE))
   const pageItems = useMemo(
-    () => items.slice((page - 1) * PRESET_PAGE_SIZE, page * PRESET_PAGE_SIZE),
-    [items, page],
+    () => filteredItems.slice((page - 1) * PRESET_PAGE_SIZE, page * PRESET_PAGE_SIZE),
+    [filteredItems, page],
   )
 
   async function setEnabled(target: string, enabled: boolean) {
@@ -200,20 +238,22 @@ export default function RealphotosPresetsPage() {
 
   async function savePreset() {
     const missing: string[] = []
+    if (!String(form.name || '').trim()) missing.push('预设名称')
     if (!String(form.brand || '').trim()) missing.push('品牌')
     if (!String(form.model || '').trim()) missing.push('型号')
     if (!String(form.iso || '').trim()) missing.push('ISO')
     if (!String(form.shutter || '').trim()) missing.push('快门')
     if (!String(form.aperture || '').trim()) missing.push('光圈')
     if (!String(form.focalLength || '').trim()) missing.push('焦距')
-    if (String(form.brand || '').trim().toLowerCase() === 'honeybadger') {
-      setMessage('禁止使用 Honeybadger 占位品牌；请填写真实设备品牌')
+    if (['honeybadger', 'runtimecam', 'bizcam'].includes(String(form.brand || '').trim().toLowerCase())) {
+      setMessage('禁止使用占位品牌（Honeybadger / RuntimeCam / BizCam）；请填写真实设备品牌')
       return
     }
     if (missing.length) {
       setMessage(`预设缺少必填字段：${missing.join('、')}（启用前须补全，不会静默填默认值）`)
       return
     }
+    const code = formMode === 'edit' ? form.code : form.code.trim() || slugCodeFromName(form.name)
     const gpsConfig =
       form.gpsMode === 'fixed'
         ? { latitude: form.lat, longitude: form.lng, altitude: form.altitude }
@@ -221,6 +261,7 @@ export default function RealphotosPresetsPage() {
           ? { sceneRule: form.sceneRule }
           : undefined
     const legacyParameters: Record<string, string> = { ...form.legacy }
+    legacyParameters.name = form.name.trim()
     legacyParameters.camera_make = form.brand
     legacyParameters.camera_model = form.model
     legacyParameters.iso = form.iso
@@ -234,14 +275,17 @@ export default function RealphotosPresetsPage() {
     if (form.gpsMode === 'random_by_scene' && form.sceneRule) {
       legacyParameters.scene_type = form.sceneRule
     }
-    for (const key of EXCLUDED_COPYRIGHT_KEYS) {
+    for (const key of EXCLUDED_IP_GEO_KEYS) {
+      delete legacyParameters[key]
+    }
+    for (const key of REMOVED_PROTOTYPE_ONLY_KEYS) {
       delete legacyParameters[key]
     }
     try {
       await apiFetch('/api/v1/realphotos/device-presets', {
         method: 'POST',
         body: JSON.stringify({
-          code: form.code,
+          code,
           brand: form.brand,
           model: form.model,
           gpsMode: form.gpsMode,
@@ -288,16 +332,12 @@ export default function RealphotosPresetsPage() {
     setForm((prev) => ({ ...prev, legacy: { ...prev.legacy, [key]: value } }))
   }
 
-  function renderFieldInput(field: PresetFieldDef, readOnly = false) {
-    if (field.group === 'copyright_excluded') {
-      return (
-        <p key={field.key} className="text-xs text-muted-foreground">
-          {field.label}：产品策略不采集（PRD / AGENTS 禁止客户路径写入作者、版权、IP-GEO）
-        </p>
-      )
-    }
+  function renderFieldInput(field: PresetFieldDef) {
+    if (field.formHidden) return null
+
     let value = ''
-    if (field.column === 'code') value = form.code
+    if (field.key === 'name') value = form.name
+    else if (field.column === 'code') value = form.code
     else if (field.column === 'deviceType') value = form.deviceType
     else if (field.column === 'brand') value = form.brand
     else if (field.column === 'model') value = form.model
@@ -312,7 +352,8 @@ export default function RealphotosPresetsPage() {
     else value = form.legacy[field.key] || ''
 
     const onChange = (next: string) => {
-      if (field.column === 'code') patchForm('code', next)
+      if (field.key === 'name') patchForm('name', next)
+      else if (field.column === 'code') patchForm('code', next)
       else if (field.column === 'deviceType') patchForm('deviceType', next)
       else if (field.column === 'brand') patchForm('brand', next)
       else if (field.column === 'model') patchForm('model', next)
@@ -331,22 +372,27 @@ export default function RealphotosPresetsPage() {
       <label className="mb-1 block text-xs text-muted-foreground">
         {field.label}
         {field.required ? ' *' : ''}
-        {field.sparse ? ' · 旧版极少/无，空态诚实' : ''}
       </label>
     )
 
-    if (field.kind === 'select' && field.options) {
+    const selectOptions =
+      field.options && field.options.length > 0
+        ? field.options
+        : field.kind === 'select'
+          ? optionsForPresetField(field.column || field.key, form.deviceType, value)
+          : []
+
+    if (field.kind === 'select' && selectOptions.length > 0) {
       return (
         <div key={field.key} className="min-w-[10rem] flex-1">
           {label}
           <select
             className="w-full border px-2 py-1 text-sm"
             value={value}
-            disabled={readOnly || (field.column === 'code' && formMode === 'edit')}
             onChange={(event) => onChange(event.target.value)}
           >
-            {field.options.map((opt) => (
-              <option key={opt.value} value={opt.value}>
+            {selectOptions.map((opt) => (
+              <option key={`${opt.value}::${opt.label}`} value={opt.value}>
                 {opt.label}
               </option>
             ))}
@@ -362,7 +408,6 @@ export default function RealphotosPresetsPage() {
             className="w-full border px-2 py-1 text-sm"
             rows={3}
             value={value}
-            disabled={readOnly}
             onChange={(event) => onChange(event.target.value)}
           />
         </div>
@@ -374,9 +419,34 @@ export default function RealphotosPresetsPage() {
         <input
           className="w-full border px-2 py-1 text-sm"
           value={value}
-          disabled={readOnly || (field.column === 'code' && formMode === 'edit')}
           onChange={(event) => onChange(event.target.value)}
         />
+      </div>
+    )
+  }
+
+  function renderGpsDetail(preset: Preset) {
+    const cfg = preset.gpsConfig
+    if (!cfg || typeof cfg !== 'object') return null
+    const rows: { label: string; value: string }[] = []
+    const lat = cfg.latitude
+    const lng = cfg.longitude
+    const alt = cfg.altitude
+    const scene = cfg.sceneRule ?? preset.legacyParameters?.scene_type
+    if (lat != null && String(lat) !== '') rows.push({ label: GPS_COORD_LABELS.latitude, value: String(lat) })
+    if (lng != null && String(lng) !== '') rows.push({ label: GPS_COORD_LABELS.longitude, value: String(lng) })
+    if (alt != null && String(alt) !== '') rows.push({ label: GPS_COORD_LABELS.altitude, value: String(alt) })
+    if (scene != null && String(scene) !== '') rows.push({ label: '场景规则', value: String(scene) })
+    if (!rows.length) return null
+    return (
+      <div className="space-y-1 border-t pt-3">
+        <p className="text-xs text-muted-foreground">GPS 配置</p>
+        {rows.map((row) => (
+          <p key={row.label} className="text-sm">
+            <span className="text-muted-foreground">{row.label}：</span>
+            {row.value}
+          </p>
+        ))}
       </div>
     )
   }
@@ -384,21 +454,20 @@ export default function RealphotosPresetsPage() {
   function renderTabFields(tabId: (typeof PRESET_FORM_TABS)[number]['id'], mode: 'form' | 'detail') {
     const fields = PRESET_FIELD_DEFS.filter((field) => field.group === tabId)
     if (mode === 'detail' && detail) {
+      const visible = fields.filter((field) => {
+        if (field.formHidden && field.key === 'code') return false
+        const value = fieldValue(detail, field)
+        return Boolean(String(value || '').trim())
+      })
       return (
         <div className="grid gap-2 sm:grid-cols-2">
-          {fields.map((field) => {
-            if (field.group === 'copyright_excluded') {
-              return (
-                <p key={field.key} className="text-xs text-muted-foreground sm:col-span-2">
-                  {field.label}：产品策略不采集（PRD 排除），不可编辑写入
-                </p>
-              )
-            }
+          {visible.length === 0 ? <p className="text-sm text-muted-foreground">本页无已填参数</p> : null}
+          {visible.map((field) => {
             const value = fieldValue(detail, field)
             return (
               <p key={field.key} className="text-sm">
                 <span className="text-muted-foreground">{field.label}：</span>
-                {value || (field.sparse ? '（空 · 旧版无此键或不采集）' : '（空）')}
+                {value}
               </p>
             )
           })}
@@ -411,18 +480,22 @@ export default function RealphotosPresetsPage() {
   return (
     <main className="space-y-4 p-6">
       <h1 className="text-lg font-medium">设备预设</h1>
-      <p className="text-sm text-muted-foreground">
-        运行台账启停/编辑/详情。GPS 只配在预设上。不含作者/版权、IP-GEO。导入记录区已移除（405
-        旧版已全量激活进台账；脚本 API 仍保留）。禁止 Honeybadger 占位品牌。
-      </p>
       <p className="text-sm">{message}</p>
 
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <button className="border px-3 py-1" type="button" onClick={openCreate}>
           新增预设
         </button>
+        <ListSearch
+          value={search}
+          placeholder="名称 / 品牌 / 型号"
+          onChange={(value) => {
+            setSearch(value)
+            setPage(1)
+          }}
+        />
         <span>
-          第 {page} / {pageCount} 页 · 每页 {PRESET_PAGE_SIZE} 条 · 共 {items.length} 条
+          第 {page} / {pageCount} 页 · 每页 {PRESET_PAGE_SIZE} 条 · 共 {filteredItems.length} 条
         </span>
         <button className="border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
           上一页
@@ -440,7 +513,7 @@ export default function RealphotosPresetsPage() {
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
-            <th className="border px-2 py-1 text-left">编号</th>
+            <th className="border px-2 py-1 text-left">预设名称</th>
             <th className="border px-2 py-1 text-left">类型</th>
             <th className="border px-2 py-1 text-left">品牌</th>
             <th className="border px-2 py-1 text-left">型号</th>
@@ -459,7 +532,7 @@ export default function RealphotosPresetsPage() {
           ) : (
             pageItems.map((item) => (
               <tr key={item.code}>
-                <td className="border px-2 py-1">{item.code}</td>
+                <td className="border px-2 py-1">{presetDisplayName(item)}</td>
                 <td className="border px-2 py-1">{deviceTypeLabel(item.deviceType)}</td>
                 <td className="border px-2 py-1">{item.brand}</td>
                 <td className="border px-2 py-1">{item.model}</td>
@@ -524,36 +597,50 @@ export default function RealphotosPresetsPage() {
               {renderTabFields(formTab, 'form')}
               {formTab === 'exif' ? (
                 <div className="space-y-2 border-t pt-3">
-                  <p className="text-xs text-muted-foreground">GPS 坐标（按模式；写入合同仍走预设 gpsConfig）</p>
+                  <p className="text-xs text-muted-foreground">GPS 坐标（随预设模式保存）</p>
                   {form.gpsMode === 'fixed' ? (
-                    <div className="flex flex-wrap gap-2">
-                      <input
-                        className="border px-2 py-1 text-sm"
-                        placeholder="纬度"
-                        value={form.lat}
-                        onChange={(event) => patchForm('lat', event.target.value)}
-                      />
-                      <input
-                        className="border px-2 py-1 text-sm"
-                        placeholder="经度"
-                        value={form.lng}
-                        onChange={(event) => patchForm('lng', event.target.value)}
-                      />
-                      <input
-                        className="border px-2 py-1 text-sm"
-                        placeholder="海拔"
-                        value={form.altitude}
-                        onChange={(event) => patchForm('altitude', event.target.value)}
-                      />
+                    <div className="flex flex-wrap gap-3">
+                      <div className="min-w-[8rem] flex-1">
+                        <label className="mb-1 block text-xs text-muted-foreground">{GPS_COORD_LABELS.latitude}</label>
+                        <input
+                          className="w-full border px-2 py-1 text-sm"
+                          value={form.lat}
+                          onChange={(event) => patchForm('lat', event.target.value)}
+                        />
+                      </div>
+                      <div className="min-w-[8rem] flex-1">
+                        <label className="mb-1 block text-xs text-muted-foreground">{GPS_COORD_LABELS.longitude}</label>
+                        <input
+                          className="w-full border px-2 py-1 text-sm"
+                          value={form.lng}
+                          onChange={(event) => patchForm('lng', event.target.value)}
+                        />
+                      </div>
+                      <div className="min-w-[8rem] flex-1">
+                        <label className="mb-1 block text-xs text-muted-foreground">{GPS_COORD_LABELS.altitude}</label>
+                        <input
+                          className="w-full border px-2 py-1 text-sm"
+                          value={form.altitude}
+                          onChange={(event) => patchForm('altitude', event.target.value)}
+                        />
+                      </div>
                     </div>
                   ) : null}
                   {form.gpsMode === 'random_by_scene' ? (
-                    <input
-                      className="w-full border px-2 py-1 text-sm"
-                      placeholder="场景规则"
-                      value={form.sceneRule}
-                      onChange={(event) => patchForm('sceneRule', event.target.value)}
-                    />
+                    <div>
+                      <label className="mb-1 block text-xs text-muted-foreground">场景规则</label>
+                      <select
+                        className="w-full border px-2 py-1 text-sm"
+                        value={form.sceneRule}
+                        onChange={(event) => patchForm('sceneRule', event.target.value)}
+                      >
+                        {optionsForPresetField('scene_type', form.deviceType, form.sceneRule).map((opt) => (
+                          <option key={`${opt.value}::${opt.label}`} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   ) : null}
                 </div>
               ) : null}
@@ -573,14 +660,14 @@ export default function RealphotosPresetsPage() {
           onClick={() => setDetail(null)}
           role="dialog"
           aria-modal="true"
-          aria-label={`预设 ${detail.code} 详情`}
+          aria-label={`预设 ${presetDisplayName(detail)} 详情`}
         >
           <div
             className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden border bg-background text-sm shadow"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
-              <strong>预设详情 · {detail.code}</strong>
+              <strong>预设详情 · {presetDisplayName(detail)}</strong>
               <button className="border px-2 py-0.5" type="button" onClick={() => setDetail(null)}>
                 关闭
               </button>
@@ -599,11 +686,10 @@ export default function RealphotosPresetsPage() {
             </div>
             <div className="flex-1 space-y-3 overflow-y-auto p-4">
               {renderTabFields(detailTab, 'detail')}
-              <p className="text-xs text-muted-foreground">
-                来源：{detail.source || '—'} · 状态：{detail.enabled ? '启用' : '停用'} · legacy 键数：
-                {Object.keys(detail.legacyParameters || {}).length}
-              </p>
-              {detail.gpsConfig ? <p className="text-xs">GPS 配置：{JSON.stringify(detail.gpsConfig)}</p> : null}
+              {detailTab === 'basic' ? (
+                <p className="text-xs text-muted-foreground">状态：{detail.enabled ? '启用' : '停用'}</p>
+              ) : null}
+              {detailTab === 'exif' ? renderGpsDetail(detail) : null}
               <button
                 className="border px-2 py-1"
                 type="button"
@@ -621,7 +707,10 @@ export default function RealphotosPresetsPage() {
 
       {versionCode ? (
         <section className="space-y-2">
-          <h2 className="text-sm font-medium">版本快照 · {versionCode}</h2>
+          <h2 className="text-sm font-medium">
+            版本快照 ·{' '}
+            {presetDisplayName(items.find((item) => item.code === versionCode) || { code: versionCode })}
+          </h2>
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr>
@@ -643,11 +732,12 @@ export default function RealphotosPresetsPage() {
                     <td className="border px-2 py-1">{row.versionNo}</td>
                     <td className="border px-2 py-1">{row.createdAt || ''}</td>
                     <td className="border px-2 py-1">
-                      {String(row.snapshot.brand || '')}/{String(row.snapshot.model || '')}/
+                      {String(
+                        (row.snapshot.legacyParameters as Record<string, unknown> | undefined)?.name ||
+                          `${String(row.snapshot.brand || '')}/${String(row.snapshot.model || '')}`,
+                      )}
+                      {' · '}
                       {gpsModeLabel(String(row.snapshot.gpsMode || ''))}
-                      {row.snapshot.legacyParameters
-                        ? ` · legacy=${Object.keys(row.snapshot.legacyParameters as object).length}`
-                        : ''}
                     </td>
                   </tr>
                 ))

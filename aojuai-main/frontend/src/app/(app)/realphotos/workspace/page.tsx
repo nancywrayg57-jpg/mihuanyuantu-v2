@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
 import { formatRate } from '@/lib/format-rate'
 import {
@@ -97,6 +98,7 @@ export default function RealphotosWorkspacePage() {
   const [message, setMessage] = useState('')
   const [appealReason, setAppealReason] = useState('')
   const [myTickets, setMyTickets] = useState<Ticket[]>([])
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     void apiFetch<WorkspacePayload>('/api/v1/realphotos/workspace')
@@ -112,6 +114,42 @@ export default function RealphotosWorkspacePage() {
   }, [])
 
   const view = data?.viewKind || (data?.merchantCards ? 'merchant' : 'admin')
+  const filteredOrders = useMemo(
+    () =>
+      (data?.orderSupportDesk?.items || []).filter((item) =>
+        matchSearchText(search, item.id, item.tenantId, item.requesterUserId, item.tierYuan, item.creditPoints),
+      ),
+    [data, search],
+  )
+  const filteredTechTickets = useMemo(
+    () =>
+      (data?.techSupportDesk?.items || []).filter((item) =>
+        matchSearchText(
+          search,
+          item.id,
+          item.tenantId,
+          item.ownerAccountId,
+          item.ticketType,
+          ticketTypeLabel(item.ticketType),
+          item.reason,
+        ),
+      ),
+    [data, search],
+  )
+  const filteredHistory = useMemo(
+    () =>
+      (data?.recentHistory || []).filter((item) =>
+        matchSearchText(search, item.id, item.kind, item.status, taskStatusLabel(item.status), item.presetCode, item.mode),
+      ),
+    [data, search],
+  )
+  const filteredMyTickets = useMemo(
+    () =>
+      myTickets.filter((item) =>
+        matchSearchText(search, item.id, item.ticketType, ticketTypeLabel(item.ticketType), item.status, item.reason),
+      ),
+    [myTickets, search],
+  )
 
   async function createAppeal() {
     try {
@@ -130,17 +168,18 @@ export default function RealphotosWorkspacePage() {
 
   const subtitle =
     view === 'admin'
-      ? '平台运营指标。不展示商家四卡。'
+      ? ''
       : view === 'order_support'
-        ? '订单客服工作台：待处理充值单。不展示商家四卡与业务原图历史。'
+        ? '待处理充值单'
         : view === 'tech_support'
-          ? '技术客服工作台：待处理工单。不展示商家四卡。'
-          : '本账号概览与最近历史。'
+          ? '待处理工单'
+          : '本账号概览与最近历史'
 
   return (
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">工作台</h1>
-      <p className="text-sm text-muted-foreground">{subtitle}</p>
+      {subtitle ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
+      <ListSearch value={search} placeholder="本页列表关键词" onChange={setSearch} />
       {data?.preReviewFrozen && view === 'merchant' ? (
         <p className="text-sm text-destructive">
           账号已冻结：可查看历史与保留期内结果，不能从工作台发起新获取或处理。请到
@@ -244,12 +283,12 @@ export default function RealphotosWorkspacePage() {
               </tr>
             </thead>
             <tbody>
-              {data.orderSupportDesk.items.length === 0 ? (
+              {filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={6}>暂无待处理充值单</td>
                 </tr>
               ) : (
-                data.orderSupportDesk.items.map((item) => (
+                filteredOrders.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
                     <td>{item.tenantId}</td>
@@ -292,12 +331,12 @@ export default function RealphotosWorkspacePage() {
               </tr>
             </thead>
             <tbody>
-              {data.techSupportDesk.items.length === 0 ? (
+              {filteredTechTickets.length === 0 ? (
                 <tr>
                   <td colSpan={5}>暂无待处理工单</td>
                 </tr>
               ) : (
-                data.techSupportDesk.items.map((item) => (
+                filteredTechTickets.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
                     <td>{ticketTypeLabel(item.ticketType)}</td>
@@ -330,12 +369,12 @@ export default function RealphotosWorkspacePage() {
               </tr>
             </thead>
             <tbody>
-              {(data?.recentHistory || []).length === 0 ? (
+              {filteredHistory.length === 0 ? (
                 <tr>
                   <td colSpan={4}>暂无本账号历史</td>
                 </tr>
               ) : (
-                (data?.recentHistory || []).map((item) => (
+                filteredHistory.map((item) => (
                   <tr key={`${item.kind}-${item.id}`}>
                     <td>{item.kind === 'processing' ? '处理' : '生图'}</td>
                     <td>{item.id}</td>
@@ -374,12 +413,12 @@ export default function RealphotosWorkspacePage() {
               </tr>
             </thead>
             <tbody>
-              {myTickets.length === 0 ? (
+              {filteredMyTickets.length === 0 ? (
                 <tr>
                   <td colSpan={4}>尚无本账号工单</td>
                 </tr>
               ) : (
-                myTickets.map((item) => (
+                filteredMyTickets.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
                     <td>{ticketTypeLabel(item.ticketType)}</td>

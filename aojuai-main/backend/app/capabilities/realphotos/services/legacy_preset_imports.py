@@ -86,8 +86,27 @@ LEGACY_PARAMETER_KEYS: tuple[str, ...] = (
     "white_balance",
 )
 
-PLACEHOLDER_BRANDS = {"Honeybadger", "honeybadger"}
-PLACEHOLDER_CODE_PREFIXES = ("s1-", "pa-gps-", "bf-", "pa-", "blocking-")
+# Demo / e2e brands — never keep enabled in the admin runtime ledger.
+PLACEHOLDER_BRANDS = {
+    "Honeybadger",
+    "honeybadger",
+    "RuntimeCam",
+    "runtimecam",
+    "BizCam",
+    "bizcam",
+}
+PLACEHOLDER_CODE_PREFIXES = (
+    "s1-",
+    "pa-gps-",
+    "bf-",
+    "pa-",
+    "blocking-",
+    "align-",
+    "biz-",
+    "bef-",
+    "opsd-",
+    "pga-",
+)
 
 
 @lru_cache(maxsize=1)
@@ -360,6 +379,10 @@ async def activate_legacy_template(
     return payload
 
 
+def _is_placeholder_brand(brand: str) -> bool:
+    return str(brand or "").strip().lower() in {b.lower() for b in PLACEHOLDER_BRANDS}
+
+
 def _is_placeholder_row(row: RealphotosDevicePreset) -> bool:
     code = str(row.code or "")
     brand = str(row.brand or "")
@@ -368,7 +391,7 @@ def _is_placeholder_row(row: RealphotosDevicePreset) -> bool:
         return False
     if any(code.startswith(prefix) for prefix in PLACEHOLDER_CODE_PREFIXES):
         return True
-    if brand in PLACEHOLDER_BRANDS and source in {"catalog", "admin", ""}:
+    if _is_placeholder_brand(brand) and source in {"catalog", "admin", ""}:
         return True
     return code in {item["code"] for item in S1_ENABLED_PRESETS}
 
@@ -391,19 +414,16 @@ async def clear_placeholder_presets(
     catalog_codes = {item["code"] for item in S1_ENABLED_PRESETS}
     for row in rows:
         brand = str(row.brand or "")
-        is_hb = brand in PLACEHOLDER_BRANDS
-        if not _is_placeholder_row(row) and not is_hb:
+        is_demo_brand = _is_placeholder_brand(brand)
+        if not _is_placeholder_row(row) and not is_demo_brand:
             continue
         # Never touch real legacy_import rows (even if brand somehow mismatched).
         if str(row.source or "") == "legacy_import":
             continue
-        # UX-PRESET-LOGS R1: soft-delete Honeybadger / catalog placeholders; do not leave demo brands.
+        # Soft-delete all demo brands / e2e codes (RuntimeCam, BizCam, Honeybadger, s1-*, align-*, …).
         row.enabled = False
-        if is_hb or str(row.source or "") == "catalog" or row.code in catalog_codes:
-            row.deleted_at = now
-            soft_deleted.append(row.code)
-        else:
-            disabled.append(row.code)
+        row.deleted_at = now
+        soft_deleted.append(row.code)
     await db.flush()
     return {
         "placeholder_presets_removed": True,
@@ -412,6 +432,8 @@ async def clear_placeholder_presets(
         "catalogInjection": False,
         "s1CatalogCodes": sorted(catalog_codes),
         "honeybadgerCleared": True,
+        "runtimeCamCleared": True,
+        "bizCamCleared": True,
     }
 
 

@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
 
 type InboxItem = {
@@ -18,6 +19,7 @@ export default function RealphotosMessagesPage() {
   const [message, setMessage] = useState('')
 
   const [scope, setScope] = useState('all')
+  const [search, setSearch] = useState('')
 
   async function reload() {
     const data = await apiFetch<{ items: InboxItem[]; unreadCount?: number; scope?: string }>(
@@ -61,6 +63,11 @@ export default function RealphotosMessagesPage() {
     }
   }
 
+  const visibleItems = useMemo(
+    () => items.filter((item) => matchSearchText(search, item.id, item.title, item.body)),
+    [items, search],
+  )
+
   return (
     <main className="space-y-6 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -74,6 +81,7 @@ export default function RealphotosMessagesPage() {
         {scope === 'recharge_only' ? ' 订单客服视图：仅商家充值订单通知。' : ''}
       </p>
       <p className="text-sm">{message}</p>
+      <ListSearch value={search} placeholder="标题 / 正文" onChange={setSearch} />
       <table className="w-full text-sm">
         <thead>
           <tr>
@@ -85,12 +93,12 @@ export default function RealphotosMessagesPage() {
           </tr>
         </thead>
         <tbody>
-          {items.length === 0 ? (
+          {visibleItems.length === 0 ? (
             <tr>
               <td colSpan={5}>暂无消息</td>
             </tr>
           ) : (
-            items.map((item) => (
+            visibleItems.map((item) => (
               <tr key={item.id}>
                 <td>{item.title}</td>
                 <td>{item.body}</td>

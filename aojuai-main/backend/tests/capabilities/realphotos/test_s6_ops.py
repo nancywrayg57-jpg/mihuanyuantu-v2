@@ -402,7 +402,7 @@ async def test_user_admin_log_preset_and_metrics(db):
             idempotency_key="s6-preset-off",
         )
     assert rejected.value.code == "PRESET_REJECTED"
-    # PRODUCT-GAP A7: MakerNote allowed; author/IP-GEO still rejected.
+    # PRODUCT-GAP A7: MakerNote allowed; top-level author/IP-GEO rejected (author via legacyParameters ok).
     saved_mn = await ctx["ops"].save_preset(
         actor_role_codes={ROLE_ADMIN},
         code="s6-brand",
@@ -428,6 +428,22 @@ async def test_user_admin_log_preset_and_metrics(db):
             model_name="EOS-S6",
             author="someone",
         )
+    saved_copy = await ctx["ops"].save_preset(
+        actor_role_codes={ROLE_ADMIN},
+        code="s6-copyright-lp",
+        device_type="phone",
+        brand="Canon",
+        model_name="EOS-CR",
+        iso="100",
+        shutter="1/125",
+        aperture="f/1.8",
+        focal_length="26mm",
+        legacy_parameters={"author": "Ada", "copyright": "© 2026 Ada", "ip_geo": "SHOULD_STRIP"},
+    )
+    lp = saved_copy.get("legacyParameters") or {}
+    assert lp.get("author") == "Ada"
+    assert lp.get("copyright") == "© 2026 Ada"
+    assert "ip_geo" not in lp and "ipGeo" not in lp
     with pytest.raises(BusinessError) as hb_rejected:
         await ctx["ops"].save_preset(
             actor_role_codes={ROLE_ADMIN},

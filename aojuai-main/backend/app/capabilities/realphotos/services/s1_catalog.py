@@ -8,14 +8,14 @@ from app.capabilities.realphotos.constants import (
     RECHARGE_TIERS_YUAN,
 )
 
-# 测试/目录占位型号。禁止再用 Honeybadger 演示品牌（UX-PRESET-LOGS R1）。
+# 测试目录用真实品牌名（非 Honeybadger/RuntimeCam/BizCam 占位）。
 # gpsMode=none：不发明坐标。INJECT_S1_CATALOG_INTO_ENABLED 默认关闭。
 S1_ENABLED_PRESETS: tuple[dict, ...] = (
     {
         "code": "s1-phone-01",
         "deviceType": "phone",
-        "brand": "RuntimeCam",
-        "model": "RC-Phone-1",
+        "brand": "Apple",
+        "model": "iPhone 15 Pro",
         "iso": "100",
         "shutter": "1/120",
         "aperture": "f/1.8",
@@ -25,8 +25,8 @@ S1_ENABLED_PRESETS: tuple[dict, ...] = (
     {
         "code": "s1-dslr-01",
         "deviceType": "dslr",
-        "brand": "RuntimeCam",
-        "model": "RC-DSLR-1",
+        "brand": "Canon",
+        "model": "EOS R6",
         "iso": "200",
         "shutter": "1/200",
         "aperture": "f/2.8",
@@ -36,8 +36,8 @@ S1_ENABLED_PRESETS: tuple[dict, ...] = (
     {
         "code": "s1-mirrorless-01",
         "deviceType": "mirrorless",
-        "brand": "RuntimeCam",
-        "model": "RC-ML-1",
+        "brand": "Sony",
+        "model": "A7 IV",
         "iso": "400",
         "shutter": "1/250",
         "aperture": "f/4",
