@@ -29,6 +29,9 @@ ENV_ACCESS_ALLOWLIST = {
     "scripts/det_score_r4_measure_e2e.py": (
         "Operator DET-SCORE R4 measurement e2e: proxy-clear + measurement-only optical/noise env overrides; not a runtime Settings path."
     ),
+    "scripts/det_score_nonlegacy_pilot_e2e.py": (
+        "Operator DET-SCORE NONLEGACY OPEN_PILOT e2e: proxy-clear + Bayer/PG measurement flags; not a runtime Settings path."
+    ),
 }
 
 

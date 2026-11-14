@@ -1,0 +1,120 @@
+=== DET-SCORE NONLEGACY OPEN_PILOT e2e ===
+ts=2026-11-14T07:12:40Z
+H0=hemostasis P1=bayer P2=pg; one variable each; PASS_SCORE=75; defaults unchanged
+PASS ca_intensity_hemo
+PASS layer0_default_hemo
+PASS samples n=12
+--- arm=H0 sample=product_01.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=65.0 passed=False noise=68 dof=65 light=66 color=67 overall=64
+--- arm=H0 sample=product_02.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=48.0 passed=False noise=65 dof=60 light=55 color=58 overall=45
+--- arm=H0 sample=product_03.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=69.0 passed=False noise=68 dof=65 light=66 color=67 overall=68
+--- arm=H0 sample=product_04.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=72.0 passed=False noise=72 dof=70 light=71 color=73 overall=72
+--- arm=H0 sample=product_05.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=69.0 passed=False noise=68 dof=65 light=67 color=69 overall=70
+--- arm=H0 sample=product_06.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=60.0 passed=False noise=65 dof=55 light=60 color=62 overall=58
+--- arm=H0 sample=product_07.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=64.0 passed=False noise=68 dof=65 light=66 color=65 overall=60
+--- arm=H0 sample=product_08.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=70.0 passed=False noise=72 dof=70 light=71 color=70 overall=68
+--- arm=H0 sample=product_09.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=60.0 passed=False noise=70 dof=65 light=55 color=60 overall=55
+--- arm=H0 sample=product_10.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=68.0 passed=False noise=72 dof=68 light=70 color=66 overall=64
+--- arm=H0 sample=product_11.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=48.0 passed=False noise=65 dof=55 light=45 color=55 overall=40
+--- arm=H0 sample=product_12.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=55.0 passed=False noise=55 dof=50 light=60 color=65 overall=55
+--- arm=P1_bayer sample=product_01.jpg ---
+PASS gemini_key_configured
+gemini_P1_bayer total=61.0 passed=False noise=65 dof=62 light=62 color=62 overall=60
+--- arm=P1_bayer sample=product_02.jpg ---
+PASS gemini_key_configured
+gemini_P1_bayer total=52.0 passed=False noise=60 dof=55 light=50 color=55 overall=45
+--- arm=P1_bayer sample=product_03.jpg ---
+PASS gemini_key_configured
+gemini_P1_bayer total=66.0 passed=False noise=64 dof=67 light=65 color=66 overall=65
+--- arm=P1_bayer sample=product_04.jpg ---
+PASS gemini_key_configured
+gemini_P1_bayer total=42.0 passed=False noise=35 dof=50 light=45 color=55 overall=40
+--- arm=P1_bayer sample=product_05.jpg ---
+PASS gemini_key_configured
+gemini_P1_bayer total=65.0 passed=False noise=65 dof=62 light=60 color=64 overall=63
+--- arm=P1_bayer sample=product_06.jpg ---
+PASS gemini_key_configured
+gemini_P1_bayer total=54.0 passed=False noise=65 dof=55 light=58 color=52 overall=48
+--- arm=P1_bayer sample=product_07.jpg ---
+PASS gemini_key_configured
+gemini_P1_bayer total=50.0 passed=False noise=65 dof=60 light=55 color=60 overall=45
+--- arm=P1_bayer sample=product_08.jpg ---
+PASS gemini_key_configured
+gemini_P1_bayer total=45.0 passed=False noise=38 dof=62 light=58 color=42 overall=40
+--- arm=P1_bayer sample=product_09.jpg ---
+PASS gemini_key_configured
+gemini_P1_bayer total=45.0 passed=False noise=45 dof=50 light=45 color=40 overall=45
+--- arm=P1_bayer sample=product_10.jpg ---
+PASS gemini_key_configured
+gemini_P1_bayer total=64.0 passed=False noise=68 dof=65 light=62 color=66 overall=58
+--- arm=P1_bayer sample=product_11.jpg ---
+PASS gemini_key_configured
+gemini_P1_bayer total=44.0 passed=False noise=48 dof=45 light=40 color=52 overall=42
+--- arm=P1_bayer sample=product_12.jpg ---
+PASS gemini_key_configured
+gemini_P1_bayer total=42.0 passed=False noise=35 dof=50 light=45 color=50 overall=40
+--- arm=P2_pg sample=product_01.jpg ---
+PASS gemini_key_configured
+gemini_P2_pg total=68.0 passed=False noise=68 dof=65 light=67 color=69 overall=68
+--- arm=P2_pg sample=product_02.jpg ---
+PASS gemini_key_configured
+gemini_P2_pg total=60.0 passed=False noise=65 dof=60 light=62 color=60 overall=55
+--- arm=P2_pg sample=product_03.jpg ---
+PASS gemini_key_configured
+gemini_P2_pg total=69.0 passed=False noise=70 dof=68 light=69 color=70 overall=69
+--- arm=P2_pg sample=product_04.jpg ---
+PASS gemini_key_configured
+gemini_P2_pg total=69.0 passed=False noise=70 dof=68 light=67 color=69 overall=68
+--- arm=P2_pg sample=product_05.jpg ---
+PASS gemini_key_configured
+gemini_P2_pg total=72.0 passed=False noise=65 dof=60 light=62 color=68 overall=70
+--- arm=P2_pg sample=product_06.jpg ---
+PASS gemini_key_configured
+gemini_P2_pg total=58.0 passed=False noise=68 dof=62 light=55 color=60 overall=52
+--- arm=P2_pg sample=product_07.jpg ---
+PASS gemini_key_configured
+gemini_P2_pg total=68.0 passed=False noise=72 dof=70 light=71 color=70 overall=65
+--- arm=P2_pg sample=product_08.jpg ---
+PASS gemini_key_configured
+gemini_P2_pg total=65.0 passed=False noise=70 dof=65 light=68 color=68 overall=60
+--- arm=P2_pg sample=product_09.jpg ---
+PASS gemini_key_configured
+gemini_P2_pg total=60.0 passed=False noise=68 dof=65 light=60 color=62 overall=58
+--- arm=P2_pg sample=product_10.jpg ---
+PASS gemini_key_configured
+gemini_P2_pg total=65.0 passed=False noise=68 dof=65 light=66 color=64 overall=62
+--- arm=P2_pg sample=product_11.jpg ---
+PASS gemini_key_configured
+gemini_P2_pg total=45.0 passed=False noise=65 dof=45 light=50 color=60 overall=40
+--- arm=P2_pg sample=product_12.jpg ---
+PASS gemini_key_configured
+gemini_P2_pg total=62.0 passed=False noise=65 dof=60 light=55 color=60 overall=58
+--- SUMMARY NONLEGACY PILOT ---
+{"n": 12, "focal": "26mm", "mean_H0": 62.33, "mean_P1_bayer": 52.5, "delta_P1": -9.83, "mean_P2_pg": 63.42, "delta_P2": 1.08, "hemo_baseline_frozen": 66.92}
+NONLEGACY_PILOT_E2E_GAIN partial_or_full
+STOP: do not claim product PASS; do not promote pilots to defaults without admin
+DET_SCORE_NONLEGACY_PILOT_DONE
+evidence_copy=/home/hbs/hbs-projects/mihuanyuantu-v2/docs/mihuanyuantu-v2/input/DET-SCORE-NONLEGACY-e2e-pilot-2026-11-14.txt

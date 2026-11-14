@@ -121,6 +121,127 @@ def _float_setting_override(name: str, default: float) -> float:
         return float(default)
 
 
+def _flag_setting_on(name: str) -> bool:
+    """True when an ALIGN_* measurement flag is explicitly on (empty/0/false/off/no = off)."""
+    try:
+        from app.core.config import settings
+
+        raw = str(getattr(settings, name, "") or "").strip().lower()
+    except Exception:  # noqa: BLE001
+        return False
+    return raw not in {"", "0", "false", "off", "no"}
+
+
+# NONLEGACY pilot defaults when flag is on but strength/scale string is empty.
+_BAYER_STRENGTH_DEFAULT = 0.35
+_PG_SCALE_DEFAULT = 0.40
+_PG_FLAT_THR_DEFAULT = 18.0
+
+
+def _demosaic_rggb_bilinear(mosaic: np.ndarray) -> np.ndarray:
+    """Fixed bilinear demosaic for RGGB (no learning, no adaptive mask)."""
+    h, w = mosaic.shape
+    rgb = np.zeros((h, w, 3), dtype=np.float32)
+    # Known samples.
+    rgb[0::2, 0::2, 0] = mosaic[0::2, 0::2]  # R
+    rgb[0::2, 1::2, 1] = mosaic[0::2, 1::2]  # G
+    rgb[1::2, 0::2, 1] = mosaic[1::2, 0::2]  # G
+    rgb[1::2, 1::2, 2] = mosaic[1::2, 1::2]  # B
+
+    def _fill_channel(ch: int, known: np.ndarray) -> None:
+        # Average 4-neighbors for missing pixels; two passes for edges.
+        for _ in range(2):
+            pad = np.pad(rgb[:, :, ch], 1, mode="edge")
+            neigh = (
+                pad[0:-2, 1:-1]
+                + pad[2:, 1:-1]
+                + pad[1:-1, 0:-2]
+                + pad[1:-1, 2:]
+            ) * 0.25
+            rgb[:, :, ch] = np.where(known, rgb[:, :, ch], neigh)
+
+    known_r = np.zeros((h, w), dtype=bool)
+    known_r[0::2, 0::2] = True
+    known_g = np.zeros((h, w), dtype=bool)
+    known_g[0::2, 1::2] = True
+    known_g[1::2, 0::2] = True
+    known_b = np.zeros((h, w), dtype=bool)
+    known_b[1::2, 1::2] = True
+    _fill_channel(0, known_r)
+    _fill_channel(1, known_g)
+    _fill_channel(2, known_b)
+    return rgb
+
+
+def _weak_bayer_roundtrip(arr: np.ndarray, *, strength: float) -> np.ndarray:
+    """RGB → RGGB mosaic → bilinear demosaic → blend. Identity when strength≈0."""
+    if float(strength) <= 1e-9:
+        return arr
+    try:
+        src = np.asarray(arr, dtype=np.float32)
+        h, w, _ = src.shape
+        mosaic = np.zeros((h, w), dtype=np.float32)
+        mosaic[0::2, 0::2] = src[0::2, 0::2, 0]
+        mosaic[0::2, 1::2] = src[0::2, 1::2, 1]
+        mosaic[1::2, 0::2] = src[1::2, 0::2, 1]
+        mosaic[1::2, 1::2] = src[1::2, 1::2, 2]
+        dem = _demosaic_rggb_bilinear(mosaic)
+        alpha = float(min(1.0, max(0.0, strength)))
+        out = src * (1.0 - alpha) + dem * alpha
+        return out.astype(np.float32, copy=False)
+    except Exception:  # noqa: BLE001
+        _LOG.exception("weak_bayer_roundtrip_failed; identity fallback")
+        return arr
+
+
+def _local_variance_gray(arr: np.ndarray, *, radius: int = 2) -> np.ndarray:
+    """Box-filter local variance on luminance (HxW) via integral images."""
+    gray = (
+        0.299 * arr[:, :, 0] + 0.587 * arr[:, :, 1] + 0.114 * arr[:, :, 2]
+    ).astype(np.float32)
+    r = int(radius)
+    k = 2 * r + 1
+    pad = np.pad(gray, r, mode="edge")
+    p = np.pad(pad, ((1, 0), (1, 0)), mode="constant")
+    c = np.cumsum(np.cumsum(p, axis=0), axis=1)
+    p2 = np.pad(pad * pad, ((1, 0), (1, 0)), mode="constant")
+    c2 = np.cumsum(np.cumsum(p2, axis=0), axis=1)
+    s = c[k:, k:] - c[k:, :-k] - c[:-k, k:] + c[:-k, :-k]
+    s2 = c2[k:, k:] - c2[k:, :-k] - c2[:-k, k:] + c2[:-k, :-k]
+    area = float(k * k)
+    mean = s / area
+    return np.maximum(s2 / area - mean * mean, 0.0).astype(np.float32)
+
+
+def _poisson_gaussian_flat_noise(
+    arr: np.ndarray,
+    gaussian_noise: np.ndarray,
+    rng: np.random.Generator,
+    *,
+    scale: float,
+    flat_thr: float,
+) -> np.ndarray:
+    """Replace Gaussian noise on flat pixels with weak signal-dependent PG noise."""
+    if float(scale) <= 1e-9:
+        return gaussian_noise
+    try:
+        var = _local_variance_gray(arr)
+        flat = var < float(flat_thr)
+        if not bool(np.any(flat)):
+            return gaussian_noise
+        # Foi-like: σ ≈ scale * sqrt(read + gain * μ); μ in [0,1] for stability.
+        mu = np.clip(arr / 255.0, 0.0, 1.0)
+        read_var = 0.0025
+        gain = 0.020
+        sigma = float(scale) * np.sqrt(read_var + gain * mu)
+        pg = rng.normal(0.0, 1.0, size=arr.shape).astype(np.float32) * sigma
+        mask = flat[:, :, np.newaxis]
+        return np.where(mask, pg, gaussian_noise).astype(np.float32, copy=False)
+    except Exception:  # noqa: BLE001
+        _LOG.exception("poisson_gaussian_flat_noise_failed; keep gaussian")
+        return gaussian_noise
+
+
 def l1_noise_sigma(iso: object) -> float:
     """ISO-linked CMOS-like L1 sigma for s2-five-layer-3.
 
@@ -948,6 +1069,10 @@ def _l1_l3(
             "ALIGN_LAYER0_OPTICAL_STRENGTH", float(_LAYER0_OPTICAL_STRENGTH)
         )
         arr = _layer0_optical(arr, rng, strength=float(optical))
+    # NONLEGACY P1: weak Bayer roundtrip (measurement arm; default off).
+    if _flag_setting_on("ALIGN_BAYER_ROUNDTRIP"):
+        bayer_s = _float_setting_override("ALIGN_BAYER_STRENGTH", float(_BAYER_STRENGTH_DEFAULT))
+        arr = _weak_bayer_roundtrip(arr, strength=float(bayer_s))
     # L1 noise + vignette (Q3) + chromatic aberration (Q4). No rotate/crop/resize.
     sigma = l1_noise_sigma(iso) * n_m
     fine = rng.normal(0.0, sigma, size=arr.shape).astype(np.float32)
@@ -963,6 +1088,13 @@ def _l1_l3(
     noise = 0.65 * fine + 0.35 * coarse
     dark = arr < 64.0
     noise = np.where(dark, noise * 1.5, noise)
+    # NONLEGACY P2: flat-region Poisson–Gaussian replaces Gaussian on flat pixels only.
+    if _flag_setting_on("ALIGN_PG_NOISE"):
+        pg_scale = _float_setting_override("ALIGN_PG_SCALE", float(_PG_SCALE_DEFAULT))
+        flat_thr = _float_setting_override("ALIGN_PG_FLAT_THR", float(_PG_FLAT_THR_DEFAULT))
+        noise = _poisson_gaussian_flat_noise(
+            arr, noise, rng, scale=float(pg_scale), flat_thr=float(flat_thr)
+        )
     arr = arr + noise
     vig = aperture_vignette_strength(aperture) * v_m
     arr = _apply_vignette(arr, strength=vig)

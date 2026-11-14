@@ -32,12 +32,60 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "DET-SCORE-OPTIMIZE：查明 v3 检测分下降根因；旧仓对照；可行后再编码"
-    user_value: "技术处理检测分回到可过 75 / 相对 v2 冲 Q1≥10（不放宽 PASS_SCORE）"
-    visible_output: "选项1+2已跑完；管理员授权SHORTFALL下推送止血（对齐CI）"
-    verify: "secret_scan+ruff+pytest_s2_five_layer 17；W/R4/协议C留证；Q1未PASS"
-    status: hemostasis_push_authorized
-    next_user_action: "Owner审合PR；是否改裁Q1/另开新测量。不升R4默认、不放宽PASS_SCORE、不开S7。"
+    goal: "DET-SCORE-NONLEGACY-LIFT：旧版外联网方案→可行性门禁→仅 OPEN_PILOT 编码端测"
+    user_value: "真 Gemini 下相对止血基线可测提升；不靠放宽 PASS_SCORE"
+    visible_output: "端测 partial：P2 PG +1.08；P1 Bayer −9.83；不升默认不宣称达标"
+    verify: "pytest 28；真Gemini n=12；结论见 NONLEGACY e2e conclusion"
+    status: nonlegacy_w4_done_partial_gain_stop
+    next_user_action: "开PR；管理员接受天花板或改裁。禁升默认/禁S7/禁放宽PASS_SCORE。"
+  det_score_nonlegacy_lift_2026_11_14:
+    work_order: DET-SCORE-NONLEGACY-LIFT
+    inherits: DET-SCORE-OPTIMIZE
+    branch: cursor/det-score-nonlegacy-lift-9973
+    work_order_file: docs/mihuanyuantu-v2/input/DET-SCORE-NONLEGACY-LIFT-work-order-2026-11-14.md
+    constraint_ledger: docs/mihuanyuantu-v2/input/DET-SCORE-NONLEGACY-constraint-ledger.md
+    w0_hemostasis_pr: 55
+    w0_hemostasis_merged: true
+    hemo_baseline_mean_v3: 66.92
+    hemo_baseline_evidence: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-protocol-c-2026-11-14.txt
+    pass_score_unchanged: 75
+    coding_gate: OPEN_PILOT_MEASUREMENT_ARMS
+    feasibility_gate: docs/mihuanyuantu-v2/input/DET-SCORE-NONLEGACY-feasibility-gate-2026-11-14.md
+    feasibility_marker: NONLEGACY_FEASIBILITY_PASS
+    open_pilot: [P1_bayer, P2_pg]
+    defer: [P3_fwd_isp_combo, P4_jpeg_mild]
+    reject: [adversarial_full, restore_ca_layer0_default, relax_pass_score]
+    phase: W4_e2e
+    unit_tests: "test_s2_five_layer+gov10 28 passed"
+    e2e_script: aojuai-main/backend/scripts/det_score_nonlegacy_pilot_e2e.py
+    e2e_status: done_partial_gain
+    e2e_evidence: docs/mihuanyuantu-v2/input/DET-SCORE-NONLEGACY-e2e-pilot-2026-11-14.txt
+    e2e_conclusion: docs/mihuanyuantu-v2/input/DET-SCORE-NONLEGACY-e2e-conclusion-2026-11-14.md
+    e2e_mean_H0: 62.33
+    e2e_delta_P1_bayer: -9.83
+    e2e_delta_P2_pg: 1.08
+    defaults_promoted: false
+    subagents:
+      - id: 5ada87ba-7a02-45dc-949d-ce8c29ce8ece
+        role: R1_web_research
+        status: success
+        report: docs/mihuanyuantu-v2/input/DET-SCORE-NONLEGACY-web-research-2026-11-14.md
+        top_try: [WEAK-FWD-ISP, LINEAR-PG, WEAK-BAYER-RT]
+      - id: d4da7652-33a5-4c91-a221-11a302510f58
+        role: R2_redline_filter
+        status: success
+        report: docs/mihuanyuantu-v2/input/DET-SCORE-NONLEGACY-redline-filter-2026-11-14.md
+        reject: 19
+        allow_benign: 4
+      - id: 2865a08c-6340-4b17-a18a-dbe1aad28b89
+        role: A_landing_map
+        status: failed_gemini_quota
+      - id: 8996f9c5-8c99-4ea3-b63b-71384d5a8248
+        role: A_landing_map_grok
+        status: success
+        report: docs/mihuanyuantu-v2/input/DET-SCORE-NONLEGACY-landing-map-2026-11-14.md
+    production_billing: false
+    r9_s7: blocked
   five_layer_legacy_align_2026_11_13:
     work_order: FIVE-LAYER-LEGACY-ALIGN
     branch: cursor/five-layer-legacy-align-9973
@@ -113,11 +161,12 @@ vibe_coding:
     q1_status: UNPROVEN_SHORTFALL
     stop_add_code: true
     push_hemostasis_authorized: true
-    next_needs_admin: "非作者账号审合 PR #55；是否改裁Q1/另开新测量；禁止升R4默认、放宽PASS_SCORE、开S7"
+    next_needs_admin: "进入 DET-SCORE-NONLEGACY-LIFT；禁止升R4默认、放宽PASS_SCORE、开S7"
     feasibility_gate: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-feasibility-gate-2026-11-14.md
     ablation_plan: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-subagent-ablation-plan-2026-11-14.md
     pushed: true
-    local_impl_note: "A+D+B 本地已落地，未 git push、未 commit。Layer0：它线程 asyncio.run(generate_images) 后 join；失败日志含 error_type。ALIGN_LAYER0_IMG2IMG 默认 0。_CA_INTENSITY=0（8mm/26mm 与输入恒等，无 saturation×1.02）。未改 PASS_SCORE、光学/噪声/频域默认、PIPELINE_VERSION、焦距表。"
+    merged_pr: 55
+    local_impl_note: "A+D+B 已合入 main via PR #55。Layer0 默认 0；_CA_INTENSITY=0；它线程 async join。未改 PASS_SCORE。"
     local_v3_mean_approx: 49.3
     local_v2_mean_approx: 65.5
     root_hypotheses: [P-CA-PHONE, P-V3-OVERDRIVE, P-L0-ASYNC, P-ARCH-CEILING]

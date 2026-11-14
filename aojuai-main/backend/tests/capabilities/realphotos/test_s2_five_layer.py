@@ -21,8 +21,11 @@ from app.capabilities.realphotos.services.five_layer import (
     FIDELITY_MAD_MAX,
     PIPELINE_VERSION,
     _apply_chromatic_aberration,
+    _flag_setting_on,
+    _l1_l3,
     _maybe_layer0_img2img,
     _verified_optional,
+    _weak_bayer_roundtrip,
     _write_and_read,
     focal_length_to_ca_strength,
     l1_noise_sigma,
@@ -364,3 +367,70 @@ async def test_layer0_running_loop_failure_logs_error_type(
     assert result is None
     assert not any("never awaited" in str(item.message) for item in caught)
     assert any("error_type=TimeoutError" in record.getMessage() for record in caplog.records)
+
+
+def test_nonlegacy_pilot_settings_default_off() -> None:
+    for key in (
+        "ALIGN_BAYER_ROUNDTRIP",
+        "ALIGN_BAYER_STRENGTH",
+        "ALIGN_PG_NOISE",
+        "ALIGN_PG_SCALE",
+        "ALIGN_PG_FLAT_THR",
+    ):
+        assert Settings.model_fields[key].default == ""
+
+
+def test_weak_bayer_strength_zero_is_identity() -> None:
+    rng = np.random.default_rng(9)
+    src = rng.integers(0, 256, size=(32, 28, 3), dtype=np.uint8).astype(np.float32)
+    out = _weak_bayer_roundtrip(src, strength=0.0)
+    assert np.array_equal(out, src)
+
+
+def test_nonlegacy_flags_off_leave_l1_l3_unchanged(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Empty pilot flags must not change hemostasis pixels for the same seed."""
+    for key in (
+        "ALIGN_BAYER_ROUNDTRIP",
+        "ALIGN_BAYER_STRENGTH",
+        "ALIGN_PG_NOISE",
+        "ALIGN_PG_SCALE",
+        "ALIGN_PG_FLAT_THR",
+    ):
+        monkeypatch.setattr(settings, key, "")
+        monkeypatch.setenv(key, "")
+    assert _flag_setting_on("ALIGN_BAYER_ROUNDTRIP") is False
+    assert _flag_setting_on("ALIGN_PG_NOISE") is False
+    rng_src = np.random.default_rng(21)
+    baseline = rng_src.integers(40, 220, size=(48, 40, 3), dtype=np.uint8).astype(np.float32)
+    a = _l1_l3(baseline, seed=77, iso="400", aperture="f/1.8", focal_length="26mm")
+    b = _l1_l3(baseline, seed=77, iso="400", aperture="f/1.8", focal_length="26mm")
+    assert np.allclose(a, b)
+
+
+def test_bayer_roundtrip_on_changes_pixels(monkeypatch: pytest.MonkeyPatch) -> None:
+    rng_src = np.random.default_rng(22)
+    baseline = rng_src.integers(40, 220, size=(48, 40, 3), dtype=np.uint8).astype(np.float32)
+    monkeypatch.setattr(settings, "ALIGN_BAYER_ROUNDTRIP", "")
+    monkeypatch.setattr(settings, "ALIGN_BAYER_STRENGTH", "")
+    monkeypatch.setattr(settings, "ALIGN_PG_NOISE", "")
+    base = _l1_l3(baseline, seed=88, iso="400", aperture="f/1.8", focal_length="26mm", layer0=False)
+    monkeypatch.setattr(settings, "ALIGN_BAYER_ROUNDTRIP", "1")
+    monkeypatch.setattr(settings, "ALIGN_BAYER_STRENGTH", "1.0")
+    on = _l1_l3(baseline, seed=88, iso="400", aperture="f/1.8", focal_length="26mm", layer0=False)
+    assert on.shape == base.shape
+    assert not np.allclose(on, base)
+
+
+def test_pg_noise_on_changes_flat_region(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Smooth plate → high flat-mask coverage so PG path is exercised.
+    baseline = np.full((40, 36, 3), 120.0, dtype=np.float32)
+    monkeypatch.setattr(settings, "ALIGN_BAYER_ROUNDTRIP", "")
+    monkeypatch.setattr(settings, "ALIGN_PG_NOISE", "")
+    monkeypatch.setattr(settings, "ALIGN_PG_SCALE", "")
+    base = _l1_l3(baseline, seed=91, iso="400", aperture="f/1.8", focal_length="26mm", layer0=False)
+    monkeypatch.setattr(settings, "ALIGN_PG_NOISE", "1")
+    monkeypatch.setattr(settings, "ALIGN_PG_SCALE", "1.0")
+    monkeypatch.setattr(settings, "ALIGN_PG_FLAT_THR", "9999")
+    on = _l1_l3(baseline, seed=91, iso="400", aperture="f/1.8", focal_length="26mm", layer0=False)
+    assert on.shape == base.shape
+    assert not np.allclose(on, base)

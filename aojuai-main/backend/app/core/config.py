@@ -351,6 +351,12 @@ class Settings(BaseSettings):
     ALIGN_LAYER0_OPTICAL_STRENGTH: str = ""
     ALIGN_NOISE_INTENSITY: str = ""
     ALIGN_FIXED_MODE_SCALE: str = ""
+    # NONLEGACY OPEN_PILOT measurement arms (empty/"0" = off; defaults stay hemostasis).
+    ALIGN_BAYER_ROUNDTRIP: str = ""
+    ALIGN_BAYER_STRENGTH: str = ""
+    ALIGN_PG_NOISE: str = ""
+    ALIGN_PG_SCALE: str = ""
+    ALIGN_PG_FLAT_THR: str = ""
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.1-pro-preview"
     GEMINI_API_BASE: str = "https://generativelanguage.googleapis.com/v1beta"
