@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import asyncio
+import gc
 import io
 import json
+import logging
 import math
 import subprocess
+import warnings
 
 import numpy as np
 import pytest
@@ -16,6 +20,8 @@ from app.capabilities.realphotos.services.five_layer import (
     FIDELITY_MAD_HARD_MAX,
     FIDELITY_MAD_MAX,
     PIPELINE_VERSION,
+    _apply_chromatic_aberration,
+    _maybe_layer0_img2img,
     _verified_optional,
     _write_and_read,
     focal_length_to_ca_strength,
@@ -25,6 +31,7 @@ from app.capabilities.realphotos.services.five_layer import (
     run_five_layer,
 )
 from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
+from app.core.config import Settings, settings
 from app.core.exceptions import BusinessError
 
 
@@ -229,3 +236,131 @@ def test_huawei_p60_art_optional_exif_enums_verify() -> None:
     assert ledger["WhiteBalance"]["verification_status"] == "verified"
     assert ledger["Flash"]["verification_status"] == "verified"
     assert ledger["LightSource"]["verification_status"] == "verified"
+
+
+def _solid_jpeg(*, width: int, height: int, color: tuple[int, int, int]) -> bytes:
+    buf = io.BytesIO()
+    Image.new("RGB", (width, height), color).save(buf, format="JPEG", quality=95, subsampling=0)
+    return buf.getvalue()
+
+
+def _enable_layer0(monkeypatch: pytest.MonkeyPatch, flag: str) -> None:
+    monkeypatch.setenv("ALIGN_LAYER0_IMG2IMG", flag)
+    monkeypatch.setattr(settings, "ALIGN_LAYER0_IMG2IMG", flag)
+
+
+def test_align_layer0_img2img_default_is_off() -> None:
+    assert Settings.model_fields["ALIGN_LAYER0_IMG2IMG"].default == "0"
+
+
+def test_chromatic_aberration_8mm_and_26mm_match_input() -> None:
+    """Default CA is identity at the preview focal length and the ALIGN preset."""
+    rng = np.random.default_rng(3)
+    src = rng.integers(0, 256, size=(40, 36, 3), dtype=np.uint8).astype(np.float32)
+    for focal in ("8mm", "26mm"):
+        out = _apply_chromatic_aberration(src, focal_length=focal, intensity=1.0)
+        assert out.shape == src.shape
+        assert np.array_equal(out, src)
+
+
+def test_layer0_flag_0_jpeg_pixels_match_skip(monkeypatch: pytest.MonkeyPatch) -> None:
+    """flag=0 must not call img2img and must match an explicit skip."""
+    calls: list[object] = []
+
+    async def poison(**kwargs):
+        calls.append(kwargs)
+        return {"images": [{"raw": _solid_jpeg(width=kwargs["width"], height=kwargs["height"], color=(255, 0, 0))}]}
+
+    monkeypatch.setattr(
+        "app.capabilities.realphotos.services.supplier_clients.generate_images",
+        poison,
+    )
+    monkeypatch.setattr(
+        "app.capabilities.realphotos.services.supplier_secrets.read_duty_secret",
+        lambda duty: "unit-test-key",
+    )
+    _enable_layer0(monkeypatch, "0")
+    source = _source(quality=90, width=64, height=48, kind="gradient")
+    preset = dict(S1_ENABLED_PRESETS[0])
+    flagged = run_five_layer(source=source, preset=preset, seed=11).jpeg
+
+    def _skip(source: bytes, *, preset: dict) -> None:
+        return None
+
+    monkeypatch.setattr(
+        "app.capabilities.realphotos.services.five_layer._maybe_layer0_img2img",
+        _skip,
+    )
+    skipped = run_five_layer(source=source, preset=preset, seed=11).jpeg
+    with Image.open(io.BytesIO(flagged)) as left, Image.open(io.BytesIO(skipped)) as right:
+        assert np.array_equal(np.asarray(left), np.asarray(right))
+    assert calls == []
+
+
+async def test_layer0_running_loop_returns_image_without_never_awaited(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A live loop must run generate_images on another thread, not drop the coroutine."""
+    caller = asyncio.get_running_loop()
+    state = {"n": 0, "other_loop": False}
+
+    async def fake_generate_images(**kwargs):
+        state["n"] += 1
+        state["other_loop"] = asyncio.get_running_loop() is not caller
+        return {
+            "images": [
+                {
+                    "raw": _solid_jpeg(
+                        width=int(kwargs["width"]),
+                        height=int(kwargs["height"]),
+                        color=(12, 34, 56),
+                    )
+                }
+            ]
+        }
+
+    monkeypatch.setattr(
+        "app.capabilities.realphotos.services.supplier_clients.generate_images",
+        fake_generate_images,
+    )
+    monkeypatch.setattr(
+        "app.capabilities.realphotos.services.supplier_secrets.read_duty_secret",
+        lambda duty: "unit-test-key",
+    )
+    _enable_layer0(monkeypatch, "1")
+    source = _source(quality=90, width=32, height=24)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always", RuntimeWarning)
+        result = _maybe_layer0_img2img(source, preset={"deviceType": "phone"})
+        gc.collect()
+    assert not any("never awaited" in str(item.message) for item in caught)
+    assert state["n"] == 1
+    assert state["other_loop"] is True
+    assert result is not None
+    assert result.startswith(b"\xff\xd8")
+
+
+async def test_layer0_running_loop_failure_logs_error_type(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    async def boom(**kwargs):
+        raise TimeoutError("stub-down")
+
+    monkeypatch.setattr(
+        "app.capabilities.realphotos.services.supplier_clients.generate_images",
+        boom,
+    )
+    monkeypatch.setattr(
+        "app.capabilities.realphotos.services.supplier_secrets.read_duty_secret",
+        lambda duty: "unit-test-key",
+    )
+    _enable_layer0(monkeypatch, "1")
+    source = _source(quality=90, width=32, height=24)
+    with caplog.at_level(logging.ERROR), warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always", RuntimeWarning)
+        result = _maybe_layer0_img2img(source, preset={"deviceType": "phone"})
+        gc.collect()
+    assert result is None
+    assert not any("never awaited" in str(item.message) for item in caught)
+    assert any("error_type=TimeoutError" in record.getMessage() for record in caplog.records)
