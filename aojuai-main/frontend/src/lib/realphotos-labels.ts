@@ -115,9 +115,144 @@ export function detectionNotPassedExplanation(detection: {
   if (!detection) return null
   const score = detection.total_score
   if (score == null || Number.isNaN(Number(score))) return null
-  const modelPassed = detection.passed === true ? 'true' : detection.passed === false ? 'false' : '—'
   const line = detection.passScoreThreshold ?? DETECTION_PASS_SCORE
-  return `检测未通过：总分 ${Number(score)}/100，未达通过线 ${line}（模型 passed=${modelPassed}）`
+  const modelHint =
+    detection.passed === true
+      ? '模型判定为通过，但未达到平台接受分'
+      : detection.passed === false
+        ? '模型判定为未通过'
+        : ''
+  return `检测未通过：总分 ${Number(score)}/100，需达到 ${line} 分才可交付${
+    modelHint ? `（${modelHint}）` : ''
+  }`
+}
+
+/** Prefer snapshot display name over internal preset code. */
+export function presetDisplayName(input: {
+  presetCode?: string | null
+  presetSnapshot?: Record<string, unknown> | null
+} | null | undefined): string {
+  const snap = input?.presetSnapshot
+  if (snap && typeof snap === 'object') {
+    const topName = String(snap.name || '').trim()
+    if (topName) return topName
+    const legacy = snap.legacyParameters
+    if (legacy && typeof legacy === 'object') {
+      const legacyName = String((legacy as Record<string, unknown>).name || '').trim()
+      if (legacyName) return legacyName
+    }
+    const brand = String(snap.brand || '').trim()
+    const model = String(snap.model || '').trim()
+    if (brand || model) return [brand, model].filter(Boolean).join(' ')
+  }
+  const code = String(input?.presetCode || '').trim()
+  return code || '—'
+}
+
+export function formatByteSizeMb(bytes: number | null | undefined): string {
+  const value = Number(bytes)
+  if (!Number.isFinite(value) || value < 0) return '—'
+  const mb = value / (1024 * 1024)
+  if (mb === 0) return '0 Mb'
+  if (mb < 0.01) return `${mb.toFixed(3)} Mb`
+  if (mb < 10) return `${mb.toFixed(2)} Mb`
+  return `${mb.toFixed(1)} Mb`
+}
+
+const _REASON_PHRASES: Array<[RegExp, string]> = [
+  [/below\s*(the\s*)?pass(ing)?\s*(score|threshold|line)?/i, '未达到平台通过分'],
+  [/pass\s*score/i, '通过分'],
+  [/total[_\s-]?score/i, '总分'],
+  [/not\s+pass(ed)?/i, '未通过'],
+  [/failed?/i, '失败'],
+  [/noise/i, '噪声'],
+  [/depth\s*of\s*field|dof/i, '景深'],
+  [/lighting|illumination/i, '光线'],
+  [/color\s*realism/i, '色彩真实感'],
+  [/overall\s*realism/i, '整体真实感'],
+  [/artificial|synthetic|ai[- ]?generated/i, '偏合成/生成感'],
+  [/unnatural/i, '不自然'],
+]
+
+/** Soft-map common English detector phrases; leave already-Chinese text intact. */
+export function detectionReasonChinese(reason: string | null | undefined): string {
+  const raw = String(reason || '').trim()
+  if (!raw) return ''
+  if (/[\u4e00-\u9fff]/.test(raw) && !/[A-Za-z]{4,}/.test(raw)) return raw
+  let text = raw
+  for (const [pattern, zh] of _REASON_PHRASES) {
+    text = text.replace(pattern, zh)
+  }
+  if (text !== raw) return text
+  if (/[\u4e00-\u9fff]/.test(raw)) return raw
+  return `检测说明：${raw}`
+}
+
+type DetectionScores = {
+  noise?: number | null
+  depthOfField?: number | null
+  lighting?: number | null
+  colorRealism?: number | null
+  overallRealism?: number | null
+  total_score?: number | null
+  accepted?: boolean | null
+  passed?: boolean | null
+  passScoreThreshold?: number | null
+  reason?: string | null
+}
+
+const _OPT_TIPS: Record<string, string> = {
+  noise: '降低过高锐化/颗粒；避免过强 JPEG 压缩，保留更自然的传感器噪声层次',
+  depthOfField: '加强景深层次（主体清晰、背景适度虚化），避免整图一样平',
+  lighting: '改善光照方向与阴影过渡，减少死黑/死白与不自然打光',
+  colorRealism: '收敛过饱和与偏色，让肤色/材质更接近实拍',
+  overallRealism: '整体降低「生成感」：减少塑料质感、边缘伪影与构图违和',
+}
+
+/** Concrete optimization directions from the weakest detection dimensions. */
+export function detectionOptimizationTips(detection: DetectionScores | null | undefined): string[] {
+  if (!detection) return []
+  const line = detection.passScoreThreshold ?? DETECTION_PASS_SCORE
+  const dims: Array<[string, number | null | undefined]> = [
+    ['noise', detection.noise],
+    ['depthOfField', detection.depthOfField],
+    ['lighting', detection.lighting],
+    ['colorRealism', detection.colorRealism],
+    ['overallRealism', detection.overallRealism],
+  ]
+  const scored = dims
+    .map(([key, value]) => ({ key, value: value == null ? null : Number(value) }))
+    .filter((row): row is { key: string; value: number } => row.value != null && !Number.isNaN(row.value))
+    .sort((a, b) => a.value - b.value)
+  const tips: string[] = []
+  for (const row of scored.slice(0, 3)) {
+    if (row.value >= line) continue
+    const tip = _OPT_TIPS[row.key]
+    if (tip) {
+      tips.push(
+        `${detectionDimensionLabel(row.key === 'depthOfField' ? 'depth' : row.key === 'colorRealism' ? 'color_realism' : row.key === 'overallRealism' ? 'overall_realism' : row.key)}（${row.value}分）：${tip}`,
+      )
+    }
+  }
+  if (tips.length === 0 && detection.accepted === false) {
+    tips.push('可换一张更接近实拍的原图，或更换设备预设后重处理后再检')
+  }
+  return tips
+}
+
+/** Combined Chinese reason + optimization block for task detail. */
+export function detectionFailureGuidance(detection: DetectionScores | null | undefined): {
+  reason: string
+  tips: string[]
+} {
+  const score = detection?.total_score
+  const line = detection?.passScoreThreshold ?? DETECTION_PASS_SCORE
+  const base =
+    detectionReasonChinese(detection?.reason) ||
+    (score != null
+      ? `总分 ${Number(score)}/100，未达到交付所需的 ${line} 分`
+      : '检测未给出具体说明')
+  return { reason: base, tips: detectionOptimizationTips(detection) }
 }
 
 export function ticketTypeLabel(value: string | null | undefined): string {

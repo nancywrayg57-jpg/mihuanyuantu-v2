@@ -1157,9 +1157,13 @@ class RealphotosS1Service:
         accepted_now = model_passed and score >= line
         explanation = None
         if not accepted_now:
+            model_hint = (
+                "模型判定为通过，但未达到平台接受分"
+                if model_passed
+                else "模型判定为未通过"
+            )
             explanation = (
-                f"检测未通过：总分 {score}/100，未达通过线 {line}"
-                f"（模型 passed={'true' if model_passed else 'false'}）"
+                f"检测未通过：总分 {score}/100，需达到 {line} 分才可交付（{model_hint}）"
             )
         return {
             "noise": int(row.noise),

@@ -1,0 +1,36 @@
+{
+  "source": "\u8f93\u5165\u6750\u6599/\u65e7\u7248\u53ef\u590d\u7528\u6a21\u5757/01_\u6e90\u7801\u53c2\u8003/\u539f\u6837\u5feb\u7167/server",
+  "github_clone": null,
+  "files": [
+    {
+      "file": "imagePhysicalizer.ts",
+      "sha256": "978a7f85d0f1a77803e31a701bb75f03a23ea1b52b3f767cabafd8c0438d5ff2",
+      "bytes": 15815
+    },
+    {
+      "file": "frequencyProcessor.ts",
+      "sha256": "2d8066912f235da23e9457679ed1cb090cb0c146e635b322030a2e3c594a7406",
+      "bytes": 11143
+    },
+    {
+      "file": "fingerprintDestroyer.ts",
+      "sha256": "9a2652182e1fff22cacecdcc05167f0403a6fb5453a231c3b96a4f1faca860d4",
+      "bytes": 16355
+    },
+    {
+      "file": "exifToolWriter.ts",
+      "sha256": "c2ddc01919ee32680e22ac3f66f142791426d30d2dfe7e7e3c7c22fe6fcb5f45",
+      "bytes": 26756
+    },
+    {
+      "file": "uploadSimulator.ts",
+      "sha256": "0b264d822ffa46e77abad2d4c74c3972c54e31b493bc94cd7c771555f860f039",
+      "bytes": 13528
+    },
+    {
+      "file": "sizeOptimizer.ts",
+      "sha256": "3eae4a15a2ba15d4de8d704e3856034012f2047d442c6753553ccf36be88e118",
+      "bytes": 7815
+    }
+  ]
+}

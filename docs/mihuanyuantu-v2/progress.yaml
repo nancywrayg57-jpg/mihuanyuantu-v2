@@ -32,12 +32,51 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "OPS-SUPPLIER-KEY-UX：多 Key、厂商级联、检测基线独立页签"
-    user_value: "系统管理可登记渠道 Key、厂商/模型级联；检测基线单独页签"
-    visible_output: "provider-contracts 多 Key；generation-capabilities；detection-pass-score；系统管理「检测基线」页签"
-    verify: "/tmp/ops-supplier-key-ux-e2e.log 含 OPS_SUPPLIER_KEY_UX_E2E_PASS"
-    status: coded_e2e_pass_pr_pending
-    next_user_action: "非作者 Owner squash 合并 OPS-SUPPLIER-KEY-UX PR；PG 需 realphotos_0005；不得开 S7。"
+    goal: "FIVE-LAYER-LEGACY-ALIGN PR #54：合入 main(#53) 冲突消解 + UX/ALIGN 交付"
+    user_value: "任务详情/图库文案可用；ALIGN 研究与 C1 SHORTFALL 证据入库；保留 #53 动态检测基线"
+    visible_output: "PR #54 无冲突；本地预览 FE:3000 API:38000"
+    verify: "gh pr view 54 mergeable=MERGEABLE；不宣称 ALIGN_W5_E2E_PASS"
+    status: merging_main_conflict_resolve
+    next_user_action: "冲突消解后推送 PR #54；合入须非作者账号；不得开 S7。"
+  five_layer_legacy_align_2026_11_13:
+    work_order: FIVE-LAYER-LEGACY-ALIGN
+    branch: cursor/five-layer-legacy-align-9973
+    freeze_commit: 190d4c4
+    pipeline_version: s2-five-layer-3
+    admin_relax_2026_11_13: "Q1 keep; Q4/Q8 open; Q11 observe-only; Q2 unchanged; freeze ok"
+    w0_confirmed: true
+    w1_baseline: logged
+    w2_pixel_fft: coded
+    w3_exif: coded
+    w4_encode: coded
+    w5_e2e: SHORTFALL
+    w5_gain_best: 3.83
+    w5_gain_c1_zh_n12: 1.00
+    w5_gain_blend012_n6: 2.50
+    w5_alpha_scan_best_n4: 2.25
+    w5_gain_target: 10
+    w5_evidence: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-e2e-layer0-2026-11-13.txt
+    w5_evidence_c1: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-e2e-c1-zh-2026-11-14.txt
+    w5_bottleneck: "C1 zh prompts measured gain=1.00; no remaining equal-weight untested in-contract lever"
+    admin_pr_override_2026_11_14: "admin asked to end and open PR with this round + UX copy; not claiming W5 PASS"
+    research_2026_11_14:
+      legacy_clone: /home/hbs/hbs-projects/_refs/mihuanyuantu@4a3f2ade
+      aiImageProcessor_sha256: 37ca598b8bb3af49fd3dcd454b7118788ac24208dc105b6406dcfde58af5b9fb
+      conflicts_ledger: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-research-conflicts-2026-11-14.md
+      feasibility_draft: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-feasibility-draft-2026-11-14.md
+      subagents_failed_quota: [e29da127-5555-474e-8ad6-b4cadfd485c3, f127ff19-5aa3-41bd-a900-eae3498d0f79]
+      subagents_rerun_grok: [d5c7bd66-1b73-40b3-a88a-0d44cfff9721, d167f4fc-3c9f-4a3c-ab7b-0609819226ce]
+      coding_gate: CLOSED_after_c1_shortfall
+      feasibility_gate: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-feasibility-gate-2026-11-14.md
+      e2e_round: c1_zh_prompts_blend_alpha_1
+    w6_pr: pr_54_merging_main
+    constraint_ledger: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-constraint-ledger.md
+    sample_sha256: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-sample-sha256.json
+    e2e_log: /tmp/five-layer-legacy-align-e2e.log
+    evidence_marker: ALIGN_W5_E2E_PASS
+    production_billing: false
+    r9_s7: blocked
+    pass_score_unchanged: 75
   library_asset_purge_2026_11_13:
     work_order: LIBRARY-ASSET-PURGE
     branch: cursor/library-asset-purge-9973

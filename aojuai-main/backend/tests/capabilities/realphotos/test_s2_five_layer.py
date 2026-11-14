@@ -4,15 +4,21 @@ from __future__ import annotations
 
 import io
 import json
+import math
 import subprocess
 
 import numpy as np
 import pytest
 from PIL import Image
 
+from app.capabilities.realphotos.services.camera_specs import lookup_camera_spec
 from app.capabilities.realphotos.services.five_layer import (
+    FIDELITY_MAD_HARD_MAX,
     FIDELITY_MAD_MAX,
     PIPELINE_VERSION,
+    _verified_optional,
+    _write_and_read,
+    focal_length_to_ca_strength,
     l1_noise_sigma,
     mean_abs_delta,
     optional_exif_assignments,
@@ -42,15 +48,28 @@ def _source(*, quality: int, width: int = 320, height: int = 240, kind: str = "n
     return buf.getvalue()
 
 
-def test_pipeline_version_is_s2_five_layer_2() -> None:
-    assert PIPELINE_VERSION == "s2-five-layer-2"
+def test_pipeline_version_is_s2_five_layer_3() -> None:
+    assert PIPELINE_VERSION == "s2-five-layer-3"
 
 
-def test_l1_sigma_iso_weak_and_capped() -> None:
-    assert 1.05 <= l1_noise_sigma(100) <= 1.25
-    assert l1_noise_sigma(100) > 0.8
-    assert l1_noise_sigma(1600) <= 1.85
-    assert l1_noise_sigma(51200) <= 1.85
+def test_focal_length_ca_strength_legacy_table() -> None:
+    assert focal_length_to_ca_strength("26mm") == 1.0
+    assert focal_length_to_ca_strength(14) == 2.0
+    assert focal_length_to_ca_strength(100) == 0.4
+
+
+def test_l1_sigma_iso_stronger_than_v2_and_capped() -> None:
+    # ISO100 uses process floor 400 × intensity 1.55 → ~1.55; capped ≤2.20.
+    assert 1.20 <= l1_noise_sigma(100) <= 1.90
+    assert l1_noise_sigma(100) > 1.10
+    assert l1_noise_sigma(1600) <= 2.20
+    assert l1_noise_sigma(51200) <= 2.20
+
+
+def test_camera_spec_lookup_iphone() -> None:
+    spec = lookup_camera_spec("Apple", "iPhone 15 Pro")
+    assert spec is not None
+    assert float(spec["focal_plane_x_res"]) > 0
 
 
 def test_five_layer_keeps_size_writes_preset_and_meets_byte_floor() -> None:
@@ -75,14 +94,25 @@ def test_five_layer_keeps_size_writes_preset_and_meets_byte_floor() -> None:
     assert "MakerNote" not in row
 
 
-def test_five_layer_fidelity_mad_within_fine_limit() -> None:
-    """ND-020 proxy: MAD on smooth source stays under FIDELITY_MAD_MAX (logged in e2e)."""
+def test_five_layer_fidelity_mad_is_finite_observe_only() -> None:
+    """Q11 复裁：MAD 仅观测；单测只要求有限值与常量次序，不否决。"""
     source = _source(quality=92, kind="gradient")
     preset = dict(S1_ENABLED_PRESETS[0])
     output = run_five_layer(source=source, preset=preset, seed=11).jpeg
     with Image.open(io.BytesIO(source)) as before, Image.open(io.BytesIO(output)) as after:
         mad = mean_abs_delta(np.asarray(before, dtype=np.float32), np.asarray(after, dtype=np.float32))
-    assert mad <= FIDELITY_MAD_MAX
+    assert mad >= 0.0
+    assert math.isfinite(mad)
+    assert FIDELITY_MAD_MAX <= FIDELITY_MAD_HARD_MAX
+
+
+def test_freq_modes_keep_dimensions() -> None:
+    source = _source(quality=50)
+    preset = dict(S1_ENABLED_PRESETS[0])
+    for mode in ("2d", "1d", "hybrid", "auto"):
+        out = run_five_layer(source=source, preset=preset, seed=5, freq_mode=mode).jpeg
+        with Image.open(io.BytesIO(source)) as before, Image.open(io.BytesIO(out)) as after:
+            assert after.size == before.size
 
 
 def test_byte_floor_fails_without_padding() -> None:
@@ -159,3 +189,43 @@ def test_five_layer_skips_empty_optional_exif_writes_filled() -> None:
     assert ledger["Software"]["verification_status"] == "verified"
     assert "Artist" not in ledger
     assert "LensModel" not in ledger
+
+
+def test_optional_exif_enum_printconv_aliases() -> None:
+    """PrintConv labels must not fail verification when requested value is the numeric code."""
+    assert _verified_optional("MeteringMode", "3", "Spot")["verification_status"] == "verified"
+    assert (
+        _verified_optional("ExposureProgram", "3", "Aperture-priority AE")["verification_status"]
+        == "verified"
+    )
+    assert _verified_optional("MeteringMode", "3", "3")["verification_status"] == "verified"
+    assert _verified_optional("MeteringMode", "3", "Average")["verification_status"] == "failed"
+
+
+def test_huawei_p60_art_optional_exif_enums_verify() -> None:
+    """Regression: legacy Huawei Spot + Aperture Priority + f/1.4 must not raise EXIF_WRITE_FAILED."""
+    source = _source(quality=40)
+    preset = {
+        "brand": "Huawei",
+        "model": "Huawei P60 Art",
+        "iso": "400",
+        "shutter": "1/125",
+        "aperture": "f/1.4",
+        "focalLength": "8mm",
+        "makerNote": "Huawei",
+        "gpsMode": "none",
+        "legacyParameters": {
+            "metering_mode": "Spot",
+            "white_balance": "Tungsten",
+            "flash_mode": "Off",
+            "exposure_mode": "Aperture Priority",
+        },
+    }
+    jpeg, fields = _write_and_read(source, preset, seed=17)
+    assert jpeg.startswith(b"\xff\xd8\xff")
+    ledger = {field["tag"]: field for field in fields}
+    assert ledger["MeteringMode"]["verification_status"] == "verified"
+    assert ledger["ExposureProgram"]["verification_status"] == "verified"
+    assert ledger["WhiteBalance"]["verification_status"] == "verified"
+    assert ledger["Flash"]["verification_status"] == "verified"
+    assert ledger["LightSource"]["verification_status"] == "verified"

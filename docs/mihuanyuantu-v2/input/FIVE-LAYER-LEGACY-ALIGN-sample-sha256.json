@@ -1,0 +1,256 @@
+{
+  "count": 50,
+  "dir": "测试用/图片",
+  "items": [
+    {
+      "file": "product_01.jpg",
+      "bytes": 126395,
+      "sha256": "bc2fcb35fd964f7e08179dd81beb03fa0fca88ce417afccf8ff9e3355d9ceed0"
+    },
+    {
+      "file": "product_02.jpg",
+      "bytes": 102228,
+      "sha256": "cbef0ab138cf480990bf3dc7212c7f67fafc1177266db7e1dcf633514c4dcc80"
+    },
+    {
+      "file": "product_03.jpg",
+      "bytes": 203226,
+      "sha256": "d4e2a29914bf7ee3abfa51ee1514f3c119bd5f924523112ba693cbfb89af2427"
+    },
+    {
+      "file": "product_04.jpg",
+      "bytes": 45470,
+      "sha256": "f45d875eecdecd6edfd8ad27194da5f6158abb37bf4c6bf80090dab0fc493ca9"
+    },
+    {
+      "file": "product_05.jpg",
+      "bytes": 771229,
+      "sha256": "b522138eb44b938dae160db5334193aecc37d860ffb8b054843ed10fa3538dbf"
+    },
+    {
+      "file": "product_06.jpg",
+      "bytes": 153654,
+      "sha256": "349cd5389a244ee73e3b4ecf8ddc89bdb70d991440319f3ec6954deac705c128"
+    },
+    {
+      "file": "product_07.jpg",
+      "bytes": 89564,
+      "sha256": "ecbddd1b3f8f9cb786366a3b7b89822b3cf32c1c1e951cb1a8d742b4603252ce"
+    },
+    {
+      "file": "product_08.jpg",
+      "bytes": 516246,
+      "sha256": "c2552859fee9f886d7c02131bbcc6684ef5d375be40e197acea9e0c9e5e6bbfb"
+    },
+    {
+      "file": "product_09.jpg",
+      "bytes": 35915,
+      "sha256": "8e835b5b1e2a98b6d80ec61e516741583558fedfbdfb00bdf6bd30b05c92a8d2"
+    },
+    {
+      "file": "product_10.jpg",
+      "bytes": 177615,
+      "sha256": "15385e67cf90be1c43bf47e2194cb10fa7ebf51e3bf3fbd6a4098576ed29aae0"
+    },
+    {
+      "file": "product_11.jpg",
+      "bytes": 70647,
+      "sha256": "7957d9488a8573affc010968a530d0778725a697291f2e98275617333d5fe6c3"
+    },
+    {
+      "file": "product_12.jpg",
+      "bytes": 38092,
+      "sha256": "38821c9c3084d8d7db4b170a3d0821339fcc4a5602d7c841c3f192bdb4520cea"
+    },
+    {
+      "file": "product_13.jpg",
+      "bytes": 44728,
+      "sha256": "8350a7a17c6e46c2ec5afcc64285045dd6176e294ff7d5d8d7f815248da0c380"
+    },
+    {
+      "file": "product_14.jpg",
+      "bytes": 140170,
+      "sha256": "11ca056ecb511315cef1646d4c88cdc17a0ba786719368f336b93a133c5831bf"
+    },
+    {
+      "file": "product_15.jpg",
+      "bytes": 102275,
+      "sha256": "240851984fcc24d4ac1726608af059bd9dd0ce6884a7a520f8434b7c27d61f99"
+    },
+    {
+      "file": "product_16.jpg",
+      "bytes": 209866,
+      "sha256": "c998270afd79219f1c22151002b382f0249a7a18f14ba6801ae94cc3a08baeb2"
+    },
+    {
+      "file": "product_17.jpg",
+      "bytes": 33495,
+      "sha256": "6ed03eef4cc97bb87c6f4807c16c723df735fc1e96523cf94515aab2d8be02bd"
+    },
+    {
+      "file": "product_18.jpg",
+      "bytes": 97233,
+      "sha256": "84f40b5dc2a27015ca4d719209de8222c1cca168dfa6902018cae201d4bfa719"
+    },
+    {
+      "file": "product_19.jpg",
+      "bytes": 68240,
+      "sha256": "c6c16635f9d174e6b8012072614fdcc3f7f59bd5418587ed93a147dad3567c81"
+    },
+    {
+      "file": "product_20.jpg",
+      "bytes": 317586,
+      "sha256": "876afef7116a155182ff3ad45adbc0970f6242f2cc8f1f03e4d5063d6c0d9532"
+    },
+    {
+      "file": "product_21.jpg",
+      "bytes": 18340,
+      "sha256": "7a20a750b899bb10b6606b38109127817fa75192020b97480cb98008d72348e1"
+    },
+    {
+      "file": "product_22.jpg",
+      "bytes": 27371,
+      "sha256": "57d169be7ee5e4abe43b428601d23b78c7782e0e715ed75af03ad5461fa1b38a"
+    },
+    {
+      "file": "product_23.jpg",
+      "bytes": 137839,
+      "sha256": "4e57047c21b3c6df75f0395c06fa49a2eda8427cf0168b81ba6f0da5d00df532"
+    },
+    {
+      "file": "product_24.jpg",
+      "bytes": 37399,
+      "sha256": "f8dd86fbebae4b53a4333ce7ce5928876f6a04e7ab6932a1f232f49e96874a8f"
+    },
+    {
+      "file": "product_25.jpg",
+      "bytes": 12575,
+      "sha256": "3deaebe975c9746e0c46134e41981ce3b2f742f1c6865477ebcc4aba5461fe41"
+    },
+    {
+      "file": "product_26.jpg",
+      "bytes": 62536,
+      "sha256": "5927c487bbeb6e8abe9e9752aa35e06798263df9c22c9cd89f01d249306666f3"
+    },
+    {
+      "file": "product_27.jpg",
+      "bytes": 44047,
+      "sha256": "163724db3eba55abffb9c2bde456a9aac1546af2b4bc842a73271db2c1bbdd0f"
+    },
+    {
+      "file": "product_28.jpg",
+      "bytes": 35589,
+      "sha256": "63d029cceff3c0ac67f3fb2909b8ee6fe3c9209b1195ee3687e05f79e5a03d98"
+    },
+    {
+      "file": "product_29.jpg",
+      "bytes": 162271,
+      "sha256": "9a60de3a8383c35c770c3abafb13208dd1d75e72d184f7b84326f6b02831fe92"
+    },
+    {
+      "file": "product_30.jpg",
+      "bytes": 52285,
+      "sha256": "1e92f59531d606210e72c30fa056798162ec5fb73f027ce453bc6d25436a78da"
+    },
+    {
+      "file": "product_31.jpg",
+      "bytes": 96901,
+      "sha256": "49ba716e5a5a36f9b0d28aa1bdd6ac3e9532ce5b37966e7b4a1f6c45e83be7f0"
+    },
+    {
+      "file": "product_32.jpg",
+      "bytes": 57562,
+      "sha256": "c534cb009533404e85f69724e1912dbc30ee6bbef3c9465c5fffe07a96d39850"
+    },
+    {
+      "file": "product_33.jpg",
+      "bytes": 147349,
+      "sha256": "571aeea47e797148272c52741d5b3c9a82ce26168c96954f4fafcb8f1b81d48a"
+    },
+    {
+      "file": "product_34.jpg",
+      "bytes": 37360,
+      "sha256": "433225e6cbbb3b0aa173e30b022d92a78e95999544356b5ff5198682847a6a4a"
+    },
+    {
+      "file": "product_35.jpg",
+      "bytes": 89002,
+      "sha256": "6c3deae5658281e1490679dab27b7ac85a602eaac523413f00fa7d243231fb33"
+    },
+    {
+      "file": "product_36.jpg",
+      "bytes": 26916,
+      "sha256": "cdc4fe2b51be9a6e840bc29c2b79348fa00134751467e126fea97b9c0b01b8ee"
+    },
+    {
+      "file": "product_37.jpg",
+      "bytes": 163738,
+      "sha256": "60ee0b4ccd4750c4548c76861b35ac39f5a718f66f617c6ef199587940db4699"
+    },
+    {
+      "file": "product_38.jpg",
+      "bytes": 42122,
+      "sha256": "bb6e4c343da9b204a2bba49fb52e2fb505ef440acdb35641ac5c0da745d24641"
+    },
+    {
+      "file": "product_39.jpg",
+      "bytes": 80962,
+      "sha256": "dee9c87839cd71ed530ee2e6118e1ea37073a0389c7840cc64a41a872888ba99"
+    },
+    {
+      "file": "product_40.jpg",
+      "bytes": 45042,
+      "sha256": "72d4155145fa26787857eafd7985336ddd14fa05a8c947c32734de7947f04838"
+    },
+    {
+      "file": "product_41.jpg",
+      "bytes": 8660,
+      "sha256": "51a26aef35a7f689e694e7a2c22d0dd96f3f3528254ebec06cfd52c49c191bcc"
+    },
+    {
+      "file": "product_42.jpg",
+      "bytes": 20078,
+      "sha256": "fe3c21c2283b61afe88516063dfdef5290b541db47bb462def7491523306aba7"
+    },
+    {
+      "file": "product_43.jpg",
+      "bytes": 2608346,
+      "sha256": "888414cdd5c01592f578349f57984630d466bdc3c2ab41bdfb2d54072a040be4"
+    },
+    {
+      "file": "product_44.jpg",
+      "bytes": 19890,
+      "sha256": "4a39029f6fb01d88525b2c293bd078d35a1f2d4e9b0e5fc240707d952628d69e"
+    },
+    {
+      "file": "product_45.jpg",
+      "bytes": 21333,
+      "sha256": "dd9a8055e64dceb0c684824fce79028956c70170374369798175ca22a19a0d2a"
+    },
+    {
+      "file": "product_46.jpg",
+      "bytes": 12286,
+      "sha256": "0563390ef74550c704ed152a01fc834d8a3c0d29eaccd0a61ed51244c1677baf"
+    },
+    {
+      "file": "product_47.jpg",
+      "bytes": 97650,
+      "sha256": "5abbd9f23917bb25187149ebe3c5a4af83fe0ab14d5c4db8d3ff711766fee645"
+    },
+    {
+      "file": "product_48.jpg",
+      "bytes": 405952,
+      "sha256": "83728ebdfe790aa39c6402f450bf8d9b282b89e261738bbc93c1279fbe412160"
+    },
+    {
+      "file": "product_49.jpg",
+      "bytes": 86181,
+      "sha256": "d4753c769d6fa045f03d355b401766aa1503c0210aab2c410d74597adbbb79c9"
+    },
+    {
+      "file": "product_50.jpg",
+      "bytes": 190486,
+      "sha256": "d29ce9f0fa651c576c4329549d0a27b021d4163e5fb6e6b5c375b300638d97a1"
+    }
+  ]
+}

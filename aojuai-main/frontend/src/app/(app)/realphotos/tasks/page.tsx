@@ -10,10 +10,12 @@ import {
   boolPassLabel,
   creditDispositionLabel,
   detectionDimensionLabel,
+  detectionFailureGuidance,
   detectionNotPassedExplanation,
   failureClassLabelForTask,
   generationModeLabel,
   gpsModeLabel,
+  presetDisplayName,
   taskStatusLabel,
 } from '@/lib/realphotos-labels'
 
@@ -36,6 +38,7 @@ type ProcessingTask = {
   id: string
   status: string
   presetCode?: string
+  presetSnapshot?: Record<string, unknown> | null
   outputObjectKey?: string | null
   creditDisposition?: string | null
   failureClass?: string | null
@@ -122,6 +125,7 @@ function DetectionReport({ detection }: { detection: Detection | null | undefine
   const gate =
     detection.platformGateExplanation ||
     (detection.accepted === false ? detectionNotPassedExplanation(detection) : null)
+  const guidance = detection.accepted === false ? detectionFailureGuidance(detection) : null
   return (
     <div className="space-y-1">
       <p>
@@ -129,11 +133,24 @@ function DetectionReport({ detection }: { detection: Detection | null | undefine
         {detection.accepted !== undefined ? ` · 平台接受：${boolPassLabel(detection.accepted)}` : ''}
       </p>
       <p>
-        总分：{detection.total_score ?? '—'} / 100（通过线 {threshold}）
+        总分：{detection.total_score ?? '—'} / 100（需达到 {threshold} 分）
       </p>
       {gate ? <p className="text-destructive">{gate}</p> : null}
       <p>检测器：{detection.detector || '—'}</p>
-      <p>原因：{detection.reason || '—'}</p>
+      <p>
+        原因：
+        {guidance?.reason || detection.reason || '—'}
+      </p>
+      {guidance && guidance.tips.length > 0 ? (
+        <div>
+          <p>优化方向：</p>
+          <ul className="list-inside list-disc">
+            {guidance.tips.map((tip) => (
+              <li key={tip}>{tip}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       <ul className="list-inside list-disc">
         {dims.map(([key, value]) => (
           <li key={key}>
@@ -219,6 +236,7 @@ export default function RealphotosTasksPage() {
           item.status,
           taskStatusLabel(item.status),
           item.presetCode,
+          presetDisplayName(item),
           item.failureClass,
           item.failureMessage,
           item.failureTitle,
@@ -536,8 +554,7 @@ export default function RealphotosTasksPage() {
                       {failureClassLabelForTask(item.failureClass, item.detectionMode)}
                       {item.detectionBrief && item.failureClass === 'detection_not_passed' ? (
                         <span className="ml-1 text-muted-foreground">
-                          （{item.detectionBrief.totalScore}/100，线{' '}
-                          {item.detectionBrief.passScoreThreshold ?? DETECTION_PASS_SCORE}）
+                          （总分 {item.detectionBrief.totalScore}/100）
                         </span>
                       ) : null}
                     </td>
@@ -573,7 +590,7 @@ export default function RealphotosTasksPage() {
                 <section className="space-y-1">
                   <h3 className="font-medium">基本</h3>
                   <p>状态：{taskStatusLabel(detail.status)}</p>
-                  <p>预设编号：{detail.presetCode || '—'}</p>
+                  <p>预设名称：{presetDisplayName(detail)}</p>
                   <p>创建时间：{detail.createdAt || '—'}</p>
                   {detail.copiedFrom ? <p>复制自：{detail.copiedFrom}</p> : null}
                 </section>

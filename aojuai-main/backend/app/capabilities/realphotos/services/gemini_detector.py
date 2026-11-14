@@ -21,20 +21,27 @@ def _line(pass_score: int | None) -> int:
 
 
 def prompt_pass_line(pass_score: int | None = None) -> str:
-    return f"平台通过线为 total_score ≥ {_line(pass_score)}"
+    return f"平台通过分为 total_score ≥ {_line(pass_score)}"
 
 
 def detection_prompt(pass_score: int | None = None) -> str:
-    """Ask the model to align passed with the live pass line. Default line is PASS_SCORE."""
+    """Ask the model to align passed with the live pass line. Default line is PASS_SCORE.
+
+    UX (ALIGN PR): reason must be Simplified Chinese with failure cause + optimization tips.
+    OPS (#53): pass line may be an admin override, not a hard-coded 75.
+    """
     line = _line(pass_score)
     return (
         "你是图片最终检测器。只返回一个 JSON 对象，不要 Markdown。"
         "键必须是 noise、depthOfField、lighting、colorRealism、overallRealism、total_score、passed、reason。"
         "五个维度和 total_score 都是 0 到 100 的整数。total_score 由你单独给出，不要写成五维平均。"
-        "passed 是布尔值。reason 是字符串。"
+        "passed 是布尔值。"
+        "reason 必须使用简体中文："
+        "若未通过，先写具体不通过原因（指出偏低维度），再写 1～2 条可执行的优化方向；"
+        "若通过，reason 可简短说明通过依据。"
         f"{prompt_pass_line(line)}："
         f"仅当 total_score ≥ {line} 时 passed 才可为 true；"
-        f"若 total_score < {line}，passed 必须为 false，并在 reason 中说明未达 {line}。"
+        f"若 total_score < {line}，passed 必须为 false。"
     )
 
 

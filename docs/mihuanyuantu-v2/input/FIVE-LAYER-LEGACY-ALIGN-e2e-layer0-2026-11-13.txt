@@ -1,0 +1,264 @@
+=== FIVE-LAYER-LEGACY-ALIGN e2e ===
+ts=2026-11-13T17:05:04Z
+production_billing=false
+sample_dir=/home/hbs/hbs-projects/mihuanyuantu-v2/测试用/图片
+sample_inventory=/home/hbs/hbs-projects/mihuanyuantu-v2/docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-sample-sha256.json
+net=meta_fakeip_clear_proxy layer0_img2img=on
+PASS samples_present count=50
+ALIGN_W0_CONFIRMED sample_n=12 seed=20261113
+PASS pipeline_v3
+PASS pass_score_unchanged
+FIDELITY_MAD_MAX=3.5 HARD=6.0
+--- sample=product_01.jpg sha256=bc2fcb35fd964f7e08179dd81beb03fa0fca88ce417afccf8ff9e3355d9ceed0 bytes=126395 ---
+PASS size_unchanged_2d
+PASS rgb_2d
+PASS jpeg_2d
+PASS byte_floor_2d
+PASS size_unchanged_1d
+PASS rgb_1d
+PASS jpeg_1d
+PASS byte_floor_1d
+PASS size_unchanged_hybrid
+PASS rgb_hybrid
+PASS jpeg_hybrid
+PASS byte_floor_hybrid
+dual_path mad_2d=28.928 mad_1d=28.935 mad_hybrid=28.925
+dual_path bytes_2d=185211 bytes_1d=183663 bytes_hybrid=185174
+MAD_OBSERVE prefer=3.5 hard_ref=6.0 (no veto)
+ALIGN_W2_PIXEL_FFT dual_path_evidence_ok
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+mad_baseline_v2=1.187 mad_v3=50.081
+MAD_OBSERVE above_hard_ref path=product_01.jpg mad=50.081
+PASS gemini_key_configured
+gemini_baseline_v2 total=68.0 passed=False noise=65 dof=60 light=60 color=60 overall=65
+gemini_v3 total=71.0 passed=False noise=None dof=None light=None color=None overall=None reason='rerank_pick'
+delta=3.0
+--- sample=product_02.jpg sha256=cbef0ab138cf480990bf3dc7212c7f67fafc1177266db7e1dcf633514c4dcc80 bytes=102228 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+mad_baseline_v2=1.221 mad_v3=59.396
+MAD_OBSERVE above_hard_ref path=product_02.jpg mad=59.396
+PASS gemini_key_configured
+gemini_baseline_v2 total=62.0 passed=False noise=68 dof=65 light=67 color=66 overall=55
+gemini_v3 total=68.0 passed=False noise=None dof=None light=None color=None overall=None reason='rerank_pick'
+delta=6.0
+--- sample=product_03.jpg sha256=d4e2a29914bf7ee3abfa51ee1514f3c119bd5f924523112ba693cbfb89af2427 bytes=203226 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+mad_baseline_v2=1.142 mad_v3=48.272
+MAD_OBSERVE above_hard_ref path=product_03.jpg mad=48.272
+PASS gemini_key_configured
+gemini_baseline_v2 total=63.0 passed=False noise=65 dof=60 light=62 color=65 overall=60
+gemini_v3 total=68.0 passed=False noise=None dof=None light=None color=None overall=None reason='rerank_pick'
+delta=5.0
+--- sample=product_04.jpg sha256=f45d875eecdecd6edfd8ad27194da5f6158abb37bf4c6bf80090dab0fc493ca9 bytes=45470 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+mad_baseline_v2=1.109 mad_v3=48.642
+MAD_OBSERVE above_hard_ref path=product_04.jpg mad=48.642
+PASS gemini_key_configured
+gemini_baseline_v2 total=67.0 passed=False noise=68 dof=65 light=67 color=66 overall=68
+gemini_v3 total=69.0 passed=False noise=None dof=None light=None color=None overall=None reason='rerank_pick'
+delta=2.0
+--- sample=product_05.jpg sha256=b522138eb44b938dae160db5334193aecc37d860ffb8b054843ed10fa3538dbf bytes=771229 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+mad_baseline_v2=1.207 mad_v3=45.007
+MAD_OBSERVE above_hard_ref path=product_05.jpg mad=45.007
+PASS gemini_key_configured
+gemini_baseline_v2 total=66.0 passed=False noise=65 dof=60 light=58 color=65 overall=68
+gemini_v3 total=72.0 passed=False noise=None dof=None light=None color=None overall=None reason='rerank_pick'
+delta=6.0
+--- sample=product_06.jpg sha256=349cd5389a244ee73e3b4ecf8ddc89bdb70d991440319f3ec6954deac705c128 bytes=153654 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+mad_baseline_v2=1.197 mad_v3=41.916
+MAD_OBSERVE above_hard_ref path=product_06.jpg mad=41.916
+PASS gemini_key_configured
+gemini_baseline_v2 total=65.0 passed=False noise=65 dof=60 light=62 color=65 overall=64
+gemini_v3 total=68.0 passed=False noise=None dof=None light=None color=None overall=None reason='rerank_pick'
+delta=3.0
+--- sample=product_07.jpg sha256=ecbddd1b3f8f9cb786366a3b7b89822b3cf32c1c1e951cb1a8d742b4603252ce bytes=89564 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+mad_baseline_v2=1.260 mad_v3=71.553
+MAD_OBSERVE above_hard_ref path=product_07.jpg mad=71.553
+PASS gemini_key_configured
+gemini_baseline_v2 total=67.0 passed=False noise=68 dof=65 light=68 color=65 overall=66
+gemini_v3 total=65.0 passed=False noise=None dof=None light=None color=None overall=None reason='rerank_pick'
+delta=-2.0
+--- sample=product_08.jpg sha256=c2552859fee9f886d7c02131bbcc6684ef5d375be40e197acea9e0c9e5e6bbfb bytes=516246 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+mad_baseline_v2=1.338 mad_v3=42.989
+MAD_OBSERVE above_hard_ref path=product_08.jpg mad=42.989
+PASS gemini_key_configured
+gemini_baseline_v2 total=49.0 passed=False noise=65 dof=45 light=50 color=60 overall=48
+gemini_v3 total=70.0 passed=False noise=None dof=None light=None color=None overall=None reason='rerank_pick'
+delta=21.0
+--- sample=product_09.jpg sha256=8e835b5b1e2a98b6d80ec61e516741583558fedfbdfb00bdf6bd30b05c92a8d2 bytes=35915 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+mad_baseline_v2=1.017 mad_v3=75.779
+MAD_OBSERVE above_hard_ref path=product_09.jpg mad=75.779
+PASS gemini_key_configured
+gemini_baseline_v2 total=70.0 passed=False noise=72 dof=68 light=70 color=71 overall=69
+gemini_v3 total=67.0 passed=False noise=None dof=None light=None color=None overall=None reason='rerank_pick'
+delta=-3.0
+--- sample=product_10.jpg sha256=15385e67cf90be1c43bf47e2194cb10fa7ebf51e3bf3fbd6a4098576ed29aae0 bytes=177615 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+mad_baseline_v2=1.202 mad_v3=43.812
+MAD_OBSERVE above_hard_ref path=product_10.jpg mad=43.812
+PASS gemini_key_configured
+gemini_baseline_v2 total=70.0 passed=False noise=68 dof=65 light=68 color=66 overall=69
+gemini_v3 total=68.0 passed=False noise=None dof=None light=None color=None overall=None reason='rerank_pick'
+delta=-2.0
+--- sample=product_11.jpg sha256=7957d9488a8573affc010968a530d0778725a697291f2e98275617333d5fe6c3 bytes=70647 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+mad_baseline_v2=1.428 mad_v3=52.741
+MAD_OBSERVE above_hard_ref path=product_11.jpg mad=52.741
+PASS gemini_key_configured
+gemini_baseline_v2 total=45.0 passed=False noise=60 dof=40 light=45 color=55 overall=40
+gemini_v3 total=58.0 passed=False noise=None dof=None light=None color=None overall=None reason='rerank_pick'
+delta=13.0
+--- sample=product_12.jpg sha256=38821c9c3084d8d7db4b170a3d0821339fcc4a5602d7c841c3f192bdb4520cea bytes=38092 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+mad_baseline_v2=1.469 mad_v3=65.374
+MAD_OBSERVE above_hard_ref path=product_12.jpg mad=65.374
+PASS gemini_key_configured
+gemini_baseline_v2 total=64.0 passed=False noise=65 dof=60 light=62 color=64 overall=63
+gemini_v3 total=58.0 passed=False noise=None dof=None light=None color=None overall=None reason='rerank_pick'
+delta=-6.0
+PASS dual_path_ran
+ALIGN_W1_BASELINE mean_baseline_v2=63.00 n=12
+ALIGN_W5 mean_v3=66.83 gain=3.83 target>=10
+PIPELINE_VERSION=s2-five-layer-3
+ALIGN_W3_EXIF focalplane_via_camera_specs=enabled empty_skip=enabled
+ALIGN_W4_ENCODE profile=s2-ecommerce-1 byte_floor=hard
+ALIGN_RELAX Q4_ca=on Q8_layer0=on Q11_mad=observe_only
+ALIGN_W5_E2E_SHORTFALL
+STOP: gain below Q1 threshold; do not lower PASS_SCORE; report bottleneck (sample/detector/architecture).
