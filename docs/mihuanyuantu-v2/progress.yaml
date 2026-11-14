@@ -36,8 +36,8 @@ vibe_coding:
     user_value: "同样本真 Gemini 均分相对 s2-five-layer-2 提升 ≥10；pipeline s2-five-layer-3"
     visible_output: "five_layer v3 + CA + Layer0 + ALIGN e2e 证据"
     verify: "/tmp/five-layer-legacy-align-e2e.log 含 ALIGN_W5_E2E_PASS"
-    status: pr_authorized_shortfall_deliver
-    next_user_action: "管理员授权推 PR（含 UX 文案 + ALIGN 研究/C1 代码与 SHORTFALL 证据）；本地预览验证。"
+    status: pr_open_local_preview
+    next_user_action: "PR #54 已开；本地预览 FE:3000 API:38000；合入须非作者账号（双账号）。"
   five_layer_legacy_align_2026_11_13:
     work_order: FIVE-LAYER-LEGACY-ALIGN
     branch: cursor/five-layer-legacy-align-9973
