@@ -139,6 +139,10 @@ class RealphotosDetectionResult(TenantBaseModel):
     color_realism: Mapped[int] = mapped_column(Integer, nullable=False)
     overall_realism: Mapped[int] = mapped_column(Integer, nullable=False)
     total_score: Mapped[int] = mapped_column(Integer, nullable=False)
+    # Snapshot of the pass line used for this report. Historical rows stay at the code default 75.
+    pass_score_threshold: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=75, server_default="75"
+    )
     passed: Mapped[bool] = mapped_column(Boolean, nullable=False)
     reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     detector: Mapped[str] = mapped_column(

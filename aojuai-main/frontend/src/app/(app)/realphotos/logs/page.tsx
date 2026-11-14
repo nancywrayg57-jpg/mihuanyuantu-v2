@@ -61,6 +61,7 @@ export default function RealphotosLogsPage() {
     <main className="space-y-4 p-6">
       <h1 className="text-lg font-medium">系统日志</h1>
       <p className="text-sm">{message}</p>
+      <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
       <ListSearch value={search} placeholder="操作者 / 目标 / 动作 / 原因" onChange={setSearch} />
       <table className="w-full border-collapse text-sm">
         <thead>
@@ -101,6 +102,7 @@ export default function RealphotosLogsPage() {
           ))}
         </tbody>
       </table>
+      </section>
     </main>
   )
 }

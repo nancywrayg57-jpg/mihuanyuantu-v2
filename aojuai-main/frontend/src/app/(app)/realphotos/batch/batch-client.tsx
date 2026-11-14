@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { gpsSubmitGuard } from '@/lib/realphotos-gps-submit'
 import { deviceTypeLabel } from '@/lib/realphotos-labels'
@@ -204,15 +205,21 @@ export function RealphotosBatchClient() {
 
   async function submitBatch() {
     if (frozen) {
-      setNotice('账号已因预审冻结，不能提交处理')
+      const text = '账号已因预审冻结，不能提交处理'
+      setNotice(text)
+      toastTask(text, false)
       return
     }
     if (!presetCode || library.length < 1 || library.length > 10) {
-      setNotice('须先选择库内资源 1–10 张，并完成类型→品牌→型号')
+      const text = '须先选择库内资源 1–10 张，并完成类型→品牌→型号'
+      setNotice(text)
+      toastTask(text, false)
       return
     }
     if (gpsSubmitBlocked) {
-      setNotice(`所选预设 GPS 不可用，已拦截提交：${gpsGuard.blockReason}`)
+      const text = `所选预设 GPS 不可用，已拦截提交：${gpsGuard.blockReason}`
+      setNotice(text)
+      toastTask(text, false)
       return
     }
     try {
@@ -229,9 +236,13 @@ export function RealphotosBatchClient() {
       )
       window.sessionStorage.setItem('realphotos.s4.batchId', data.batchId)
       if (data.tasks[0]) window.sessionStorage.setItem('realphotos.s1.taskId', data.tasks[0].id)
-      setNotice(`批次 ${data.batchId} 已提交，共 ${data.tasks.length} 张。到任务详情查看。`)
+      const text = `批次 ${data.batchId} 已提交，共 ${data.tasks.length} 张。到任务详情查看。`
+      setNotice(text)
+      toastTask(text, true)
     } catch (error: unknown) {
-      setNotice(error instanceof ApiError ? error.message : '批次提交失败')
+      const text = error instanceof ApiError ? error.message : '批次提交失败'
+      setNotice(text)
+      toastTask(text, false)
     }
   }
 
@@ -242,7 +253,7 @@ export function RealphotosBatchClient() {
         <p className="text-sm text-destructive">账号已冻结：可查看历史，不能提交新处理。</p>
       ) : null}
       <p className="text-sm">{notice}</p>
-      <section className="space-y-3">
+      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-medium">设备预设（类型 → 品牌 → 型号）</h2>
           <ListSearch value={presetSearch} placeholder="型号 / 品牌 / 编码" onChange={setPresetSearch} />
@@ -301,7 +312,7 @@ export function RealphotosBatchClient() {
           <p className="text-sm text-amber-700 dark:text-amber-400">将跳过 GPS：{gpsSkipHint}</p>
         ) : null}
       </section>
-      <section className="space-y-3">
+      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
         <h2 className="text-sm font-medium">待处理图片（库内资源）</h2>
         <p className="text-sm text-muted-foreground">
           <Link className="underline" href="/realphotos/library">
@@ -318,11 +329,11 @@ export function RealphotosBatchClient() {
               onChange={(event) => void onFile(event.target.files?.[0] || null)}
             />
           </label>
-          <button className="border px-3 py-1" type="button" disabled={frozen} onClick={() => void uploadToLibrary()}>
+          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1" type="button" disabled={frozen} onClick={() => void uploadToLibrary()}>
             上传并加入本批
           </button>
           <button
-            className="border px-3 py-1"
+            className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1"
             type="button"
             onClick={() =>
               setLibrary((prev) => {
@@ -338,7 +349,7 @@ export function RealphotosBatchClient() {
             移除最后一张
           </button>
           <button
-            className="border px-3 py-1"
+            className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1"
             type="button"
             disabled={frozen || gpsSubmitBlocked}
             onClick={() => void submitBatch()}

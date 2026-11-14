@@ -1,0 +1,41 @@
+/* Realphotos shell. Uses aojuai HSL tokens; radius/hover match prototype card + btn. */
+.realphotos-shell {
+  background: hsl(var(--muted) / 0.45);
+  min-height: 100%;
+}
+
+.realphotos-shell .rp-card {
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(18, 34, 51, 0.06);
+}
+
+.realphotos-shell .rp-btn,
+.realphotos-shell button {
+  border-radius: 10px;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.realphotos-shell .rp-btn:hover:not(:disabled),
+.realphotos-shell button:hover:not(:disabled) {
+  background-color: hsl(var(--accent));
+  border-color: hsl(var(--foreground) / 0.28);
+  box-shadow: 0 6px 14px rgba(23, 32, 44, 0.12);
+  transform: translateY(-1px);
+}
+
+.realphotos-shell .rp-btn:disabled,
+.realphotos-shell button:disabled {
+  transform: none;
+  box-shadow: none;
+}
+
+.realphotos-shell button:focus-visible,
+.realphotos-shell .rp-btn:focus-visible {
+  outline: 3px solid hsl(var(--ring) / 0.35);
+  outline-offset: 2px;
+}

@@ -194,22 +194,22 @@ export default function RealphotosWorkspacePage() {
 
       {view === 'merchant' && data?.cards ? (
         <section className="grid max-w-4xl grid-cols-2 gap-3 text-sm md:grid-cols-4">
-          <article className="border p-3">
+          <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
             <div>可用积分</div>
             <div className="text-lg">{cell(data.cards.availableInteger)}</div>
             <div className="text-muted-foreground">冻结 {cell(data.cards.reservedInteger)}</div>
           </article>
-          <article className="border p-3">
+          <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
             <div>进行中任务</div>
             <div className="text-lg">{cell(data.cards.activeTasks)}</div>
             <div className="text-muted-foreground">本账号处理中</div>
           </article>
-          <article className="border p-3">
+          <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
             <div>本月已完成</div>
             <div className="text-lg">{cell(data.cards.monthDelivered)}</div>
             <div className="text-muted-foreground">已交付真实计数</div>
           </article>
-          <article className="border p-3">
+          <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
             <div>未读消息</div>
             <div className="text-lg">{cell(data.cards.unreadMessages)}</div>
             <div className="text-muted-foreground">本账号收件箱</div>
@@ -218,7 +218,7 @@ export default function RealphotosWorkspacePage() {
       ) : null}
 
       {view === 'admin' && data?.opsMetrics ? (
-        <section>
+        <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm">
           <h2 className="mb-2 text-sm font-medium">运营指标</h2>
           <table className="w-full max-w-3xl border-collapse text-sm">
             <tbody>
@@ -262,7 +262,7 @@ export default function RealphotosWorkspacePage() {
       ) : null}
 
       {view === 'order_support' && data?.orderSupportDesk ? (
-        <section className="space-y-3">
+        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-medium">
               待处理充值单 · {data.orderSupportDesk.pendingRechargeOrders}
@@ -305,7 +305,7 @@ export default function RealphotosWorkspacePage() {
       ) : null}
 
       {view === 'tech_support' && data?.techSupportDesk ? (
-        <section className="space-y-3">
+        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-medium">待处理工单 · {data.techSupportDesk.openTickets}</h2>
             <Link className="text-sm underline" href="/realphotos/tech-desk">
@@ -352,7 +352,7 @@ export default function RealphotosWorkspacePage() {
       ) : null}
 
       {view === 'merchant' ? (
-        <section className="space-y-2">
+        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-medium">最近历史（本账号）</h2>
             <Link className="text-sm underline" href="/realphotos/tasks">
@@ -389,7 +389,7 @@ export default function RealphotosWorkspacePage() {
       ) : null}
 
       {view === 'merchant' ? (
-        <section className="space-y-2">
+        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
           <h2 className="text-sm font-medium">图片申诉（本租户）</h2>
           <p className="text-xs text-muted-foreground">可查看/创建申诉；无解冻入口。</p>
           <div className="flex flex-wrap gap-2 text-sm">
@@ -399,7 +399,7 @@ export default function RealphotosWorkspacePage() {
               value={appealReason}
               onChange={(event) => setAppealReason(event.target.value)}
             />
-            <button className="border px-3 py-1" type="button" onClick={() => void createAppeal()}>
+            <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1" type="button" onClick={() => void createAppeal()}>
               创建申诉
             </button>
           </div>

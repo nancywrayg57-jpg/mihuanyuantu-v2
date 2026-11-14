@@ -46,7 +46,7 @@ export default function RealphotosApiKeysPage() {
       <h1 className="text-xl font-medium">业务 API</h1>
       <p className="text-sm">{message}</p>
       <ListSearch value={search} placeholder="凭证名称" onChange={setSearch} />
-      <section className="space-y-3">
+      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
         <h2 className="text-sm font-medium">签发</h2>
         <label className="block text-sm">
           名称
@@ -61,15 +61,15 @@ export default function RealphotosApiKeysPage() {
             {name.toLowerCase().includes(search.trim().toLowerCase()) ? '名称已匹配搜索词' : '可按搜索词调整名称后再签发'}
           </p>
         ) : null}
-        <button className="border px-3 py-1 text-sm" type="button" onClick={() => void createKey()}>
+        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 text-sm" type="button" onClick={() => void createKey()}>
           创建凭证
         </button>
         {plaintext ? <p className="break-all text-sm">明文：{plaintext}</p> : null}
       </section>
-      <section className="space-y-2 text-sm">
+      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2 text-sm">
         <h2 className="font-medium">对接规范</h2>
         <button
-          className="border px-3 py-1"
+          className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1"
           type="button"
           onClick={() => {
             const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/+$/, '')

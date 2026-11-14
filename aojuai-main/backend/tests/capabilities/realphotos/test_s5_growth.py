@@ -407,3 +407,158 @@ async def test_image_processing_key_allows_processing_paths_only(db):
     await ApiKeyService.revoke_key(db, ctx["tenant"], ctx["user"], int(_key.id))
     with pytest.raises(UnauthorizedError):
         await ApiKeyService.validate_key(db, plaintext, "/api/v1/realphotos/assets")
+
+
+@pytest.mark.asyncio
+async def test_generation_seed_capability_disables_gap_and_keeps_backstop(db):
+    """T3: gpt-image-2 gap-not-sent is not editable; a forced seed still returns SEED_UNSUPPORTED."""
+    import inspect
+
+    from fastapi import FastAPI
+    from httpx import ASGITransport, AsyncClient
+    from sqlalchemy import select as sa_select
+
+    from app.api.deps import TenantContext, get_current_user, get_db, get_tenant_context
+    from app.capabilities.realphotos.api.s5 import create_generation, generation_capabilities
+    from app.capabilities.realphotos.api.s5 import router as s5_router
+    from app.capabilities.realphotos.models.supplier_contract import RealphotosProviderContract
+    from app.capabilities.realphotos.services.supplier_config import (
+        RealphotosSupplierConfigService,
+        seed_capability_supported,
+    )
+
+    ctx = await _funded(db)
+    config = RealphotosSupplierConfigService(db)
+    view = await config.generation_seed_capability()
+    assert view == {
+        "duty": "generation",
+        "modelId": "gpt-image-2",
+        "seed": "gap-not-sent",
+        "seedSupported": False,
+        "seedNote": view["seedNote"],
+    }
+    assert view["seedSupported"] is False
+    assert "gpt-image-2" in view["seedNote"]
+    assert "gap-not-sent" in view["seedNote"]
+    dumped = json.dumps(view)
+    assert "sk-" not in dumped
+    assert "baseUrl" not in view
+    assert "apiKey" not in view
+    assert "credentialRef" not in view
+    assert "keyPrefix" not in view
+
+    row = (
+        await db.execute(sa_select(RealphotosProviderContract).where(RealphotosProviderContract.duty == "generation"))
+    ).scalar_one()
+    assert "gpt-image-2" in row.gap_note
+    assert "gap-not-sent" in row.gap_note
+    row.enabled = True
+    await db.flush()
+
+    with pytest.raises(BusinessError) as gap:
+        await ctx["growth"].submit_generation(
+            tenant_id=ctx["tenant"],
+            owner_account_id=ctx["user"],
+            mode="text_to_image",
+            positive_prompt="带种子",
+            width=256,
+            height=256,
+            quantity=1,
+            idempotency_key="gen-seed-gap",
+            seed="42",
+        )
+    assert gap.value.code == "SEED_UNSUPPORTED"
+
+    with pytest.raises(BusinessError) as fixture_seed:
+        await ctx["growth"].submit_generation(
+            tenant_id=ctx["tenant"],
+            owner_account_id=ctx["user"],
+            mode="text_to_image",
+            positive_prompt="夹具种子",
+            width=256,
+            height=256,
+            quantity=1,
+            idempotency_key="gen-seed-fixture",
+            provider="fixture",
+            seed="7",
+        )
+    assert fixture_seed.value.code == "SEED_UNSUPPORTED"
+
+    caps = dict(row.capabilities or {})
+    caps["adminManaged"] = True
+    caps["seed"] = "supported"
+    row.capabilities = caps
+    await db.flush()
+    opened = await config.generation_seed_capability()
+    assert opened["seed"] == "supported"
+    assert opened["seedSupported"] is True
+    assert seed_capability_supported({"seed": "supported"}) is True
+    assert seed_capability_supported({"seed": "gap-not-sent"}) is False
+    assert seed_capability_supported({"seed": "unsupported"}) is False
+    assert seed_capability_supported({"seed": "false"}) is False
+    assert seed_capability_supported({}) is False
+    assert seed_capability_supported({"seed": True}) is True
+
+    caps["seed"] = "gap-not-sent"
+    row.capabilities = caps
+    row.enabled = True
+    await db.flush()
+
+    app = FastAPI()
+    app.include_router(s5_router, prefix="/api/v1/realphotos")
+
+    async def _user():
+        return type("UserStub", (), {"id": ctx["user"], "is_superuser": False})()
+
+    async def _tenant():
+        return TenantContext(
+            tenant_id=ctx["tenant"],
+            is_superuser=False,
+            user_tenant_id=ctx["tenant"],
+        )
+
+    async def _session():
+        yield db
+
+    async def _allow():
+        return None
+
+    app.dependency_overrides[get_current_user] = _user
+    app.dependency_overrides[get_tenant_context] = _tenant
+    app.dependency_overrides[get_db] = _session
+    for endpoint in (generation_capabilities, create_generation):
+        for param in inspect.signature(endpoint).parameters.values():
+            dependency = getattr(param.default, "dependency", None)
+            if dependency is not None and dependency not in {get_current_user, get_db, get_tenant_context}:
+                app.dependency_overrides[dependency] = _allow
+
+    @app.exception_handler(BusinessError)
+    async def _business_error(_request, exc: BusinessError):
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse(status_code=exc.status_code, content={"code": exc.code, "message": exc.message})
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        listed = await client.get("/api/v1/realphotos/generation-capabilities")
+        assert listed.status_code == 200, listed.text
+        body = listed.json()["data"]
+        assert body["seedSupported"] is False
+        assert body["seed"] == "gap-not-sent"
+        assert body["modelId"] == "gpt-image-2"
+        assert "baseUrl" not in body
+        assert "apiKey" not in body
+        forced = await client.post(
+            "/api/v1/realphotos/generation-tasks",
+            json={
+                "mode": "text_to_image",
+                "positivePrompt": "强制种子",
+                "width": 256,
+                "height": 256,
+                "quantity": 1,
+                "idempotencyKey": "gen-seed-http",
+                "seed": "99",
+            },
+        )
+        assert forced.status_code == 400, forced.text
+        assert forced.json()["code"] == "SEED_UNSUPPORTED"

@@ -213,6 +213,21 @@ async def _generation_body(request: Request) -> tuple[GenerationBody, bytes | No
     return GenerationBody.model_validate(await request.json()), None
 
 
+@router.get("/generation-capabilities")
+async def generation_capabilities(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([WORKSPACE_READ])),
+) -> dict[str, Any]:
+    """Seed capability for the generate form. No API keys, base URLs, or credential refs."""
+    _ = current_user, tenant_ctx
+    from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
+
+    payload = await RealphotosSupplierConfigService(db).generation_seed_capability()
+    return SuccessResponse(data=payload)
+
+
 @router.get("/generation-tasks")
 async def list_generation_tasks(
     current_user: CurrentUser,

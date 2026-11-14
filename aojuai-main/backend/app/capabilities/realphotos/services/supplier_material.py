@@ -11,6 +11,8 @@ _SECTIONS = {
     "generation": "ChatGPT IMAGE 2",
     "prompt_opt": "Deepseek API",
     "pre_review": "阿里百炼大模型",
+    # Material file title is misspelled; keep exact heading match.
+    "final_detection": "Gemin Vision API",
 }
 
 
@@ -29,12 +31,19 @@ def import_staging_enabled() -> bool:
 
 
 def material_paths() -> list[Path]:
+    """Prefer 生产物料 markdown beside this checkout, then sibling primary repo.
+
+    Parallel git worktrees often lack a local ``生产物料/`` copy; keys still live
+    under the primary ``mihuanyuantu-v2/生产物料/蜜獾原图v2-生产物料.md``.
+    """
     here = Path(__file__).resolve()
     repo = here.parents[6]
+    parent = repo.parent
     name = "蜜獾原图v2-生产物料.md"
     return [
         repo / "生产物料" / name,
-        repo.parent / "生产物料" / name,
+        parent / "生产物料" / name,
+        parent / "mihuanyuantu-v2" / "生产物料" / name,
     ]
 
 

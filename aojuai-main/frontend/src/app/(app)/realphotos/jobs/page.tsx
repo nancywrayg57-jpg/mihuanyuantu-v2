@@ -4,8 +4,10 @@
 export default function RealphotosJobsStubPage() {
   return (
     <main className="p-6">
+      <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm">
       <h1 className="text-lg font-medium">蜜獾原图 · 执行队列</h1>
       <p className="mt-2 text-sm text-muted-foreground">S0 地基已就绪，业务界面将在后续里程碑接入。</p>
+      </section>
     </main>
   )
 }

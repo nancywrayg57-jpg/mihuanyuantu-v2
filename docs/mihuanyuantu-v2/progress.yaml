@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "LIBRARY-ASSET-PURGE：删除覆盖对象副本 + 孤儿清理"
-    user_value: "资源库删除真正清盘；历史软删/无行孤儿一并清"
-    visible_output: "soft_delete_asset→storage.delete；cleanup_library_orphans；POST /assets/cleanup-orphans"
-    verify: "/tmp/library-asset-purge-e2e.log 含 LIBRARY_ASSET_PURGE_E2E_PASS"
+    goal: "OPS-SUPPLIER-KEY-UX：多 Key、厂商级联、检测基线独立页签"
+    user_value: "系统管理可登记渠道 Key、厂商/模型级联；检测基线单独页签"
+    visible_output: "provider-contracts 多 Key；generation-capabilities；detection-pass-score；系统管理「检测基线」页签"
+    verify: "/tmp/ops-supplier-key-ux-e2e.log 含 OPS_SUPPLIER_KEY_UX_E2E_PASS"
     status: coded_e2e_pass_pr_pending
-    next_user_action: "推 library-asset-purge PR；非作者 Owner squash；不得开 S7。"
+    next_user_action: "非作者 Owner squash 合并 OPS-SUPPLIER-KEY-UX PR；PG 需 realphotos_0005；不得开 S7。"
   library_asset_purge_2026_11_13:
     work_order: LIBRARY-ASSET-PURGE
     branch: cursor/library-asset-purge-9973
@@ -273,11 +273,30 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "AUDIT-REMAIN-CLOSEOUT 端测 PASS；推 PR 待非作者 Owner squash。R9_S7_BLOCKED；OUT_ND012_SKIPPED；不得开 S7；不得自评自合。"
-  work_order: "AUDIT-REMAIN-CLOSEOUT-2026-11-11 docs/mihuanyuantu-v2/input/AUDIT-REMAIN-CLOSEOUT-2026-11-11.md"
-  prior_work_order: "REMAIN-GAP W3+W4 已合入 #49"
-  branch: cursor/audit-remain-closeout-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/50"
+  action: "OPS-SUPPLIER-KEY-UX PR #53 待非作者 Owner squash；PG 需 realphotos_0005；不得开 S7；不得自评自合。"
+  work_order: "OPS-SUPPLIER-KEY-UX-2026-11-13 docs/mihuanyuantu-v2/input/OPS-SUPPLIER-KEY-UX-2026-11-13.md"
+  prior_work_order: "FIVE-LAYER-LEGACY-ALIGN 由另一会话推进；本会话独立 worktree"
+  branch: cursor/ops-supplier-key-ux-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/53"
+  worktree: /home/hbs/hbs-projects/mihuanyuantu-v2-ops-supplier-ux
+  baseline_main: bb79bfb
+  constraint_ledger: docs/mihuanyuantu-v2/input/OPS-SUPPLIER-KEY-UX-constraint-ledger.md
+  e2e_log: /tmp/ops-supplier-key-ux-e2e.log
+  evidence_marker: OPS_SUPPLIER_KEY_UX_E2E_PASS
+  production_billing: false
+  r9_s7: blocked
+  ops_supplier_key_ux_status:
+    T1_provider_cascade: done_e2e_pass
+    T2_multi_key: done_e2e_pass
+    T3_seed_capability: done_e2e_pass
+    T4_pass_score_admin: done_e2e_pass
+    T5_style_toast: done_e2e_pass
+    audit_main: pass
+    browser_visual: not_run_no_node_modules
+    secrets_store: ".secrets/ (gitignored); not committed"
+    material_path: "/home/hbs/hbs-projects/mihuanyuantu-v2/生产物料/蜜獾原图v2-生产物料.md"
+    migration_note: "realphotos_0005 for platform settings + detection pass_score_threshold"
+  prior_pr_audit_remain: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/50"
   prior_branch: cursor/remain-gap-w3w4-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/49"
   audit_remain_closeout_status:

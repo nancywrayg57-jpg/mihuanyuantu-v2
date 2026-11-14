@@ -60,6 +60,7 @@ export default function RealphotosWalletPage() {
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">积分与充值</h1>
       <p className="text-sm text-muted-foreground">{message}</p>
+      <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm">
       <table className="w-full text-sm">
         <thead>
           <tr>
@@ -78,7 +79,8 @@ export default function RealphotosWalletPage() {
           </tr>
         </tbody>
       </table>
-      <section className="space-y-3">
+      </section>
+      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
         <h2 className="text-sm font-medium">充值档位</h2>
         <div className="flex flex-wrap items-end gap-3">
           <label className="text-sm">
@@ -103,12 +105,12 @@ export default function RealphotosWalletPage() {
               onChange={(event) => setNote(event.target.value)}
             />
           </label>
-          <button className="border px-3 py-1 text-sm" type="button" onClick={() => void createOrder()}>
+          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 text-sm" type="button" onClick={() => void createOrder()}>
             提交充值单
           </button>
         </div>
       </section>
-      <section className="space-y-3">
+      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-medium">流水</h2>
           <ListSearch value={search} placeholder="流水 / 类型 / 账号" onChange={setSearch} />

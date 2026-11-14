@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch } from '@/lib/api'
 import { taskStatusLabel } from '@/lib/realphotos-labels'
 
@@ -33,22 +34,40 @@ export default function RealphotosOrderSupportPage() {
   }, [])
 
   async function confirm(id: string) {
-    await apiFetch(`/api/v1/realphotos/recharge-orders/${id}/confirm`, { method: 'POST' })
-    setMessage(`已确认 ${id}`)
-    await reload()
+    try {
+      await apiFetch(`/api/v1/realphotos/recharge-orders/${id}/confirm`, { method: 'POST' })
+      const text = `已确认 ${id}`
+      setMessage(text)
+      toastTask(text, true)
+      await reload()
+    } catch (error: unknown) {
+      const text = error instanceof ApiError ? error.message : '确认失败'
+      setMessage(text)
+      toastTask(text, false)
+    }
   }
 
   async function reject(id: string) {
     if (!reason.trim()) {
-      setMessage('拒单必须填写原因')
+      const text = '拒单必须填写原因'
+      setMessage(text)
+      toastTask(text, false)
       return
     }
-    await apiFetch(`/api/v1/realphotos/recharge-orders/${id}/reject`, {
-      method: 'POST',
-      body: JSON.stringify({ reason }),
-    })
-    setMessage(`已拒单 ${id}`)
-    await reload()
+    try {
+      await apiFetch(`/api/v1/realphotos/recharge-orders/${id}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      })
+      const text = `已拒单 ${id}`
+      setMessage(text)
+      toastTask(text, true)
+      await reload()
+    } catch (error: unknown) {
+      const text = error instanceof ApiError ? error.message : '拒单失败'
+      setMessage(text)
+      toastTask(text, false)
+    }
   }
 
   const visibleOrders = useMemo(
@@ -72,7 +91,7 @@ export default function RealphotosOrderSupportPage() {
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">订单客服</h1>
       <p className="text-sm text-muted-foreground">{message}</p>
-      <section className="space-y-3">
+      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-medium">充值单</h2>
           <ListSearch value={search} placeholder="单号 / 租户 / 凭证" onChange={setSearch} />
@@ -112,10 +131,10 @@ export default function RealphotosOrderSupportPage() {
                   <td>{order.voucherNote}</td>
                   <td>{taskStatusLabel(order.status)}</td>
                   <td className="space-x-2">
-                    <button className="border px-2 py-1" type="button" onClick={() => void confirm(order.id)}>
+                    <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" onClick={() => void confirm(order.id)}>
                       确认到账
                     </button>
-                    <button className="border px-2 py-1" type="button" onClick={() => void reject(order.id)}>
+                    <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" onClick={() => void reject(order.id)}>
                       拒单
                     </button>
                   </td>
