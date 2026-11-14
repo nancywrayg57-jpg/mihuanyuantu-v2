@@ -3,9 +3,10 @@
 ## 1. 一分钟接手
 
 **工单** `DET-SCORE-OPTIMIZE`（承接 ALIGN）  
-**分支** `cursor/five-layer-legacy-align-9973`  
+**分支** `cursor/det-score-hemostasis-9973`（自 `main` 仅止血提交）  
+**PR** https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/55  
 **代码** OPEN_PARTIAL（CA=0、Layer0 默认关、async 它线程）；R4 **仅 env 覆写**可测；**未把 R4 写成默认**  
-**推送** 管理员授权：SHORTFALL 下推送止血（对齐 CI 后 push 本分支 / 更新 PR）  
+**推送** 已 push；Q1 仍 SHORTFALL，不宣称 W5 PASS  
 **消融 W** 8mm mean_v3=**62.17**（史≈49 回升）；gain_vs_v2=**−4.08**；色差 reason **0/12**  
 **R4** mean_r4=**63.0**（Δ vs W +0.83）→ **P-V3-OVERDRIVE NOT_CONFIRMED**  
 **协议 C** mean_v3=**66.92** gain=**+1.17** → **`ALIGN_W5_E2E_SHORTFALL`**；Q1 仍 **UNPROVEN**  
@@ -28,6 +29,6 @@
 
 ## 4. 下一步（需管理员）
 
-1. ~~SHORTFALL 下推送止血~~ → **已授权并执行**（本会话）  
-2. Owner 审 PR / squash 合入（作者不得自评自合）  
+1. ~~SHORTFALL 下推送止血~~ → **已 push** · PR #55  
+2. **非作者账号**审合 #55（squash；作者不得自评自合）  
 3. 是否改裁 Q1——**不得**借 SHORTFALL 放宽 PASS_SCORE；是否另开新测量门禁（不得升 R4 默认）
