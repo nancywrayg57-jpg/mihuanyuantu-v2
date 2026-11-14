@@ -79,8 +79,13 @@ def main() -> int:
     must("failureMessage" in tasks, "E-F2_failureMessage_ui")
     must("failedTags" in tasks, "E-F2_exif_failed_tags_ui")
     must("passScoreThreshold" in tasks or "DETECTION_PASS_SCORE" in tasks, "E-F2_threshold_ui")
-    must("通过线" in tasks, "E-F2_pass_line_copy")
-    must("detectionNotPassedExplanation" in labels and "未达通过线" in labels, "E-F3_scheme_A_copy")
+    must("需达到" in tasks, "E-F2_pass_line_copy")
+    must(
+        "detectionNotPassedExplanation" in labels and "需达到" in labels,
+        "E-F3_scheme_A_copy",
+    )
+    must("detectionFailureGuidance" in labels and "优化方向" in tasks, "E-F3_optimization_copy")
+    must("预设名称" in tasks and "presetDisplayName" in labels, "E-F3_preset_name_copy")
     must("platformGateExplanation" in s1_proc, "E-F2_api_platform_gate")
     must("failure_detail" in s1_proc, "E-F2_snapshot_kind")
     must("failureMessage" in s1_api and "_enrich_task_detail" in s1_api, "E-F2_api_enrich")

@@ -9,7 +9,7 @@
 | --- | --- | --- | --- |
 | imagePhysicalizer | `isoToNoiseSigma=0.5√(ISO/100)` | 阻尼曲线顶 1.85 | 加强但仍封顶 2.40 |
 | imagePhysicalizer | `apertureToVignettingStrength` 最大 0.35 | 无暗角 | 弱暗角，角点压暗 ≤~8% |
-| imagePhysicalizer | 色差 composite 缺陷 | 无 | **禁止**（Q4） |
+| imagePhysicalizer | 色差 composite 缺陷 | 无 | **允许受控弱色差**（Q4 复裁）；禁止搬旧烂桩（丢弃 composite + 仅饱和度×1.02） |
 | imagePhysicalizer | JPEG 重压 / 锐化 | 无 | 弱锐化 + 中间 JPEG 重压（Q5） |
 | frequencyProcessor | 逐行 1D FFT，低频 5% 保护，相位扰动 ~0.004 | 仅 2D rfft2 | 保留 2D + **新增 1D 对照路径** |
 | fingerprintDestroyer | 稀疏像素；另有几何/调色 | 稀疏 512 | 稀疏增强；极弱频谱；**禁几何/可见调色** |

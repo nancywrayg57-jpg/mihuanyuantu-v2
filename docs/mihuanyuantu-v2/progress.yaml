@@ -36,8 +36,8 @@ vibe_coding:
     user_value: "同样本真 Gemini 均分相对 s2-five-layer-2 提升 ≥10；pipeline s2-five-layer-3"
     visible_output: "five_layer v3 + CA + Layer0 + ALIGN e2e 证据"
     verify: "/tmp/five-layer-legacy-align-e2e.log 含 ALIGN_W5_E2E_PASS"
-    status: coding_e2e_in_progress
-    next_user_action: "等待复裁后 W5；通过后开 PR；不得开 S7。"
+    status: pr_authorized_shortfall_deliver
+    next_user_action: "管理员授权推 PR（含 UX 文案 + ALIGN 研究/C1 代码与 SHORTFALL 证据）；本地预览验证。"
   five_layer_legacy_align_2026_11_13:
     work_order: FIVE-LAYER-LEGACY-ALIGN
     branch: cursor/five-layer-legacy-align-9973
@@ -49,9 +49,27 @@ vibe_coding:
     w2_pixel_fft: coded
     w3_exif: coded
     w4_encode: coded
-    w5_e2e: rerunning_after_relax
+    w5_e2e: SHORTFALL
+    w5_gain_best: 3.83
+    w5_gain_c1_zh_n12: 1.00
+    w5_gain_blend012_n6: 2.50
+    w5_alpha_scan_best_n4: 2.25
     w5_gain_target: 10
-    w6_pr: blocked_until_w5_pass
+    w5_evidence: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-e2e-layer0-2026-11-13.txt
+    w5_evidence_c1: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-e2e-c1-zh-2026-11-14.txt
+    w5_bottleneck: "C1 zh prompts measured gain=1.00; no remaining equal-weight untested in-contract lever"
+    admin_pr_override_2026_11_14: "admin asked to end and open PR with this round + UX copy; not claiming W5 PASS"
+    research_2026_11_14:
+      legacy_clone: /home/hbs/hbs-projects/_refs/mihuanyuantu@4a3f2ade
+      aiImageProcessor_sha256: 37ca598b8bb3af49fd3dcd454b7118788ac24208dc105b6406dcfde58af5b9fb
+      conflicts_ledger: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-research-conflicts-2026-11-14.md
+      feasibility_draft: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-feasibility-draft-2026-11-14.md
+      subagents_failed_quota: [e29da127-5555-474e-8ad6-b4cadfd485c3, f127ff19-5aa3-41bd-a900-eae3498d0f79]
+      subagents_rerun_grok: [d5c7bd66-1b73-40b3-a88a-0d44cfff9721, d167f4fc-3c9f-4a3c-ab7b-0609819226ce]
+      coding_gate: CLOSED_after_c1_shortfall
+      feasibility_gate: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-feasibility-gate-2026-11-14.md
+      e2e_round: c1_zh_prompts_blend_alpha_1
+    w6_pr: blocked_q12_shortfall
     constraint_ledger: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-constraint-ledger.md
     sample_sha256: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-sample-sha256.json
     e2e_log: /tmp/five-layer-legacy-align-e2e.log
@@ -59,6 +77,8 @@ vibe_coding:
     production_billing: false
     r9_s7: blocked
     pass_score_unchanged: 75
+
+
   library_asset_purge_2026_11_13:
     work_order: LIBRARY-ASSET-PURGE
     branch: cursor/library-asset-purge-9973

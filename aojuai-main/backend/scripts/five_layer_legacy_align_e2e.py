@@ -46,6 +46,7 @@ def _load_samples(limit: int) -> list[Path]:
 def _preset() -> dict:
     return {
         "code": "align-e2e-phone",
+        "deviceType": "phone",
         "brand": "Apple",
         "model": "iPhone 15 Pro",
         "iso": "400",
@@ -70,7 +71,7 @@ def _run_pipeline(
     freq_mode: str = "hybrid",
     algorithm: str = "v3",
     score_fn=None,
-) -> tuple[bytes, float, int | None]:
+) -> tuple[bytes, float, int | None, dict | None]:
     import io
 
     import numpy as np
@@ -101,7 +102,7 @@ def _run_pipeline(
         len(out.jpeg) >= len(source) or not source.startswith(b"\xff\xd8\xff"),
         f"byte_floor_{version}",
     )
-    return out.jpeg, float(mad), out.detector_score
+    return out.jpeg, float(mad), out.detector_score, out.detector_report
 
 
 def _gemini(jpeg: bytes) -> dict:
@@ -122,19 +123,35 @@ def _gemini(jpeg: bytes) -> dict:
 
 
 def main() -> int:
+    import os
+
+    # Meta/Clash Fake-IP: clear Cursor sandbox HTTP(S)_PROXY so aoju + Gemini both
+    # egress via TUN (trust_env=False generation client + urllib Gemini).
+    for key in list(os.environ):
+        if "proxy" in key.lower():
+            os.environ.pop(key, None)
+    os.environ["NO_PROXY"] = "*"
+    os.environ["no_proxy"] = "*"
+    os.environ.setdefault("ALIGN_LAYER0_IMG2IMG", "1")
+    # Gate 2026-11-14: α=1.0 matches legacy full-replace (strength never entered API).
+    os.environ.setdefault("ALIGN_LAYER0_BLEND_ALPHA", "1.0")
+
     LOG.write_text("", encoding="utf-8")
     note("=== FIVE-LAYER-LEGACY-ALIGN e2e ===")
     note(f"ts={time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}")
     note("production_billing=false")
     note(f"sample_dir={SAMPLE_DIR}")
     note(f"sample_inventory={SAMPLE_JSON}")
+    note(
+        "net=meta_fakeip_clear_proxy layer0_img2img=on "
+        f"blend_alpha={os.environ.get('ALIGN_LAYER0_BLEND_ALPHA')} "
+        "prompts=legacy_zh_c1 ca_sat_nudge=off"
+    )
 
     sys.path.insert(0, str(BACKEND))
     from dotenv import load_dotenv
 
     load_dotenv(BACKEND / ".env")
-
-    import os
 
     limit = int(os.environ.get("ALIGN_SAMPLE_N") or DEFAULT_N)
     if str(os.environ.get("ALIGN_FULL") or "") == "1":
@@ -162,12 +179,15 @@ def main() -> int:
         sha = hashlib.sha256(raw).hexdigest()
         note(f"--- sample={path.name} sha256={sha} bytes={len(raw)} ---")
 
-        # Dual-path evidence on first sample: 2d vs 1d vs hybrid sizes equal.
+        # Dual-path evidence on first sample: 2d vs 1d vs hybrid (no img2img on these modes).
         if idx == 0:
-            j2d, mad2d, _ = _run_pipeline(raw, version="2d", freq_mode="2d", algorithm="v3")
-            j1d, mad1d, _ = _run_pipeline(raw, version="1d", freq_mode="1d", algorithm="v3")
-            jh, madh, _ = _run_pipeline(raw, version="hybrid", freq_mode="hybrid", algorithm="v3")
-            note(f"dual_path mad_2d={mad2d:.3f} mad_1d={mad1d:.3f} mad_hybrid={madh:.3f}")
+            j2d, mad2d, _, _ = _run_pipeline(raw, version="2d", freq_mode="2d", algorithm="v3")
+            j1d, mad1d, _, _ = _run_pipeline(raw, version="1d", freq_mode="1d", algorithm="v3")
+            jh, madh, _, _ = _run_pipeline(raw, version="hybrid", freq_mode="hybrid", algorithm="v3")
+            note(
+                "dual_path note=no_img2img multipliers_may_be_0.85_damped "
+                f"mad_2d={mad2d:.3f} mad_1d={mad1d:.3f} mad_hybrid={madh:.3f}"
+            )
             note(f"dual_path bytes_2d={len(j2d)} bytes_1d={len(j1d)} bytes_hybrid={len(jh)}")
             note(
                 f"MAD_OBSERVE prefer={FIDELITY_MAD_MAX} hard_ref={FIDELITY_MAD_HARD_MAX} "
@@ -176,15 +196,23 @@ def main() -> int:
             dual_path_ok = True
             note("ALIGN_W2_PIXEL_FFT dual_path_evidence_ok")
 
-        base_jpeg, mad_b, _ = _run_pipeline(raw, version="baseline_v2", freq_mode="2d", algorithm="v2")
+        base_jpeg, mad_b, _, _ = _run_pipeline(
+            raw, version="baseline_v2", freq_mode="2d", algorithm="v2"
+        )
         try:
-            v3_jpeg, mad_v, picked = _run_pipeline(
+            from app.capabilities.realphotos.services import five_layer as _fl
+
+            if hasattr(_fl._maybe_layer0_img2img, "last_note"):
+                delattr(_fl._maybe_layer0_img2img, "last_note")
+            v3_jpeg, mad_v, picked, rep_pick = _run_pipeline(
                 raw,
                 version="v3",
                 freq_mode="auto",
                 algorithm="v3",
                 score_fn=_gemini,
             )
+            layer0_note = getattr(_fl._maybe_layer0_img2img, "last_note", None)
+            note(f"layer0_note={layer0_note!r}")
         except Exception as exc:  # noqa: BLE001
             note(f"FAIL v3_pipeline err={exc}")
             raise SystemExit(3) from exc
@@ -203,9 +231,18 @@ def main() -> int:
             raise SystemExit(3) from exc
 
         sb = float(rep_b["total_score"])
-        if picked is not None:
-            sv = float(picked)
-            rep_v = {"total_score": int(picked), "passed": int(picked) >= 75, "reason": "rerank_pick"}
+        # C9: prefer full detector_report from rerank; never invent empty five-dim shell.
+        if isinstance(rep_pick, dict) and "total_score" in rep_pick:
+            rep_v = rep_pick
+            sv = float(rep_v["total_score"])
+        elif picked is not None:
+            try:
+                rep_v = _gemini(v3_jpeg)
+            except Exception as exc:  # noqa: BLE001
+                note(f"FAIL gemini_call err={exc}")
+                raise SystemExit(3) from exc
+            sv = float(rep_v["total_score"])
+            note(f"rerank_score_only={picked} refreshed_full_report=true")
         else:
             try:
                 rep_v = _gemini(v3_jpeg)
@@ -239,6 +276,7 @@ def main() -> int:
     note("ALIGN_W3_EXIF focalplane_via_camera_specs=enabled empty_skip=enabled")
     note("ALIGN_W4_ENCODE profile=s2-ecommerce-1 byte_floor=hard")
     note("ALIGN_RELAX Q4_ca=on Q8_layer0=on Q11_mad=observe_only")
+    note("ALIGN_GATE_2026_11_14 C1_zh_prompts C4_no_ca_sat C9_keep_five_dim")
 
     if gain >= 10.0:
         note("ALIGN_W5_E2E_PASS")

@@ -72,6 +72,8 @@ class FiveLayerOutput:
     width: int
     height: int
     detector_score: int | None = None
+    # Full Gemini (or score_fn) report for the winning pack; C9 measurement.
+    detector_report: dict | None = None
 
 
 def _byte_floor(source: bytes) -> int:
@@ -177,7 +179,11 @@ def _layer0_optical(arr: np.ndarray, rng: np.random.Generator, *, strength: floa
 def _apply_chromatic_aberration(
     arr: np.ndarray, *, focal_length: object, intensity: float = 1.0
 ) -> np.ndarray:
-    """Legacy-inspired R/B channel shift (Q4). Keeps width/height unchanged."""
+    """Legacy-inspired R/B channel shift (Q4). Keeps width/height unchanged.
+
+    Does **not** apply the old physicalizer saturation×1.02 fallback (C4 / Q7):
+    that path discarded real channel composites and only nudged color.
+    """
     ca = float(focal_length_to_ca_strength(focal_length)) * float(intensity) * float(_CA_INTENSITY)
     # Python banker's round(0.5)==0 would skip mid-focal CA; use ceil for measurable shift.
     shift = int(math.ceil(ca * 0.55)) if ca >= 0.35 else 0
@@ -191,18 +197,103 @@ def _apply_chromatic_aberration(
     inner_w = max(1, width - 2 * shift)
     inner_h = max(1, height - 2 * shift)
     b_small = b_ch.resize((inner_w, inner_h), Image.Resampling.BICUBIC)
-    b_canvas = Image.new("L", (width, height), color=0)
+    # Fill with mid-gray (128) instead of 0 to avoid black rim MAD spikes (audit C5 note).
+    b_canvas = Image.new("L", (width, height), color=128)
     b_canvas.paste(b_small, (shift, shift))
     merged = Image.merge("RGB", (r_ch, g_ch, b_canvas))
-    # Legacy fallback also nudged saturation slightly.
-    arr_out = np.asarray(merged, dtype=np.float32)
-    mean = np.mean(arr_out, axis=2, keepdims=True)
-    arr_out = mean + (arr_out - mean) * 1.02
-    return np.clip(arr_out, 0, 255)
+    return np.asarray(merged, dtype=np.float32)
+
+
+# Legacy Layer0 prompts from clone aiImageProcessor.ts DEFAULT_PROMPTS (C1).
+# Geometry (barrel distortion) stripped; saturation clauses rewritten per gate 裁决 A.
+# action category intentionally omitted (Q7 geometry).
+_LAYER0_LEGACY_PROMPTS: dict[str, dict[str, str]] = {
+    "phone": {
+        "positive": (
+            "保留原始画面构图与商品主体完全不变，添加真实智能手机计算摄影直出质感；"
+            "仅增加：暗部区域轻微彩色噪点（模拟手机CMOS高感光度噪点）、边缘轻微过锐化白边、"
+            "纯色背景轻微色阶断层与降噪涂抹痕迹，色彩统计贴近手机计算摄影直出特征且不进行"
+            "可见的全局调色，整体带有计算摄影的轻微过锐与快拍随意感，不改变商品外形、"
+            "商标文字与版型。"
+        ),
+        "negative": (
+            "AI生成痕迹，过度平滑，蜡像感，卡通感，单反景深虚化，胶片颗粒，过度降噪，"
+            "人工合成感，完美无瑕表面，过度饱和，明显的后期修图痕迹。"
+        ),
+    },
+    "dslr": {
+        "positive": (
+            "保留原始画面构图与商品主体完全不变，添加真实单反相机拍摄质感，大光圈f/2.8光学景深效果；"
+            "仅增加：暗部轻微亮度噪点颗粒（模拟高ISO真实噪点）、高光边缘细微紫边与轴向色差、"
+            "画面四角自然暗角、微弱柔和的自然阴影变化与局部高光溢出（增强光线真实感），"
+            "色彩统计贴近数码相机原生直出特征且不进行可见的全局调色，呈现RAW底片未调色质感，"
+            "保证面料纹理锐利清晰、表面保留自然细节，不改变商品外形、商标文字与版型。"
+        ),
+        "negative": (
+            "AI生成痕迹，过度平滑，蜡像感，卡通感，过度锐化，过度降噪，人工合成感，"
+            "完美无瑕表面，过度饱和，HDR过度处理，明显的后期修图痕迹。"
+        ),
+    },
+    "mirrorless": {
+        "positive": (
+            "保留原始画面构图与商品主体完全不变，添加真实无反相机拍摄质感，大光圈f/1.8光学景深效果；"
+            "仅增加：暗部轻微亮度噪点颗粒（模拟高ISO真实噪点）、高光边缘细微紫边与轴向色差、"
+            "画面四角自然暗角、微弱柔和的自然阴影变化与局部高光溢出（增强光线真实感），"
+            "色彩统计贴近数码相机原生直出特征且不进行可见的全局调色，呈现RAW底片未调色质感，"
+            "保证面料纹理锐利清晰、表面保留自然细节，不改变商品外形、商标文字与版型。"
+        ),
+        "negative": (
+            "AI生成痕迹，过度平滑，蜡像感，卡通感，过度锐化，过度降噪，人工合成感，"
+            "完美无瑕表面，过度饱和，HDR过度处理，明显的后期修图痕迹。"
+        ),
+    },
+}
+
+
+def _layer0_category_from_preset(preset: dict) -> str:
+    """Map preset to phone/dslr/mirrorless. Never returns action (Q7)."""
+    for key in ("deviceType", "device_type", "category", "legacyCategory", "legacy_category"):
+        raw = str(preset.get(key) or "").strip().lower()
+        if raw in {"phone", "dslr", "mirrorless"}:
+            return raw
+        if raw == "action":
+            return "phone"  # refuse action prompts; fall back to phone
+        if raw in {"camera"}:
+            return "dslr"
+    blob = " ".join(
+        str(preset.get(k) or "")
+        for k in ("brand", "model", "code", "name")
+    ).lower()
+    if any(tok in blob for tok in ("iphone", "pixel", "xiaomi", "huawei", "oppo", "vivo", "samsung galaxy")):
+        return "phone"
+    if any(tok in blob for tok in ("sony a", "nikon z", "canon eos r", "mirrorless")):
+        return "mirrorless"
+    if any(tok in blob for tok in ("canon", "nikon", "dslr")):
+        return "dslr"
+    return "phone"
+
+
+def _layer0_prompt_for_preset(preset: dict) -> tuple[str, str, str]:
+    """Return (category, prompt_sent_to_api, note). Negative folded into prompt (no API field)."""
+    category = _layer0_category_from_preset(preset)
+    pack = _LAYER0_LEGACY_PROMPTS[category]
+    # aoju /images/edits has no negative_prompt field (supplier_clients.py) — fold in explicitly.
+    prompt = (
+        f"{pack['positive']}\n\n"
+        f"【禁止出现 / avoid】：{pack['negative']}\n"
+        "（注：供应商 edits 无独立 negative_prompt 字段，负向语义已并入本正向正文。）"
+    )
+    note = f"layer0_category={category}; negative_folded_into_positive=true; model=gpt-image-2"
+    return category, prompt, note
 
 
 def _maybe_layer0_img2img(source: bytes, *, preset: dict) -> bytes | None:
-    """Supplier img2img Layer0 (Q8). Default on when generation key exists; set ALIGN_LAYER0_IMG2IMG=0 to disable."""
+    """Supplier img2img Layer0 (Q8). Uses legacy Chinese category prompts (C1).
+
+    Default on when generation key exists; set ALIGN_LAYER0_IMG2IMG=0 to disable.
+    Legacy strength does not enter the API (C-STRENGTH-DEAD); optional pixel blend via
+    ALIGN_LAYER0_BLEND_ALPHA (default 0.12; ALIGN e2e uses 1.0 to match old full replace).
+    """
     import os
 
     flag = str(os.environ.get("ALIGN_LAYER0_IMG2IMG") or "auto").strip().lower()
@@ -221,15 +312,10 @@ def _maybe_layer0_img2img(source: bytes, *, preset: dict) -> bytes | None:
         return None
     if not str(read_duty_secret("generation") or "").strip():
         return None
-    _ = preset  # reserved for future strength/prompt from preset snapshot
+    category, prompt, prompt_note = _layer0_prompt_for_preset(preset)
     with Image.open(io.BytesIO(source)) as image:
         width, height = image.size
     ref = prepare_reference_jpeg(source, max_edge=1280, quality=85)
-    prompt = (
-        "Photorealistic camera capture texture only. Preserve exact composition, "
-        "product geometry, logo text, and colors. Add natural CMOS grain, mild lens "
-        f"vignetting character, and optical realism. Strength {float(_LAYER0_IMG2IMG_STRENGTH):.2f}."
-    )
     try:
         outcome = asyncio.run(
             generate_images(
@@ -251,12 +337,29 @@ def _maybe_layer0_img2img(source: bytes, *, preset: dict) -> bytes | None:
         raw = base64.b64decode(raw)
     if not isinstance(raw, (bytes, bytearray)):
         return None
-    with Image.open(io.BytesIO(bytes(raw))) as out_img:
+    with Image.open(io.BytesIO(bytes(raw))) as out_img, Image.open(io.BytesIO(source)) as src_img:
         rgb = out_img.convert("RGB")
         if rgb.size != (width, height):
             rgb = rgb.resize((width, height), Image.Resampling.LANCZOS)
+        override = str(os.environ.get("ALIGN_LAYER0_BLEND_ALPHA") or "").strip()
+        if override:
+            try:
+                alpha = float(override)
+            except ValueError:
+                alpha = float(_LAYER0_IMG2IMG_STRENGTH)
+        else:
+            alpha = float(_LAYER0_IMG2IMG_STRENGTH)
+        alpha = float(max(0.0, min(1.0, alpha)))
+        base = src_img.convert("RGB")
+        if base.size != (width, height):
+            base = base.resize((width, height), Image.Resampling.LANCZOS)
+        blended = Image.blend(base, rgb, alpha) if alpha < 1.0 - 1e-9 else rgb
         buf = io.BytesIO()
-        rgb.save(buf, format="JPEG", quality=95, subsampling=0)
+        blended.save(buf, format="JPEG", quality=95, subsampling=0)
+        # C2 observability: stash last success note for callers that care.
+        _maybe_layer0_img2img.last_note = (  # type: ignore[attr-defined]
+            f"{prompt_note}; blend_alpha={alpha:.3f}; category={category}; ok=1"
+        )
         return buf.getvalue()
 
 
@@ -479,7 +582,9 @@ def run_five_layer(
     """
     work_source = source
     algo = str(algorithm or "v3").strip().lower()
-    if algo != "v2":
+    requested = str(freq_mode or "auto").strip().lower()
+    # Layer0 img2img once on production/auto path; skip for dual-path 2d/1d/hybrid evidence.
+    if algo != "v2" and requested in {"", "auto"}:
         img2 = _maybe_layer0_img2img(source, preset=preset)
         if img2 is not None:
             work_source = img2
@@ -513,7 +618,6 @@ def run_five_layer(
         )
 
     focal = preset.get("focalLength") or preset.get("focal_length") or "50mm"
-    requested = str(freq_mode or "auto").strip().lower()
     if requested != "auto":
         mode = requested if requested in {"2d", "1d", "hybrid"} else "2d"
         pixels = _l1_l3(
@@ -582,15 +686,19 @@ def run_five_layer(
 
     best = auto_out
     best_score = -1
+    best_report: dict | None = None
     for cand in candidates:
         try:
             report = score_fn(cand.jpeg)
+            if not isinstance(report, dict):
+                continue
             score = int(report.get("total_score", 0))
         except Exception:  # noqa: BLE001 — fall back to auto candidate
             continue
         if score > best_score:
             best_score = score
             best = cand
+            best_report = report
     if best_score < 0:
         return best
     return FiveLayerOutput(
@@ -599,6 +707,7 @@ def run_five_layer(
         width=best.width,
         height=best.height,
         detector_score=int(best_score),
+        detector_report=best_report,
     )
 
 

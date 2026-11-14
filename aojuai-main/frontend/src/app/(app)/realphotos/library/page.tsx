@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { allocateDownloadFileName, extensionForContentType } from '@/lib/realphotos-download'
-import { originKindLabel } from '@/lib/realphotos-labels'
+import { formatByteSizeMb, originKindLabel } from '@/lib/realphotos-labels'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
 
 type Asset = {
@@ -383,11 +383,11 @@ export default function RealphotosLibraryPage() {
               </label>
             </th>
             <th className="text-left">缩略图</th>
-            <th className="text-left">拼接文件名</th>
+            <th className="text-left">文件名</th>
             <th className="text-left">来源</th>
             <th className="text-left">状态</th>
-            <th className="text-left">尺寸</th>
-            <th className="text-left">字节</th>
+            <th className="text-left">分辨率</th>
+            <th className="text-left">大小</th>
             <th className="text-left">操作</th>
           </tr>
         </thead>
@@ -423,7 +423,6 @@ export default function RealphotosLibraryPage() {
                 </td>
                 <td>
                   {item.displayName || `${item.originKind}_${item.id}`}
-                  {item.degraded ? '（降级）' : ''}
                   {item.requestedWidth && item.actualWidth && item.requestedWidth !== item.actualWidth
                     ? ` · 请求${item.requestedWidth}×${item.requestedHeight} / 实际${item.actualWidth}×${item.actualHeight}`
                     : ''}
@@ -433,7 +432,7 @@ export default function RealphotosLibraryPage() {
                 <td>
                   {item.width}×{item.height}
                 </td>
-                <td>{item.byteSize}</td>
+                <td>{formatByteSizeMb(item.byteSize)}</td>
                 <td className="space-x-2">
                   <button className="border px-2 py-0.5" type="button" onClick={() => void downloadOne(item)}>
                     下载
