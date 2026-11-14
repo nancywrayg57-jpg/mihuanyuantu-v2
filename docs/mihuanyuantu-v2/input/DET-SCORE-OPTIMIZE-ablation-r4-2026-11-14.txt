@@ -1,0 +1,62 @@
+=== DET-SCORE R4 measurement protocol W 8mm ===
+ts=2026-11-14T05:51:47Z
+optical=0.16 noise_intensity=1.0 fixed_mode_scale=1.0 layer0_img2img=0 ca=0
+PASS_SCORE=75 unchanged; defaults NOT permanently changed
+PASS module_default_optical_unchanged
+PASS module_default_noise_unchanged
+PASS override_optical
+PASS override_noise
+PASS sigma_iso400_with_override
+PASS samples n=12
+--- sample=product_01.jpg ---
+PASS gemini_key_configured
+PASS gemini_key_configured
+v2=72.0 r4=75.0 delta=+3.0 reason=图像光照均匀且色彩真实，整体质感良好，符合标准。
+--- sample=product_02.jpg ---
+PASS gemini_key_configured
+PASS gemini_key_configured
+v2=62.0 r4=55.0 delta=-7.0 reason=未通过。整体真实度偏低，鞋带与侧面标志有伪影。建议：1.修复鞋带结构；2.重绘侧面线条。
+--- sample=product_03.jpg ---
+PASS gemini_key_configured
+PASS gemini_key_configured
+v2=75.0 r4=70.0 delta=-5.0 reason=未通过。真实感与景深偏低。优化方向：1. 改善景深过渡；2. 增强材质细节。
+--- sample=product_04.jpg ---
+PASS gemini_key_configured
+PASS gemini_key_configured
+v2=68.0 r4=71.0 delta=+3.0 reason=未通过。光照与真实感维度偏低。优化方向：1. 调整布光增强立体感；2. 提升材质细节。
+--- sample=product_05.jpg ---
+PASS gemini_key_configured
+PASS gemini_key_configured
+v2=70.0 r4=64.0 delta=-6.0 reason=未通过。整体得分受限，景深和光照维度偏低。建议：1. 优化背景虚化；2. 调整光照对比度。
+--- sample=product_06.jpg ---
+PASS gemini_key_configured
+PASS gemini_key_configured
+v2=68.0 r4=64.0 delta=-4.0 reason=未通过。光影和整体真实感偏低，顶部鞋子悬空且阴影不自然。优化方向：1. 增加真实的接触阴影；2. 调整光源增强立体感。
+--- sample=product_07.jpg ---
+PASS gemini_key_configured
+PASS gemini_key_configured
+v2=76.0 r4=68.0 delta=-8.0 reason=未通过。整体真实度偏低，鞋面文字存在AI生成痕迹。优化方向：1. 修复鞋面乱码文字；2. 增加轻微自然阴影细节。
+--- sample=product_08.jpg ---
+PASS gemini_key_configured
+PASS gemini_key_configured
+v2=55.0 r4=64.0 delta=+9.0 reason=未通过。光照和整体真实感偏低，主体与背景融合生硬。建议：1. 调整主体光影以匹配背景；2. 优化景深过渡。
+--- sample=product_09.jpg ---
+PASS gemini_key_configured
+PASS gemini_key_configured
+v2=70.0 r4=50.0 delta=-20.0 reason=未通过。光照和整体真实感偏低，图像呈渲染感。建议：1. 增加自然光影；2. 优化材质细节。
+--- sample=product_10.jpg ---
+PASS gemini_key_configured
+PASS gemini_key_configured
+v2=65.0 r4=68.0 delta=+3.0 reason=未通过。整体真实感与景深偏低，商品合成痕迹较重。建议：1. 增加背景层次；2. 柔和阴影过渡。
+--- sample=product_11.jpg ---
+PASS gemini_key_configured
+PASS gemini_key_configured
+v2=50.0 r4=45.0 delta=-5.0 reason=未通过。光照和整体真实度偏低，合成痕迹明显。建议：统一前后景光照；优化景深过渡。
+--- sample=product_12.jpg ---
+PASS gemini_key_configured
+PASS gemini_key_configured
+v2=71.0 r4=62.0 delta=-9.0 reason=未通过。光照与景深偏低，画面平淡缺立体感。优化：1. 增设侧光源提升立体感；2. 微调背景虚化突出主体。
+--- SUMMARY R4 ---
+{"n": 12, "focal": "8mm", "mean_v2": 66.83, "mean_r4": 63.0, "gain_vs_v2": -3.83, "prior_w_post_mean_v3_8mm": 62.17, "delta_vs_prior_post": 0.83, "pass_rate": 0.08333333333333333}
+P-V3-OVERDRIVE: NOT_CONFIRMED (|R4-prior_post|<3)
+DET_SCORE_R4_DONE

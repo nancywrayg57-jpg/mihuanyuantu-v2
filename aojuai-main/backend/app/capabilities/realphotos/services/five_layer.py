@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import io
 import json
+import logging
 import math
 import subprocess
 import tempfile
@@ -19,6 +20,8 @@ import numpy as np
 from PIL import Image
 
 from app.core.exceptions import BusinessError
+
+_LOG = logging.getLogger(__name__)
 
 PIPELINE_VERSION = "s2-five-layer-3"
 PIPELINE_VERSION_BASELINE = "s2-five-layer-2"
@@ -47,7 +50,9 @@ _NOISE_INTENSITY = 1.55
 _FIXED_MODE_SCALE = 0.85
 _LAYER0_OPTICAL_STRENGTH = 0.32
 _LAYER0_IMG2IMG_STRENGTH = 0.12
-_CA_INTENSITY = 1.15
+# 0 keeps every focal length under the 0.35 shift gate (identity pixels).
+# The focal table is unchanged. Do not restore saturation×1.02 (C4 / Q7).
+_CA_INTENSITY = 0.0
 _SMOOTH_LAP_VAR_THR = 12.0
 _AUTO_TIERS_LIGHT: tuple[tuple[float, float, float, float], ...] = (
     (1.00, 0.90, 0.75, 0.85),
@@ -100,15 +105,33 @@ def _parse_iso(iso: object) -> float:
     return max(50.0, min(value, 6400.0))
 
 
+def _float_setting_override(name: str, default: float) -> float:
+    """Read optional ALIGN_* measurement override from Settings; empty keeps default."""
+    try:
+        from app.core.config import settings
+
+        raw = str(getattr(settings, name, "") or "").strip()
+    except Exception:  # noqa: BLE001
+        return float(default)
+    if not raw:
+        return float(default)
+    try:
+        return float(raw)
+    except ValueError:
+        return float(default)
+
+
 def l1_noise_sigma(iso: object) -> float:
     """ISO-linked CMOS-like L1 sigma for s2-five-layer-3.
 
     Legacy ``isoToNoiseSigma = 0.5*sqrt(ISO/100)`` × ``_NOISE_INTENSITY``, with
     ``_ISO_PROCESS_FLOOR`` so clean ISO100 ecommerce shots still get grain.
     Capped to limit MAD / intentional-blur gaming (Q11).
+    ``ALIGN_NOISE_INTENSITY`` may override intensity for R4 measurement only.
     """
     value = max(_parse_iso(iso), float(_ISO_PROCESS_FLOOR))
-    sigma = 0.5 * math.sqrt(value / 100.0) * float(_NOISE_INTENSITY)
+    intensity = _float_setting_override("ALIGN_NOISE_INTENSITY", float(_NOISE_INTENSITY))
+    sigma = 0.5 * math.sqrt(value / 100.0) * float(intensity)
     return float(min(2.20, max(0.85, sigma)))
 
 
@@ -179,10 +202,11 @@ def _layer0_optical(arr: np.ndarray, rng: np.random.Generator, *, strength: floa
 def _apply_chromatic_aberration(
     arr: np.ndarray, *, focal_length: object, intensity: float = 1.0
 ) -> np.ndarray:
-    """Legacy-inspired R/B channel shift (Q4). Keeps width/height unchanged.
+    """R/B channel shift (Q4). Keeps width/height unchanged.
 
-    Does **not** apply the old physicalizer saturation×1.02 fallback (C4 / Q7):
-    that path discarded real channel composites and only nudged color.
+    Default ``_CA_INTENSITY`` is 0, so ``ca < 0.35``, ``shift`` is 0, and the
+    input array is returned unchanged. Does **not** apply the old physicalizer
+    saturation×1.02 fallback (C4 / Q7).
     """
     ca = float(focal_length_to_ca_strength(focal_length)) * float(intensity) * float(_CA_INTENSITY)
     # Python banker's round(0.5)==0 would skip mid-focal CA; use ceil for measurable shift.
@@ -287,20 +311,58 @@ def _layer0_prompt_for_preset(preset: dict) -> tuple[str, str, str]:
     return category, prompt, note
 
 
+def _layer0_img2img_fail(error_type: str, detail: str = "") -> None:
+    """Log a Layer0 failure. ``error_type`` is the stable token callers can assert."""
+    text = " ".join(str(detail or "").split())[:240]
+    _LOG.error("layer0_img2img_failed error_type=%s detail=%s", error_type, text)
+    _maybe_layer0_img2img.last_note = f"ok=0; error_type={error_type}"  # type: ignore[attr-defined]
+
+
+def _generate_images_off_loop(generate_images, **kwargs):
+    """Run ``generate_images`` on a fresh loop in another thread, then join.
+
+    ``asyncio.run`` on the worker's already-running loop raises, and waiting on
+    that same loop deadlocks. The coroutine is created inside the worker thread
+    so it cannot be left never-awaited on the caller. No DB session is passed.
+    """
+    import asyncio
+    import threading
+
+    box: dict[str, object] = {}
+
+    def _target() -> None:
+        try:
+            box["outcome"] = asyncio.run(generate_images(**kwargs))
+        except Exception as exc:  # noqa: BLE001
+            box["error"] = exc
+
+    worker = threading.Thread(target=_target, name="layer0-img2img")
+    worker.start()
+    worker.join()
+    error = box.get("error")
+    if isinstance(error, BaseException):
+        raise error
+    if "outcome" not in box:
+        raise RuntimeError("layer0_img2img_no_outcome")
+    return box["outcome"]
+
+
 def _maybe_layer0_img2img(source: bytes, *, preset: dict) -> bytes | None:
     """Supplier img2img Layer0 (Q8). Uses legacy Chinese category prompts (C1).
 
-    Default on when generation key exists; set ALIGN_LAYER0_IMG2IMG=0 to disable.
+    Default off (``ALIGN_LAYER0_IMG2IMG=0``): same pixels as skipping img2img.
+    ``1`` calls the supplier; ``auto`` still means on when a generation key exists.
+    The HTTP call runs on another thread (see ``_generate_images_off_loop``).
+    Failures log ``error_type`` and return None. Flag ``0`` is a skip, not a failure.
     Legacy strength does not enter the API (C-STRENGTH-DEAD); optional pixel blend via
     ALIGN_LAYER0_BLEND_ALPHA (default 0.12; ALIGN e2e uses 1.0 to match old full replace).
     """
     from app.core.config import settings
 
-    flag = str(settings.ALIGN_LAYER0_IMG2IMG or "auto").strip().lower()
+    flag = str(settings.ALIGN_LAYER0_IMG2IMG or "0").strip().lower()
     if flag in {"0", "false", "off", "no"}:
         return None
     try:
-        import asyncio
         import base64
 
         from app.capabilities.realphotos.services.supplier_clients import (
@@ -308,40 +370,77 @@ def _maybe_layer0_img2img(source: bytes, *, preset: dict) -> bytes | None:
             prepare_reference_jpeg,
         )
         from app.capabilities.realphotos.services.supplier_secrets import read_duty_secret
-    except Exception:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001
+        _layer0_img2img_fail(type(exc).__name__, detail="import")
         return None
-    if not str(read_duty_secret("generation") or "").strip():
+    secret = str(read_duty_secret("generation") or "").strip()
+    if not secret:
+        _layer0_img2img_fail("missing_credential", detail="generation")
         return None
     category, prompt, prompt_note = _layer0_prompt_for_preset(preset)
-    with Image.open(io.BytesIO(source)) as image:
-        width, height = image.size
-    ref = prepare_reference_jpeg(source, max_edge=1280, quality=85)
     try:
-        outcome = asyncio.run(
-            generate_images(
-                model_id="gpt-image-2",
-                prompt=prompt,
-                width=int(width),
-                height=int(height),
-                quantity=1,
-                reference=ref,
-            )
+        with Image.open(io.BytesIO(source)) as image:
+            width, height = image.size
+        ref = prepare_reference_jpeg(source, max_edge=1280, quality=85)
+        outcome = _generate_images_off_loop(
+            generate_images,
+            model_id="gpt-image-2",
+            prompt=prompt,
+            width=int(width),
+            height=int(height),
+            quantity=1,
+            reference=ref,
+            api_key=secret,
         )
-    except Exception:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001
+        _layer0_img2img_fail(type(exc).__name__, detail=str(exc))
         return None
-    images = list(outcome.get("images") or [])
+    images = list(outcome.get("images") or []) if isinstance(outcome, dict) else []
     if not images or not images[0].get("raw"):
+        _layer0_img2img_fail("empty_images")
         return None
     raw = images[0]["raw"]
     if isinstance(raw, str):
-        raw = base64.b64decode(raw)
+        try:
+            raw = base64.b64decode(raw)
+        except Exception as exc:  # noqa: BLE001
+            _layer0_img2img_fail(type(exc).__name__, detail="image_b64")
+            return None
     if not isinstance(raw, (bytes, bytearray)):
+        _layer0_img2img_fail("invalid_image")
         return None
-    with Image.open(io.BytesIO(bytes(raw))) as out_img, Image.open(io.BytesIO(source)) as src_img:
+    try:
+        decoded = _blend_layer0_jpeg(
+            source,
+            bytes(raw),
+            width=width,
+            height=height,
+            settings=settings,
+        )
+    except Exception as exc:  # noqa: BLE001
+        _layer0_img2img_fail(type(exc).__name__, detail=str(exc))
+        return None
+    # C2 observability: stash last success note for callers that care.
+    _maybe_layer0_img2img.last_note = (  # type: ignore[attr-defined]
+        f"{prompt_note}; blend_alpha={decoded[1]:.3f}; category={category}; ok=1"
+    )
+    return decoded[0]
+
+
+def _blend_layer0_jpeg(
+    source: bytes,
+    raw: bytes,
+    *,
+    width: int,
+    height: int,
+    settings: object,
+) -> tuple[bytes, float]:
+    """Blend supplier RGB onto the source. Kept separate so the await path stays small."""
+    with Image.open(io.BytesIO(raw)) as out_img, Image.open(io.BytesIO(source)) as src_img:
         rgb = out_img.convert("RGB")
         if rgb.size != (width, height):
             rgb = rgb.resize((width, height), Image.Resampling.LANCZOS)
-        override = str(settings.ALIGN_LAYER0_BLEND_ALPHA or "").strip()
+        override = str(getattr(settings, "ALIGN_LAYER0_BLEND_ALPHA", "") or "").strip()
         if override:
             try:
                 alpha = float(override)
@@ -356,11 +455,7 @@ def _maybe_layer0_img2img(source: bytes, *, preset: dict) -> bytes | None:
         blended = Image.blend(base, rgb, alpha) if alpha < 1.0 - 1e-9 else rgb
         buf = io.BytesIO()
         blended.save(buf, format="JPEG", quality=95, subsampling=0)
-        # C2 observability: stash last success note for callers that care.
-        _maybe_layer0_img2img.last_note = (  # type: ignore[attr-defined]
-            f"{prompt_note}; blend_alpha={alpha:.3f}; category={category}; ok=1"
-        )
-        return buf.getvalue()
+        return buf.getvalue(), alpha
 
 
 def mean_abs_delta(before: np.ndarray, after: np.ndarray) -> float:
@@ -845,11 +940,14 @@ def _l1_l3(
         and abs(l_m - 1.0) < 1e-9
         and abs(s_m - 1.0) < 1e-9
     ):
-        scale = float(_FIXED_MODE_SCALE)
+        scale = _float_setting_override("ALIGN_FIXED_MODE_SCALE", float(_FIXED_MODE_SCALE))
         n_m = v_m = l_m = s_m = scale
     # Layer0 optical prepass (Q8); optional supplier img2img applied earlier on bytes.
     if layer0:
-        arr = _layer0_optical(arr, rng, strength=float(_LAYER0_OPTICAL_STRENGTH))
+        optical = _float_setting_override(
+            "ALIGN_LAYER0_OPTICAL_STRENGTH", float(_LAYER0_OPTICAL_STRENGTH)
+        )
+        arr = _layer0_optical(arr, rng, strength=float(optical))
     # L1 noise + vignette (Q3) + chromatic aberration (Q4). No rotate/crop/resize.
     sigma = l1_noise_sigma(iso) * n_m
     fine = rng.normal(0.0, sigma, size=arr.shape).astype(np.float32)
