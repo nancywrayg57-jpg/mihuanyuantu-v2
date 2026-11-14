@@ -1,0 +1,22 @@
+REGISTER_FIX_E2E start utc=2026-11-14T09:43:58.413207+00:00 api=http://127.0.0.1:38000
+PASS platform_registration_config_http
+platform_registration_config enabled=False tenantSource=none
+PASS repro_default_tenant_missing_enabled_false
+realphotos_register_empty http=422 body={"detail":[{"type":"missing","loc":["body","username"],"msg":"Field required","input":{}},{"type":"missing","loc":["body","password"],"msg":"Field required","input":{}},{"type":"missing","loc":["body"
+PASS realphotos_register_route_exists
+PASS challenge_http
+PASS challenge_id
+PASS challenge_payload
+PASS dev_captcha_available_for_e2e
+register http=200 body={"success":true,"data":{"userId":"10","username":"regfix_a16f2ca5","nickname":"端测商家a16f2ca5","tenantId":"4","tenantCode":"m-regfix_a16f2ca5","roleCode":"rp_merchant","requireAudit":false},"message":"注册成功，请登录","code":"SUCCESS"}
+PASS register_http
+PASS tenant_code
+PASS role_merchant
+PASS no_audit
+login http=200 body={"success":true,"data":{"avatar":"","username":"regfix_a16f2ca5","nickname":"端测商家a16f2ca5","roles":["rp_merchant"],"permissions":[],"isSuperuser":false,"mustCompleteProfile":false,"expires":"2026-11-14T12:43:59.758426+00:00","authMode":"cookie","accessToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ
+PASS login_after_register
+PASS login_has_rp_merchant
+frontend_register http=200 bytes=29682
+PASS frontend_register_page
+REGISTER_FIX_E2E_PASS=true
+{"username": "regfix_a16f2ca5", "tenantCode": "m-regfix_a16f2ca5"}
