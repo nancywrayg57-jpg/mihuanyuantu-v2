@@ -294,9 +294,9 @@ def _maybe_layer0_img2img(source: bytes, *, preset: dict) -> bytes | None:
     Legacy strength does not enter the API (C-STRENGTH-DEAD); optional pixel blend via
     ALIGN_LAYER0_BLEND_ALPHA (default 0.12; ALIGN e2e uses 1.0 to match old full replace).
     """
-    import os
+    from app.core.config import settings
 
-    flag = str(os.environ.get("ALIGN_LAYER0_IMG2IMG") or "auto").strip().lower()
+    flag = str(settings.ALIGN_LAYER0_IMG2IMG or "auto").strip().lower()
     if flag in {"0", "false", "off", "no"}:
         return None
     try:
@@ -341,7 +341,7 @@ def _maybe_layer0_img2img(source: bytes, *, preset: dict) -> bytes | None:
         rgb = out_img.convert("RGB")
         if rgb.size != (width, height):
             rgb = rgb.resize((width, height), Image.Resampling.LANCZOS)
-        override = str(os.environ.get("ALIGN_LAYER0_BLEND_ALPHA") or "").strip()
+        override = str(settings.ALIGN_LAYER0_BLEND_ALPHA or "").strip()
         if override:
             try:
                 alpha = float(override)
@@ -500,16 +500,16 @@ def _finalize_jpeg(
     baseline: np.ndarray,
 ) -> FiveLayerOutput:
     floor = _byte_floor(source)
-    work = image
+    # Intermediate EXIF probe only — do not re-decode into ``work``. A mid-q
+    # re-encode irreversibly drops entropy so later q=100 cannot meet a PNG
+    # floor measured as q=100 of the original RGB (CI: generation PNG path).
     if mid_q is not None:
-        intermediate = _encode(work, quality=int(mid_q))
-        with Image.open(io.BytesIO(intermediate)) as mid:
-            work = mid.convert("RGB")
+        intermediate = _encode(image, quality=int(mid_q))
         _write_and_read(intermediate, preset, seed=int(seed))
     # Prefer encodes with MAD ≤ hard; still return byte-floor-OK if all over (noise fixtures).
     ranked: list[tuple[float, bytes, list[dict]]] = []
     for quality in qualities:
-        encoded = _encode(work, quality=int(quality))
+        encoded = _encode(image, quality=int(quality))
         final, fields = _write_and_read(encoded, preset, seed=int(seed))
         if len(final) >= floor and _same_size(final, width=width, height=height):
             with Image.open(io.BytesIO(final)) as after:
@@ -1273,7 +1273,9 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
             "-MakerNote",
         ]
         for tag, _value in optional:
-            flag = f"-{tag}"
+            # Numeric enums were written with Tag#=N; read Tag# so PrintConv
+            # labels (e.g. MeteringMode "Spot") do not break equality checks.
+            flag = f"-{tag}#" if tag in _NUMERIC_EXIF_TAGS else f"-{tag}"
             if flag not in read_tags:
                 read_tags.append(flag)
         read_tags.append(str(path))
@@ -1388,7 +1390,38 @@ def _verified_optional(tag: str, requested: str, read_back: object) -> dict:
             or (requested == "3" and ("cm" in lowered or "centimeter" in lowered or lowered == "3"))
         )
     elif tag in {"MeteringMode", "ExposureMode", "ExposureProgram", "SceneCaptureType"}:
-        ok = head == requested or actual == requested or (requested in actual if actual else False)
+        # Prefer numeric equality (Tag# readback). Keep PrintConv aliases for
+        # defense if a caller still supplies human-readable read_back.
+        lowered = actual.strip().lower()
+        aliases: dict[str, dict[str, tuple[str, ...]]] = {
+            "MeteringMode": {
+                "1": ("average",),
+                "2": ("center-weighted average", "center"),
+                "3": ("spot",),
+                "4": ("multi-spot",),
+                "5": ("multi-segment", "pattern", "matrix", "evaluative"),
+                "6": ("partial",),
+            },
+            "ExposureMode": {
+                "0": ("auto",),
+                "1": ("manual",),
+                "2": ("auto bracket", "bracket"),
+            },
+            "ExposureProgram": {
+                "1": ("manual",),
+                "2": ("program ae", "program", "normal program"),
+                "3": ("aperture-priority ae", "aperture priority", "aperture-priority"),
+                "4": ("shutter speed priority ae", "shutter priority", "shutter-priority"),
+            },
+            "SceneCaptureType": {
+                "0": ("standard",),
+                "1": ("landscape",),
+                "2": ("portrait",),
+                "3": ("night",),
+            },
+        }
+        name_ok = any(alias in lowered for alias in aliases.get(tag, {}).get(requested, ()))
+        ok = head == requested or actual == requested or name_ok
     elif tag == "ColorSpace":
         ok = requested.lower() in actual.lower() or actual.lower() in {"uncalibrated", "65535"}
     else:

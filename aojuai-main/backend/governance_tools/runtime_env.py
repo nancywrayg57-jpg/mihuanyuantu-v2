@@ -17,6 +17,9 @@ ENV_ACCESS_ALLOWLIST = {
     "app/core/config.py": (
         "Settings is the repository's single process-environment boundary; runtime code must read Settings."
     ),
+    "scripts/five_layer_legacy_align_e2e.py": (
+        "Operator ALIGN e2e: must clear Cursor sandbox HTTP(S)_PROXY before load_dotenv so Meta Fake-IP TUN egress works; not a runtime Settings path."
+    ),
 }
 
 

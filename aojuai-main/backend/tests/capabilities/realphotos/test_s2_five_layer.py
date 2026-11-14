@@ -16,6 +16,8 @@ from app.capabilities.realphotos.services.five_layer import (
     FIDELITY_MAD_HARD_MAX,
     FIDELITY_MAD_MAX,
     PIPELINE_VERSION,
+    _verified_optional,
+    _write_and_read,
     focal_length_to_ca_strength,
     l1_noise_sigma,
     mean_abs_delta,
@@ -187,3 +189,43 @@ def test_five_layer_skips_empty_optional_exif_writes_filled() -> None:
     assert ledger["Software"]["verification_status"] == "verified"
     assert "Artist" not in ledger
     assert "LensModel" not in ledger
+
+
+def test_optional_exif_enum_printconv_aliases() -> None:
+    """PrintConv labels must not fail verification when requested value is the numeric code."""
+    assert _verified_optional("MeteringMode", "3", "Spot")["verification_status"] == "verified"
+    assert (
+        _verified_optional("ExposureProgram", "3", "Aperture-priority AE")["verification_status"]
+        == "verified"
+    )
+    assert _verified_optional("MeteringMode", "3", "3")["verification_status"] == "verified"
+    assert _verified_optional("MeteringMode", "3", "Average")["verification_status"] == "failed"
+
+
+def test_huawei_p60_art_optional_exif_enums_verify() -> None:
+    """Regression: legacy Huawei Spot + Aperture Priority + f/1.4 must not raise EXIF_WRITE_FAILED."""
+    source = _source(quality=40)
+    preset = {
+        "brand": "Huawei",
+        "model": "Huawei P60 Art",
+        "iso": "400",
+        "shutter": "1/125",
+        "aperture": "f/1.4",
+        "focalLength": "8mm",
+        "makerNote": "Huawei",
+        "gpsMode": "none",
+        "legacyParameters": {
+            "metering_mode": "Spot",
+            "white_balance": "Tungsten",
+            "flash_mode": "Off",
+            "exposure_mode": "Aperture Priority",
+        },
+    }
+    jpeg, fields = _write_and_read(source, preset, seed=17)
+    assert jpeg.startswith(b"\xff\xd8\xff")
+    ledger = {field["tag"]: field for field in fields}
+    assert ledger["MeteringMode"]["verification_status"] == "verified"
+    assert ledger["ExposureProgram"]["verification_status"] == "verified"
+    assert ledger["WhiteBalance"]["verification_status"] == "verified"
+    assert ledger["Flash"]["verification_status"] == "verified"
+    assert ledger["LightSource"]["verification_status"] == "verified"

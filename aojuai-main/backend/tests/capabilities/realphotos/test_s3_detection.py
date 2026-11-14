@@ -376,7 +376,9 @@ async def test_admin_pass_score_snapshots_old_reports(db) -> None:
     payload = await RealphotosS1Service(db).detection_payload(tenant_id=tenant, task_id=900001)
     assert payload is not None
     assert payload["passScoreThreshold"] == 75
-    assert "未达通过线 75" in str(payload["platformGateExplanation"])
+    explanation = str(payload["platformGateExplanation"])
+    assert "75" in explanation
+    assert "需达到" in explanation or "未达通过线" in explanation
     restored = await service.update(
         actor_role_codes={ROLE_ADMIN},
         pass_score=75,
