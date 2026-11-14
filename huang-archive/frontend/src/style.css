@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "LinHai LiShu";
+  src: url("/fonts/linhai-lishu.woff2?v=cui3") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Unified couplet 隶书 — full glyph coverage (no Noto/宋体 inject). */
+@font-face {
+  font-family: "DaoLi LiShu";
+  src: url("/fonts/daoli-lishu.woff2?v=1") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --rice: #f7f4eb;
+  --parchment: #fcfbf7;
+  --clay: #e2d9c8;
+  --ink: #262422;
+  --mute: #6e685f;
+  --cinnabar: #9e2a2b;
+  --celadon: #2e5b70;
+  /* Default 1; App.vue bumps to ~1.2 after login for elderly-friendly reading. */
+  --hz-font-scale: 1;
+  --hz-tap: 48px;
+}
+
+html {
+  font-size: calc(16px * var(--hz-font-scale));
+}
+
+html.hz-large-tap {
+  --hz-tap: 56px;
+}
+
+html.hz-large-tap .min-h-tap {
+  min-height: var(--hz-tap) !important;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(ellipse at top, rgba(158, 42, 43, 0.05), transparent 55%),
+    linear-gradient(180deg, #f7f4eb 0%, #f1ebe0 100%);
+  color: var(--ink);
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.recording-dot {
+  animation: pulse-soft 1s ease-in-out infinite;
+}
+
+.vinyl-bar {
+  background: repeating-linear-gradient(
+    90deg,
+    #1a1a1a 0 2px,
+    #2c2c2c 2px 4px
+  );
+}
