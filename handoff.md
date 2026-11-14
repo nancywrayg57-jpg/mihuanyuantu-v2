@@ -2,33 +2,21 @@
 
 ## 1. 一分钟接手
 
-**工单** `DET-SCORE-OPTIMIZE`（承接 ALIGN）  
-**分支** `cursor/det-score-hemostasis-9973`（自 `main` 仅止血提交）  
-**PR** https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/55  
-**代码** OPEN_PARTIAL（CA=0、Layer0 默认关、async 它线程）；R4 **仅 env 覆写**可测；**未把 R4 写成默认**  
-**推送** 已 push；Q1 仍 SHORTFALL，不宣称 W5 PASS  
-**消融 W** 8mm mean_v3=**62.17**（史≈49 回升）；gain_vs_v2=**−4.08**；色差 reason **0/12**  
-**R4** mean_r4=**63.0**（Δ vs W +0.83）→ **P-V3-OVERDRIVE NOT_CONFIRMED**  
-**协议 C** mean_v3=**66.92** gain=**+1.17** → **`ALIGN_W5_E2E_SHORTFALL`**；Q1 仍 **UNPROVEN**  
-**PASS_SCORE=75** 不放宽；**停止加码**待管理员  
-**禁止** 开 S7；改 PASS_SCORE；白名单外改像素；自评自合
+**工单** `DET-SCORE-NONLEGACY-LIFT`  
+**分支** `cursor/det-score-nonlegacy-lift-9973`  
+**门禁** `NONLEGACY_FEASIBILITY_PASS`（Bayer+PG 测量臂）  
+**端测** H0=62.33；P1 Bayer **−9.83**；P2 PG **+1.08** → 微增益、**不升默认**、**不宣称达标**  
+**止血** #55 已合入；默认仍 CA=0 / Layer0=0  
+**禁止** 放宽 PASS_SCORE；对抗管线；S7
 
-## 2. 权威顺序
+## 2. 证据
 
-`AGENTS.md` → 账本 `DET-SCORE-OPTIMIZE-*` → ALIGN 账本 → `DEV_INSTRUCTIONS.md`
+- 门禁：`docs/mihuanyuantu-v2/input/DET-SCORE-NONLEGACY-feasibility-gate-2026-11-14.md`  
+- 端测：`…/DET-SCORE-NONLEGACY-e2e-pilot-2026-11-14.txt`  
+- 结论：`…/DET-SCORE-NONLEGACY-e2e-conclusion-2026-11-14.md`  
+- R1/R2/A：同目录 `DET-SCORE-NONLEGACY-*-2026-11-14.md`
 
-## 3. 证据
+## 3. 下一步
 
-- 消融 W：`docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-ablation-w-2026-11-14.txt`  
-- W 结论：`.../DET-SCORE-OPTIMIZE-ablation-w-conclusion-2026-11-14.md`  
-- R4 门禁+结论：`.../DET-SCORE-OPTIMIZE-r4-measure-gate-2026-11-14.md`  
-- R4 全文：`.../DET-SCORE-OPTIMIZE-ablation-r4-2026-11-14.txt`  
-- 协议 C 全文：`.../DET-SCORE-OPTIMIZE-protocol-c-2026-11-14.txt`  
-- 协议 C 结论：`.../DET-SCORE-OPTIMIZE-protocol-c-conclusion-2026-11-14.md`  
-- 主审计 / 可行性：`.../DET-SCORE-OPTIMIZE-main-audit-2026-11-14.md`、`.../feasibility-gate-2026-11-14.md`
-
-## 4. 下一步（需管理员）
-
-1. ~~SHORTFALL 下推送止血~~ → **已 push** · PR #55  
-2. **非作者账号**审合 #55（squash；作者不得自评自合）  
-3. 是否改裁 Q1——**不得**借 SHORTFALL 放宽 PASS_SCORE；是否另开新测量门禁（不得升 R4 默认）
+1. Collaborator 开/更新本分支 PR（作者勿自评自合）  
+2. 管理员：接受天花板 / 改裁目标 / 是否另批更弱 PG 扫档（仍测量臂）  
