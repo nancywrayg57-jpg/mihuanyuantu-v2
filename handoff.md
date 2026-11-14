@@ -9,6 +9,7 @@
 | --- | --- |
 | 当前工单 | `REGISTER-FIX`（注册不可用） |
 | 分支 | `cursor/register-fix-9973` |
+| PR | [#58](https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/58) open |
 | 根因 | 注册页走底座 `registration-config`，默认租户 `default` 不存在 → `enabled:false`；架构要求的 `POST /api/v1/realphotos/auth/register` 原缺失（404） |
 | 修复 | 实现 realphotos 注册（验证码 + 新建商家租户/`rp_merchant`）；前端注册页改用该流 |
 | 端测 | `/tmp/register-fix-e2e.log` 与 `docs/.../REGISTER-FIX-e2e-2026-11-14.txt` → `REGISTER_FIX_E2E_PASS=true` |
@@ -33,4 +34,4 @@
 
 ## 4. 下一步
 
-推分支并开 PR；等待非作者 Owner squash 合入。合入后可清本地旧分支 `cursor/five-layer-default-opt-9973`（内容已在 main）。
+等待非作者 Owner squash 合入 [#58](https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/58)。合入后可清本地旧分支 `cursor/five-layer-default-opt-9973`（内容已在 main）。

@@ -10,13 +10,14 @@
 | origin/main | `e7a93c5`（合入前基线） |
 | 工作区分支 | `cursor/register-fix-9973` |
 | 工单 | REGISTER-FIX |
+| PR | [#58](https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/58) open |
 | 根因 | 底座 registration-config 默认租户缺失 → enabled=false；realphotos `/auth/register` 原 404 |
 | 修复 | `POST /api/v1/realphotos/auth/register` + 前端验证码注册页 |
 | 单测 | `test_auth_register.py` 3 passed |
 | 端测 | `REGISTER_FIX_E2E_PASS=true`（`docs/mihuanyuantu-v2/input/REGISTER-FIX-e2e-2026-11-14.txt`） |
 | production_billing | false |
 | S7 | blocked |
-| 下一步 | 推分支开 PR；禁自评自合 |
+| 下一步 | 非作者 Owner squash #58；禁自评自合 |
 
 ## 同日已合入 main（无关本工单）
 

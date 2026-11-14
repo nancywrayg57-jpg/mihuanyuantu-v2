@@ -37,10 +37,11 @@ vibe_coding:
     visible_output: "实现 POST /api/v1/realphotos/auth/register；前端注册页改走该流；端测 REGISTER_FIX_E2E_PASS"
     verify: "pytest test_auth_register 3 passed；docs/.../REGISTER-FIX-e2e-2026-11-14.txt"
     status: register_fix_ready_for_pr
-    next_user_action: "推分支 cursor/register-fix-9973 并开 PR；禁自评自合；禁S7。"
+    next_user_action: "非作者 Owner squash PR #58；禁自评自合；禁S7。"
   register_fix_2026_11_14:
     work_order: REGISTER-FIX
     branch: cursor/register-fix-9973
+    pr: https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/58
     baseline_main: e7a93c5
     root_cause: "register page used platform registration-config; DEFAULT_TENANT default missing → enabled=false; realphotos /auth/register was 404"
     fix: "POST /api/v1/realphotos/auth/register creates m-{username} tenant + rp_merchant; FE captcha register"
@@ -469,10 +470,11 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "REGISTER-FIX 已本地闭环：推 cursor/register-fix-9973 并开 PR；等待非作者 Owner squash。禁S7；禁放宽PASS_SCORE。"
+  action: "REGISTER-FIX PR #58 待非作者 Owner squash。禁S7；禁放宽PASS_SCORE。"
   work_order: "REGISTER-FIX"
   prior_work_order: "FIVE-LAYER-DEFAULT-OPT #57 merged; DET-SCORE-NONLEGACY #56; DET-SCORE hemostasis #55; OPS-SUPPLIER-KEY-UX #53 merged"
   branch: cursor/register-fix-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/58"
   baseline_main: e7a93c5
   constraint_ledger: docs/mihuanyuantu-v2/input/REGISTER-FIX-constraint-ledger.md
   e2e_log: /tmp/register-fix-e2e.log
