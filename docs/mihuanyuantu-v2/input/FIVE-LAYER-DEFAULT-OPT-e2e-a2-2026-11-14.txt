@@ -1,0 +1,85 @@
+=== FIVE-LAYER-DEFAULT-OPT e2e ===
+ts=2026-11-14T08:35:09Z
+arm=A2 focal=26mm seed=20261113 score_fn=None layer0_img2img=0 ca=0
+PASS_SCORE=75 unchanged; module defaults NOT permanently changed
+gates: DEFAULT_OPT_MEAN_GAIN Δ>=+3 OR PASS75_LIFT +2 vs H0
+PASS ca_hemo
+PASS optical_module_default
+PASS noise_module_default
+PASS vignette_module_default
+PASS layer0_img2img_off
+PASS samples n=12
+--- arm=A2_noise_0.85 sample=product_01.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_0.85 total=75.0 passed=True noise=73 dof=71 light=74 color=72 overall=73
+--- arm=A2_noise_0.85 sample=product_02.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_0.85 total=65.0 passed=False noise=68 dof=65 light=67 color=66 overall=60
+--- arm=A2_noise_0.85 sample=product_03.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_0.85 total=68.0 passed=False noise=68 dof=65 light=69 color=67 overall=68
+--- arm=A2_noise_0.85 sample=product_04.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_0.85 total=72.0 passed=False noise=72 dof=71 light=70 color=73 overall=72
+--- arm=A2_noise_0.85 sample=product_05.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_0.85 total=70.0 passed=False noise=68 dof=65 light=66 color=67 overall=69
+--- arm=A2_noise_0.85 sample=product_06.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_0.85 total=72.0 passed=False noise=70 dof=68 light=71 color=69 overall=70
+--- arm=A2_noise_0.85 sample=product_07.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_0.85 total=68.0 passed=False noise=68 dof=65 light=67 color=66 overall=65
+--- arm=A2_noise_0.85 sample=product_08.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_0.85 total=72.0 passed=False noise=73 dof=71 light=72 color=74 overall=70
+--- arm=A2_noise_0.85 sample=product_09.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_0.85 total=65.0 passed=False noise=68 dof=65 light=66 color=64 overall=62
+--- arm=A2_noise_0.85 sample=product_10.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_0.85 total=76.0 passed=True noise=76 dof=74 light=77 color=75 overall=76
+--- arm=A2_noise_0.85 sample=product_11.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_0.85 total=45.0 passed=False noise=65 dof=45 light=40 color=60 overall=35
+--- arm=A2_noise_0.85 sample=product_12.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_0.85 total=50.0 passed=False noise=45 dof=55 light=50 color=55 overall=52
+ARM_SUMMARY {"label": "A2_noise_0.85", "n": 12, "mean_total": 66.5, "pass75": 2, "mean_dims": {"noise": 67.83, "depthOfField": 65.0, "lighting": 65.75, "colorRealism": 67.33, "overallRealism": 64.33}, "totals": [75.0, 65.0, 68.0, 72.0, 70.0, 72.0, 68.0, 72.0, 65.0, 76.0, 45.0, 50.0]}
+--- arm=A2_noise_1.0 sample=product_01.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_1.0 total=63.0 passed=False noise=65 dof=60 light=62 color=65 overall=64
+--- arm=A2_noise_1.0 sample=product_02.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_1.0 total=65.0 passed=False noise=68 dof=65 light=62 color=66 overall=60
+--- arm=A2_noise_1.0 sample=product_03.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_1.0 total=73.0 passed=False noise=72 dof=70 light=71 color=72 overall=71
+--- arm=A2_noise_1.0 sample=product_04.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_1.0 total=72.0 passed=False noise=73 dof=68 light=70 color=72 overall=71
+--- arm=A2_noise_1.0 sample=product_05.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_1.0 total=68.0 passed=False noise=71 dof=65 light=66 color=70 overall=68
+--- arm=A2_noise_1.0 sample=product_06.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_1.0 total=68.0 passed=False noise=70 dof=65 light=68 color=69 overall=67
+--- arm=A2_noise_1.0 sample=product_07.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_1.0 total=62.0 passed=False noise=68 dof=65 light=66 color=64 overall=55
+--- arm=A2_noise_1.0 sample=product_08.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_1.0 total=70.0 passed=False noise=72 dof=68 light=69 color=71 overall=70
+--- arm=A2_noise_1.0 sample=product_09.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_1.0 total=55.0 passed=False noise=65 dof=60 light=55 color=60 overall=50
+--- arm=A2_noise_1.0 sample=product_10.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_1.0 total=60.0 passed=False noise=65 dof=60 light=65 color=65 overall=55
+--- arm=A2_noise_1.0 sample=product_11.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_1.0 total=42.0 passed=False noise=65 dof=45 light=40 color=55 overall=35
+--- arm=A2_noise_1.0 sample=product_12.jpg ---
+PASS gemini_key_configured
+gemini_A2_noise_1.0 total=58.0 passed=False noise=55 dof=50 light=55 color=65 overall=60
+ARM_SUMMARY {"label": "A2_noise_1.0", "n": 12, "mean_total": 63.0, "pass75": 0, "mean_dims": {"noise": 67.42, "depthOfField": 61.75, "lighting": 62.42, "colorRealism": 66.17, "overallRealism": 60.5}, "totals": [63.0, 65.0, 73.0, 72.0, 68.0, 68.0, 62.0, 70.0, 55.0, 60.0, 42.0, 58.0]}

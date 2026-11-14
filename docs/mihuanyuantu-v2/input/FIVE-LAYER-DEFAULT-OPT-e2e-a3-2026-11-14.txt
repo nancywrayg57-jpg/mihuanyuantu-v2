@@ -1,0 +1,48 @@
+=== FIVE-LAYER-DEFAULT-OPT e2e ===
+ts=2026-11-14T08:52:30Z
+arm=A3 focal=26mm seed=20261113 score_fn=None layer0_img2img=0 ca=0
+PASS_SCORE=75 unchanged; module defaults NOT permanently changed
+gates: DEFAULT_OPT_MEAN_GAIN Δ>=+3 OR PASS75_LIFT +2 vs H0
+PASS ca_hemo
+PASS optical_module_default
+PASS noise_module_default
+PASS vignette_module_default
+PASS layer0_img2img_off
+PASS samples n=12
+--- arm=A3_sharpen_off sample=product_01.jpg ---
+PASS gemini_key_configured
+gemini_A3_sharpen_off total=70.0 passed=False noise=70 dof=68 light=69 color=71 overall=68
+--- arm=A3_sharpen_off sample=product_02.jpg ---
+PASS gemini_key_configured
+gemini_A3_sharpen_off total=48.0 passed=False noise=65 dof=60 light=55 color=60 overall=45
+--- arm=A3_sharpen_off sample=product_03.jpg ---
+PASS gemini_key_configured
+gemini_A3_sharpen_off total=71.0 passed=False noise=70 dof=68 light=71 color=72 overall=70
+--- arm=A3_sharpen_off sample=product_04.jpg ---
+PASS gemini_key_configured
+gemini_A3_sharpen_off total=72.0 passed=False noise=70 dof=68 light=69 color=71 overall=70
+--- arm=A3_sharpen_off sample=product_05.jpg ---
+PASS gemini_key_configured
+gemini_A3_sharpen_off total=70.0 passed=False noise=70 dof=68 light=69 color=71 overall=70
+--- arm=A3_sharpen_off sample=product_06.jpg ---
+PASS gemini_key_configured
+gemini_A3_sharpen_off total=58.0 passed=False noise=65 dof=60 light=58 color=62 overall=55
+--- arm=A3_sharpen_off sample=product_07.jpg ---
+PASS gemini_key_configured
+gemini_A3_sharpen_off total=70.0 passed=False noise=72 dof=70 light=71 color=69 overall=68
+--- arm=A3_sharpen_off sample=product_08.jpg ---
+PASS gemini_key_configured
+gemini_A3_sharpen_off total=72.0 passed=False noise=72 dof=70 light=71 color=73 overall=70
+--- arm=A3_sharpen_off sample=product_09.jpg ---
+PASS gemini_key_configured
+gemini_A3_sharpen_off total=62.0 passed=False noise=68 dof=65 light=60 color=62 overall=58
+--- arm=A3_sharpen_off sample=product_10.jpg ---
+PASS gemini_key_configured
+gemini_A3_sharpen_off total=68.0 passed=False noise=68 dof=67 light=69 color=68 overall=66
+--- arm=A3_sharpen_off sample=product_11.jpg ---
+PASS gemini_key_configured
+gemini_A3_sharpen_off total=45.0 passed=False noise=70 dof=45 light=40 color=55 overall=35
+--- arm=A3_sharpen_off sample=product_12.jpg ---
+PASS gemini_key_configured
+gemini_A3_sharpen_off total=62.0 passed=False noise=60 dof=65 light=62 color=65 overall=60
+ARM_SUMMARY {"label": "A3_sharpen_off", "n": 12, "mean_total": 64.0, "pass75": 0, "mean_dims": {"noise": 68.33, "depthOfField": 64.5, "lighting": 63.67, "colorRealism": 66.58, "overallRealism": 61.25}, "totals": [70.0, 48.0, 71.0, 72.0, 70.0, 58.0, 70.0, 72.0, 62.0, 68.0, 45.0, 62.0]}

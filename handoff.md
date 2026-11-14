@@ -2,21 +2,18 @@
 
 ## 1. 一分钟接手
 
-**工单** `DET-SCORE-NONLEGACY-LIFT`  
-**分支** `cursor/det-score-nonlegacy-lift-9973`  
-**门禁** `NONLEGACY_FEASIBILITY_PASS`（Bayer+PG 测量臂）  
-**端测** H0=62.33；P1 Bayer **−9.83**；P2 PG **+1.08** → 微增益、**不升默认**、**不宣称达标**  
-**止血** #55 已合入；默认仍 CA=0 / Layer0=0  
-**禁止** 放宽 PASS_SCORE；对抗管线；S7
+**工单** `FIVE-LAYER-DEFAULT-OPT`  
+**分支** `cursor/five-layer-default-opt-9973`  
+**默认变更** `_LAYER0_OPTICAL_STRENGTH` **0.32→0.24**（A1 单变量；双门禁）  
+**确认** mean=67.25 vs 旧 H0 61.42（Δ+5.83；过75 0→2）  
+**保持关** CA / Layer0 img2img / Bayer；噪声/JPEG/暗角未升默认  
+**旧 Q1** 未宣称  
 
 ## 2. 证据
 
-- 门禁：`docs/mihuanyuantu-v2/input/DET-SCORE-NONLEGACY-feasibility-gate-2026-11-14.md`  
-- 端测：`…/DET-SCORE-NONLEGACY-e2e-pilot-2026-11-14.txt`  
-- 结论：`…/DET-SCORE-NONLEGACY-e2e-conclusion-2026-11-14.md`  
-- R1/R2/A：同目录 `DET-SCORE-NONLEGACY-*-2026-11-14.md`
+- 汇总：`docs/mihuanyuantu-v2/input/FIVE-LAYER-DEFAULT-OPT-ablation-summary-2026-11-14.md`  
+- H0 / A1–A5 / confirm：同目录 `FIVE-LAYER-DEFAULT-OPT-e2e-*.txt`  
 
 ## 3. 下一步
 
-1. Collaborator 开/更新本分支 PR（作者勿自评自合）  
-2. 管理员：接受天花板 / 改裁目标 / 是否另批更弱 PG 扫档（仍测量臂）  
+非作者审合本分支 PR；可选后续单变量再探噪声 0.85 / JPEG（另 PR）。

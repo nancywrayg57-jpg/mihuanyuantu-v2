@@ -357,6 +357,11 @@ class Settings(BaseSettings):
     ALIGN_PG_NOISE: str = ""
     ALIGN_PG_SCALE: str = ""
     ALIGN_PG_FLAT_THR: str = ""
+    # DEFAULT-OPT measurement-only (empty = module defaults; do not promote without gate).
+    ALIGN_SHARPEN: str = ""
+    ALIGN_VIGNETTE_SCALE: str = ""
+    ALIGN_JPEG_MILD_SWEEP: str = ""
+    ALIGN_JPEG_QUALITIES: str = ""
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.1-pro-preview"
     GEMINI_API_BASE: str = "https://generativelanguage.googleapis.com/v1beta"

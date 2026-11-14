@@ -1,0 +1,50 @@
+=== FIVE-LAYER-DEFAULT-OPT e2e ===
+ts=2026-11-14T09:17:28Z
+arm=H0 focal=26mm seed=20261113 score_fn=None layer0_img2img=0 ca=0
+PASS_SCORE=75 unchanged; module defaults NOT permanently changed
+gates: DEFAULT_OPT_MEAN_GAIN Δ>=+3 OR PASS75_LIFT +2 vs H0
+PASS ca_hemo
+PASS optical_module_default
+PASS noise_module_default
+PASS vignette_module_default
+PASS layer0_img2img_off
+PASS samples n=12
+--- arm=H0 sample=product_01.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=76.0 passed=True noise=75 dof=72 light=74 color=73 overall=75
+--- arm=H0 sample=product_02.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=76.0 passed=True noise=70 dof=65 light=68 color=72 overall=65
+--- arm=H0 sample=product_03.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=69.0 passed=False noise=70 dof=68 light=69 color=70 overall=69
+--- arm=H0 sample=product_04.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=68.0 passed=False noise=66 dof=65 light=64 color=65 overall=66
+--- arm=H0 sample=product_05.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=70.0 passed=False noise=70 dof=68 light=69 color=71 overall=70
+--- arm=H0 sample=product_06.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=66.0 passed=False noise=68 dof=65 light=62 color=68 overall=65
+--- arm=H0 sample=product_07.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=65.0 passed=False noise=68 dof=65 light=67 color=66 overall=62
+--- arm=H0 sample=product_08.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=70.0 passed=False noise=72 dof=70 light=68 color=69 overall=68
+--- arm=H0 sample=product_09.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=69.0 passed=False noise=70 dof=68 light=69 color=70 overall=68
+--- arm=H0 sample=product_10.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=71.0 passed=False noise=70 dof=68 light=71 color=69 overall=70
+--- arm=H0 sample=product_11.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=45.0 passed=False noise=65 dof=40 light=40 color=55 overall=35
+--- arm=H0 sample=product_12.jpg ---
+PASS gemini_key_configured
+gemini_H0 total=62.0 passed=False noise=45 dof=65 light=60 color=65 overall=60
+ARM_SUMMARY {"label": "H0", "n": 12, "mean_total": 67.25, "pass75": 2, "mean_dims": {"noise": 67.42, "depthOfField": 64.92, "lighting": 65.08, "colorRealism": 67.75, "overallRealism": 64.42}, "totals": [76.0, 76.0, 69.0, 68.0, 70.0, 66.0, 65.0, 70.0, 69.0, 71.0, 45.0, 62.0]}
+evidence_copy=/home/hbs/hbs-projects/mihuanyuantu-v2/docs/mihuanyuantu-v2/input/FIVE-LAYER-DEFAULT-OPT-e2e-h0-2026-11-14.txt
+DEFAULT_OPT_H0_DONE

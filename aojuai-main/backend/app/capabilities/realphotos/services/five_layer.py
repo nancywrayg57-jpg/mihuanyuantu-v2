@@ -48,7 +48,8 @@ _MAD_PREFER_TARGET = 3.0
 _ISO_PROCESS_FLOOR = 400.0
 _NOISE_INTENSITY = 1.55
 _FIXED_MODE_SCALE = 0.85
-_LAYER0_OPTICAL_STRENGTH = 0.32
+# DEFAULT-OPT A1: 0.32→0.24 (e2e Δmean=+5.83, pass75 +2 vs H0; see FIVE-LAYER-DEFAULT-OPT-ablation-summary).
+_LAYER0_OPTICAL_STRENGTH = 0.24
 _LAYER0_IMG2IMG_STRENGTH = 0.12
 # 0 keeps every focal length under the 0.35 shift gate (identity pixels).
 # The focal table is unchanged. Do not restore saturation×1.02 (C4 / Q7).
@@ -276,7 +277,8 @@ def aperture_vignette_strength(aperture: object) -> float:
         raw = 0.06
     else:
         raw = 0.04
-    return float(raw * float(_VIGNETTE_LEGACY_SCALE))
+    scale = _float_setting_override("ALIGN_VIGNETTE_SCALE", float(_VIGNETTE_LEGACY_SCALE))
+    return float(raw * float(scale))
 
 
 def focal_length_to_ca_strength(focal_length: object) -> float:
@@ -741,6 +743,41 @@ def _finalize_jpeg(
     return FiveLayerOutput(jpeg=final, fields=fields, width=width, height=height, detector_score=None)
 
 
+def _sharpen_setting(default: bool) -> bool:
+    """ALIGN_SHARPEN empty keeps caller default; 0/false/off forces off; 1/true/on forces on."""
+    try:
+        from app.core.config import settings
+
+        raw = str(getattr(settings, "ALIGN_SHARPEN", "") or "").strip().lower()
+    except Exception:  # noqa: BLE001
+        return bool(default)
+    if raw in {""}:
+        return bool(default)
+    if raw in {"0", "false", "off", "no"}:
+        return False
+    if raw in {"1", "true", "on", "yes"}:
+        return True
+    return bool(default)
+
+
+def _qualities_for_v3(explicit: tuple[int, ...] | None = None) -> tuple[int, ...]:
+    """Optional mild JPEG grid via ALIGN_JPEG_MILD_SWEEP (measurement only)."""
+    if explicit is not None:
+        return explicit
+    if not _flag_setting_on("ALIGN_JPEG_MILD_SWEEP"):
+        return _QUALITIES
+    try:
+        from app.core.config import settings
+
+        raw = str(getattr(settings, "ALIGN_JPEG_QUALITIES", "") or "90,93,96").strip()
+        qs = tuple(int(part.strip()) for part in raw.split(",") if part.strip())
+        if qs:
+            return qs
+    except Exception:  # noqa: BLE001
+        pass
+    return _QUALITIES
+
+
 def _pixels_to_output(
     pixels: np.ndarray,
     *,
@@ -757,7 +794,7 @@ def _pixels_to_output(
     if pixels.shape[0] != height or pixels.shape[1] != width:
         raise BusinessError(message="五层改变了宽高", code="OUTPUT_CONSTRAINT_UNSATISFIED")
     image = Image.fromarray(pixels.astype(np.uint8), mode="RGB")
-    if sharpen:
+    if _sharpen_setting(sharpen):
         image = _weak_sharpen(image)
     return _finalize_jpeg(
         image,
@@ -766,7 +803,7 @@ def _pixels_to_output(
         seed=int(seed),
         width=width,
         height=height,
-        qualities=qualities or _QUALITIES,
+        qualities=_qualities_for_v3(qualities),
         mid_q=int(_MID_JPEG_QUALITY) if mid_q is None else mid_q,
         baseline=baseline,
     )

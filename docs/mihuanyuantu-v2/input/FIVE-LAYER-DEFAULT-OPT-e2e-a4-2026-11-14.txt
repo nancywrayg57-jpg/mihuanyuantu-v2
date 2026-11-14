@@ -1,0 +1,48 @@
+=== FIVE-LAYER-DEFAULT-OPT e2e ===
+ts=2026-11-14T09:00:46Z
+arm=A4 focal=26mm seed=20261113 score_fn=None layer0_img2img=0 ca=0
+PASS_SCORE=75 unchanged; module defaults NOT permanently changed
+gates: DEFAULT_OPT_MEAN_GAIN Δ>=+3 OR PASS75_LIFT +2 vs H0
+PASS ca_hemo
+PASS optical_module_default
+PASS noise_module_default
+PASS vignette_module_default
+PASS layer0_img2img_off
+PASS samples n=12
+--- arm=A4_vignette_0.50 sample=product_01.jpg ---
+PASS gemini_key_configured
+gemini_A4_vignette_0.50 total=76.0 passed=True noise=74 dof=72 light=75 color=73 overall=74
+--- arm=A4_vignette_0.50 sample=product_02.jpg ---
+PASS gemini_key_configured
+gemini_A4_vignette_0.50 total=70.0 passed=False noise=71 dof=68 light=70 color=72 overall=69
+--- arm=A4_vignette_0.50 sample=product_03.jpg ---
+PASS gemini_key_configured
+gemini_A4_vignette_0.50 total=71.0 passed=False noise=71 dof=69 light=72 color=70 overall=71
+--- arm=A4_vignette_0.50 sample=product_04.jpg ---
+PASS gemini_key_configured
+gemini_A4_vignette_0.50 total=73.0 passed=False noise=72 dof=71 light=73 color=74 overall=72
+--- arm=A4_vignette_0.50 sample=product_05.jpg ---
+PASS gemini_key_configured
+gemini_A4_vignette_0.50 total=68.0 passed=False noise=68 dof=65 light=66 color=69 overall=67
+--- arm=A4_vignette_0.50 sample=product_06.jpg ---
+PASS gemini_key_configured
+gemini_A4_vignette_0.50 total=60.0 passed=False noise=68 dof=65 light=58 color=62 overall=55
+--- arm=A4_vignette_0.50 sample=product_07.jpg ---
+PASS gemini_key_configured
+gemini_A4_vignette_0.50 total=70.0 passed=False noise=72 dof=70 light=68 color=71 overall=69
+--- arm=A4_vignette_0.50 sample=product_08.jpg ---
+PASS gemini_key_configured
+gemini_A4_vignette_0.50 total=68.0 passed=False noise=72 dof=70 light=68 color=69 overall=65
+--- arm=A4_vignette_0.50 sample=product_09.jpg ---
+PASS gemini_key_configured
+gemini_A4_vignette_0.50 total=62.0 passed=False noise=68 dof=65 light=55 color=60 overall=58
+--- arm=A4_vignette_0.50 sample=product_10.jpg ---
+PASS gemini_key_configured
+gemini_A4_vignette_0.50 total=72.0 passed=False noise=73 dof=68 light=70 color=69 overall=68
+--- arm=A4_vignette_0.50 sample=product_11.jpg ---
+PASS gemini_key_configured
+gemini_A4_vignette_0.50 total=50.0 passed=False noise=70 dof=45 light=50 color=65 overall=45
+--- arm=A4_vignette_0.50 sample=product_12.jpg ---
+PASS gemini_key_configured
+gemini_A4_vignette_0.50 total=65.0 passed=False noise=58 dof=62 light=65 color=66 overall=64
+ARM_SUMMARY {"label": "A4_vignette_0.50", "n": 12, "mean_total": 67.08, "pass75": 1, "mean_dims": {"noise": 69.75, "depthOfField": 65.83, "lighting": 65.83, "colorRealism": 68.33, "overallRealism": 64.75}, "totals": [76.0, 70.0, 71.0, 73.0, 68.0, 60.0, 70.0, 68.0, 62.0, 72.0, 50.0, 65.0]}
