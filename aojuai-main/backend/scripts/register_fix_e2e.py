@@ -7,7 +7,6 @@ Fix proof: POST /api/v1/realphotos/auth/register creates tenant+merchant; login 
 from __future__ import annotations
 
 import json
-import os
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -15,8 +14,8 @@ from pathlib import Path
 import httpx
 
 LOG = Path("/tmp/register-fix-e2e.log")
-API = os.environ.get("REGISTER_FIX_API", "http://127.0.0.1:38000")
-FE = os.environ.get("REGISTER_FIX_FE", "http://127.0.0.1:3000")
+API = "http://127.0.0.1:38000"
+FE = "http://127.0.0.1:3000"
 
 
 def note(msg: str) -> None:
