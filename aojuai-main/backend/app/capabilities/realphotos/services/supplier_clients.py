@@ -45,7 +45,7 @@ PROVIDER_DEFAULT_BASE: dict[str, str] = {
 PROVIDER_STATIC_MODELS: dict[str, list[str]] = {
     "deepseek": ["deepseek-chat", "deepseek-reasoner"],
     "dashscope": ["qwen3-vl-plus", "qwen-vl-plus", "qwen-plus", "qwen-turbo", "qwen-max"],
-    "aoju": ["gpt-image-2"],
+    "aoju": ["gpt-image-2", "gpt-image-2-vip"],
     "gemini": ["gemini-3.1-pro-preview", "gemini-2.5-pro", "gemini-2.0-flash"],
 }
 

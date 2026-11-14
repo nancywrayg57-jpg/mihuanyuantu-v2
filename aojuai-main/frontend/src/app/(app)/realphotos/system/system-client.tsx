@@ -82,8 +82,8 @@ const PROVIDER_STATIC_MODELS: Record<string, string[]> = {
   deepseek: ['deepseek-chat', 'deepseek-reasoner'],
   '阿里千问': ['qwen3-vl-plus', 'qwen-vl-plus', 'qwen-plus', 'qwen-turbo', 'qwen-max'],
   dashscope: ['qwen3-vl-plus', 'qwen-vl-plus', 'qwen-plus', 'qwen-turbo', 'qwen-max'],
-  'ChatGPT Image 2': ['gpt-image-2'],
-  aoju: ['gpt-image-2'],
+  'ChatGPT Image 2': ['gpt-image-2', 'gpt-image-2-vip'],
+  aoju: ['gpt-image-2', 'gpt-image-2-vip'],
 }
 
 function nonEmptyBase(preferred: string | undefined, duty: string): string {
@@ -345,19 +345,6 @@ export function RealphotosSystemClient() {
     }
   }
 
-  async function toggleCredential(item: Contract, cred: DutyCredential) {
-    try {
-      await apiFetch('/api/v1/realphotos/provider-contracts/enabled', {
-        method: 'POST',
-        body: JSON.stringify({ duty: item.duty, enabled: !cred.enabled, credentialId: cred.id }),
-      })
-      setMessage(cred.enabled ? '已停用该 Key' : '已启用该 Key，并同步提供商 / 模型 / Base URL')
-      await loadContracts()
-    } catch (error: unknown) {
-      setMessage(error instanceof ApiError ? error.message : '启停失败')
-    }
-  }
-
   async function toggleEnabled(item: Contract) {
     try {
       await apiFetch('/api/v1/realphotos/provider-contracts/enabled', {
@@ -607,17 +594,6 @@ export function RealphotosSystemClient() {
                                   <span className="text-muted-foreground font-sans">
                                     {cred.enabled ? '启用中' : '已停用'}
                                   </span>
-                                  {cred.id !== 'runtime' ? (
-                                    <button
-                                      className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-1.5 py-0.5 font-sans"
-                                      type="button"
-                                      onClick={() => void toggleCredential(item, cred)}
-                                    >
-                                      {cred.enabled ? '停用此 Key' : '启用此 Key'}
-                                    </button>
-                                  ) : (
-                                    <span className="text-muted-foreground font-sans">当前运行时密钥</span>
-                                  )}
                                 </div>
                               ))}
                             </div>
