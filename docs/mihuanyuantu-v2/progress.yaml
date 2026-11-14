@@ -273,10 +273,11 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "OPS-SUPPLIER-KEY-UX 已推 PR；待非作者 Owner squash；PG 需 realphotos_0005；不得开 S7；不得自评自合。"
+  action: "OPS-SUPPLIER-KEY-UX PR #53 待非作者 Owner squash；PG 需 realphotos_0005；不得开 S7；不得自评自合。"
   work_order: "OPS-SUPPLIER-KEY-UX-2026-11-13 docs/mihuanyuantu-v2/input/OPS-SUPPLIER-KEY-UX-2026-11-13.md"
   prior_work_order: "FIVE-LAYER-LEGACY-ALIGN 由另一会话推进；本会话独立 worktree"
   branch: cursor/ops-supplier-key-ux-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/53"
   worktree: /home/hbs/hbs-projects/mihuanyuantu-v2-ops-supplier-ux
   baseline_main: bb79bfb
   constraint_ledger: docs/mihuanyuantu-v2/input/OPS-SUPPLIER-KEY-UX-constraint-ledger.md
@@ -293,6 +294,7 @@ next_action:
     audit_main: pass
     browser_visual: not_run_no_node_modules
     secrets_store: ".secrets/ (gitignored); not committed"
+    material_path: "/home/hbs/hbs-projects/mihuanyuantu-v2/生产物料/蜜獾原图v2-生产物料.md"
     migration_note: "realphotos_0005 for platform settings + detection pass_score_threshold"
   prior_pr_audit_remain: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/50"
   prior_branch: cursor/remain-gap-w3w4-9973
