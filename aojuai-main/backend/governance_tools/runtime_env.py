@@ -32,6 +32,9 @@ ENV_ACCESS_ALLOWLIST = {
     "scripts/det_score_nonlegacy_pilot_e2e.py": (
         "Operator DET-SCORE NONLEGACY OPEN_PILOT e2e: proxy-clear + Bayer/PG measurement flags; not a runtime Settings path."
     ),
+    "scripts/det_score_default_opt_e2e.py": (
+        "Operator FIVE-LAYER-DEFAULT-OPT e2e: proxy-clear + single-variable measurement overrides; not a runtime Settings path."
+    ),
 }
 
 

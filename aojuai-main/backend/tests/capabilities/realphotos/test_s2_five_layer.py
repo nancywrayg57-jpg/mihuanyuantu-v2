@@ -17,6 +17,7 @@ from PIL import Image
 
 from app.capabilities.realphotos.services.camera_specs import lookup_camera_spec
 from app.capabilities.realphotos.services.five_layer import (
+    _LAYER0_OPTICAL_STRENGTH,
     FIDELITY_MAD_HARD_MAX,
     FIDELITY_MAD_MAX,
     PIPELINE_VERSION,
@@ -378,6 +379,20 @@ def test_nonlegacy_pilot_settings_default_off() -> None:
         "ALIGN_PG_FLAT_THR",
     ):
         assert Settings.model_fields[key].default == ""
+
+
+def test_default_opt_measure_settings_default_empty() -> None:
+    for key in (
+        "ALIGN_SHARPEN",
+        "ALIGN_VIGNETTE_SCALE",
+        "ALIGN_JPEG_MILD_SWEEP",
+        "ALIGN_JPEG_QUALITIES",
+    ):
+        assert Settings.model_fields[key].default == ""
+
+
+def test_layer0_optical_default_is_024_after_default_opt() -> None:
+    assert float(_LAYER0_OPTICAL_STRENGTH) == 0.24
 
 
 def test_weak_bayer_strength_zero_is_identity() -> None:

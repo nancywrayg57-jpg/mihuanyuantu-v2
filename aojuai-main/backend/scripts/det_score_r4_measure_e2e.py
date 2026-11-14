@@ -120,9 +120,9 @@ def main() -> int:
         l1_noise_sigma,
     )
 
-    must(float(_LAYER0_OPTICAL_STRENGTH) == 0.32, "module_default_optical_unchanged")
+    must(float(_LAYER0_OPTICAL_STRENGTH) == 0.24, "module_default_optical_unchanged")
     must(float(_NOISE_INTENSITY) == 1.55, "module_default_noise_unchanged")
-    must(abs(_float_setting_override("ALIGN_LAYER0_OPTICAL_STRENGTH", 0.32) - 0.16) < 1e-9, "override_optical")
+    must(abs(_float_setting_override("ALIGN_LAYER0_OPTICAL_STRENGTH", 0.24) - 0.16) < 1e-9, "override_optical")
     must(abs(_float_setting_override("ALIGN_NOISE_INTENSITY", 1.55) - 1.0) < 1e-9, "override_noise")
     must(abs(l1_noise_sigma("400") - 1.0) < 1e-6, "sigma_iso400_with_override")
 

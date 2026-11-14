@@ -32,12 +32,34 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "DET-SCORE-NONLEGACY-LIFT：旧版外联网方案→可行性门禁→仅 OPEN_PILOT 编码端测"
-    user_value: "真 Gemini 下相对止血基线可测提升；不靠放宽 PASS_SCORE"
-    visible_output: "端测 partial：P2 PG +1.08；P1 Bayer −9.83；不升默认不宣称达标"
-    verify: "pytest 28；真Gemini n=12；结论见 NONLEGACY e2e conclusion"
-    status: nonlegacy_w4_done_partial_gain_stop
-    next_user_action: "开PR；管理员接受天花板或改裁。禁升默认/禁S7/禁放宽PASS_SCORE。"
+    goal: "FIVE-LAYER-DEFAULT-OPT：默认路径单变量消融；改裁门禁 MEAN_GAIN/PASS75_LIFT"
+    user_value: "止血默认下真 Gemini 可测提升；不放宽 PASS_SCORE"
+    visible_output: "optical 0.32→0.24 已升默认；确认 mean=67.25 Δ+5.83 pass75+2"
+    verify: "真Gemini H0/A1–A5/confirm；旧Q1未宣称"
+    status: default_opt_promoted_optical_024
+    next_user_action: "非作者审合PR；禁S7；可选另探噪声/JPEG单变量。"
+  five_layer_default_opt_2026_11_14:
+    work_order: FIVE-LAYER-DEFAULT-OPT
+    branch: cursor/five-layer-default-opt-9973
+    work_order_file: docs/mihuanyuantu-v2/input/FIVE-LAYER-DEFAULT-OPT-work-order-2026-11-14.md
+    constraint_ledger: docs/mihuanyuantu-v2/input/FIVE-LAYER-DEFAULT-OPT-constraint-ledger.md
+    ablation_plan: docs/mihuanyuantu-v2/input/FIVE-LAYER-DEFAULT-OPT-ablation-plan-2026-11-14.md
+    ablation_summary: docs/mihuanyuantu-v2/input/FIVE-LAYER-DEFAULT-OPT-ablation-summary-2026-11-14.md
+    h0_evidence: docs/mihuanyuantu-v2/input/FIVE-LAYER-DEFAULT-OPT-e2e-h0-2026-11-14.txt
+    h0_mean_total: 61.42
+    h0_pass75: 0
+    h0_score_fn: none
+    confirm_evidence: docs/mihuanyuantu-v2/input/FIVE-LAYER-DEFAULT-OPT-e2e-confirm-optical-024-2026-11-14.txt
+    confirm_mean_total: 67.25
+    confirm_pass75: 2
+    promoted: {_LAYER0_OPTICAL_STRENGTH: "0.32->0.24"}
+    gates: [DEFAULT_OPT_MEAN_GAIN, DEFAULT_OPT_PASS75_LIFT]
+    q1_probe: not_run
+    pass_score_unchanged: 75
+    phase: W4_pr
+    defaults_promoted: true
+    production_billing: false
+    r9_s7: blocked
   det_score_nonlegacy_lift_2026_11_14:
     work_order: DET-SCORE-NONLEGACY-LIFT
     inherits: DET-SCORE-OPTIMIZE
