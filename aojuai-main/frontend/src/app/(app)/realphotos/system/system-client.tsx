@@ -1,10 +1,21 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
+
+import { DetectionPassScoreCard } from './detection-pass-score-card'
+
+type DutyCredential = {
+  id: string
+  masked: string
+  provider?: string
+  modelId?: string
+  baseUrl?: string
+  enabled: boolean
+}
 
 type Contract = {
   duty: string
@@ -20,6 +31,8 @@ type Contract = {
   keyPrefix?: string
   masked?: string
   hasSecret?: boolean
+  credentials?: DutyCredential[]
+  activeCredentialId?: string
   updatedAt?: string | null
   capabilities?: Record<string, unknown>
 }
@@ -50,16 +63,52 @@ const DUTY_DEFAULT_BASE: Record<string, string> = {
   final_detection: 'https://generativelanguage.googleapis.com/v1beta',
 }
 
+/** Keep in sync with supplier_clients.PROVIDER_DEFAULT_BASE. Switching provider must not clear Base URL. */
+const PROVIDER_DEFAULT_BASE: Record<string, string> = {
+  Gemini: 'https://generativelanguage.googleapis.com/v1beta',
+  'google-gemini': 'https://generativelanguage.googleapis.com/v1beta',
+  DeepSeek: 'https://api.deepseek.com/chat/completions',
+  deepseek: 'https://api.deepseek.com/chat/completions',
+  '阿里千问': 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+  dashscope: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+  'ChatGPT Image 2': 'https://apis.aoju.ai/v1',
+  aoju: 'https://apis.aoju.ai/v1',
+}
+
+const PROVIDER_STATIC_MODELS: Record<string, string[]> = {
+  Gemini: ['gemini-3.1-pro-preview', 'gemini-2.5-pro', 'gemini-2.0-flash'],
+  'google-gemini': ['gemini-3.1-pro-preview', 'gemini-2.5-pro', 'gemini-2.0-flash'],
+  DeepSeek: ['deepseek-chat', 'deepseek-reasoner'],
+  deepseek: ['deepseek-chat', 'deepseek-reasoner'],
+  '阿里千问': ['qwen3-vl-plus', 'qwen-vl-plus', 'qwen-plus', 'qwen-turbo', 'qwen-max'],
+  dashscope: ['qwen3-vl-plus', 'qwen-vl-plus', 'qwen-plus', 'qwen-turbo', 'qwen-max'],
+  'ChatGPT Image 2': ['gpt-image-2'],
+  aoju: ['gpt-image-2'],
+}
+
+function nonEmptyBase(preferred: string | undefined, duty: string): string {
+  const text = String(preferred || '').trim()
+  if (text) return text
+  return DUTY_DEFAULT_BASE[duty] || PROVIDER_DEFAULT_BASE.DeepSeek
+}
+
 /**
  * F7 role matrix (ticket default + PRD PG-011 / §7):
  * - merchant / admin: may write auto-redo for tenant
  * - tech_support: entrance visible, content read-only
  * - model API: admin only
  */
+type SystemTab = 'redo' | 'models' | 'baseline'
+
+function tabFromSearch(raw: string | null): SystemTab {
+  if (raw === 'models' || raw === 'baseline') return raw
+  return 'redo'
+}
+
 export function RealphotosSystemClient() {
   const searchParams = useSearchParams()
-  const initialTab = searchParams.get('tab') === 'models' ? 'models' : 'redo'
-  const [tab, setTab] = useState<'redo' | 'models'>(initialTab)
+  const initialTab = tabFromSearch(searchParams.get('tab'))
+  const [tab, setTab] = useState<SystemTab>(initialTab)
   const [message, setMessage] = useState('')
   const [roles, setRoles] = useState<string[]>([])
   const [redoEnabled, setRedoEnabled] = useState(false)
@@ -69,11 +118,15 @@ export function RealphotosSystemClient() {
   const [duty, setDuty] = useState('pre_review')
   const [providerChoice, setProviderChoice] = useState('阿里千问')
   const [providerCustom, setProviderCustom] = useState('')
-  const [modelId, setModelId] = useState('')
+  const [modelId, setModelId] = useState(PROVIDER_STATIC_MODELS['阿里千问'][0] || '')
+  const [modelOptions, setModelOptions] = useState<string[]>(PROVIDER_STATIC_MODELS['阿里千问'])
   const [baseUrl, setBaseUrl] = useState(DUTY_DEFAULT_BASE.pre_review)
   const [apiKey, setApiKey] = useState('')
   const [saving, setSaving] = useState(false)
   const [channelSearch, setChannelSearch] = useState('')
+  const replaceModelRef = useRef(false)
+  const modelIdRef = useRef(modelId)
+  modelIdRef.current = modelId
 
   const isAdmin = useMemo(
     () => roles.includes('rp_admin') || roles.includes('admin'),
@@ -85,6 +138,11 @@ export function RealphotosSystemClient() {
     return tech && !isAdmin && !merchant
   }, [isAdmin, roles])
   const canEditRedo = !isTechOnly
+
+  const shownModels = useMemo(() => {
+    if (modelId && !modelOptions.includes(modelId)) return [modelId, ...modelOptions]
+    return modelOptions
+  }, [modelId, modelOptions])
 
   const editableContracts = useMemo(
     () =>
@@ -101,6 +159,7 @@ export function RealphotosSystemClient() {
             item.baseUrl,
             item.keyPrefix,
             item.masked,
+            ...(item.credentials || []).flatMap((cred) => [cred.masked, cred.provider, cred.modelId]),
           ),
         ),
     [contracts, channelSearch],
@@ -113,6 +172,16 @@ export function RealphotosSystemClient() {
   function resolvedProvider() {
     if (providerChoice === '其他') return providerCustom.trim() || '其他'
     return providerChoice
+  }
+
+  function onProviderChange(next: string) {
+    setProviderChoice(next)
+    const preferred = PROVIDER_DEFAULT_BASE[next]
+    setBaseUrl(nonEmptyBase(preferred, duty))
+    replaceModelRef.current = true
+    const fallbackModels = PROVIDER_STATIC_MODELS[next] || []
+    setModelOptions(fallbackModels)
+    setModelId(fallbackModels[0] || '')
   }
 
   async function loadContracts() {
@@ -151,8 +220,10 @@ export function RealphotosSystemClient() {
   useEffect(() => {
     const existing = contracts.find((item) => item.duty === duty)
     if (existing) {
-      setModelId(existing.modelId || '')
-      setBaseUrl(existing.baseUrl || DUTY_DEFAULT_BASE[duty] || '')
+      const nextModel = existing.modelId || ''
+      setModelId(nextModel)
+      setModelOptions((current) => (nextModel && !current.includes(nextModel) ? [nextModel, ...current] : current))
+      setBaseUrl(nonEmptyBase(existing.baseUrl || DUTY_DEFAULT_BASE[duty], duty))
       const match = PROVIDERS.find((name) => name === existing.provider)
       if (match) {
         setProviderChoice(match)
@@ -162,11 +233,56 @@ export function RealphotosSystemClient() {
         setProviderCustom(existing.provider || '')
       }
     } else {
-      setModelId('')
-      setBaseUrl(DUTY_DEFAULT_BASE[duty] || '')
+      const fallback = PROVIDER_STATIC_MODELS[providerChoice] || []
+      setModelOptions(fallback)
+      setModelId(fallback[0] || '')
+      setBaseUrl(nonEmptyBase(DUTY_DEFAULT_BASE[duty], duty))
     }
     setApiKey('')
   }, [duty, contracts])
+
+  useEffect(() => {
+    if (tab !== 'models' || !isAdmin) return
+    const provider = providerChoice === '其他' ? providerCustom.trim() || '其他' : providerChoice
+    const url = baseUrl.trim()
+    if (!url) return
+    const seq = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const data = await apiFetch<{ models?: string[]; probe?: string; baseUrl?: string }>(
+            '/api/v1/realphotos/provider-contracts/probe-models',
+            {
+              method: 'POST',
+              body: JSON.stringify({
+                provider,
+                duty,
+                baseUrl: url,
+                apiKey: apiKey.trim() || undefined,
+              }),
+            },
+          )
+          const models = (data.models || []).filter((item) => item.trim())
+          const current = modelIdRef.current
+          if (replaceModelRef.current) {
+            replaceModelRef.current = false
+            setModelOptions(models)
+            setModelId(models[0] || current)
+            return
+          }
+          if (current && !models.includes(current)) {
+            setModelOptions([current, ...models])
+          } else {
+            setModelOptions(models.length ? models : PROVIDER_STATIC_MODELS[provider] || [])
+          }
+        } catch {
+          const fallback = PROVIDER_STATIC_MODELS[provider] || []
+          const current = modelIdRef.current
+          setModelOptions(current && !fallback.includes(current) ? [current, ...fallback] : fallback)
+        }
+      })()
+    }, 350)
+    return () => window.clearTimeout(seq)
+  }, [tab, isAdmin, providerChoice, providerCustom, baseUrl, duty, apiKey])
 
   async function saveRedo() {
     if (!canEditRedo) {
@@ -220,12 +336,25 @@ export function RealphotosSystemClient() {
         }),
       })
       setApiKey('')
-      setMessage('模型配置已保存；列表仅显示掩码。第一版不轮询。')
+      setMessage('模型配置已追加保存；列表仅显示掩码。同用途可共存多 Key，同时只启用一套。第一版不轮询。')
       await loadContracts()
     } catch (error: unknown) {
       setMessage(error instanceof ApiError ? error.message : '保存失败')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function toggleCredential(item: Contract, cred: DutyCredential) {
+    try {
+      await apiFetch('/api/v1/realphotos/provider-contracts/enabled', {
+        method: 'POST',
+        body: JSON.stringify({ duty: item.duty, enabled: !cred.enabled, credentialId: cred.id }),
+      })
+      setMessage(cred.enabled ? '已停用该 Key' : '已启用该 Key，并同步提供商 / 模型 / Base URL')
+      await loadContracts()
+    } catch (error: unknown) {
+      setMessage(error instanceof ApiError ? error.message : '启停失败')
     }
   }
 
@@ -261,22 +390,38 @@ export function RealphotosSystemClient() {
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">系统管理</h1>
       <p className="text-sm">{message}</p>
-      <div className="flex gap-2 text-sm">
-        <button className={`border px-3 py-1 ${tab === 'redo' ? 'bg-muted' : ''}`} type="button" onClick={() => setTab('redo')}>
+      <div className="flex flex-wrap gap-2 text-sm">
+        <button className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 ${tab === 'redo' ? 'bg-muted' : ''}`} type="button" onClick={() => setTab('redo')}>
           自动重做
         </button>
         <button
-          className={`border px-3 py-1 ${tab === 'models' ? 'bg-muted' : ''}`}
+          className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 ${tab === 'models' ? 'bg-muted' : ''}`}
           type="button"
           onClick={() => setTab('models')}
           disabled={!isAdmin}
         >
           模型 API
         </button>
+        <button
+          className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 ${tab === 'baseline' ? 'bg-muted' : ''}`}
+          type="button"
+          onClick={() => setTab('baseline')}
+          disabled={!isAdmin}
+        >
+          检测基线
+        </button>
       </div>
 
+      {tab === 'baseline' ? (
+        isAdmin ? (
+          <DetectionPassScoreCard />
+        ) : (
+          <p className="text-sm">仅平台管理员可查看与修改检测基线。</p>
+        )
+      ) : null}
+
       {tab === 'redo' ? (
-        <section className="space-y-3 text-sm">
+        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3 text-sm">
           {isTechOnly ? (
             <p className="text-muted-foreground">技术客服只读，不可改写。</p>
           ) : null}
@@ -314,7 +459,7 @@ export function RealphotosSystemClient() {
             />
           </label>
           <button
-            className="border px-3 py-1 disabled:opacity-50"
+            className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 disabled:opacity-50"
             type="button"
             disabled={!canEditRedo}
             onClick={() => void saveRedo()}
@@ -330,7 +475,7 @@ export function RealphotosSystemClient() {
             <p>仅平台管理员可配置模型 API。</p>
           ) : (
             <>
-              <div className="space-y-3 border p-3">
+              <div className="rp-card rounded-xl border border-border bg-card shadow-sm space-y-3 p-4">
                 <h2 className="font-medium">大模型 API Key 配置与管理</h2>
                 <div className="grid gap-3 md:grid-cols-2">
                   <label className="block">
@@ -338,7 +483,7 @@ export function RealphotosSystemClient() {
                     <select
                       className="mt-1 w-full border px-2 py-1"
                       value={providerChoice}
-                      onChange={(event) => setProviderChoice(event.target.value)}
+                      onChange={(event) => onProviderChange(event.target.value)}
                     >
                       {PROVIDERS.map((name) => (
                         <option key={name} value={name}>
@@ -359,12 +504,27 @@ export function RealphotosSystemClient() {
                   ) : null}
                   <label className="block">
                     模型版本
-                    <input
-                      className="mt-1 w-full border px-2 py-1"
-                      value={modelId}
-                      onChange={(event) => setModelId(event.target.value)}
-                      placeholder="例如 qwen3-vl-plus"
-                    />
+                    {providerChoice === '其他' && shownModels.length === 0 ? (
+                      <input
+                        className="mt-1 w-full border px-2 py-1"
+                        value={modelId}
+                        onChange={(event) => setModelId(event.target.value)}
+                        placeholder="填写模型 ID"
+                      />
+                    ) : (
+                      <select
+                        className="mt-1 w-full border px-2 py-1"
+                        value={shownModels.includes(modelId) ? modelId : shownModels[0] || ''}
+                        onChange={(event) => setModelId(event.target.value)}
+                      >
+                        {shownModels.length === 0 ? <option value="">暂无可选模型</option> : null}
+                        {shownModels.map((name) => (
+                          <option key={name} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </label>
                   <label className="block">
                     用途
@@ -396,12 +556,12 @@ export function RealphotosSystemClient() {
                       autoComplete="off"
                       value={apiKey}
                       onChange={(event) => setApiKey(event.target.value)}
-                      placeholder="留空则保留原密钥"
+                      placeholder="填写则追加一条，不覆盖已有 Key"
                     />
                   </label>
                 </div>
                 <button
-                  className="border px-3 py-1 disabled:opacity-50"
+                  className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 disabled:opacity-50"
                   type="button"
                   disabled={saving}
                   onClick={() => void saveModel()}
@@ -410,7 +570,7 @@ export function RealphotosSystemClient() {
                 </button>
               </div>
 
-              <div className="space-y-2">
+              <div className="rp-card rounded-xl border border-border bg-card shadow-sm space-y-2 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <h2 className="font-medium">已登记渠道</h2>
                   <ListSearch value={channelSearch} placeholder="提供商 / 模型 / 用途" onChange={setChannelSearch} />
@@ -436,15 +596,42 @@ export function RealphotosSystemClient() {
                         </td>
                         <td className="border px-2 py-1">{item.purpose || purposeLabel(item.duty)}</td>
                         <td className="border px-2 py-1 font-mono text-xs">
-                          {item.keyPrefix || item.masked || (item.hasSecret ? '已配置' : '未配置')}
+                          {(item.credentials || []).length > 0 ? (
+                            <div className="space-y-1">
+                              {(item.credentials || []).map((cred) => (
+                                <div key={cred.id} className="flex flex-wrap items-center gap-1">
+                                  <span>{cred.masked || '已配置'}</span>
+                                  {cred.modelId ? (
+                                    <span className="text-muted-foreground font-sans">{cred.modelId}</span>
+                                  ) : null}
+                                  <span className="text-muted-foreground font-sans">
+                                    {cred.enabled ? '启用中' : '已停用'}
+                                  </span>
+                                  {cred.id !== 'runtime' ? (
+                                    <button
+                                      className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-1.5 py-0.5 font-sans"
+                                      type="button"
+                                      onClick={() => void toggleCredential(item, cred)}
+                                    >
+                                      {cred.enabled ? '停用此 Key' : '启用此 Key'}
+                                    </button>
+                                  ) : (
+                                    <span className="text-muted-foreground font-sans">当前运行时密钥</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            item.keyPrefix || item.masked || (item.hasSecret ? '已配置' : '未配置')
+                          )}
                         </td>
                         <td className="border px-2 py-1">{item.enabled ? '已启用' : '已停用'}</td>
                         <td className="border px-2 py-1">平台</td>
                         <td className="border px-2 py-1">
-                          <button className="mr-2 border px-2 py-0.5" type="button" onClick={() => void toggleEnabled(item)}>
+                          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none mr-2 border px-2 py-0.5" type="button" onClick={() => void toggleEnabled(item)}>
                             {item.enabled ? '停用' : '启用'}
                           </button>
-                          <button className="border px-2 py-0.5" type="button" onClick={() => void deleteContract(item)}>
+                          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => void deleteContract(item)}>
                             删除
                           </button>
                         </td>

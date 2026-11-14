@@ -103,18 +103,21 @@ export function failureClassLabelForTask(
   return failureClassLabel(failureClass)
 }
 
+/** Fallback when a report has no snapshotted passScoreThreshold. The live line comes from the API. */
 export const DETECTION_PASS_SCORE = 75
 
 export function detectionNotPassedExplanation(detection: {
   total_score?: number | null
   passed?: boolean | null
   accepted?: boolean | null
+  passScoreThreshold?: number | null
 } | null | undefined): string | null {
   if (!detection) return null
   const score = detection.total_score
   if (score == null || Number.isNaN(Number(score))) return null
   const modelPassed = detection.passed === true ? 'true' : detection.passed === false ? 'false' : '—'
-  return `检测未通过：总分 ${Number(score)}/100，未达通过线 ${DETECTION_PASS_SCORE}（模型 passed=${modelPassed}）`
+  const line = detection.passScoreThreshold ?? DETECTION_PASS_SCORE
+  return `检测未通过：总分 ${Number(score)}/100，未达通过线 ${line}（模型 passed=${modelPassed}）`
 }
 
 export function ticketTypeLabel(value: string | null | undefined): string {

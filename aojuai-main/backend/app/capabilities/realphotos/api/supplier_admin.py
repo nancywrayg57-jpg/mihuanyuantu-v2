@@ -35,6 +35,16 @@ class EnabledBody(BaseModel):
 
     duty: str
     enabled: bool
+    credential_id: str | None = Field(default=None, alias="credentialId")
+
+
+class ProbeBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    provider: str
+    base_url: str | None = Field(default=None, alias="baseUrl")
+    api_key: str | None = Field(default=None, alias="apiKey")
+    duty: str | None = None
 
 
 def _reject_key_auth(request: Request) -> None:
@@ -99,6 +109,27 @@ async def save_contract(
     return SuccessResponse(data=payload)
 
 
+@router.post("/provider-contracts/probe-models")
+async def probe_models(
+    body: ProbeBody,
+    request: Request,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
+) -> dict[str, Any]:
+    _reject_key_auth(request)
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosSupplierConfigService(db).probe_models(
+        actor_role_codes=roles,
+        provider=body.provider,
+        base_url=body.base_url,
+        api_key=body.api_key,
+        duty=body.duty,
+    )
+    return SuccessResponse(data=payload)
+
+
 @router.post("/provider-contracts/enabled")
 async def set_contract_enabled(
     body: EnabledBody,
@@ -115,6 +146,7 @@ async def set_contract_enabled(
         duty=body.duty,
         enabled=bool(body.enabled),
         actor_user_id=int(current_user.id),
+        credential_id=body.credential_id,
     )
     await db.commit()
     return SuccessResponse(data=payload)

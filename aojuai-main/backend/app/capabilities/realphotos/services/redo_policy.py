@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+# Code default. Live admin setting is DetectionPassScoreService; do not lower this constant.
 PASS_SCORE = 75
 DEFAULT_THRESHOLD = 70
 DEFAULT_EXTRA_ROUNDS = 1
@@ -11,8 +12,10 @@ MAX_EXTRA_ROUNDS = 5
 MAX_EXECUTIONS = 3
 
 
-def accepted(*, passed: bool, total_score: int) -> bool:
-    return bool(passed) and int(total_score) >= PASS_SCORE
+def accepted(*, passed: bool, total_score: int, pass_score: int | None = None) -> bool:
+    """Gate on the model flag and a pass line. Omitted pass_score uses the code default 75."""
+    line = PASS_SCORE if pass_score is None else int(pass_score)
+    return bool(passed) and int(total_score) >= line
 
 
 def should_auto_redo(

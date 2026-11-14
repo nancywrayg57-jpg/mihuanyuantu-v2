@@ -79,7 +79,7 @@ export default function RealphotosPromptsPage() {
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">AI 提示词模板</h1>
       <p className="text-sm">{message}</p>
-      <section className="space-y-3">
+      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
         <h2 className="text-sm font-medium">新建</h2>
         <label className="block text-sm">
           名称
@@ -110,11 +110,11 @@ export default function RealphotosPromptsPage() {
           负向提示词
           <textarea className="mt-1 block w-full max-w-md border px-2 py-1" rows={2} value={negative} onChange={(event) => setNegative(event.target.value)} />
         </label>
-        <button className="border px-3 py-1 text-sm" type="button" onClick={() => void save()}>
+        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 text-sm" type="button" onClick={() => void save()}>
           保存模板
         </button>
       </section>
-      <section className="space-y-3">
+      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <ListSearch
             value={search}
@@ -127,10 +127,10 @@ export default function RealphotosPromptsPage() {
           <span>
             第 {page} / {pageCount} 页 · 共 {filteredItems.length}
           </span>
-          <button className="border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
             上一页
           </button>
-          <button className="border px-2 py-1" type="button" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>
+          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>
             下一页
           </button>
         </div>

@@ -72,7 +72,7 @@ export default function RealphotosMessagesPage() {
     <main className="space-y-6 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-medium">消息中心</h1>
-        <button className="border px-3 py-1 text-sm" type="button" onClick={() => void markAll()}>
+        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 text-sm" type="button" onClick={() => void markAll()}>
           全部已读（未读 {unreadCount}）
         </button>
       </div>
@@ -81,6 +81,7 @@ export default function RealphotosMessagesPage() {
         {scope === 'recharge_only' ? ' 订单客服视图：仅商家充值订单通知。' : ''}
       </p>
       <p className="text-sm">{message}</p>
+      <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
       <ListSearch value={search} placeholder="标题 / 正文" onChange={setSearch} />
       <table className="w-full text-sm">
         <thead>
@@ -106,11 +107,11 @@ export default function RealphotosMessagesPage() {
                 <td>{item.createdAt || ''}</td>
                 <td className="space-x-2">
                   {!item.readAt ? (
-                    <button className="border px-2 py-0.5" type="button" onClick={() => void markRead(item.id)}>
+                    <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => void markRead(item.id)}>
                       标为已读
                     </button>
                   ) : null}
-                  <button className="border px-2 py-0.5" type="button" onClick={() => void resend(item.id)}>
+                  <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => void resend(item.id)}>
                     补发
                   </button>
                 </td>
@@ -119,6 +120,7 @@ export default function RealphotosMessagesPage() {
           )}
         </tbody>
       </table>
+      </section>
     </main>
   )
 }

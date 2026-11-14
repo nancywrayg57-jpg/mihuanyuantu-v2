@@ -72,7 +72,7 @@ export default function RealphotosImportsPage() {
         <p className="text-sm text-amber-800">账号已因预审冻结：导入入口已禁用。</p>
       ) : null}
       <p className="text-sm">{message}</p>
-      <section className="space-y-3">
+      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-medium">粘贴文本（每行 URL 或 JSON 数组）</h2>
           <ListSearch value={search} placeholder="在已粘贴内容中定位" onChange={setSearch} />
@@ -90,7 +90,7 @@ export default function RealphotosImportsPage() {
           onChange={(event) => setPayload(event.target.value)}
         />
         <button
-          className="border px-3 py-1 text-sm disabled:opacity-50"
+          className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 text-sm disabled:opacity-50"
           type="button"
           disabled={frozen}
           onClick={() => void submitText()}
@@ -98,7 +98,7 @@ export default function RealphotosImportsPage() {
           提交导入
         </button>
       </section>
-      <section className="space-y-3">
+      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
         <h2 className="text-sm font-medium">上传 JSON 文件</h2>
         <input
           className="block text-sm disabled:opacity-50"

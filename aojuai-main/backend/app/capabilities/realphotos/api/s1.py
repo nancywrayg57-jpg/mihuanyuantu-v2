@@ -22,6 +22,7 @@ from app.capabilities.realphotos.permissions import (
     WALLET_READ,
     WORKSPACE_READ,
 )
+from app.capabilities.realphotos.services.redo_policy import PASS_SCORE
 from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
 from app.capabilities.realphotos.services.s1_recharge import (
     RealphotosRechargeService,
@@ -145,7 +146,11 @@ async def _enrich_task_detail(service, *, tenant_id: int, task) -> dict[str, Any
     ):
         payload["detectionBrief"] = {
             "totalScore": int(detection["total_score"]),
-            "passScoreThreshold": int(detection.get("passScoreThreshold") or 75),
+            "passScoreThreshold": (
+                PASS_SCORE
+                if detection.get("passScoreThreshold") is None
+                else int(detection["passScoreThreshold"])
+            ),
             "accepted": bool(detection.get("accepted")),
         }
     else:
