@@ -14,22 +14,42 @@ from app.core.exceptions import BusinessError
 
 _KEYS = ("noise", "depthOfField", "lighting", "colorRealism", "overallRealism")
 _LOG = logging.getLogger(__name__)
-# R1: keep PASS_SCORE as the only gate; prompt must ask model to align passed with ≥75.
-_PROMPT = (
-    "你是图片最终检测器。只返回一个 JSON 对象，不要 Markdown。"
-    "键必须是 noise、depthOfField、lighting、colorRealism、overallRealism、total_score、passed、reason。"
-    "五个维度和 total_score 都是 0 到 100 的整数。total_score 由你单独给出，不要写成五维平均。"
-    "passed 是布尔值。"
-    "reason 必须使用简体中文："
-    "若未通过，先写具体不通过原因（指出偏低维度），再写 1～2 条可执行的优化方向；"
-    "若通过，reason 可简短说明通过依据。"
-    f"平台通过分为 total_score ≥ {PASS_SCORE}："
-    f"仅当 total_score ≥ {PASS_SCORE} 时 passed 才可为 true；"
-    f"若 total_score < {PASS_SCORE}，passed 必须为 false。"
-)
 
 
-def parse_gemini_report(payload: str) -> dict:
+def _line(pass_score: int | None) -> int:
+    return int(PASS_SCORE if pass_score is None else pass_score)
+
+
+def prompt_pass_line(pass_score: int | None = None) -> str:
+    return f"平台通过分为 total_score ≥ {_line(pass_score)}"
+
+
+def detection_prompt(pass_score: int | None = None) -> str:
+    """Ask the model to align passed with the live pass line. Default line is PASS_SCORE.
+
+    UX (ALIGN PR): reason must be Simplified Chinese with failure cause + optimization tips.
+    OPS (#53): pass line may be an admin override, not a hard-coded 75.
+    """
+    line = _line(pass_score)
+    return (
+        "你是图片最终检测器。只返回一个 JSON 对象，不要 Markdown。"
+        "键必须是 noise、depthOfField、lighting、colorRealism、overallRealism、total_score、passed、reason。"
+        "五个维度和 total_score 都是 0 到 100 的整数。total_score 由你单独给出，不要写成五维平均。"
+        "passed 是布尔值。"
+        "reason 必须使用简体中文："
+        "若未通过，先写具体不通过原因（指出偏低维度），再写 1～2 条可执行的优化方向；"
+        "若通过，reason 可简短说明通过依据。"
+        f"{prompt_pass_line(line)}："
+        f"仅当 total_score ≥ {line} 时 passed 才可为 true；"
+        f"若 total_score < {line}，passed 必须为 false。"
+    )
+
+
+# Default prompt stays aligned with PASS_SCORE (75) when no admin override is passed in.
+_PROMPT = detection_prompt()
+
+
+def parse_gemini_report(payload: str, *, pass_score: int | None = None) -> dict:
     text = str(payload or "").strip()
     if text.lower().startswith("<!doctype") or text.lower().startswith("<html"):
         raise BusinessError(message="检测响应不是 JSON", code="GEMINI_TECHNICAL")
@@ -55,11 +75,12 @@ def parse_gemini_report(payload: str) -> dict:
     parsed["passed"] = passed
     parsed["reason"] = "" if row.get("reason") is None else str(row.get("reason"))
     # Soft check only: never rewrite model JSON to fake acceptance (R1).
-    if parsed["passed"] is True and int(parsed["total_score"]) < int(PASS_SCORE):
+    line = _line(pass_score)
+    if parsed["passed"] is True and int(parsed["total_score"]) < line:
         _LOG.warning(
             "gemini_passed_score_misaligned passed=true total_score=%s pass_score=%s",
             parsed["total_score"],
-            PASS_SCORE,
+            line,
         )
     return parsed
 
@@ -70,6 +91,7 @@ def detect_jpeg(
     model_id: str | None = None,
     base_url: str | None = None,
     api_key: str | None = None,
+    pass_score: int | None = None,
 ) -> dict:
     """Call Gemini. Prefer explicit contract args; settings are seed fallback only."""
     key = str(api_key or settings.GEMINI_API_KEY or "").strip()
@@ -82,7 +104,7 @@ def detect_jpeg(
         "contents": [
             {
                 "parts": [
-                    {"text": _PROMPT},
+                    {"text": detection_prompt(pass_score)},
                     {"inline_data": {"mime_type": "image/jpeg", "data": base64.b64encode(jpeg).decode()}},
                 ]
             }
@@ -107,8 +129,9 @@ def detect_jpeg(
     except json.JSONDecodeError as exc:
         raise BusinessError(message="检测响应无法解析", code="GEMINI_TECHNICAL") from exc
     text = _response_text(envelope)
-    report = parse_gemini_report(text)
+    report = parse_gemini_report(text, pass_score=pass_score)
     report["detector"] = model
+    report["passScoreThreshold"] = _line(pass_score)
     return report
 
 

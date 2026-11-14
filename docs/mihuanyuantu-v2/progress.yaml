@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "FIVE-LAYER-LEGACY-ALIGN：五层对齐旧版提分 ≥10（Q4/Q8 放开 · Q11 观测）"
-    user_value: "同样本真 Gemini 均分相对 s2-five-layer-2 提升 ≥10；pipeline s2-five-layer-3"
-    visible_output: "five_layer v3 + CA + Layer0 + ALIGN e2e 证据"
-    verify: "/tmp/five-layer-legacy-align-e2e.log 含 ALIGN_W5_E2E_PASS"
-    status: pr_open_local_preview
-    next_user_action: "PR #54 已开；本地预览 FE:3000 API:38000；合入须非作者账号（双账号）。"
+    goal: "FIVE-LAYER-LEGACY-ALIGN PR #54：合入 main(#53) 冲突消解 + UX/ALIGN 交付"
+    user_value: "任务详情/图库文案可用；ALIGN 研究与 C1 SHORTFALL 证据入库；保留 #53 动态检测基线"
+    visible_output: "PR #54 无冲突；本地预览 FE:3000 API:38000"
+    verify: "gh pr view 54 mergeable=MERGEABLE；不宣称 ALIGN_W5_E2E_PASS"
+    status: merging_main_conflict_resolve
+    next_user_action: "冲突消解后推送 PR #54；合入须非作者账号；不得开 S7。"
   five_layer_legacy_align_2026_11_13:
     work_order: FIVE-LAYER-LEGACY-ALIGN
     branch: cursor/five-layer-legacy-align-9973
@@ -69,7 +69,7 @@ vibe_coding:
       coding_gate: CLOSED_after_c1_shortfall
       feasibility_gate: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-feasibility-gate-2026-11-14.md
       e2e_round: c1_zh_prompts_blend_alpha_1
-    w6_pr: blocked_q12_shortfall
+    w6_pr: pr_54_merging_main
     constraint_ledger: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-constraint-ledger.md
     sample_sha256: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-sample-sha256.json
     e2e_log: /tmp/five-layer-legacy-align-e2e.log
@@ -77,8 +77,6 @@ vibe_coding:
     production_billing: false
     r9_s7: blocked
     pass_score_unchanged: 75
-
-
   library_asset_purge_2026_11_13:
     work_order: LIBRARY-ASSET-PURGE
     branch: cursor/library-asset-purge-9973
@@ -314,11 +312,30 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "AUDIT-REMAIN-CLOSEOUT 端测 PASS；推 PR 待非作者 Owner squash。R9_S7_BLOCKED；OUT_ND012_SKIPPED；不得开 S7；不得自评自合。"
-  work_order: "AUDIT-REMAIN-CLOSEOUT-2026-11-11 docs/mihuanyuantu-v2/input/AUDIT-REMAIN-CLOSEOUT-2026-11-11.md"
-  prior_work_order: "REMAIN-GAP W3+W4 已合入 #49"
-  branch: cursor/audit-remain-closeout-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/50"
+  action: "OPS-SUPPLIER-KEY-UX PR #53 待非作者 Owner squash；PG 需 realphotos_0005；不得开 S7；不得自评自合。"
+  work_order: "OPS-SUPPLIER-KEY-UX-2026-11-13 docs/mihuanyuantu-v2/input/OPS-SUPPLIER-KEY-UX-2026-11-13.md"
+  prior_work_order: "FIVE-LAYER-LEGACY-ALIGN 由另一会话推进；本会话独立 worktree"
+  branch: cursor/ops-supplier-key-ux-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/53"
+  worktree: /home/hbs/hbs-projects/mihuanyuantu-v2-ops-supplier-ux
+  baseline_main: bb79bfb
+  constraint_ledger: docs/mihuanyuantu-v2/input/OPS-SUPPLIER-KEY-UX-constraint-ledger.md
+  e2e_log: /tmp/ops-supplier-key-ux-e2e.log
+  evidence_marker: OPS_SUPPLIER_KEY_UX_E2E_PASS
+  production_billing: false
+  r9_s7: blocked
+  ops_supplier_key_ux_status:
+    T1_provider_cascade: done_e2e_pass
+    T2_multi_key: done_e2e_pass
+    T3_seed_capability: done_e2e_pass
+    T4_pass_score_admin: done_e2e_pass
+    T5_style_toast: done_e2e_pass
+    audit_main: pass
+    browser_visual: not_run_no_node_modules
+    secrets_store: ".secrets/ (gitignored); not committed"
+    material_path: "/home/hbs/hbs-projects/mihuanyuantu-v2/生产物料/蜜獾原图v2-生产物料.md"
+    migration_note: "realphotos_0005 for platform settings + detection pass_score_threshold"
+  prior_pr_audit_remain: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/50"
   prior_branch: cursor/remain-gap-w3w4-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/49"
   audit_remain_closeout_status:

@@ -6,6 +6,7 @@ from .credit import RealphotosCreditAccount, RealphotosCreditLedgerEntry
 from .execution_job import RealphotosExecutionJob
 from .merchant import RealphotosMerchantProfile
 from .outbox import RealphotosOutbox
+from .platform_setting import RealphotosPlatformSetting
 from .provider_usage import RealphotosProviderUsage
 from .s1_loop import (
     RealphotosAsset,
@@ -62,6 +63,7 @@ __all__ = [
     "RealphotosInboxMessage",
     "RealphotosMerchantProfile",
     "RealphotosOutbox",
+    "RealphotosPlatformSetting",
     "RealphotosPromptOptimization",
     "RealphotosPromptTemplate",
     "RealphotosProviderContract",

@@ -56,6 +56,7 @@ from app.capabilities.realphotos.services.five_layer import PIPELINE_VERSION as 
 from app.capabilities.realphotos.services.job_service import RealphotosJobService
 from app.capabilities.realphotos.services.redo_policy import (
     MAX_EXECUTIONS,
+    PASS_SCORE,
     accepted,
     should_auto_redo,
     validate_setting,
@@ -1151,16 +1152,18 @@ class RealphotosS1Service:
             return None
         score = int(row.total_score)
         model_passed = bool(row.passed)
-        accepted = model_passed and score >= 75
+        raw_line = getattr(row, "pass_score_threshold", None)
+        line = int(PASS_SCORE if raw_line is None else raw_line)
+        accepted_now = model_passed and score >= line
         explanation = None
-        if not accepted:
+        if not accepted_now:
             model_hint = (
                 "模型判定为通过，但未达到平台接受分"
                 if model_passed
                 else "模型判定为未通过"
             )
             explanation = (
-                f"检测未通过：总分 {score}/100，需达到 75 分才可交付（{model_hint}）"
+                f"检测未通过：总分 {score}/100，需达到 {line} 分才可交付（{model_hint}）"
             )
         return {
             "noise": int(row.noise),
@@ -1170,8 +1173,8 @@ class RealphotosS1Service:
             "overallRealism": int(row.overall_realism),
             "total_score": score,
             "passed": model_passed,
-            "accepted": accepted,
-            "passScoreThreshold": 75,
+            "accepted": accepted_now,
+            "passScoreThreshold": line,
             "platformGateExplanation": explanation,
             "reason": row.reason,
             "detector": row.detector,
@@ -1435,12 +1438,16 @@ class RealphotosS1Service:
         model_id = str(detector_snap.get("modelId") or "")
         provider = str(detector_snap.get("provider") or "google-gemini")
         base_url = str(detector_snap.get("baseUrl") or "")
+        from app.capabilities.realphotos.services.detection_pass_score import DetectionPassScoreService
+
+        pass_score = await DetectionPassScoreService(self.db).current()
         try:
             report = detect_jpeg(
                 jpeg,
                 model_id=model_id or None,
                 base_url=base_url or None,
                 api_key=read_duty_secret("final_detection") or None,
+                pass_score=pass_score,
             )
         except BusinessError as exc:
             await usage.record_call(
@@ -1476,6 +1483,7 @@ class RealphotosS1Service:
                 color_realism=int(report["colorRealism"]),
                 overall_realism=int(report["overallRealism"]),
                 total_score=int(report["total_score"]),
+                pass_score_threshold=int(pass_score),
                 passed=bool(report["passed"]),
                 reason=str(report["reason"] or ""),
                 detector=str(report["detector"]),
@@ -1483,7 +1491,11 @@ class RealphotosS1Service:
         )
         policy = await self._policy(task)
         redo_count = await self._prior_rounds(task)
-        passed_now = accepted(passed=bool(report["passed"]), total_score=int(report["total_score"]))
+        passed_now = accepted(
+            passed=bool(report["passed"]),
+            total_score=int(report["total_score"]),
+            pass_score=int(pass_score),
+        )
         if should_auto_redo(
             enabled=bool(policy.enabled),
             total_score=int(report["total_score"]),

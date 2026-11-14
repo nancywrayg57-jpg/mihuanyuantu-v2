@@ -182,7 +182,7 @@ export default function RealphotosUsersPage() {
       <p className="text-sm">{message}</p>
       <ListSearch value={search} placeholder="登录名 / 编号 / 租户" onChange={setSearch} />
 
-      <section className="space-y-2 border p-3 text-sm">
+      <section className="rp-card rounded-xl bg-card shadow-sm space-y-2 border p-3 text-sm">
         <h2 className="font-medium">创建账号</h2>
         <input className="border px-2 py-1" placeholder="登录名" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} />
         <input className="ml-2 border px-2 py-1" type="password" placeholder="初始密码" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
@@ -192,11 +192,12 @@ export default function RealphotosUsersPage() {
           <option value="rp_order_support">rp_order_support</option>
           <option value="rp_tech_support">rp_tech_support</option>
         </select>
-        <button className="ml-2 border px-3 py-1" type="button" onClick={() => void createUser()}>
+        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none ml-2 border px-3 py-1" type="button" onClick={() => void createUser()}>
           创建
         </button>
       </section>
 
+      <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
@@ -213,14 +214,14 @@ export default function RealphotosUsersPage() {
               <td className="border px-2 py-1">{item.username}</td>
               <td className="border px-2 py-1">{item.status === 1 ? '启用' : '停用'}</td>
               <td className="border px-2 py-1 space-x-1">
-                <button className="border px-2 py-0.5" type="button" onClick={() => void setStatus(item.id, true)}>
+                <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => void setStatus(item.id, true)}>
                   启用
                 </button>
-                <button className="border px-2 py-0.5" type="button" onClick={() => void setStatus(item.id, false)}>
+                <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => void setStatus(item.id, false)}>
                   停用
                 </button>
                 <button
-                  className="border px-2 py-0.5"
+                  className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5"
                   type="button"
                   onClick={() => {
                     setCreditUserId(String(item.id))
@@ -238,51 +239,52 @@ export default function RealphotosUsersPage() {
         </tbody>
       </table>
       <div className="flex gap-2 text-sm">
-        <button className="border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
           上一页
         </button>
         <span>第 {page} 页</span>
-        <button className="border px-2 py-1" type="button" onClick={() => setPage((p) => p + 1)}>
+        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" onClick={() => setPage((p) => p + 1)}>
           下一页
         </button>
       </div>
+      </section>
 
-      <section className="space-y-2 border p-3 text-sm">
+      <section className="rp-card rounded-xl bg-card shadow-sm space-y-2 border p-3 text-sm">
         <h2 className="font-medium">整数加减分</h2>
         <input className="border px-2 py-1" placeholder="用户编号" value={creditUserId} onChange={(e) => setCreditUserId(e.target.value)} />
         <input className="ml-2 border px-2 py-1" placeholder="租户" value={creditTenantId} onChange={(e) => setCreditTenantId(e.target.value)} />
         <input className="ml-2 w-24 border px-2 py-1" placeholder="整数Δ" value={creditDelta} onChange={(e) => setCreditDelta(e.target.value)} />
         <input className="ml-2 border px-2 py-1" placeholder="原因（必填）" value={creditReason} onChange={(e) => setCreditReason(e.target.value)} />
-        <button className="ml-2 border px-3 py-1" type="button" onClick={() => void adjustCredits()}>
+        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none ml-2 border px-3 py-1" type="button" onClick={() => void adjustCredits()}>
           提交加减分
         </button>
       </section>
 
-      <section className="space-y-2 border p-3 text-sm">
+      <section className="rp-card rounded-xl bg-card shadow-sm space-y-2 border p-3 text-sm">
         <h2 className="font-medium">保存角色</h2>
         <input className="border px-2 py-1" placeholder="用户编号" value={roleUserId} onChange={(e) => setRoleUserId(e.target.value)} />
         <input className="ml-2 border px-2 py-1" placeholder="租户" value={roleTenantId} onChange={(e) => setRoleTenantId(e.target.value)} />
         <input className="ml-2 w-64 border px-2 py-1" placeholder="roleCodes 逗号分隔" value={roleCodes} onChange={(e) => setRoleCodes(e.target.value)} />
-        <button className="ml-2 border px-3 py-1" type="button" onClick={() => void saveRoles()}>
+        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none ml-2 border px-3 py-1" type="button" onClick={() => void saveRoles()}>
           保存角色
         </button>
       </section>
 
-      <section className="space-y-2 border p-3 text-sm">
+      <section className="rp-card rounded-xl bg-card shadow-sm space-y-2 border p-3 text-sm">
         <h2 className="font-medium">重置密码</h2>
         <input className="border px-2 py-1" placeholder="用户编号" value={pwdUserId} onChange={(e) => setPwdUserId(e.target.value)} />
         <input className="ml-2 border px-2 py-1" type="password" placeholder="新密码" value={pwd1} onChange={(e) => setPwd1(e.target.value)} />
         <input className="ml-2 border px-2 py-1" type="password" placeholder="确认密码" value={pwd2} onChange={(e) => setPwd2(e.target.value)} />
-        <button className="ml-2 border px-3 py-1" type="button" onClick={() => void resetPassword()}>
+        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none ml-2 border px-3 py-1" type="button" onClick={() => void resetPassword()}>
           重置
         </button>
       </section>
 
-      <section className="space-y-2 border p-3 text-sm">
+      <section className="rp-card rounded-xl bg-card shadow-sm space-y-2 border p-3 text-sm">
         <h2 className="font-medium">删除（须输入登录名确认）</h2>
         <input className="border px-2 py-1" placeholder="用户编号" value={deleteUserId} onChange={(e) => setDeleteUserId(e.target.value)} />
         <input className="ml-2 border px-2 py-1" placeholder="确认登录名" value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} />
-        <button className="ml-2 border px-3 py-1" type="button" onClick={() => void deleteUser()}>
+        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none ml-2 border px-3 py-1" type="button" onClick={() => void deleteUser()}>
           删除
         </button>
       </section>

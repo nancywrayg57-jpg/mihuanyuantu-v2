@@ -41,6 +41,7 @@ export default function RealphotosProviderContractsPage() {
     <main className="space-y-4 p-6">
       <h1 className="text-lg font-medium">模型合同</h1>
       <p className="text-sm">{message}</p>
+      <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
       <ListSearch value={search} placeholder="职责 / 提供商 / 模型" onChange={setSearch} />
       <table className="w-full border-collapse text-sm">
         <thead>
@@ -76,6 +77,7 @@ export default function RealphotosProviderContractsPage() {
           ))}
         </tbody>
       </table>
+      </section>
     </main>
   )
 }

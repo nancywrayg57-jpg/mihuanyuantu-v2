@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch } from '@/lib/api'
 import {
   creditDispositionLabel,
@@ -107,10 +108,14 @@ export default function RealphotosTechDeskPage() {
           body: JSON.stringify({ userId: Number(userId), tenantId: Number(tenantId), reason }),
         },
       )
-      setMessage(`已解除预审冻结；关闭冻结工单 ${payload.closedFreezeTickets ?? 0} 张`)
+      const text = `已解除预审冻结；关闭冻结工单 ${payload.closedFreezeTickets ?? 0} 张`
+      setMessage(text)
+      toastTask(text, true)
       await loadDesk()
     } catch (error: unknown) {
-      setMessage(error instanceof ApiError ? error.message : '解冻失败')
+      const text = error instanceof ApiError ? error.message : '解冻失败'
+      setMessage(text)
+      toastTask(text, false)
     }
   }
 
@@ -136,12 +141,16 @@ export default function RealphotosTechDeskPage() {
         method: 'POST',
         body: JSON.stringify({ outcome: resolveOutcome, note: resolveNote }),
       })
-      setMessage(`工单 ${updated.id} 已办结（${updated.resolutionOutcome}）；办结不等于解锁图片`)
+      const text = `工单 ${updated.id} 已办结（${updated.resolutionOutcome}）；办结不等于解锁图片`
+      setMessage(text)
+      toastTask(text, true)
       setDetail(updated)
       setResolveNote('')
       await loadDesk()
     } catch (error: unknown) {
-      setMessage(error instanceof ApiError ? error.message : '办结失败')
+      const text = error instanceof ApiError ? error.message : '办结失败'
+      setMessage(text)
+      toastTask(text, false)
     }
   }
 
@@ -154,11 +163,15 @@ export default function RealphotosTechDeskPage() {
           body: JSON.stringify({ tenantId: Number(heldTenantId), reason: heldReason }),
         },
       )
-      setMessage(`已释放冻结积分；处置=${payload.disposition || 'ok'}`)
+      const text = `已释放冻结积分；处置=${payload.disposition || 'ok'}`
+      setMessage(text)
+      toastTask(text, true)
       setHeldReason('')
       await loadDesk()
     } catch (error: unknown) {
-      setMessage(error instanceof ApiError ? error.message : '释放失败')
+      const text = error instanceof ApiError ? error.message : '释放失败'
+      setMessage(text)
+      toastTask(text, false)
     }
   }
 
@@ -169,6 +182,7 @@ export default function RealphotosTechDeskPage() {
         {message}
         {canUnfreeze ? ` · 待处理 open=${openCount}` : ''}
       </p>
+      <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <label>
           类型筛选
@@ -210,7 +224,7 @@ export default function RealphotosTechDeskPage() {
                 <td className="border px-2 py-1">{ticketStatusLabel(item.status)}</td>
                 <td className="border px-2 py-1">{item.reason}</td>
                 <td className="border px-2 py-1">
-                  <button className="border px-2 py-0.5" type="button" onClick={() => setDetail(item)}>
+                  <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => setDetail(item)}>
                     详情
                   </button>
                 </td>
@@ -219,11 +233,12 @@ export default function RealphotosTechDeskPage() {
           )}
         </tbody>
       </table>
+      </section>
       {detail ? (
-        <div className="space-y-2 border p-3 text-sm">
+        <div className="rp-card rounded-xl border border-border bg-card shadow-sm space-y-2 p-4 text-sm">
           <div className="flex justify-between">
             <strong>工单 {detail.id}</strong>
-            <button type="button" className="border px-2 py-0.5" onClick={() => setDetail(null)}>
+            <button type="button" className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" onClick={() => setDetail(null)}>
               关闭面板
             </button>
           </div>
@@ -255,7 +270,7 @@ export default function RealphotosTechDeskPage() {
                 value={resolveNote}
                 onChange={(event) => setResolveNote(event.target.value)}
               />
-              <button className="ml-2 border px-3 py-1" type="button" onClick={() => void resolveDetail()}>
+              <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none ml-2 border px-3 py-1" type="button" onClick={() => void resolveDetail()}>
                 办结申诉
               </button>
             </div>
@@ -266,7 +281,7 @@ export default function RealphotosTechDeskPage() {
         </div>
       ) : null}
       {canAppeal && !canUnfreeze ? (
-        <section className="space-y-2">
+        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
           <h2 className="text-sm font-medium">创建图片申诉</h2>
           <input
             className="w-full max-w-md border px-2 py-1 text-sm"
@@ -274,23 +289,23 @@ export default function RealphotosTechDeskPage() {
             value={appealReason}
             onChange={(event) => setAppealReason(event.target.value)}
           />
-          <button className="border px-3 py-1 text-sm" type="button" onClick={() => void createAppeal()}>
+          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 text-sm" type="button" onClick={() => void createAppeal()}>
             提交申诉
           </button>
         </section>
       ) : null}
       {canUnfreeze ? (
         <>
-          <section className="space-y-2">
+          <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
             <h2 className="text-sm font-medium">解除预审冻结</h2>
             <input className="border px-2 py-1 text-sm" placeholder="用户编号" value={userId} onChange={(event) => setUserId(event.target.value)} />
             <input className="ml-2 border px-2 py-1 text-sm" placeholder="租户编号" value={tenantId} onChange={(event) => setTenantId(event.target.value)} />
             <input className="ml-2 border px-2 py-1 text-sm" placeholder="原因" value={reason} onChange={(event) => setReason(event.target.value)} />
-            <button className="ml-2 border px-3 py-1 text-sm" type="button" onClick={() => void unfreeze()}>
+            <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none ml-2 border px-3 py-1 text-sm" type="button" onClick={() => void unfreeze()}>
               解冻
             </button>
           </section>
-          <section className="space-y-2">
+          <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
             <h2 className="text-sm font-medium">技术失败冻结积分释放</h2>
             <p className="text-xs text-muted-foreground">当前 held 任务 {heldItems.length} 条。</p>
             <table className="w-full max-w-3xl border-collapse text-sm">
@@ -339,7 +354,7 @@ export default function RealphotosTechDeskPage() {
               value={heldReason}
               onChange={(event) => setHeldReason(event.target.value)}
             />
-            <button className="ml-2 border px-3 py-1 text-sm" type="button" onClick={() => void releaseHeld()}>
+            <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none ml-2 border px-3 py-1 text-sm" type="button" onClick={() => void releaseHeld()}>
               释放冻结积分
             </button>
           </section>

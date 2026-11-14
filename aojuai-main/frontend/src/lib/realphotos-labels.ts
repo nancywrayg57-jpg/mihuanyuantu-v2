@@ -103,23 +103,26 @@ export function failureClassLabelForTask(
   return failureClassLabel(failureClass)
 }
 
+/** Fallback when a report has no snapshotted passScoreThreshold. The live line comes from the API. */
 export const DETECTION_PASS_SCORE = 75
 
 export function detectionNotPassedExplanation(detection: {
   total_score?: number | null
   passed?: boolean | null
   accepted?: boolean | null
+  passScoreThreshold?: number | null
 } | null | undefined): string | null {
   if (!detection) return null
   const score = detection.total_score
   if (score == null || Number.isNaN(Number(score))) return null
+  const line = detection.passScoreThreshold ?? DETECTION_PASS_SCORE
   const modelHint =
     detection.passed === true
       ? '模型判定为通过，但未达到平台接受分'
       : detection.passed === false
         ? '模型判定为未通过'
         : ''
-  return `检测未通过：总分 ${Number(score)}/100，需达到 ${DETECTION_PASS_SCORE} 分才可交付${
+  return `检测未通过：总分 ${Number(score)}/100，需达到 ${line} 分才可交付${
     modelHint ? `（${modelHint}）` : ''
   }`
 }
@@ -194,6 +197,7 @@ type DetectionScores = {
   total_score?: number | null
   accepted?: boolean | null
   passed?: boolean | null
+  passScoreThreshold?: number | null
   reason?: string | null
 }
 
@@ -208,6 +212,7 @@ const _OPT_TIPS: Record<string, string> = {
 /** Concrete optimization directions from the weakest detection dimensions. */
 export function detectionOptimizationTips(detection: DetectionScores | null | undefined): string[] {
   if (!detection) return []
+  const line = detection.passScoreThreshold ?? DETECTION_PASS_SCORE
   const dims: Array<[string, number | null | undefined]> = [
     ['noise', detection.noise],
     ['depthOfField', detection.depthOfField],
@@ -221,7 +226,7 @@ export function detectionOptimizationTips(detection: DetectionScores | null | un
     .sort((a, b) => a.value - b.value)
   const tips: string[] = []
   for (const row of scored.slice(0, 3)) {
-    if (row.value >= DETECTION_PASS_SCORE) continue
+    if (row.value >= line) continue
     const tip = _OPT_TIPS[row.key]
     if (tip) {
       tips.push(
@@ -241,10 +246,11 @@ export function detectionFailureGuidance(detection: DetectionScores | null | und
   tips: string[]
 } {
   const score = detection?.total_score
+  const line = detection?.passScoreThreshold ?? DETECTION_PASS_SCORE
   const base =
     detectionReasonChinese(detection?.reason) ||
     (score != null
-      ? `总分 ${Number(score)}/100，未达到交付所需的 ${DETECTION_PASS_SCORE} 分`
+      ? `总分 ${Number(score)}/100，未达到交付所需的 ${line} 分`
       : '检测未给出具体说明')
   return { reason: base, tips: detectionOptimizationTips(detection) }
 }

@@ -429,21 +429,21 @@ export default function RealphotosTasksPage() {
     <main className="space-y-6 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-medium">任务详情</h1>
-        <Link className="border px-2 py-1 text-sm" href="/realphotos/messages">
+        <Link className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1 text-sm" href="/realphotos/messages">
           消息中心{unreadHint > 0 ? `（未读 ${unreadHint}）` : ''}
         </Link>
       </div>
       <p className="text-sm text-muted-foreground">{notice}</p>
       <div className="flex gap-2 text-sm">
         <button
-          className={`border px-3 py-1 ${tab === 'processing' ? 'bg-muted' : ''}`}
+          className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 ${tab === 'processing' ? 'bg-muted' : ''}`}
           type="button"
           onClick={() => setTab('processing')}
         >
           图片处理任务
         </button>
         <button
-          className={`border px-3 py-1 ${tab === 'generation' ? 'bg-muted' : ''}`}
+          className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 ${tab === 'generation' ? 'bg-muted' : ''}`}
           type="button"
           onClick={() => setTab('generation')}
         >
@@ -452,7 +452,7 @@ export default function RealphotosTasksPage() {
       </div>
 
       {tab === 'processing' ? (
-        <section className="space-y-3">
+        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <label>
               状态
@@ -478,22 +478,22 @@ export default function RealphotosTasksPage() {
             <span>
               第 {procPage} / {procPageCount} 页 · 共 {procTotal} · 默认 10 条
             </span>
-            <button className="border px-2 py-1" type="button" disabled={procPage <= 1} onClick={() => setProcPage((p) => p - 1)}>
+            <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" disabled={procPage <= 1} onClick={() => setProcPage((p) => p - 1)}>
               上一页
             </button>
             <button
-              className="border px-2 py-1"
+              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
               type="button"
               disabled={procPage >= procPageCount}
               onClick={() => setProcPage((p) => p + 1)}
             >
               下一页
             </button>
-            <button className="border px-2 py-1" type="button" onClick={() => void downloadChecked()}>
+            <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" onClick={() => void downloadChecked()}>
               下载勾选
             </button>
             <button
-              className="border px-2 py-1 disabled:opacity-40"
+              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1 disabled:opacity-40"
               type="button"
               disabled={!selected.some(canRetry)}
               onClick={() => void retryTechnical()}
@@ -501,7 +501,7 @@ export default function RealphotosTasksPage() {
               技术重试
             </button>
             <button
-              className="border px-2 py-1 disabled:opacity-40"
+              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1 disabled:opacity-40"
               type="button"
               disabled={!selected.some(canReprocess)}
               onClick={() => void reprocessTask()}
@@ -509,7 +509,7 @@ export default function RealphotosTasksPage() {
               主动重处理
             </button>
             <button
-              className="border px-2 py-1 disabled:opacity-40"
+              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1 disabled:opacity-40"
               type="button"
               disabled={selected.length !== 1}
               onClick={() => void copyProcessing()}
@@ -559,7 +559,7 @@ export default function RealphotosTasksPage() {
                       ) : null}
                     </td>
                     <td>
-                      <button className="border px-2 py-0.5" type="button" onClick={() => setDetail(item)}>
+                      <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => setDetail(item)}>
                         详情
                       </button>
                     </td>
@@ -578,12 +578,12 @@ export default function RealphotosTasksPage() {
               aria-label={`处理任务 ${detail.id} 详情`}
             >
               <div
-                className="max-h-[90vh] w-full max-w-lg space-y-3 overflow-y-auto border bg-background p-4 text-sm shadow"
+                className="max-h-[90vh] w-full max-w-lg space-y-3 overflow-y-auto rp-card rounded-xl border border-border bg-card p-4 text-sm shadow"
                 onClick={(event) => event.stopPropagation()}
               >
                 <div className="flex justify-between gap-2">
                   <strong>处理任务 {detail.id}</strong>
-                  <button type="button" className="border px-2 py-0.5" onClick={() => setDetail(null)}>
+                  <button type="button" className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" onClick={() => setDetail(null)}>
                     关闭
                   </button>
                 </div>
@@ -658,7 +658,7 @@ export default function RealphotosTasksPage() {
           ) : null}
         </section>
       ) : (
-        <section className="space-y-3">
+        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <label>
               模式
@@ -679,11 +679,11 @@ export default function RealphotosTasksPage() {
             <span>
               第 {genPage} / {genPageCount} 页 · 共 {genTotal} · 默认 10 条
             </span>
-            <button className="border px-2 py-1" type="button" disabled={genPage <= 1} onClick={() => setGenPage((p) => p - 1)}>
+            <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" disabled={genPage <= 1} onClick={() => setGenPage((p) => p - 1)}>
               上一页
             </button>
             <button
-              className="border px-2 py-1"
+              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
               type="button"
               disabled={genPage >= genPageCount}
               onClick={() => setGenPage((p) => p + 1)}
@@ -718,10 +718,10 @@ export default function RealphotosTasksPage() {
                     </td>
                     <td>{item.createdAt || ''}</td>
                     <td className="space-x-2">
-                      <button className="border px-2 py-0.5" type="button" onClick={() => setGenDetail(item)}>
+                      <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => setGenDetail(item)}>
                         查看
                       </button>
-                      <button className="border px-2 py-0.5" type="button" onClick={() => void downloadGenAssets(item)}>
+                      <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => void downloadGenAssets(item)}>
                         批量下载
                       </button>
                     </td>
@@ -740,12 +740,12 @@ export default function RealphotosTasksPage() {
               aria-label={`生图任务 ${genDetail.id} 详情`}
             >
               <div
-                className="max-h-[90vh] w-full max-w-lg space-y-2 overflow-y-auto border bg-background p-4 text-sm shadow"
+                className="max-h-[90vh] w-full max-w-lg space-y-2 overflow-y-auto rp-card rounded-xl border border-border bg-card p-4 text-sm shadow"
                 onClick={(event) => event.stopPropagation()}
               >
                 <div className="flex justify-between">
                   <strong>生图任务 {genDetail.id}</strong>
-                  <button type="button" className="border px-2 py-0.5" onClick={() => setGenDetail(null)}>
+                  <button type="button" className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" onClick={() => setGenDetail(null)}>
                     关闭
                   </button>
                 </div>

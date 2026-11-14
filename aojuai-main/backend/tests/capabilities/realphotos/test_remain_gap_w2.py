@@ -31,7 +31,7 @@ def test_r3_alembic_head_is_single() -> None:
     cfg = Config(str(backend / "alembic.ini"))
     cfg.set_main_option("script_location", str(CAPABILITY.migration_path()))
     heads = list(ScriptDirectory.from_config(cfg).get_heads())
-    assert heads == ["realphotos_0004"], heads
+    assert heads == ["realphotos_0005"], heads
 
 
 @pytest.mark.asyncio

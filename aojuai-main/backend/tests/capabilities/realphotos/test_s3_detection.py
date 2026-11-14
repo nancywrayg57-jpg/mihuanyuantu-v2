@@ -32,6 +32,17 @@ def test_setting_bounds() -> None:
         validate_setting(threshold=70, extra_rounds=0)
 
 
+def test_explicit_pass_score_changes_gate_without_lowering_default() -> None:
+    from app.capabilities.realphotos.services import gemini_detector
+    from app.capabilities.realphotos.services.redo_policy import PASS_SCORE
+
+    assert PASS_SCORE == 75
+    assert accepted(passed=True, total_score=79, pass_score=80) is False
+    assert accepted(passed=True, total_score=80, pass_score=80) is True
+    assert "≥ 80" in gemini_detector.detection_prompt(80)
+    assert "≥ 80" not in gemini_detector._PROMPT
+
+
 def test_prompt_requires_pass_score_alignment() -> None:
     from app.capabilities.realphotos.services import gemini_detector
     from app.capabilities.realphotos.services.redo_policy import PASS_SCORE
@@ -310,3 +321,67 @@ async def test_reprocess_rejects_fixture_accepted_and_missing_file(db) -> None:
                 idempotency_key=f"reprocess-{task_id}",
             )
         assert exc.value.code == "REPROCESS_REJECTED"
+
+
+@pytest.mark.asyncio
+async def test_admin_pass_score_snapshots_old_reports(db) -> None:
+    from app.capabilities.realphotos.models import RealphotosDetectionResult
+    from app.capabilities.realphotos.permissions import ROLE_ADMIN, ROLE_MERCHANT
+    from app.capabilities.realphotos.services.bootstrap import bootstrap_s0_accounts
+    from app.capabilities.realphotos.services.detection_pass_score import DetectionPassScoreService
+    from app.capabilities.realphotos.services.redo_policy import PASS_SCORE
+    from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
+    from app.core.exceptions import ForbiddenError
+
+    assert PASS_SCORE == 75
+    summary = await bootstrap_s0_accounts(db)
+    tenant = int(summary["rp_admin"]["tenantId"])
+    admin = int(summary["rp_admin"]["userId"])
+    service = DetectionPassScoreService(db)
+    assert await service.current() == 75
+    with pytest.raises(ForbiddenError) as denied:
+        await service.update(
+            actor_role_codes={ROLE_MERCHANT},
+            pass_score=60,
+            tenant_id=int(summary["rp_merchant_a1"]["tenantId"]),
+            actor_user_id=int(summary["rp_merchant_a1"]["userId"]),
+        )
+    assert denied.value.status_code == 403
+    assert await service.current() == 75
+    raised = await service.update(
+        actor_role_codes={ROLE_ADMIN},
+        pass_score=80,
+        tenant_id=tenant,
+        actor_user_id=admin,
+    )
+    assert raised["passScore"] == 80
+    assert "≥ 80" in raised["promptLine"]
+    db.add(
+        RealphotosDetectionResult(
+            tenant_id=tenant,
+            task_id=900001,
+            noise=70,
+            depth_of_field=70,
+            lighting=70,
+            color_realism=70,
+            overall_realism=70,
+            total_score=70,
+            passed=False,
+            reason="old-report",
+            detector="gemini-test",
+            pass_score_threshold=75,
+        )
+    )
+    await db.flush()
+    payload = await RealphotosS1Service(db).detection_payload(tenant_id=tenant, task_id=900001)
+    assert payload is not None
+    assert payload["passScoreThreshold"] == 75
+    assert "未达通过线 75" in str(payload["platformGateExplanation"])
+    restored = await service.update(
+        actor_role_codes={ROLE_ADMIN},
+        pass_score=75,
+        tenant_id=tenant,
+        actor_user_id=admin,
+    )
+    assert restored["passScore"] == 75
+    assert await service.current() == 75

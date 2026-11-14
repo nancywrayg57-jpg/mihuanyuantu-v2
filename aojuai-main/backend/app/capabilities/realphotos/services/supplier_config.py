@@ -1,4 +1,8 @@
-"""Platform contract rows. One duty, one configuration; secrets live outside the table."""
+"""Platform contract rows. One row per duty points at the enabled credential.
+
+Secrets live outside the table. A duty may store several keys; only one is enabled.
+There is no weight-based rotation.
+"""
 
 from __future__ import annotations
 
@@ -23,10 +27,13 @@ from app.capabilities.realphotos.services.supplier_material import (
     supplier_live_enabled,
 )
 from app.capabilities.realphotos.services.supplier_secrets import (
+    append_duty_credential,
     has_duty_secret,
+    list_duty_credentials,
     mask_secret,
     read_duty_secret,
-    write_duty_secret,
+    set_credential_enabled,
+    sync_enabled_credential_meta,
 )
 from app.core.config import settings
 from app.core.exceptions import BusinessError, ForbiddenError
@@ -60,7 +67,8 @@ _SPECS: tuple[dict[str, Any], ...] = (
             "pollingEnabled": False,
         },
         "gap_note": (
-            "种子参数供应商合同未提供，不发送、不伪造（AC-009）。"
+            "gpt-image-2 不支持随机种子：capabilities.seed=gap-not-sent，"
+            "带种子提交返回 SEED_UNSUPPORTED，不发送、不伪造（AC-009）。"
             "尺寸：请求体原样发送 size=WxH，适配器不静默改写；"
             "MODULE-B-CONTRACT-2026-11-10：物料无尺寸书面合同；"
             "探测 1024x768→1448x1086、1024x1024→1254x1254（无批准映射表）→ "
@@ -158,6 +166,19 @@ def purpose_to_duty(purpose: str) -> str:
     raise BusinessError(message="用途无效", code="INPUT_INVALID")
 
 
+_SEED_UNSUPPORTED = frozenset({"", "gap-not-sent", "unsupported", "false"})
+
+
+def seed_capability_token(capabilities: object) -> str:
+    """Same coercion as the generation submit backstop."""
+    caps = capabilities if isinstance(capabilities, dict) else {}
+    return str(caps.get("seed") or "")
+
+
+def seed_capability_supported(capabilities: object) -> bool:
+    return seed_capability_token(capabilities) not in _SEED_UNSUPPORTED
+
+
 def _is_admin_managed(row: RealphotosProviderContract) -> bool:
     caps = row.capabilities if isinstance(row.capabilities, dict) else {}
     return bool(caps.get("adminManaged"))
@@ -182,13 +203,53 @@ def _loaded_updated_at(row: RealphotosProviderContract) -> str | None:
         return None
 
 
+def _runtime_credential_view(row: RealphotosProviderContract) -> list[dict[str, Any]]:
+    """Fill Keys column from live contract + secret when the multi-key store has no rows yet."""
+    if row.duty not in _ADMIN_DUTIES:
+        return []
+    credentials = list_duty_credentials(row.duty)
+    if credentials:
+        # Prefer contract fields when an entry was registered without meta.
+        filled: list[dict[str, Any]] = []
+        for item in credentials:
+            filled.append(
+                {
+                    **item,
+                    "provider": str(item.get("provider") or row.provider or ""),
+                    "modelId": str(item.get("modelId") or row.model_id or ""),
+                    "baseUrl": str(item.get("baseUrl") or row.base_url or ""),
+                }
+            )
+        return filled
+    secret = read_duty_secret(row.duty)
+    caps = dict(row.capabilities or {})
+    masked = mask_secret(secret) if secret else str(caps.get("keyPrefix") or "")
+    if not masked and not secret and not caps.get("keyPrefix"):
+        return []
+    return [
+        {
+            "id": "runtime",
+            "masked": masked or "已配置",
+            "provider": str(row.provider or ""),
+            "modelId": str(row.model_id or ""),
+            "baseUrl": str(row.base_url or ""),
+            "enabled": True,
+            "createdAt": "",
+        }
+    ]
+
+
 def _public(row: RealphotosProviderContract) -> dict[str, Any]:
     caps = dict(row.capabilities or {})
-    key_prefix = str(caps.get("keyPrefix") or "")
-    if not key_prefix and row.duty in _ADMIN_DUTIES:
-        secret = read_duty_secret(row.duty)
-        if secret:
-            key_prefix = mask_secret(secret)
+    credentials = _runtime_credential_view(row)
+    enabled_cred = next((item for item in credentials if item.get("enabled")), None)
+    key_prefix = str((enabled_cred or {}).get("masked") or "")
+    if not key_prefix:
+        if caps.get("keyPrefix"):
+            key_prefix = str(caps.get("keyPrefix") or "")
+        elif row.duty in _ADMIN_DUTIES and has_duty_secret(row.duty):
+            key_prefix = mask_secret(read_duty_secret(row.duty))
+    active_id = str((enabled_cred or {}).get("id") or caps.get("activeCredentialId") or "")
     return {
         "duty": row.duty,
         "purpose": _DUTY_TO_PURPOSE.get(row.duty, row.duty),
@@ -203,7 +264,9 @@ def _public(row: RealphotosProviderContract) -> dict[str, Any]:
         "gapNote": row.gap_note,
         "keyPrefix": key_prefix,
         "masked": key_prefix,
-        "hasSecret": bool(key_prefix) or has_duty_secret(row.duty),
+        "hasSecret": bool(credentials) or bool(key_prefix) or has_duty_secret(row.duty),
+        "credentials": credentials,
+        "activeCredentialId": active_id,
         "updatedAt": _loaded_updated_at(row),
         "adminManaged": _is_admin_managed(row),
         "pollingEnabled": False,
@@ -308,6 +371,31 @@ class RealphotosSupplierConfigService:
             )
         await self.db.flush()
 
+    async def generation_seed_capability(self) -> dict[str, Any]:
+        """Merchant-safe seed flag from the generation contract row.
+
+        Returns model id and capabilities.seed only. No base URL, credential ref, or key.
+        """
+        await self.ensure()
+        row = await self._row("generation")
+        caps = row.capabilities if row is not None else {}
+        token = seed_capability_token(caps)
+        supported = seed_capability_supported(caps)
+        model_id = str(row.model_id or "") if row is not None else ""
+        if supported:
+            note = "当前生图模型支持随机种子，可以填写"
+        else:
+            shown = token or "unsupported"
+            label = model_id or "当前生图模型"
+            note = f"{label} 不支持随机种子（capabilities.seed={shown}），不可填写"
+        return {
+            "duty": "generation",
+            "modelId": model_id,
+            "seed": token or "unsupported",
+            "seedSupported": supported,
+            "seedNote": note,
+        }
+
     async def enabled(self, duty: str) -> RealphotosProviderContract | None:
         await self.ensure()
         row = await self._row(duty)
@@ -392,21 +480,36 @@ class RealphotosSupplierConfigService:
             row.base_url = _validate_base_url(str(base_url))
 
         key_written = False
+        caps = dict(row.capabilities or {})
+        caps["adminManaged"] = True
+        caps["pollingEnabled"] = False
         if api_key and str(api_key).strip():
-            prefix = write_duty_secret(label, str(api_key).strip())
-            caps = dict(row.capabilities or {})
-            caps["keyPrefix"] = prefix
-            caps["adminManaged"] = True
-            caps["pollingEnabled"] = False
-            row.capabilities = caps
+            public_cred = append_duty_credential(
+                label,
+                str(api_key).strip(),
+                provider=str(row.provider or ""),
+                model_id=str(row.model_id or ""),
+                base_url=str(row.base_url or ""),
+                enabled=bool(want_enabled),
+            )
+            caps["keyPrefix"] = str(public_cred.get("masked") or "")
+            if public_cred.get("enabled"):
+                caps["activeCredentialId"] = str(public_cred.get("id") or "")
             key_written = True
         else:
-            caps = dict(row.capabilities or {})
-            caps["adminManaged"] = True
-            caps["pollingEnabled"] = False
-            if not caps.get("keyPrefix") and has_duty_secret(label):
+            sync_enabled_credential_meta(
+                label,
+                provider=str(row.provider or ""),
+                model_id=str(row.model_id or ""),
+                base_url=str(row.base_url or ""),
+            )
+            enabled_now = next((item for item in list_duty_credentials(label) if item.get("enabled")), None)
+            if enabled_now:
+                caps["keyPrefix"] = str(enabled_now.get("masked") or "")
+                caps["activeCredentialId"] = str(enabled_now.get("id") or "")
+            elif has_duty_secret(label):
                 caps["keyPrefix"] = mask_secret(read_duty_secret(label))
-            row.capabilities = caps
+        row.capabilities = caps
 
         if enabled is not None:
             if want_enabled:
@@ -451,7 +554,16 @@ class RealphotosSupplierConfigService:
         duty: str,
         enabled: bool,
         actor_user_id: int | None = None,
+        credential_id: str | None = None,
     ) -> dict[str, Any]:
+        if credential_id and str(credential_id).strip():
+            return await self._set_credential_enabled(
+                actor_role_codes=actor_role_codes,
+                duty=duty,
+                credential_id=str(credential_id).strip(),
+                enabled=bool(enabled),
+                actor_user_id=actor_user_id,
+            )
         row = await self._row(purpose_to_duty(duty))
         if row is None:
             raise BusinessError(message="职责不存在", code="NOT_FOUND")
@@ -464,6 +576,89 @@ class RealphotosSupplierConfigService:
             enabled=enabled,
             actor_user_id=actor_user_id,
         )
+
+    async def _set_credential_enabled(
+        self,
+        *,
+        actor_role_codes: set[str],
+        duty: str,
+        credential_id: str,
+        enabled: bool,
+        actor_user_id: int | None = None,
+    ) -> dict[str, Any]:
+        self._admin(actor_role_codes)
+        label = purpose_to_duty(duty)
+        if label == "import" or label not in _ADMIN_DUTIES:
+            raise BusinessError(message="职责不存在", code="NOT_FOUND")
+        try:
+            public_cred = set_credential_enabled(label, credential_id, enabled)
+        except ValueError as exc:
+            raise BusinessError(message="密钥条目不存在", code="NOT_FOUND") from exc
+        await self.ensure()
+        row = await self._row(label)
+        if row is None:
+            raise BusinessError(message="职责不存在", code="NOT_FOUND")
+        caps = dict(row.capabilities or {})
+        caps["adminManaged"] = True
+        caps["pollingEnabled"] = False
+        if enabled:
+            if public_cred.get("provider"):
+                row.provider = str(public_cred["provider"])[:32]
+            if public_cred.get("modelId"):
+                row.model_id = str(public_cred["modelId"])[:128]
+            if public_cred.get("baseUrl"):
+                row.base_url = _validate_base_url(str(public_cred["baseUrl"]))
+            if not str(row.model_id or "").strip():
+                raise BusinessError(message="启用前须填写 model ID", code="INPUT_INVALID")
+            if not has_duty_secret(label):
+                raise BusinessError(message="启用前须配置 API Key", code="INPUT_INVALID")
+            row.enabled = True
+            caps["keyPrefix"] = str(public_cred.get("masked") or "")
+            caps["activeCredentialId"] = str(public_cred.get("id") or "")
+        else:
+            active = next((item for item in list_duty_credentials(label) if item.get("enabled")), None)
+            if active is None:
+                row.enabled = False
+                caps["activeCredentialId"] = ""
+                caps["keyPrefix"] = ""
+            else:
+                caps["keyPrefix"] = str(active.get("masked") or "")
+                caps["activeCredentialId"] = str(active.get("id") or "")
+        row.capabilities = caps
+        row.config_version = _next_config_version()
+        await self.db.flush()
+        await self.db.refresh(row)
+        after = _public(row)
+        _LOG.info(
+            "provider_credential_enabled actor=%s duty=%s credential=%s enabled=%s provider=%s modelId=%s",
+            actor_user_id,
+            label,
+            credential_id,
+            bool(enabled),
+            after.get("provider"),
+            after.get("modelId"),
+        )
+        return after
+
+    async def probe_models(
+        self,
+        *,
+        actor_role_codes: set[str],
+        provider: str,
+        base_url: str | None = None,
+        api_key: str | None = None,
+        duty: str | None = None,
+    ) -> dict[str, Any]:
+        self._admin(actor_role_codes)
+        from app.capabilities.realphotos.services.supplier_clients import probe_provider_models
+
+        secret = str(api_key or "").strip()
+        if not secret and duty and str(duty).strip():
+            label = purpose_to_duty(str(duty))
+            if label not in _ADMIN_DUTIES:
+                raise BusinessError(message="职责不存在", code="NOT_FOUND")
+            secret = read_duty_secret(label)
+        return await probe_provider_models(provider=provider, base_url=base_url, api_key=secret or None)
 
     async def soft_delete(
         self,

@@ -154,7 +154,10 @@ class RealphotosGrowthService:
 
         chosen = str(provider or UNCONFIGURED_PROVIDER).strip() or UNCONFIGURED_PROVIDER
         if chosen == UNCONFIGURED_PROVIDER:
-            from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
+            from app.capabilities.realphotos.services.supplier_config import (
+                RealphotosSupplierConfigService,
+                seed_capability_supported,
+            )
 
             contract = await RealphotosSupplierConfigService(self.db).enabled("generation")
             if contract is None:
@@ -162,8 +165,7 @@ class RealphotosGrowthService:
                     message="缺少供应商合同与接口证据",
                     code="SERVICE_NOT_CONFIGURED",
                 )
-            seed_cap = str((contract.capabilities or {}).get("seed") or "")
-            if requested_seed is not None and seed_cap in {"", "gap-not-sent", "unsupported", "false"}:
+            if requested_seed is not None and not seed_capability_supported(contract.capabilities):
                 raise BusinessError(
                     message="当前生图合同不支持随机种子，请清空种子后再提交；系统不会伪造已应用种子",
                     code="SEED_UNSUPPORTED",
