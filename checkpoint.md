@@ -6,26 +6,29 @@
 
 | 字段 | 当前值 |
 | --- | --- |
-| updated | 2026-11-11 CST（Asia/Shanghai） |
-| branch | `cursor/audit-remain-closeout-9973` |
-| HEAD | tip · 基线 `main`=`c92fbfd`（#49） |
-| 文档态 | PRD **2.10**；架构 **1.7** front-matter=`s0_s6_coded_partial`；§14.1 已去 NOT_IMPLEMENTED；`LEASE_TTL_DEFERRED` |
-| 代码态 | A1 冻结禁获取；A2 下载扩展名；B1 `realphotos_0004`；B2 lease 书面降级 |
-| 验证态 | `/tmp/audit-remain-closeout-e2e.log`：`AUDIT_REMAIN_W1/W2/W3_PASS`；闸门三联 |
-| 当前阶段 | AUDIT-REMAIN-CLOSEOUT 端测绿，待统一 PR |
-| 下一步 | 推 PR；非作者 Owner squash；**不得开 S7**；**不得宣称 ND-012 正式闭合** |
+| updated | 2026-11-14 CST（Asia/Shanghai） |
+| branch | `cursor/det-score-hemostasis-9973` |
+| PR | https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/55 |
+| HEAD | 已推止血（OPEN_PARTIAL + R4 env 覆写钩子；未升 R4 默认） |
+| 文档态 | W/R4/协议 C 均已留证；Q1 SHORTFALL；PASS_SCORE 未放宽；R4 未升默认 |
+| 代码态 | `_CA_INTENSITY=0`；Layer0 默认 `0`；它线程 async；R4 三键空默认覆写 |
+| 验证态 | secret_scan + full ruff + pytest s2_five_layer 17 PASS；协议 C SHORTFALL |
+| 当前阶段 | 止血 **推送授权已执行**；加码仍停 |
+| 下一步 | 非作者审合 #55；是否改裁 Q1 / 新测量门禁 |
 
 ## 1. 约束说明
 
-- OUT-ND012 / OUT-S7 / OUT-OSS-LIVE / OUT-ZIP / OUT-PHYS 本单均跳过或阻塞
-- B2 选书面降级：`LEASE_TTL_DEFERRED=true`；忙码 `ACCOUNT_SPEND_BUSY`
-- 推送前本地 ruff/pytest·sqlite + FE typecheck + download 单测
+- 不放宽 Q1≥10 / PASS_SCORE=75  
+- R4 测量值**禁止**写成新默认  
+- S7 / 生产 billing 仍 blocked / false  
 
 ## 2. 阶段状态
 
 | 波次 | 状态 |
 | --- | --- |
-| W1 A1/A2 | PASS |
-| W2 B1/B2 | PASS |
-| W3 C1 | PASS |
+| OPEN_PARTIAL 编码+审计 | PASS（本地未推） |
+| 协议 W 消融 | DONE（非 Q1） |
+| R4 光学/噪声测量 | DONE · **NOT_CONFIRMED** |
+| 协议 C 冲 Q1 | DONE · **`ALIGN_W5_E2E_SHORTFALL`** gain=1.17 |
+| Q1 / ALIGN_W5 | SHORTFALL / UNPROVEN |
 | S7 | BLOCKED |

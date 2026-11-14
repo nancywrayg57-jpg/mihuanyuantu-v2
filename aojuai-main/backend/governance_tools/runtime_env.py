@@ -20,6 +20,15 @@ ENV_ACCESS_ALLOWLIST = {
     "scripts/five_layer_legacy_align_e2e.py": (
         "Operator ALIGN e2e: must clear Cursor sandbox HTTP(S)_PROXY before load_dotenv so Meta Fake-IP TUN egress works; not a runtime Settings path."
     ),
+    "scripts/det_score_ablation_e2e.py": (
+        "Operator DET-SCORE ablation e2e: same proxy-clear + ALIGN_* env knobs as ALIGN e2e; not a runtime Settings path."
+    ),
+    "scripts/det_score_protocol_c_e2e.py": (
+        "Operator DET-SCORE protocol C wrapper: clears proxy and ALIGN overrides before invoking ALIGN e2e; not a runtime Settings path."
+    ),
+    "scripts/det_score_r4_measure_e2e.py": (
+        "Operator DET-SCORE R4 measurement e2e: proxy-clear + measurement-only optical/noise env overrides; not a runtime Settings path."
+    ),
 }
 
 

@@ -32,12 +32,12 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "FIVE-LAYER-LEGACY-ALIGN PR #54：合入 main(#53) 冲突消解 + UX/ALIGN 交付"
-    user_value: "任务详情/图库文案可用；ALIGN 研究与 C1 SHORTFALL 证据入库；保留 #53 动态检测基线"
-    visible_output: "PR #54 无冲突；本地预览 FE:3000 API:38000"
-    verify: "gh pr view 54 mergeable=MERGEABLE；不宣称 ALIGN_W5_E2E_PASS"
-    status: merging_main_conflict_resolve
-    next_user_action: "冲突消解后推送 PR #54；合入须非作者账号；不得开 S7。"
+    goal: "DET-SCORE-OPTIMIZE：查明 v3 检测分下降根因；旧仓对照；可行后再编码"
+    user_value: "技术处理检测分回到可过 75 / 相对 v2 冲 Q1≥10（不放宽 PASS_SCORE）"
+    visible_output: "选项1+2已跑完；管理员授权SHORTFALL下推送止血（对齐CI）"
+    verify: "secret_scan+ruff+pytest_s2_five_layer 17；W/R4/协议C留证；Q1未PASS"
+    status: hemostasis_push_authorized
+    next_user_action: "Owner审合PR；是否改裁Q1/另开新测量。不升R4默认、不放宽PASS_SCORE、不开S7。"
   five_layer_legacy_align_2026_11_13:
     work_order: FIVE-LAYER-LEGACY-ALIGN
     branch: cursor/five-layer-legacy-align-9973
@@ -66,9 +66,9 @@ vibe_coding:
       feasibility_draft: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-feasibility-draft-2026-11-14.md
       subagents_failed_quota: [e29da127-5555-474e-8ad6-b4cadfd485c3, f127ff19-5aa3-41bd-a900-eae3498d0f79]
       subagents_rerun_grok: [d5c7bd66-1b73-40b3-a88a-0d44cfff9721, d167f4fc-3c9f-4a3c-ab7b-0609819226ce]
-      coding_gate: CLOSED_after_c1_shortfall
-      feasibility_gate: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-feasibility-gate-2026-11-14.md
-      e2e_round: c1_zh_prompts_blend_alpha_1
+    coding_gate: CLOSED_after_c1_shortfall
+    feasibility_gate: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-feasibility-gate-2026-11-14.md
+    e2e_round: c1_zh_prompts_blend_alpha_1
     w6_pr: pr_54_merging_main
     constraint_ledger: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-constraint-ledger.md
     sample_sha256: docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-sample-sha256.json
@@ -77,6 +77,79 @@ vibe_coding:
     production_billing: false
     r9_s7: blocked
     pass_score_unchanged: 75
+  det_score_optimize_2026_11_14:
+    work_order: DET-SCORE-OPTIMIZE
+    inherits: FIVE-LAYER-LEGACY-ALIGN
+    branch: cursor/det-score-hemostasis-9973
+    pr: https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/55
+    prior_align_branch: cursor/five-layer-legacy-align-9973
+    constraint_ledger: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-constraint-ledger.md
+    q1_unchanged: true
+    pass_score_unchanged: 75
+    coding_gate: OPEN_PARTIAL_IMPLEMENTED_LOCAL
+    main_audit: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-main-audit-2026-11-14.md
+    main_audit_result: PASS_whitelist
+    local_ci: "secret_scan+ruff+pytest_s2_five_layer PASS"
+    pytest_s2_five_layer: "17 passed"
+    ablation_w_evidence: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-ablation-w-2026-11-14.txt
+    ablation_w_conclusion: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-ablation-w-conclusion-2026-11-14.md
+    ablation_w_8mm_mean_v3: 62.17
+    ablation_w_8mm_gain_vs_v2: -4.08
+    ablation_w_8mm_ca_reason_hits: 0
+    ablation_w_26mm_mean_v3: 61.67
+    hist_preview_v3_mean_approx: 49.3
+    r4_measure_gate: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-r4-measure-gate-2026-11-14.md
+    r4_evidence: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-ablation-r4-2026-11-14.txt
+    r4_mean: 63.0
+    r4_delta_vs_w_8mm: 0.83
+    r4_p_v3_overdrive: NOT_CONFIRMED
+    r4_defaults_promoted: false
+    protocol_c_evidence: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-protocol-c-2026-11-14.txt
+    protocol_c_conclusion: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-protocol-c-conclusion-2026-11-14.md
+    protocol_c_mean_v2: 65.75
+    protocol_c_mean_v3: 66.92
+    protocol_c_gain: 1.17
+    protocol_c_marker: ALIGN_W5_E2E_SHORTFALL
+    q1_status: UNPROVEN_SHORTFALL
+    stop_add_code: true
+    push_hemostasis_authorized: true
+    next_needs_admin: "非作者账号审合 PR #55；是否改裁Q1/另开新测量；禁止升R4默认、放宽PASS_SCORE、开S7"
+    feasibility_gate: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-feasibility-gate-2026-11-14.md
+    ablation_plan: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-subagent-ablation-plan-2026-11-14.md
+    pushed: true
+    local_impl_note: "A+D+B 本地已落地，未 git push、未 commit。Layer0：它线程 asyncio.run(generate_images) 后 join；失败日志含 error_type。ALIGN_LAYER0_IMG2IMG 默认 0。_CA_INTENSITY=0（8mm/26mm 与输入恒等，无 saturation×1.02）。未改 PASS_SCORE、光学/噪声/频域默认、PIPELINE_VERSION、焦距表。"
+    local_v3_mean_approx: 49.3
+    local_v2_mean_approx: 65.5
+    root_hypotheses: [P-CA-PHONE, P-V3-OVERDRIVE, P-L0-ASYNC, P-ARCH-CEILING]
+    layer0_async_bug_reproduced: true
+    layer0_async_fix: other_thread_asyncio_run_join
+    layer0_default: "0"
+    ca_8mm_shift_px: 0
+    ca_8mm_shift_px_before_fix: 2
+    whitelist: [A_layer0_async, D_layer0_default_off, B_ca_near_zero]
+    subagents_research:
+      - id: fe5d6c62-6158-4641-83de-0092ab5644fa
+        role: legacy_levers
+        status: failed_sonnet_quota
+      - id: a7b76d3f-8128-4bca-a252-7b32feaa2a8d
+        role: ablation_feasibility_draft
+        status: failed_sonnet_quota
+      - id: 94c69ea2-6860-4407-84be-9f86077d0296
+        role: legacy_levers_grok
+        status: success
+        report: docs/mihuanyuantu-v2/input/DET-SCORE-OPTIMIZE-subagent-legacy-levers-2026-11-14.md
+        q1: UNPROVEN
+      - id: 4bc69865-36ae-444b-b8a2-3fdbf7a33d5f
+        role: ablation_feasibility_draft_grok
+        status: success
+    subagents_impl:
+      - id: c23e6e3c-bca6-4743-9769-c4ca5b9bc7f5
+        role: open_partial_whitelist
+        status: success_audited_pass
+    exif_fix_local_unpushed: true
+    production_billing: false
+    r9_s7: blocked
+    push: blocked_until_admin
   library_asset_purge_2026_11_13:
     work_order: LIBRARY-ASSET-PURGE
     branch: cursor/library-asset-purge-9973

@@ -1,0 +1,280 @@
+=== DET-SCORE protocol C (Q1 chase) ===
+layer0_img2img=0 ca_intensity=0 r4_overrides=off score_fn=on focal=26mm
+NOTE: wraps five_layer_legacy_align_e2e.py
+=== FIVE-LAYER-LEGACY-ALIGN e2e ===
+ts=2026-11-14T06:05:47Z
+production_billing=false
+sample_dir=/home/hbs/hbs-projects/mihuanyuantu-v2/测试用/图片
+sample_inventory=/home/hbs/hbs-projects/mihuanyuantu-v2/docs/mihuanyuantu-v2/input/FIVE-LAYER-LEGACY-ALIGN-sample-sha256.json
+net=meta_fakeip_clear_proxy layer0_img2img=on blend_alpha=1.0 prompts=legacy_zh_c1 ca_sat_nudge=off
+PASS samples_present count=50
+ALIGN_W0_CONFIRMED sample_n=12 seed=20261113
+PASS pipeline_v3
+PASS pass_score_unchanged
+FIDELITY_MAD_MAX=3.5 HARD=6.0
+--- sample=product_01.jpg sha256=bc2fcb35fd964f7e08179dd81beb03fa0fca88ce417afccf8ff9e3355d9ceed0 bytes=126395 ---
+PASS size_unchanged_2d
+PASS rgb_2d
+PASS jpeg_2d
+PASS byte_floor_2d
+PASS size_unchanged_1d
+PASS rgb_1d
+PASS jpeg_1d
+PASS byte_floor_1d
+PASS size_unchanged_hybrid
+PASS rgb_hybrid
+PASS jpeg_hybrid
+PASS byte_floor_hybrid
+dual_path note=no_img2img multipliers_may_be_0.85_damped mad_2d=27.622 mad_1d=27.611 mad_hybrid=27.611
+dual_path bytes_2d=130343 bytes_1d=128754 bytes_hybrid=130361
+MAD_OBSERVE prefer=3.5 hard_ref=6.0 (no veto)
+ALIGN_W2_PIXEL_FFT dual_path_evidence_ok
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+layer0_note=None
+mad_baseline_v2=1.178 mad_v3=27.604
+MAD_OBSERVE above_hard_ref path=product_01.jpg mad=27.604
+PASS gemini_key_configured
+gemini_baseline_v2 total=72.0 passed=False noise=72 dof=70 light=73 color=71 overall=72
+gemini_v3 total=75.0 passed=True noise=73 dof=72 light=74 color=73 overall=74 reason='图像清晰，光影自然，符合标准。'
+delta=3.0
+--- sample=product_02.jpg sha256=cbef0ab138cf480990bf3dc7212c7f67fafc1177266db7e1dcf633514c4dcc80 bytes=102228 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+layer0_note=None
+mad_baseline_v2=1.215 mad_v3=23.691
+MAD_OBSERVE above_hard_ref path=product_02.jpg mad=23.691
+PASS gemini_key_configured
+gemini_baseline_v2 total=62.0 passed=False noise=65 dof=62 light=64 color=63 overall=60
+gemini_v3 total=55.0 passed=False noise=65 dof=60 light=60 color=65 overall=45 reason='未通过。整体真实度偏低，鞋带和侧面标志存在结构扭曲。建议：修复鞋带细节；调整标志几何形状。'
+delta=-7.0
+--- sample=product_03.jpg sha256=d4e2a29914bf7ee3abfa51ee1514f3c119bd5f924523112ba693cbfb89af2427 bytes=203226 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+layer0_note=None
+mad_baseline_v2=1.141 mad_v3=27.978
+MAD_OBSERVE above_hard_ref path=product_03.jpg mad=27.978
+PASS gemini_key_configured
+gemini_baseline_v2 total=75.0 passed=True noise=74 dof=73 light=74 color=75 overall=75
+gemini_v3 total=76.0 passed=True noise=74 dof=72 light=73 color=75 overall=74 reason='图像整体真实，光影自然，细节清晰，符合通过标准。'
+delta=1.0
+--- sample=product_04.jpg sha256=f45d875eecdecd6edfd8ad27194da5f6158abb37bf4c6bf80090dab0fc493ca9 bytes=45470 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+layer0_note=None
+mad_baseline_v2=1.106 mad_v3=28.497
+MAD_OBSERVE above_hard_ref path=product_04.jpg mad=28.497
+PASS gemini_key_configured
+gemini_baseline_v2 total=68.0 passed=False noise=68 dof=70 light=65 color=68 overall=66
+gemini_v3 total=72.0 passed=False noise=72 dof=70 light=71 color=73 overall=72 reason='未通过。整体得分受限，光影和景深维度偏低。建议：1. 增强主体与背景的光影对比；2. 优化边缘细节过渡。'
+delta=4.0
+--- sample=product_05.jpg sha256=b522138eb44b938dae160db5334193aecc37d860ffb8b054843ed10fa3538dbf bytes=771229 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+layer0_note=None
+mad_baseline_v2=1.204 mad_v3=19.185
+MAD_OBSERVE above_hard_ref path=product_05.jpg mad=19.185
+PASS gemini_key_configured
+gemini_baseline_v2 total=68.0 passed=False noise=68 dof=65 light=66 color=69 overall=68
+gemini_v3 total=69.0 passed=False noise=68 dof=65 light=67 color=69 overall=70 reason='未通过。景深与光照得分偏低。建议：1. 增加背景虚化；2. 优化布光。'
+delta=1.0
+--- sample=product_06.jpg sha256=349cd5389a244ee73e3b4ecf8ddc89bdb70d991440319f3ec6954deac705c128 bytes=153654 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+layer0_note=None
+mad_baseline_v2=1.195 mad_v3=42.439
+MAD_OBSERVE above_hard_ref path=product_06.jpg mad=42.439
+PASS gemini_key_configured
+gemini_baseline_v2 total=68.0 passed=False noise=68 dof=65 light=66 color=67 overall=68
+gemini_v3 total=74.0 passed=False noise=74 dof=72 light=71 color=73 overall=72 reason='未通过。光影与景深维度偏低，画面略显平淡。优化方向：1. 增强主光源对比度；2. 适当虚化背景。'
+delta=6.0
+--- sample=product_07.jpg sha256=ecbddd1b3f8f9cb786366a3b7b89822b3cf32c1c1e951cb1a8d742b4603252ce bytes=89564 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+layer0_note=None
+mad_baseline_v2=1.065 mad_v3=30.067
+MAD_OBSERVE above_hard_ref path=product_07.jpg mad=30.067
+PASS gemini_key_configured
+gemini_baseline_v2 total=70.0 passed=False noise=72 dof=70 light=71 color=70 overall=68
+gemini_v3 total=65.0 passed=False noise=68 dof=65 light=67 color=66 overall=64 reason='未通过。整体真实度与景深维度偏低。优化方向：1. 增强材质细节；2. 增加背景景深。'
+delta=-5.0
+--- sample=product_08.jpg sha256=c2552859fee9f886d7c02131bbcc6684ef5d375be40e197acea9e0c9e5e6bbfb bytes=516246 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+layer0_note=None
+mad_baseline_v2=1.227 mad_v3=19.512
+MAD_OBSERVE above_hard_ref path=product_08.jpg mad=19.512
+PASS gemini_key_configured
+gemini_baseline_v2 total=55.0 passed=False noise=68 dof=55 light=58 color=62 overall=52
+gemini_v3 total=72.0 passed=False noise=72 dof=68 light=65 color=70 overall=69 reason='未通过。光影和景深得分偏低，画面略显失真。建议：1.优化背景虚化过渡；2.增强环境光反射以提升真实感。'
+delta=17.0
+--- sample=product_09.jpg sha256=8e835b5b1e2a98b6d80ec61e516741583558fedfbdfb00bdf6bd30b05c92a8d2 bytes=35915 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+layer0_note=None
+mad_baseline_v2=1.001 mad_v3=29.333
+MAD_OBSERVE above_hard_ref path=product_09.jpg mad=29.333
+PASS gemini_key_configured
+gemini_baseline_v2 total=62.0 passed=False noise=65 dof=65 light=60 color=65 overall=60
+gemini_v3 total=70.0 passed=False noise=72 dof=68 light=70 color=71 overall=69 reason='未通过。光影与真实感偏低。优化：1. 增强光影对比；2. 提升材质细节。'
+delta=8.0
+--- sample=product_10.jpg sha256=15385e67cf90be1c43bf47e2194cb10fa7ebf51e3bf3fbd6a4098576ed29aae0 bytes=177615 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+layer0_note=None
+mad_baseline_v2=1.192 mad_v3=20.368
+MAD_OBSERVE above_hard_ref path=product_10.jpg mad=20.368
+PASS gemini_key_configured
+gemini_baseline_v2 total=68.0 passed=False noise=72 dof=70 light=71 color=69 overall=65
+gemini_v3 total=68.0 passed=False noise=72 dof=68 light=70 color=66 overall=64 reason='未通过。整体真实感偏低，图像呈现较强渲染感。建议：1. 增加自然光影过渡；2. 补充真实材质纹理细节。'
+delta=0.0
+--- sample=product_11.jpg sha256=7957d9488a8573affc010968a530d0778725a697291f2e98275617333d5fe6c3 bytes=70647 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+layer0_note=None
+mad_baseline_v2=1.425 mad_v3=22.620
+MAD_OBSERVE above_hard_ref path=product_11.jpg mad=22.620
+PASS gemini_key_configured
+gemini_baseline_v2 total=50.0 passed=False noise=65 dof=45 light=50 color=60 overall=45
+gemini_v3 total=42.0 passed=False noise=65 dof=45 light=40 color=55 overall=35 reason='未通过。光照和整体真实感偏低，拼接痕迹明显，透视不自然。优化方向：1. 调整合成透视；2. 统一前后景光照并添加阴影。'
+delta=-8.0
+--- sample=product_12.jpg sha256=38821c9c3084d8d7db4b170a3d0821339fcc4a5602d7c841c3f192bdb4520cea bytes=38092 ---
+PASS size_unchanged_baseline_v2
+PASS rgb_baseline_v2
+PASS jpeg_baseline_v2
+PASS byte_floor_baseline_v2
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS gemini_key_configured
+PASS size_unchanged_v3
+PASS rgb_v3
+PASS jpeg_v3
+PASS byte_floor_v3
+layer0_note=None
+mad_baseline_v2=1.453 mad_v3=24.931
+MAD_OBSERVE above_hard_ref path=product_12.jpg mad=24.931
+PASS gemini_key_configured
+gemini_baseline_v2 total=71.0 passed=False noise=72 dof=68 light=70 color=71 overall=69
+gemini_v3 total=65.0 passed=False noise=60 dof=65 light=62 color=68 overall=64 reason='未通过。噪点与整体真实感维度偏低，画面存在压缩模糊。优化方向：1. 提高图像分辨率；2. 增强主体边缘清晰度。'
+delta=-6.0
+PASS dual_path_ran
+ALIGN_W1_BASELINE mean_baseline_v2=65.75 n=12
+ALIGN_W5 mean_v3=66.92 gain=1.17 target>=10
+PIPELINE_VERSION=s2-five-layer-3
+ALIGN_W3_EXIF focalplane_via_camera_specs=enabled empty_skip=enabled
+ALIGN_W4_ENCODE profile=s2-ecommerce-1 byte_floor=hard
+ALIGN_RELAX Q4_ca=on Q8_layer0=on Q11_mad=observe_only
+ALIGN_GATE_2026_11_14 C1_zh_prompts C4_no_ca_sat C9_keep_five_dim
+ALIGN_W5_E2E_SHORTFALL
+STOP: gain below Q1 threshold; do not lower PASS_SCORE; report bottleneck (sample/detector/architecture).

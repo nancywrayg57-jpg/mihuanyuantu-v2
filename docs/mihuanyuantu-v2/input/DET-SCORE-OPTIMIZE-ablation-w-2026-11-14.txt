@@ -1,0 +1,176 @@
+=== DET-SCORE-OPTIMIZE ablation protocol W ===
+ts=2026-11-14T04:47:02Z
+production_billing=false
+protocol=W score_fn=none layer0=0 ca_intensity=0(post-whitelist)
+arms=R0_v2 vs R_post_v3 ; focals=8mm,26mm ; R1≡R2 after B
+sample_dir=/home/hbs/hbs-projects/mihuanyuantu-v2/测试用/图片
+PASS_SCORE=75 unchanged
+PASS pipeline_v3
+PASS ca_intensity_zero
+PASS ca_identity_8mm
+PASS ca_identity_26mm
+PASS samples n=12
+ALIGN_W0 sample_n=12 seed=20261113
+--- sample=product_01.jpg bytes=126395 ---
+PASS size_v2_8mm
+PASS gemini_key_configured
+PASS size_v3_8mm
+PASS gemini_key_configured
+focal=8mm v2=72.0 v3=65.0 delta=-7.0 color=None->None overall=None->None
+  v3_reason=整体真实感和景深得分偏低，商品悬空显得不自然。优化方向：1. 增加真实阴影或放置在实体平面上；2. 调整光影对比度以增强立体感。
+PASS size_v2_26mm
+PASS gemini_key_configured
+PASS size_v3_26mm
+PASS gemini_key_configured
+focal=26mm v2=76.0 v3=65.0 delta=-11.0 color=None->None overall=None->None
+  v3_reason=整体真实感和景深得分偏低，商品悬空显得不自然。优化方向：1. 增加真实阴影或放置在实体平面上；2. 调整光影对比度以增强立体感。
+--- sample=product_02.jpg bytes=102228 ---
+PASS size_v2_8mm
+PASS gemini_key_configured
+PASS size_v3_8mm
+PASS gemini_key_configured
+focal=8mm v2=60.0 v3=48.0 delta=-12.0 color=None->None overall=None->None
+  v3_reason=未通过。整体真实度偏低，鞋带与标志有生成痕迹。建议：1. 修复鞋带细节；2. 调整标志结构。
+PASS size_v2_26mm
+PASS gemini_key_configured
+PASS size_v3_26mm
+PASS gemini_key_configured
+focal=26mm v2=62.0 v3=48.0 delta=-14.0 color=None->None overall=None->None
+  v3_reason=未通过。整体真实度偏低，鞋带与标志有生成痕迹。建议：1. 修复鞋带细节；2. 调整标志结构。
+--- sample=product_03.jpg bytes=203226 ---
+PASS size_v2_8mm
+PASS gemini_key_configured
+PASS size_v3_8mm
+PASS gemini_key_configured
+focal=8mm v2=75.0 v3=58.0 delta=-17.0 color=None->None overall=None->None
+  v3_reason=未通过。整体真实感和景深偏低，光影缺乏层次，呈合成图特征。优化方向：1. 增加真实的物理阴影；2. 调整景深使背景自然虚化。
+PASS size_v2_26mm
+PASS gemini_key_configured
+PASS size_v3_26mm
+PASS gemini_key_configured
+focal=26mm v2=75.0 v3=66.0 delta=-9.0 color=None->None overall=None->None
+  v3_reason=未通过。景深与真实感偏低。建议：1. 优化景深过渡；2. 调整光影增强细节。
+--- sample=product_04.jpg bytes=45470 ---
+PASS size_v2_8mm
+PASS gemini_key_configured
+PASS size_v3_8mm
+PASS gemini_key_configured
+focal=8mm v2=75.0 v3=72.0 delta=-3.0 color=None->None overall=None->None
+  v3_reason=未通过。整体得分受限，光影和景深维度偏低。建议：1. 增强主体与背景的光影对比；2. 优化边缘细节过渡。
+PASS size_v2_26mm
+PASS gemini_key_configured
+PASS size_v3_26mm
+PASS gemini_key_configured
+focal=26mm v2=68.0 v3=72.0 delta=+4.0 color=None->None overall=None->None
+  v3_reason=未通过。光照与整体真实感维度偏低。建议：1. 增加光影对比度；2. 提升材质纹理细节。
+--- sample=product_05.jpg bytes=771229 ---
+PASS size_v2_8mm
+PASS gemini_key_configured
+PASS size_v3_8mm
+PASS gemini_key_configured
+focal=8mm v2=68.0 v3=69.0 delta=+1.0 color=None->None overall=None->None
+  v3_reason=未通过。景深与光照得分偏低。建议：1. 增加背景虚化；2. 优化布光。
+PASS size_v2_26mm
+PASS gemini_key_configured
+PASS size_v3_26mm
+PASS gemini_key_configured
+focal=26mm v2=68.0 v3=69.0 delta=+1.0 color=None->None overall=None->None
+  v3_reason=未通过。景深与光照得分偏低。建议：1. 增加背景虚化；2. 优化布光。
+--- sample=product_06.jpg bytes=153654 ---
+PASS size_v2_8mm
+PASS gemini_key_configured
+PASS size_v3_8mm
+PASS gemini_key_configured
+focal=8mm v2=68.0 v3=60.0 delta=-8.0 color=None->None overall=None->None
+  v3_reason=未通过。整体真实感与景深维度偏低，画面呈现较强渲染感。优化方向：1. 增强光影自然过渡；2. 增加背景景深层次。
+PASS size_v2_26mm
+PASS gemini_key_configured
+PASS size_v3_26mm
+PASS gemini_key_configured
+focal=26mm v2=71.0 v3=60.0 delta=-11.0 color=None->None overall=None->None
+  v3_reason=未通过。整体真实感与景深维度偏低，画面呈现较强渲染感。优化方向：1. 增强光影自然过渡；2. 增加背景景深层次。
+--- sample=product_07.jpg bytes=89564 ---
+PASS size_v2_8mm
+PASS gemini_key_configured
+PASS size_v3_8mm
+PASS gemini_key_configured
+focal=8mm v2=70.0 v3=64.0 delta=-6.0 color=None->None overall=None->None
+  v3_reason=未通过。整体真实度偏低，鞋面文字存在生成乱码。优化方向：1. 修正字母拼写；2. 提升材质细节。
+PASS size_v2_26mm
+PASS gemini_key_configured
+PASS size_v3_26mm
+PASS gemini_key_configured
+focal=26mm v2=70.0 v3=64.0 delta=-6.0 color=None->None overall=None->None
+  v3_reason=未通过。整体真实度偏低，鞋面文字存在生成乱码。优化方向：1. 修正字母拼写；2. 提升材质细节。
+--- sample=product_08.jpg bytes=516246 ---
+PASS size_v2_8mm
+PASS gemini_key_configured
+PASS size_v3_8mm
+PASS gemini_key_configured
+focal=8mm v2=68.0 v3=70.0 delta=+2.0 color=None->None overall=None->None
+  v3_reason=未通过。整体真实度偏低，皮肤质感略显生硬。建议：1. 增加皮肤自然纹理；2. 调整光影过渡。
+PASS size_v2_26mm
+PASS gemini_key_configured
+PASS size_v3_26mm
+PASS gemini_key_configured
+focal=26mm v2=58.0 v3=65.0 delta=+7.0 color=None->None overall=None->None
+  v3_reason=未通过。整体真实感与景深偏低，画面略显渲染感。优化方向：1. 调整背景虚化过渡；2. 增加材质自然光影细节。
+--- sample=product_09.jpg bytes=35915 ---
+PASS size_v2_8mm
+PASS gemini_key_configured
+PASS size_v3_8mm
+PASS gemini_key_configured
+focal=8mm v2=68.0 v3=64.0 delta=-4.0 color=None->None overall=None->None
+  v3_reason=未通过。光影与景深维度表现平淡，缺乏层次。建议：1. 增加定向光源突出鞋面纹理；2. 引入微弱背景虚化提升立体感。
+PASS size_v2_26mm
+PASS gemini_key_configured
+PASS size_v3_26mm
+PASS gemini_key_configured
+focal=26mm v2=60.0 v3=60.0 delta=+0.0 color=None->None overall=None->None
+  v3_reason=未通过。光照与整体真实感偏低，渲染感较强。建议：1. 增强阴影层次；2. 提升材质真实度。
+--- sample=product_10.jpg bytes=177615 ---
+PASS size_v2_8mm
+PASS gemini_key_configured
+PASS size_v3_8mm
+PASS gemini_key_configured
+focal=8mm v2=68.0 v3=68.0 delta=+0.0 color=None->None overall=None->None
+  v3_reason=未通过。整体真实感偏低，有明显渲染合成痕迹。优化：1. 增加自然光影；2. 改善悬浮摆放的物理逻辑。
+PASS size_v2_26mm
+PASS gemini_key_configured
+PASS size_v3_26mm
+PASS gemini_key_configured
+focal=26mm v2=68.0 v3=68.0 delta=+0.0 color=None->None overall=None->None
+  v3_reason=未通过，整体真实感偏低，渲染痕迹重。优化方向：1. 增加材质微小纹理细节；2. 柔和光影过渡。
+--- sample=product_11.jpg bytes=70647 ---
+PASS size_v2_8mm
+PASS gemini_key_configured
+PASS size_v3_8mm
+PASS gemini_key_configured
+focal=8mm v2=45.0 v3=48.0 delta=+3.0 color=None->None overall=None->None
+  v3_reason=未通过。整体真实感和光照偏低，合成痕迹明显。优化方向：1. 统一前后景光影；2. 改善边缘过渡。
+PASS size_v2_26mm
+PASS gemini_key_configured
+PASS size_v3_26mm
+PASS gemini_key_configured
+focal=26mm v2=50.0 v3=48.0 delta=-2.0 color=None->None overall=None->None
+  v3_reason=未通过。整体真实感和光照偏低，合成痕迹明显。优化方向：1. 统一前后景光影；2. 改善边缘过渡。
+--- sample=product_12.jpg bytes=38092 ---
+PASS size_v2_8mm
+PASS gemini_key_configured
+PASS size_v3_8mm
+PASS gemini_key_configured
+focal=8mm v2=58.0 v3=60.0 delta=+2.0 color=None->None overall=None->None
+  v3_reason=未通过。噪点和光照维度偏低，图像略显模糊且光线平淡。优化方向：1. 提升分辨率以减少噪点；2. 增强光影对比度。
+PASS size_v2_26mm
+PASS gemini_key_configured
+PASS size_v3_26mm
+PASS gemini_key_configured
+focal=26mm v2=70.0 v3=55.0 delta=-15.0 color=None->None overall=None->None
+  v3_reason=未通过。图像噪点较多且光影缺乏立体感（noise和lighting偏低）。建议：1. 降噪处理；2. 增强光影对比度。
+--- SUMMARY protocol W (Layer0=0, CA=0) ---
+{"focal": "8mm", "n": 12, "mean_v2": 66.25, "mean_v3": 62.17, "gain_vs_v2": -4.08, "v3_pass_rate": 0.0, "v3_ca_reason_hits": 0}
+{"focal": "26mm", "n": 12, "mean_v2": 66.33, "mean_v3": 61.67, "gain_vs_v2": -4.67, "v3_pass_rate": 0.0, "v3_ca_reason_hits": 0}
+NOTE: gain_vs_v2 is NOT Q1 (Q1 needs protocol C + score_fn + contract preset). Historical preview v3 mean≈49 with CA on; compare mean_v3 here for recovery.
+P-CA-PHONE observe: 8mm ca_reason_hits=0/12 mean_v3=62.17 (hist≈49 with CA); gain_vs_v2=-4.08
+26mm mean_v3=61.67 gain_vs_v2=-4.67 (C1 was +1.00 with Layer0 on; this arm Layer0 off)
+DET_SCORE_ABLATION_W_DONE
