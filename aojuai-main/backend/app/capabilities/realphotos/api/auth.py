@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload
 
 from app.api.deps import DBSession, snapshot_current_user
 from app.capabilities.realphotos.constants import ACCESS_TOKEN_MINUTES, SESSION_ABSOLUTE_DAYS
-from app.capabilities.realphotos.schemas.auth import ChallengeCreate, LoginRequest
+from app.capabilities.realphotos.schemas.auth import ChallengeCreate, LoginRequest, RegisterRequest
 from app.capabilities.realphotos.services.auth_service import RealphotosAuthService
 from app.core.auth_cookies import set_auth_cookies, should_use_secure_auth_cookie
 from app.core.config import settings
@@ -57,6 +57,23 @@ async def create_challenge(
     data = await RealphotosAuthService(db).create_challenge(client_key=payload.client_key)
     await db.commit()
     return SuccessResponse(data=data)
+
+
+@router.post("/register")
+async def register(
+    body: RegisterRequest,
+    db: DBSession,
+) -> dict[str, Any]:
+    """商家自助开户：验证码 + 用户名密码 → 新建租户与 rp_merchant（架构 §9.2 / FR-001）。"""
+    data = await RealphotosAuthService(db).register(
+        username=body.username,
+        password=body.password,
+        nickname=body.nickname,
+        challenge_id=body.challenge_id,
+        challenge_code=body.challenge_code,
+    )
+    await db.commit()
+    return SuccessResponse(data=data, message="注册成功，请登录")
 
 
 @router.post("/login")

@@ -176,6 +176,43 @@ export async function loginByPassword(
   return toCookieBackedSession(data)
 }
 
+export type MerchantRegisterResult = {
+  userId: string
+  username: string
+  nickname?: string
+  tenantId: string
+  tenantCode: string
+  roleCode: string
+  requireAudit: boolean
+}
+
+/** FR-001 / 架构 §9.2：验证码 + 用户名密码 → 新建商家租户与 rp_merchant。 */
+export async function registerMerchant(
+  username: string,
+  password: string,
+  nickname: string | undefined,
+  challengeId: string,
+  challengeCode: string,
+): Promise<MerchantRegisterResult> {
+  const response = await fetch(`${getApiBaseUrl()}/api/v1/realphotos/auth/register`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    cache: 'no-store',
+    body: JSON.stringify({
+      username,
+      password,
+      nickname: nickname?.trim() || undefined,
+      challengeId,
+      challengeCode,
+    }),
+  })
+  return readEnvelope<MerchantRegisterResult>(response)
+}
+
 export async function fetchAuthSession(): Promise<Session | null> {
   const response = await fetch(`${getApiBaseUrl()}/api/v1/auth/session`, {
     method: 'GET',

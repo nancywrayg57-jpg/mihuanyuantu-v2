@@ -1,12 +1,13 @@
-"""Session login with captcha challenge (dev captcha allowed)."""
+"""Session login / merchant register with captcha challenge (dev captcha allowed)."""
 
 from __future__ import annotations
 
 import hashlib
+import re
 import secrets
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.capabilities.realphotos.constants import (
@@ -22,10 +23,25 @@ from app.capabilities.realphotos.models import (
     RealphotosAuthGuard,
     RealphotosMerchantProfile,
 )
+from app.capabilities.realphotos.permissions import ROLE_MERCHANT
+from app.capabilities.realphotos.services.bootstrap import (
+    ROLE_DEFS,
+    _ensure_role,
+    _ensure_tenant,
+)
 from app.capabilities.realphotos.services.captcha_image import render_captcha_data_url
+from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
 from app.core.exceptions import BusinessError, UnauthorizedError
-from app.core.security import create_access_token, create_refresh_token, verify_password
-from app.domain.users.models import User, UserStatus
+from app.core.security import (
+    create_access_token,
+    create_refresh_token,
+    hash_password,
+    verify_password,
+)
+from app.domain.users.models import User, UserRole, UserStatus
+from app.domain.users.schemas import _validate_password_strength
+
+_USERNAME_RE = re.compile(r"^[A-Za-z0-9_]{2,50}$")
 
 
 def _utcnow() -> datetime:
@@ -102,6 +118,100 @@ class RealphotosAuthService:
             self.db.add(guard)
             await self.db.flush()
         return guard
+
+    async def register(
+        self,
+        *,
+        username: str,
+        password: str,
+        nickname: str | None,
+        challenge_id: str,
+        challenge_code: str,
+    ) -> dict:
+        """Create a new merchant tenant + rp_merchant account (architecture §9.2)."""
+        await self._consume_challenge(challenge_id, challenge_code)
+
+        username_clean = str(username or "").strip()
+        if not _USERNAME_RE.fullmatch(username_clean):
+            raise BusinessError(
+                message="用户名仅支持字母、数字、下划线，长度 2–50",
+                code="INPUT_INVALID",
+            )
+        try:
+            password_clean = _validate_password_strength(str(password or ""))
+        except ValueError as exc:
+            raise BusinessError(message=str(exc), code="INPUT_INVALID") from exc
+
+        nickname_clean = str(nickname or "").strip() or username_clean
+        tenant_code = f"m-{username_clean.lower()}"
+
+        existing_user = await self.db.execute(
+            select(User).where(
+                func.lower(User.username) == username_clean.lower(),
+                User.deleted_at.is_(None),
+            )
+        )
+        if existing_user.scalar_one_or_none() is not None:
+            raise BusinessError(message=f"用户名 '{username_clean}' 已存在", code="CONFLICT")
+
+        from app.domain.auth.models import Tenant
+
+        existing_tenant = await self.db.execute(
+            select(Tenant).where(Tenant.code == tenant_code, Tenant.deleted_at.is_(None))
+        )
+        if existing_tenant.scalar_one_or_none() is not None:
+            raise BusinessError(message="租户编码已占用，请更换用户名", code="CONFLICT")
+
+        tenant = await _ensure_tenant(
+            self.db,
+            code=tenant_code,
+            name=f"{nickname_clean}的店铺",
+        )
+        roles: dict[str, object] = {}
+        for code, name, description in ROLE_DEFS:
+            roles[code] = await _ensure_role(
+                self.db,
+                tenant_id=int(tenant.id),
+                code=code,
+                name=name,
+                description=description,
+            )
+        await RealphotosCreditService(self.db).get_or_create_account(tenant_id=int(tenant.id))
+
+        merchant_role = roles[ROLE_MERCHANT]
+        user = User(
+            tenant_id=int(tenant.id),
+            username=username_clean,
+            password_hash=hash_password(password_clean),
+            nickname=nickname_clean,
+            status=int(UserStatus.ENABLED),
+        )
+        self.db.add(user)
+        await self.db.flush()
+        self.db.add(
+            UserRole(
+                tenant_id=int(tenant.id),
+                user_id=int(user.id),
+                role_id=int(merchant_role.id),  # type: ignore[attr-defined]
+            )
+        )
+        self.db.add(
+            RealphotosMerchantProfile(
+                tenant_id=int(tenant.id),
+                user_id=int(user.id),
+                display_name=nickname_clean,
+            )
+        )
+        await self.db.flush()
+        return {
+            "userId": str(int(user.id)),
+            "username": user.username,
+            "nickname": user.nickname,
+            "tenantId": str(int(tenant.id)),
+            "tenantCode": tenant.code,
+            "roleCode": ROLE_MERCHANT,
+            "requireAudit": False,
+        }
 
     async def login(
         self,

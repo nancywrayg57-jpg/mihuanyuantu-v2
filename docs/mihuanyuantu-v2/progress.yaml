@@ -32,12 +32,25 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "FIVE-LAYER-DEFAULT-OPT：默认路径单变量消融；改裁门禁 MEAN_GAIN/PASS75_LIFT"
-    user_value: "止血默认下真 Gemini 可测提升；不放宽 PASS_SCORE"
-    visible_output: "optical 0.32→0.24 已升默认；确认 mean=67.25 Δ+5.83 pass75+2"
-    verify: "真Gemini H0/A1–A5/confirm；旧Q1未宣称"
-    status: default_opt_promoted_optical_024
-    next_user_action: "非作者审合PR；禁S7；可选另探噪声/JPEG单变量。"
+    goal: "REGISTER-FIX：修复商家注册不可用"
+    user_value: "登录页「注册」可开户：验证码 + 新建商家租户/rp_merchant，可立即登录"
+    visible_output: "实现 POST /api/v1/realphotos/auth/register；前端注册页改走该流；端测 REGISTER_FIX_E2E_PASS"
+    verify: "pytest test_auth_register 3 passed；docs/.../REGISTER-FIX-e2e-2026-11-14.txt"
+    status: register_fix_ready_for_pr
+    next_user_action: "推分支 cursor/register-fix-9973 并开 PR；禁自评自合；禁S7。"
+  register_fix_2026_11_14:
+    work_order: REGISTER-FIX
+    branch: cursor/register-fix-9973
+    baseline_main: e7a93c5
+    root_cause: "register page used platform registration-config; DEFAULT_TENANT default missing → enabled=false; realphotos /auth/register was 404"
+    fix: "POST /api/v1/realphotos/auth/register creates m-{username} tenant + rp_merchant; FE captcha register"
+    unit_tests: "test_auth_register.py 3 passed"
+    e2e_log: /tmp/register-fix-e2e.log
+    e2e_evidence: docs/mihuanyuantu-v2/input/REGISTER-FIX-e2e-2026-11-14.txt
+    evidence_marker: REGISTER_FIX_E2E_PASS
+    constraint_ledger: docs/mihuanyuantu-v2/input/REGISTER-FIX-constraint-ledger.md
+    production_billing: false
+    r9_s7: blocked
   five_layer_default_opt_2026_11_14:
     work_order: FIVE-LAYER-DEFAULT-OPT
     branch: cursor/five-layer-default-opt-9973
@@ -456,18 +469,24 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "OPS-SUPPLIER-KEY-UX PR #53 待非作者 Owner squash；PG 需 realphotos_0005；不得开 S7；不得自评自合。"
-  work_order: "OPS-SUPPLIER-KEY-UX-2026-11-13 docs/mihuanyuantu-v2/input/OPS-SUPPLIER-KEY-UX-2026-11-13.md"
-  prior_work_order: "FIVE-LAYER-LEGACY-ALIGN 由另一会话推进；本会话独立 worktree"
-  branch: cursor/ops-supplier-key-ux-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/53"
-  worktree: /home/hbs/hbs-projects/mihuanyuantu-v2-ops-supplier-ux
-  baseline_main: bb79bfb
-  constraint_ledger: docs/mihuanyuantu-v2/input/OPS-SUPPLIER-KEY-UX-constraint-ledger.md
-  e2e_log: /tmp/ops-supplier-key-ux-e2e.log
-  evidence_marker: OPS_SUPPLIER_KEY_UX_E2E_PASS
+  action: "REGISTER-FIX 已本地闭环：推 cursor/register-fix-9973 并开 PR；等待非作者 Owner squash。禁S7；禁放宽PASS_SCORE。"
+  work_order: "REGISTER-FIX"
+  prior_work_order: "FIVE-LAYER-DEFAULT-OPT #57 merged; DET-SCORE-NONLEGACY #56; DET-SCORE hemostasis #55; OPS-SUPPLIER-KEY-UX #53 merged"
+  branch: cursor/register-fix-9973
+  baseline_main: e7a93c5
+  constraint_ledger: docs/mihuanyuantu-v2/input/REGISTER-FIX-constraint-ledger.md
+  e2e_log: /tmp/register-fix-e2e.log
+  e2e_evidence: docs/mihuanyuantu-v2/input/REGISTER-FIX-e2e-2026-11-14.txt
+  evidence_marker: REGISTER_FIX_E2E_PASS
   production_billing: false
   r9_s7: blocked
+  closed_default_opt:
+    pr: 57
+    status: merged
+    main_tip: e7a93c5
+  closed_ops_supplier_key_ux:
+    pr: 53
+    status: merged
   ops_supplier_key_ux_status:
     T1_provider_cascade: done_e2e_pass
     T2_multi_key: done_e2e_pass
