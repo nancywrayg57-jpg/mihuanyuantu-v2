@@ -1,0 +1,125 @@
+# PRELAUNCH E2E · KEY-MODEL-SET T2 · 2026-11-15
+
+branch=cursor/key-model-set-9973
+HEAD=cabbd5bf96e6dc78df0a48c52490fa208fd01a51
+worktree=/home/hbs/hbs-projects/mihuanyuantu-v2/.worktrees/ops-desk-ux
+executor=Collaborator (T2 only; no S7)
+
+## Environment (evidence)
+
+| Item | Value |
+|------|-------|
+| Host | This machine **is** the dev host (`hostname -I` contains `192.168.19.128`) |
+| SSH | **Not used** (already on dev host; no second hop) |
+| Live API | `http://127.0.0.1:38000` — uvicorn cwd=`/home/hbs/hbs-projects/mihuanyuantu-v2/aojuai-main/backend` (main tree, not worktree) |
+| Live FE | `http://127.0.0.1:3000` (HTTP 200 at probe time) |
+| DB | PostgreSQL per linked `.env` (`DB_HOST=127.0.0.1`, `realphotos_dev`) |
+| Python venv | `/home/hbs/hbs-projects/mihuanyuantu-v2/aojuai-main/backend/.venv` |
+| Secrets | Read via symlinked `.env` + gitignored duty secrets; **nothing committed** |
+
+Blockers summary:
+- Running API process serves **main** checkout; worktree adds `POST /provider-contracts/credentials` (T1) → **405 on live stack** until API restarted from worktree/main after T1 merge.
+- Several PostgreSQL e2e scripts assume S1 catalog presets in DB; dev data drift → `PRESET_REJECTED` / Honeybadger placeholder guard.
+- Full `browser_e2e_fix_e2e.py` aborted before unfreeze/held-release F2–F7 blocks.
+
+---
+
+## 1) Script inventory (`aojuai-main/backend/scripts/`)
+
+| Work-order area | Existing scripts | Gaps |
+|-----------------|------------------|------|
+| Login / register (验证码) | `register_fix_e2e.py`; login helpers in `browser_e2e_fix_e2e.py`, `s5/s6_pg_e2e_smoke.py`, `model_api_config_e2e.py` | No single “all roles login” named prelaunch script |
+| 生图 (generation) | `s5_pg_e2e_smoke.py`, `supplier_live_e2e.py`, `module_a_gap_e2e.py`, `product_gap_*` | Live supplier path not re-run today (time/risk) |
+| 提示词优化 | `s5_pg_e2e_smoke.py`, `model_api_config_e2e.py` (M3), `ops_supplier_key_ux_t12_e2e.py` | — |
+| 图片处理 / 检测 | `s1_pg_e2e_smoke.py`–`s4_pg_e2e_smoke.py`, `s3_pg_e2e_controls.py`, `module_b_contract_e2e.py`, `browser_e2e_fix_e2e.py`, `det_score_*` | No one script covering merchant HTTP batch + worker + detection E2E on current DB |
+| 积分充值 + 订单客服确认 | `s3_pg_e2e_controls.py`, `s3_pg_e2e_smoke.py`, `r6_devhost_gps_none_e2e.py` (in-process recharge) | HTTP path needs `tierYuan` + `voucherNote` (documented in probe) |
+| 账号解冻 | `browser_e2e_fix_e2e.py` (F2), `s6_pg_e2e_smoke.py` | Not executed end-to-end today (script crash / early assert) |
+|  Held 积分释放 | `browser_e2e_fix_e2e.py` (F4), `s6_pg_e2e_smoke.py` | Not executed end-to-end today |
+| Provider contract 列表 / 新增·更换密钥 | `model_api_config_e2e.py`, `ops_supplier_key_ux_t12_e2e.py`, `ops_supplier_key_ux_t4_e2e.py`, `module_b_contract_e2e.py` | — |
+| **按密钥设置 model (T1)** | `tests/capabilities/realphotos/test_key_model_set_t1.py` (service layer) | **No HTTP e2e script**; live API on :38000 lacks route (see below) |
+| 工单 / 用户管理冒烟 | `browser_e2e_fix_e2e.py`, `s6_pg_e2e_smoke.py`, `ops_quality_d_e2e.py` | Not green today |
+| Dev-host utilities | `r6_devhost_evidence_stub.sh`, `r6_devhost_gps_none_e2e.py`, `seed_demo_*.py`, `check_seed_state.py` | — |
+
+---
+
+## 2) Commands run (chronological)
+
+```text
+# branch tip
+git branch --show-current && git rev-parse HEAD
+
+# link env for worktree scripts (not committed)
+ln -sf /home/hbs/hbs-projects/mihuanyuantu-v2/aojuai-main/backend/.env \
+  /home/hbs/hbs-projects/mihuanyuantu-v2/.worktrees/ops-desk-ux/aojuai-main/backend/.env
+
+PY=/home/hbs/hbs-projects/mihuanyuantu-v2/aojuai-main/backend/.venv/bin/python
+WD=/home/hbs/hbs-projects/mihuanyuantu-v2/.worktrees/ops-desk-ux/aojuai-main/backend
+cd "$WD" && export PYTHONPATH=.
+
+$PY scripts/register_fix_e2e.py
+$PY scripts/browser_e2e_fix_e2e.py          # exit 1 — preset brand guard
+$PY scripts/model_api_config_e2e.py           # MODEL_API_CONFIG_E2E_DONE
+$PY scripts/ops_supplier_key_ux_t12_e2e.py    # T1_test_key_present_not_printed FAIL
+$PY scripts/s5_pg_e2e_smoke.py               # exit 1 — SERVICE_NOT_CONFIGURED assert
+$PY scripts/s6_pg_e2e_smoke.py               # exit 1 — content-reviews locked assert
+$PY scripts/s3_pg_e2e_controls.py            # exit 1 — PRESET_REJECTED
+$PY scripts/s1_pg_e2e_smoke.py               # exit 1 — PRESET_REJECTED
+
+$PY -m pytest tests/capabilities/realphotos/test_key_model_set_t1.py -q  # 1 passed
+
+# ad-hoc HTTP probe (same venv; logs → /tmp/prelaunch-e2e-probe.json)
+# login×4, provider-contracts, prompt-optimization, generation-tasks, recharge+confirm,
+# held-credits list, account-freezes/release, assets upload + processing-batches attempt
+
+curl -sS -o /dev/null -w "%{http_code}" -X POST http://127.0.0.1:38000/api/v1/realphotos/processing-batches
+```
+
+Artifacts (local, not committed):
+- `/tmp/register-fix-e2e.log`
+- `/tmp/model-api-config-e2e.log`
+- `/tmp/prelaunch-e2e-probe.json`
+- `/tmp/browser-e2e-fix-e2e.log` (partial)
+
+---
+
+## 3) Checklist results
+
+| # | Item | Result | Reason / evidence |
+|---|------|--------|-------------------|
+| 1 | 商家登录 | **PASS** | Seed `rp_merchant_a1` + challenge login HTTP 200 (`/tmp/prelaunch-e2e-probe.json`) |
+| 2 | 商家注册（验证码） | **PASS** | `register_fix_e2e.py` → `REGISTER_FIX_E2E_PASS=true`; new user `regfix_*` logged in |
+| 3 | 订单客服 / 技术客服 / 管理员登录 | **PASS** | All seed accounts HTTP 200 in probe |
+| 4 | 生图 | **FAIL** | `POST /generation-tasks` HTTP 200 but probe `status=None`; no green `s5_pg_e2e_smoke` / live supplier run |
+| 5 | 提示词优化 | **FAIL** | HTTP 200 but task `status=failed` (transport); `model_api_config` M3 exercised optimize with dead-base failure path only |
+| 6 | 图片处理（含检测） | **FAIL** | `s1_pg_e2e_smoke` / `s3_pg_e2e_controls` → `PRESET_REJECTED`; HTTP `processing-batches` probe returned 404 (upload/batch path not verified green) |
+| 7 | 积分充值 + 客服确认 | **PASS** | HTTP `POST /recharge-orders` + `.../confirm` with `tierYuan=100`, `voucherNote=prelaunch-e2e-*` → confirm 200 (probe) |
+| 8 | 账号解冻 | **PARTIAL** | `POST /account-freezes/release` HTTP 200 for synthetic `userId=1` (route + RBAC alive); **not** full F2 flow (`browser_e2e_fix` not completed) |
+| 9 | Held 积分释放 | **SKIP** | List API **PASS** (`GET /held-credits`); release endpoints not exercised (browser F4 / s6 not green) |
+| 10 | 管理员 contract 列表 | **PASS** | `GET /api/v1/realphotos/provider-contracts` items=5; `model_api_config_e2e` M1–M4 green |
+| 11 | API 新增 / 更换密钥（duty 级） | **PASS** | `model_api_config_e2e.py` M2 save/rotate/mask |
+| 12 | **按密钥 model 更换（T1）** | **FAIL** | Live API: `POST .../provider-contracts/credentials` → **405** (route absent on running main API). Worktree: `pytest test_key_model_set_t1.py` **PASS** (in-process only) |
+| 13 | 工单 / 用户管理冒烟 | **FAIL** | `browser_e2e_fix_e2e.py` stopped at `save_preset` Honeybadger guard; `s6_pg_e2e_smoke` assert on content-review lock |
+| 14 | `ops_supplier_key_ux_t12_e2e` regression | **FAIL** | `T1_test_key_present_not_printed` — live key material expectation (.secrets / duty file) |
+
+---
+
+## 4) Recommended next fixes
+
+1. **Restart preview API from worktree** (or merge T1 + redeploy) so `POST /api/v1/realphotos/provider-contracts/credentials` is live; re-run HTTP T1 check.
+2. **Reconcile S1 presets on dev PostgreSQL** with `S1_ENABLED_PRESETS` (`s1-phone-01` etc.) or run documented seed/repair (`check_seed_state.py` / bootstrap) so `s1_pg_e2e_*` and merchant processing stop returning `PRESET_REJECTED`.
+3. **Fix `browser_e2e_fix_e2e.py` fixture preset** to use real device brands (matches `s6_ops.save_preset` guard) and re-run F2–F7 for unfreeze + held release evidence.
+4. **Investigate prompt_opt / generation task failures** on live stack (supplier contract, worker, or billing fixture) before marking merchant growth paths green.
+5. **Align `ops_supplier_key_ux_t12_e2e` secrets fixture** with dev duty store under `.secrets/realphotos-duty-secrets.json` (read-only; do not log keys).
+
+---
+
+## 5) Follow-up (main session after T2)
+
+- Started worktree uvicorn on `127.0.0.1:38001` (did not replace :38000).
+- OpenAPI on :38001 lists `POST /api/v1/realphotos/provider-contracts/credentials` (route present; :38000 405 = stale main process).
+- Admin login + `GET /provider-contracts` on :38001 → 200, items=5; no multi-key `credentials[]` in response this run → HTTP meta update not exercised (secrets/path empty for multi-key view); stopped :38001 after probe.
+- Gate unchanged: still **not** claiming full prelaunch green.
+
+PRELAUNCH_E2E_PASS=false
+
+Failed critical paths: 生图, 提示词优化, 图片处理/检测, T1 按密钥 model HTTP on live :38000, 工单冒烟, held 释放未测, supplier T12 script.

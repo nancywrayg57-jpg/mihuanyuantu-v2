@@ -128,6 +128,22 @@ export function RealphotosSystemClient() {
   const modelIdRef = useRef(modelId)
   modelIdRef.current = modelId
 
+  type CredModalState = {
+    duty: string
+    credentialId: string
+    masked: string
+    providerChoice: string
+    providerCustom: string
+    modelId: string
+    modelOptions: string[]
+    baseUrl: string
+  }
+  const [credModal, setCredModal] = useState<CredModalState | null>(null)
+  const [credModalSaving, setCredModalSaving] = useState(false)
+  const credReplaceModelRef = useRef(false)
+  const credModelIdRef = useRef('')
+  credModelIdRef.current = credModal?.modelId || ''
+
   const isAdmin = useMemo(
     () => roles.includes('rp_admin') || roles.includes('admin'),
     [roles],
@@ -143,6 +159,13 @@ export function RealphotosSystemClient() {
     if (modelId && !modelOptions.includes(modelId)) return [modelId, ...modelOptions]
     return modelOptions
   }, [modelId, modelOptions])
+
+  const credShownModels = useMemo(() => {
+    if (!credModal) return [] as string[]
+    const current = credModal.modelId
+    if (current && !credModal.modelOptions.includes(current)) return [current, ...credModal.modelOptions]
+    return credModal.modelOptions
+  }, [credModal])
 
   const editableContracts = useMemo(
     () =>
@@ -283,6 +306,151 @@ export function RealphotosSystemClient() {
     }, 350)
     return () => window.clearTimeout(seq)
   }, [tab, isAdmin, providerChoice, providerCustom, baseUrl, duty, apiKey])
+
+  useEffect(() => {
+    if (!credModal || tab !== 'models' || !isAdmin) return
+    const provider =
+      credModal.providerChoice === '其他' ? credModal.providerCustom.trim() || '其他' : credModal.providerChoice
+    const url = credModal.baseUrl.trim()
+    if (!url) return
+    const seq = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const data = await apiFetch<{ models?: string[] }>('/api/v1/realphotos/provider-contracts/probe-models', {
+            method: 'POST',
+            body: JSON.stringify({
+              provider,
+              duty: credModal.duty,
+              baseUrl: url,
+              credentialId: credModal.credentialId,
+            }),
+          })
+          const models = (data.models || []).filter((item) => item.trim())
+          const current = credModelIdRef.current
+          setCredModal((prev) => {
+            if (!prev) return prev
+            if (credReplaceModelRef.current) {
+              credReplaceModelRef.current = false
+              return { ...prev, modelOptions: models, modelId: models[0] || current }
+            }
+            const nextOptions =
+              current && !models.includes(current)
+                ? [current, ...models]
+                : models.length
+                  ? models
+                  : PROVIDER_STATIC_MODELS[provider] || []
+            return { ...prev, modelOptions: nextOptions }
+          })
+        } catch {
+          const fallback = PROVIDER_STATIC_MODELS[provider] || []
+          const current = credModelIdRef.current
+          setCredModal((prev) => {
+            if (!prev) return prev
+            const nextOptions = current && !fallback.includes(current) ? [current, ...fallback] : fallback
+            return { ...prev, modelOptions: nextOptions }
+          })
+        }
+      })()
+    }, 350)
+    return () => window.clearTimeout(seq)
+  }, [credModal?.duty, credModal?.credentialId, credModal?.providerChoice, credModal?.providerCustom, credModal?.baseUrl, tab, isAdmin])
+
+  function resolvedCredProvider(modal: CredModalState) {
+    if (modal.providerChoice === '其他') return modal.providerCustom.trim() || '其他'
+    return modal.providerChoice
+  }
+
+  function openCredSettings(duty: string, cred: DutyCredential) {
+    if (cred.id === 'runtime') {
+      setMessage('请先通过上方表单登记密钥，再按条设置模型')
+      return
+    }
+    const prov = String(cred.provider || '').trim()
+    const match = PROVIDERS.find((name) => name === prov)
+    const providerChoice = match || (prov ? '其他' : 'DeepSeek')
+    const fallbackModels = PROVIDER_STATIC_MODELS[providerChoice] || []
+    const modelIdInit = String(cred.modelId || '').trim() || fallbackModels[0] || ''
+    setCredModal({
+      duty,
+      credentialId: cred.id,
+      masked: cred.masked || '已配置',
+      providerChoice,
+      providerCustom: match ? '' : prov,
+      modelId: modelIdInit,
+      modelOptions: modelIdInit && !fallbackModels.includes(modelIdInit) ? [modelIdInit, ...fallbackModels] : fallbackModels,
+      baseUrl: nonEmptyBase(cred.baseUrl, duty),
+    })
+  }
+
+  function onCredProviderChange(next: string) {
+    setCredModal((prev) => {
+      if (!prev) return prev
+      const preferred = PROVIDER_DEFAULT_BASE[next]
+      const fallbackModels = PROVIDER_STATIC_MODELS[next] || []
+      credReplaceModelRef.current = true
+      return {
+        ...prev,
+        providerChoice: next,
+        baseUrl: nonEmptyBase(preferred, prev.duty),
+        modelOptions: fallbackModels,
+        modelId: fallbackModels[0] || '',
+      }
+    })
+  }
+
+  async function saveCredSettings() {
+    if (!credModal) return
+    const provider = resolvedCredProvider(credModal)
+    if (!provider) {
+      setMessage('请填写提供商')
+      return
+    }
+    if (!credModal.modelId.trim()) {
+      setMessage('请填写模型版本')
+      return
+    }
+    if (!credModal.baseUrl.trim()) {
+      setMessage('请填写 Base URL')
+      return
+    }
+    setCredModalSaving(true)
+    try {
+      await apiFetch('/api/v1/realphotos/provider-contracts/credentials', {
+        method: 'POST',
+        body: JSON.stringify({
+          duty: credModal.duty,
+          credentialId: credModal.credentialId,
+          modelId: credModal.modelId.trim(),
+          provider,
+          baseUrl: credModal.baseUrl.trim(),
+        }),
+      })
+      setCredModal(null)
+      setMessage('密钥模型已保存；若该密钥为启用态，运行时合同已同步')
+      await loadContracts()
+    } catch (error: unknown) {
+      setMessage(error instanceof ApiError ? error.message : '保存失败')
+    } finally {
+      setCredModalSaving(false)
+    }
+  }
+
+  async function toggleCredEnabled(duty: string, cred: DutyCredential, enable: boolean) {
+    if (cred.id === 'runtime') {
+      setMessage('请先登记独立密钥条目后再启停')
+      return
+    }
+    try {
+      await apiFetch('/api/v1/realphotos/provider-contracts/enabled', {
+        method: 'POST',
+        body: JSON.stringify({ duty, enabled: enable, credentialId: cred.id }),
+      })
+      setMessage(enable ? '已启用该密钥' : '已停用该密钥')
+      await loadContracts()
+    } catch (error: unknown) {
+      setMessage(error instanceof ApiError ? error.message : '启停失败')
+    }
+  }
 
   async function saveRedo() {
     if (!canEditRedo) {
@@ -594,6 +762,24 @@ export function RealphotosSystemClient() {
                                   <span className="text-muted-foreground font-sans">
                                     {cred.enabled ? '启用中' : '已停用'}
                                   </span>
+                                  {cred.id !== 'runtime' ? (
+                                    <>
+                                      <button
+                                        className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-1.5 py-0 font-sans"
+                                        type="button"
+                                        onClick={() => openCredSettings(item.duty, cred)}
+                                      >
+                                        设置
+                                      </button>
+                                      <button
+                                        className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-1.5 py-0 font-sans"
+                                        type="button"
+                                        onClick={() => void toggleCredEnabled(item.duty, cred, !cred.enabled)}
+                                      >
+                                        {cred.enabled ? '停用' : '启用'}
+                                      </button>
+                                    </>
+                                  ) : null}
                                 </div>
                               ))}
                             </div>
@@ -623,6 +809,108 @@ export function RealphotosSystemClient() {
                   </tbody>
                 </table>
               </div>
+              {credModal ? (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+                  onClick={() => setCredModal(null)}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="设置密钥模型"
+                >
+                  <div
+                    className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-border bg-card text-sm shadow"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
+                      <h2 className="text-sm font-medium">设置密钥模型 · {credModal.masked}</h2>
+                      <button
+                        className="rp-btn rounded-[10px] border px-2 py-0.5"
+                        type="button"
+                        onClick={() => setCredModal(null)}
+                      >
+                        关闭
+                      </button>
+                    </div>
+                    <div className="space-y-3 overflow-y-auto p-4">
+                      <label className="block">
+                        提供商
+                        <select
+                          className="mt-1 w-full border px-2 py-1"
+                          value={credModal.providerChoice}
+                          onChange={(event) => onCredProviderChange(event.target.value)}
+                        >
+                          {PROVIDERS.map((name) => (
+                            <option key={name} value={name}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      {credModal.providerChoice === '其他' ? (
+                        <label className="block">
+                          自定义提供商
+                          <input
+                            className="mt-1 w-full border px-2 py-1"
+                            value={credModal.providerCustom}
+                            onChange={(event) =>
+                              setCredModal((prev) => (prev ? { ...prev, providerCustom: event.target.value } : prev))
+                            }
+                          />
+                        </label>
+                      ) : null}
+                      <label className="block">
+                        模型版本
+                        {credModal.providerChoice === '其他' && credShownModels.length === 0 ? (
+                          <input
+                            className="mt-1 w-full border px-2 py-1"
+                            value={credModal.modelId}
+                            onChange={(event) =>
+                              setCredModal((prev) => (prev ? { ...prev, modelId: event.target.value } : prev))
+                            }
+                            placeholder="填写模型 ID"
+                          />
+                        ) : (
+                          <select
+                            className="mt-1 w-full border px-2 py-1"
+                            value={credShownModels.includes(credModal.modelId) ? credModal.modelId : credShownModels[0] || ''}
+                            onChange={(event) =>
+                              setCredModal((prev) => (prev ? { ...prev, modelId: event.target.value } : prev))
+                            }
+                          >
+                            {credShownModels.length === 0 ? <option value="">暂无可选模型</option> : null}
+                            {credShownModels.map((name) => (
+                              <option key={name} value={name}>
+                                {name}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </label>
+                      <label className="block">
+                        Base URL
+                        <input
+                          className="mt-1 w-full border px-2 py-1"
+                          value={credModal.baseUrl}
+                          onChange={(event) =>
+                            setCredModal((prev) => (prev ? { ...prev, baseUrl: event.target.value } : prev))
+                          }
+                        />
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        用途：{purposeLabel(credModal.duty)}。保存写入该密钥 meta；启用中的密钥会同步平台合同。
+                      </p>
+                      <button
+                        className="rp-btn rounded-[10px] border px-3 py-1 disabled:opacity-50"
+                        type="button"
+                        disabled={credModalSaving}
+                        onClick={() => void saveCredSettings()}
+                      >
+                        保存
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </>
           )}
         </section>

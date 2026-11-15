@@ -1,0 +1,16 @@
+KEY-MODEL-SET T1 · 2026-11-15
+branch=cursor/key-model-set-9973
+worktree=ops-desk-ux
+
+backend:
+  ruff: PASS (supplier_admin.py, supplier_config.py, supplier_secrets.py, test_key_model_set_t1.py)
+  pytest: PASS tests/capabilities/realphotos/test_key_model_set_t1.py (1 passed, PYTHONPATH=worktree backend)
+
+api:
+  POST /api/v1/realphotos/provider-contracts/credentials
+  probe-models extended with credentialId
+
+fe:
+  system-client.tsx: per-key 设置 modal + 启用/停用 (credentialId)
+
+KEY_MODEL_SET_T1_PASS=true

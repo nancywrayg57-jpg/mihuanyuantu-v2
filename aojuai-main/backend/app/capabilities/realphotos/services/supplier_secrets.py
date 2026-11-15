@@ -278,6 +278,62 @@ def write_duty_secret(duty: str, secret: str) -> str:
     return str(public.get("masked") or "")
 
 
+def read_credential_secret(duty: str, credential_id: str) -> str:
+    """Return plaintext for one credential entry (admin probe only)."""
+    label = str(duty or "").strip()
+    if label not in _DUTIES:
+        return ""
+    target_id = str(credential_id or "").strip()
+    if not target_id or target_id == "runtime":
+        return ""
+    entries = entries_for_duty(_load_store(), label)
+    if not entries:
+        return ""
+    for item in entries:
+        if str(item.get("id") or "") == target_id:
+            return str(item.get("secret") or "").strip()
+    return ""
+
+
+def update_credential_meta(
+    duty: str,
+    credential_id: str,
+    *,
+    model_id: str,
+    provider: str | None = None,
+    base_url: str | None = None,
+) -> dict[str, Any]:
+    """Update per-entry meta without rotating the API key."""
+    label = str(duty or "").strip()
+    if label not in _DUTIES:
+        raise ValueError(f"unsupported duty for secret: {label}")
+    target_id = str(credential_id or "").strip()
+    if not target_id or target_id == "runtime":
+        raise ValueError("missing credential id")
+    model = str(model_id or "").strip()
+    if not model:
+        raise ValueError("empty model id")
+    store = _load_store()
+    entries = entries_for_duty(store, label)
+    if not entries:
+        raise ValueError("credential not found")
+    found: dict[str, Any] | None = None
+    for item in entries:
+        if str(item.get("id") or "") == target_id:
+            found = item
+            break
+    if found is None:
+        raise ValueError("credential not found")
+    found["modelId"] = model
+    if provider is not None:
+        found["provider"] = str(provider or "").strip()
+    if base_url is not None:
+        found["baseUrl"] = str(base_url or "").strip()
+    store[label] = [_persist_entry(item) for item in entries]
+    _write_store(store)
+    return _public_entry(found)
+
+
 def set_credential_enabled(duty: str, credential_id: str, enabled: bool) -> dict[str, Any]:
     """Enable or disable one entry. Enabling disables the duty's other entries."""
     label = str(duty or "").strip()

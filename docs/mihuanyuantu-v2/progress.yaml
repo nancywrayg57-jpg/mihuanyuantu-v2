@@ -32,12 +32,27 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "OPS-DESK-UX-FIX：申诉弹窗/冻结列表/用户管理空页"
-    user_value: "处理弹窗可解冻；冻结列表有数据且 20/页；用户管理可见租户"
-    visible_output: "三修复已落地；pytest 4 passed；待开 PR"
-    verify: "docs/.../OPS-DESK-UX-fix-e2e-2026-11-15.txt OPS_DESK_UX_FIX_E2E_PASS"
-    status: ops_desk_ux_fix_pr_opened
-    next_user_action: "非作者 Owner squash PR #60；禁自评自合；禁S7。"
+    goal: "KEY-MODEL-SET：按密钥设置模型 + 上线前全量本地端测"
+    user_value: "管理员可对每个 API 密钥单独设模型并全站同步；上线前多角色功能有证据"
+    visible_output: "T1 代码+单测绿；T2 本地全量端测 PRELAUNCH_E2E_PASS=false（证据已写）"
+    verify: "KEY-MODEL-SET-e2e-t1 PASS；PRELAUNCH-E2E-2026-11-15 FAIL 诚实记录"
+    status: key_model_set_ready_for_pr
+    next_user_action: "开 PR；合入后重启 :38000 再跑 T1 HTTP；生图/处理/预设漂移另开止血；禁S7。"
+  key_model_set_2026_11_15:
+    work_order: KEY-MODEL-SET
+    branch: cursor/key-model-set-9973
+    worktree: .worktrees/ops-desk-ux
+    baseline_main: cabbd5b
+    t1_per_key_model: done_e2e_pass
+    t2_prelaunch_e2e: done_fail_documented
+    t1_evidence: docs/mihuanyuantu-v2/input/KEY-MODEL-SET-e2e-t1.txt
+    t2_evidence: docs/mihuanyuantu-v2/input/PRELAUNCH-E2E-2026-11-15.txt
+    evidence_marker_t1: KEY_MODEL_SET_T1_PASS
+    evidence_marker_t2: PRELAUNCH_E2E_PASS=false
+    work_order_file: docs/mihuanyuantu-v2/input/KEY-MODEL-SET-work-order-2026-11-15.md
+    constraint_ledger: docs/mihuanyuantu-v2/input/KEY-MODEL-SET-constraint-ledger.md
+    production_billing: false
+    r9_s7: blocked
   ops_desk_ux_fix_2026_11_15:
     work_order: OPS-DESK-UX-FIX
     branch: cursor/ops-desk-ux-fix-9973
@@ -501,17 +516,20 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "OPS-DESK-UX-FIX PR #60 待非作者 Owner squash。禁S7；禁放宽PASS_SCORE。"
-  work_order: "OPS-DESK-UX-FIX"
-  prior_work_order: "OPS-DESK-UX #59 merged; REGISTER-FIX #58; FIVE-LAYER-DEFAULT-OPT #57"
-  branch: cursor/ops-desk-ux-fix-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/60"
-  tip: 3ff6e4f
-  baseline_main: b925a8f
-  e2e_evidence: docs/mihuanyuantu-v2/input/OPS-DESK-UX-fix-e2e-2026-11-15.txt
-  evidence_marker: OPS_DESK_UX_FIX_E2E_PASS
+  action: "KEY-MODEL-SET 开 PR；T2 未全绿须合入后重启 API 并另排预设/生图止血。禁S7；禁放宽PASS_SCORE。"
+  work_order: "KEY-MODEL-SET"
+  prior_work_order: "OPS-DESK-UX-FIX #60 merged; OPS-DESK-UX #59; REGISTER-FIX #58"
+  branch: cursor/key-model-set-9973
+  baseline_main: cabbd5b
+  work_order_file: docs/mihuanyuantu-v2/input/KEY-MODEL-SET-work-order-2026-11-15.md
+  t1_evidence: docs/mihuanyuantu-v2/input/KEY-MODEL-SET-e2e-t1.txt
+  t2_evidence: docs/mihuanyuantu-v2/input/PRELAUNCH-E2E-2026-11-15.txt
   production_billing: false
   r9_s7: blocked
+  closed_ops_desk_ux_fix:
+    pr: 60
+    status: merged
+    main_tip: cabbd5b
   closed_ops_desk_ux:
     pr: 59
     status: merged

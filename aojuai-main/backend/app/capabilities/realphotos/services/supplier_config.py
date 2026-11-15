@@ -16,6 +16,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.capabilities.realphotos.models.supplier_contract import RealphotosProviderContract
+from app.capabilities.realphotos.services import supplier_secrets as duty_secrets
 from app.capabilities.realphotos.services.supplier_clients import (
     CONFIG_VERSION,
     DASHSCOPE_URL,
@@ -640,6 +641,68 @@ class RealphotosSupplierConfigService:
         )
         return after
 
+    async def update_credential_meta(
+        self,
+        *,
+        actor_role_codes: set[str],
+        duty: str,
+        credential_id: str,
+        model_id: str,
+        provider: str | None = None,
+        base_url: str | None = None,
+        actor_user_id: int | None = None,
+    ) -> dict[str, Any]:
+        self._admin(actor_role_codes)
+        label = purpose_to_duty(duty)
+        if label == "import" or label not in _ADMIN_DUTIES:
+            raise BusinessError(message="职责不存在", code="NOT_FOUND")
+        model_label = str(model_id or "").strip()
+        if not model_label:
+            raise BusinessError(message="model ID 必填", code="INPUT_INVALID")
+        try:
+            public_cred = duty_secrets.update_credential_meta(
+                label,
+                credential_id,
+                model_id=model_label,
+                provider=provider,
+                base_url=base_url,
+            )
+        except ValueError as exc:
+            msg = str(exc)
+            code = "INPUT_INVALID" if "model" in msg else "NOT_FOUND"
+            raise BusinessError(message="密钥条目不存在" if code == "NOT_FOUND" else msg, code=code) from exc
+        await self.ensure()
+        row = await self._row(label)
+        if row is None:
+            raise BusinessError(message="职责不存在", code="NOT_FOUND")
+        caps = dict(row.capabilities or {})
+        caps["adminManaged"] = True
+        caps["pollingEnabled"] = False
+        if public_cred.get("enabled"):
+            if public_cred.get("provider"):
+                row.provider = str(public_cred["provider"])[:32]
+            if public_cred.get("modelId"):
+                row.model_id = str(public_cred["modelId"])[:128]
+            if public_cred.get("baseUrl"):
+                row.base_url = _validate_base_url(str(public_cred["baseUrl"]))
+            row.config_version = _next_config_version()
+            caps["keyPrefix"] = str(public_cred.get("masked") or "")
+            caps["activeCredentialId"] = str(public_cred.get("id") or "")
+        row.capabilities = caps
+        await self.db.flush()
+        await self.db.refresh(row)
+        after = _public(row)
+        _LOG.info(
+            "provider_credential_meta actor=%s duty=%s credential=%s enabled=%s provider=%s modelId=%s",
+            actor_user_id,
+            label,
+            credential_id,
+            bool(public_cred.get("enabled")),
+            after.get("provider"),
+            after.get("modelId"),
+        )
+        return after
+
     async def probe_models(
         self,
         *,
@@ -648,11 +711,17 @@ class RealphotosSupplierConfigService:
         base_url: str | None = None,
         api_key: str | None = None,
         duty: str | None = None,
+        credential_id: str | None = None,
     ) -> dict[str, Any]:
         self._admin(actor_role_codes)
         from app.capabilities.realphotos.services.supplier_clients import probe_provider_models
 
         secret = str(api_key or "").strip()
+        if not secret and credential_id and duty and str(duty).strip():
+            label = purpose_to_duty(str(duty))
+            if label not in _ADMIN_DUTIES:
+                raise BusinessError(message="职责不存在", code="NOT_FOUND")
+            secret = duty_secrets.read_credential_secret(label, str(credential_id))
         if not secret and duty and str(duty).strip():
             label = purpose_to_duty(str(duty))
             if label not in _ADMIN_DUTIES:

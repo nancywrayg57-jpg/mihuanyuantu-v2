@@ -45,6 +45,17 @@ class ProbeBody(BaseModel):
     base_url: str | None = Field(default=None, alias="baseUrl")
     api_key: str | None = Field(default=None, alias="apiKey")
     duty: str | None = None
+    credential_id: str | None = Field(default=None, alias="credentialId")
+
+
+class CredentialMetaBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    duty: str
+    credential_id: str = Field(alias="credentialId")
+    model_id: str = Field(alias="modelId")
+    provider: str | None = None
+    base_url: str | None = Field(default=None, alias="baseUrl")
 
 
 def _reject_key_auth(request: Request) -> None:
@@ -126,7 +137,32 @@ async def probe_models(
         base_url=body.base_url,
         api_key=body.api_key,
         duty=body.duty,
+        credential_id=body.credential_id,
     )
+    return SuccessResponse(data=payload)
+
+
+@router.post("/provider-contracts/credentials")
+async def update_credential_meta(
+    body: CredentialMetaBody,
+    request: Request,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
+) -> dict[str, Any]:
+    _reject_key_auth(request)
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosSupplierConfigService(db).update_credential_meta(
+        actor_role_codes=roles,
+        duty=body.duty,
+        credential_id=body.credential_id,
+        model_id=body.model_id,
+        provider=body.provider,
+        base_url=body.base_url,
+        actor_user_id=int(current_user.id),
+    )
+    await db.commit()
     return SuccessResponse(data=payload)
 
 
