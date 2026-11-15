@@ -6,9 +6,7 @@ import { ApiError, apiFetch } from '@/lib/api'
 
 type PassScoreView = {
   passScore: number
-  defaultPassScore: number
   writable: boolean
-  promptLine: string
 }
 
 /** Admin card for the Gemini detection pass line. Kept out of system-client so model-key edits stay separate. */
@@ -56,7 +54,6 @@ export function DetectionPassScoreCard() {
   }
 
   const writable = Boolean(view?.writable)
-  const shown = view ? view.passScore : null
 
   return (
     <section className="rp-card rounded-xl bg-card shadow-sm space-y-3 border p-3 text-sm" data-detection-pass-score>
@@ -64,11 +61,6 @@ export function DetectionPassScoreCard() {
         <h2 className="font-medium">检测基线</h2>
         <span className="text-muted-foreground">平台范围</span>
       </div>
-      <p className="text-muted-foreground">
-        通过标准为总分 ≥ {shown ?? '…'} 且模型 passed=true。代码默认 {view?.defaultPassScore ?? 75}。
-        新检测任务使用保存后的及格线；已出报告保留当时的通过线。
-      </p>
-      {view?.promptLine ? <p className="text-muted-foreground">{view.promptLine}</p> : null}
       {view && !writable ? <p>仅平台管理员可修改。</p> : null}
       <label className="block">
         及格线

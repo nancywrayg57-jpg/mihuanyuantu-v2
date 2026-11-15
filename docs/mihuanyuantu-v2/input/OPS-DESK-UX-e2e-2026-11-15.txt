@@ -1,0 +1,18 @@
+OPS-DESK-UX e2e/unit evidence 2026-11-15
+branch=cursor/ops-desk-ux-9973 baseline=2d807e8
+
+T1: tech-desk tabs + appeal modal + held aggregate FIFO release
+T2: managed-tenants + users page tenant ops modals
+T3: detection-pass-score-card copy removed (frontend only)
+
+pytest (sqlite):
+  test_held_credits_aggregate_and_release_by_amount_fifo PASSED
+  test_only_tech_or_admin_can_release_held_credit PASSED
+  test_list_tenants_and_tenant_scoped_users PASSED
+ruff: s6_ops.py s6.py test_s6_ops.py PASS
+secret_scan: PASS
+T1 detail: docs/mihuanyuantu-v2/input/OPS-DESK-UX-e2e-t1.txt
+
+OPS_DESK_UX_E2E_PASS=true
+production_billing=false
+r9_s7=blocked

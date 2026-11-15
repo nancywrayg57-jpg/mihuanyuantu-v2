@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 
@@ -24,6 +24,14 @@ class ReleaseBody(BaseModel):
 
     reason: str
     tenant_id: int = Field(alias="tenantId")
+
+
+class ReleaseByAmountBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    reason: str
+    tenant_id: int = Field(alias="tenantId")
+    amount: int
 
 
 class UnfreezeBody(BaseModel):
@@ -180,6 +188,26 @@ async def release_held(
     return SuccessResponse(data=payload)
 
 
+@router.post("/held-credits/release-by-amount")
+async def release_held_by_amount(
+    body: ReleaseByAmountBody,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosOpsService(db).release_held_credits_by_amount(
+        actor_role_codes=roles,
+        operator_user_id=int(current_user.id),
+        tenant_id=int(body.tenant_id),
+        amount=body.amount,
+        reason=body.reason,
+    )
+    await db.commit()
+    return SuccessResponse(data=payload)
+
+
 @router.post("/account-freezes/release")
 async def unfreeze(
     body: UnfreezeBody,
@@ -286,8 +314,8 @@ async def create_ticket(
     return SuccessResponse(data=payload)
 
 
-@router.get("/managed-users")
-async def list_users(
+@router.get("/managed-tenants")
+async def list_tenants(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
@@ -295,7 +323,25 @@ async def list_users(
     _: None = Depends(PermissionChecker([TECH_DESK_READ])),
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
-    payload = await RealphotosOpsService(db).list_users(actor_role_codes=roles, page=page)
+    payload = await RealphotosOpsService(db).list_tenants(actor_role_codes=roles, page=page)
+    return SuccessResponse(data=payload)
+
+
+@router.get("/managed-users")
+async def list_users(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    page: int = 1,
+    tenant_id: int | None = Query(default=None, alias="tenantId"),
+    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosOpsService(db).list_users(
+        actor_role_codes=roles,
+        page=page,
+        tenant_id=tenant_id,
+    )
     return SuccessResponse(data=payload)
 
 

@@ -325,7 +325,10 @@ async def _main() -> int:
 
         held_list = await client.get("/api/v1/realphotos/held-credits", headers=tech)
         assert held_list.status_code == 200
-        assert any(int(i["taskId"]) == held_id for i in held_list.json()["data"]["items"])
+        held_payload = held_list.json()["data"]
+        # OPS-DESK-UX T1: items=按租户聚合；tasks=逐任务明细（脚本兼容）
+        assert any(int(i["taskId"]) == held_id for i in held_payload.get("tasks") or [])
+        assert any(int(i["tenantId"]) == int(tenant) for i in held_payload.get("items") or [])
         release = await client.post(
             f"/api/v1/realphotos/held-credits/{held_id}/release",
             headers=tech,
