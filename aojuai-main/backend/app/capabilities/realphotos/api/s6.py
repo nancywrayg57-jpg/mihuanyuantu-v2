@@ -273,10 +273,14 @@ async def list_held_credits(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
+    page: int = 1,
     _: None = Depends(PermissionChecker([TECH_DESK_READ])),
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
-    payload = await RealphotosOpsService(db).list_held_credit_tasks(actor_role_codes=roles)
+    payload = await RealphotosOpsService(db).list_held_credit_tasks(
+        actor_role_codes=roles,
+        page=page,
+    )
     return SuccessResponse(data=payload)
 
 

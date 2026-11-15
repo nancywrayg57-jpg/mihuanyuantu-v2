@@ -32,19 +32,33 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "OPS-DESK-UX：工单/用户管理 IA + 删检测基线说明文案"
-    user_value: "客服工单双标签可处理；用户管理按租户操作；检测基线页无多余通过线注释"
-    visible_output: "T1+T2+T3 已落地；pytest 3 passed；待开 PR"
-    verify: "docs/.../OPS-DESK-UX-e2e-2026-11-15.txt OPS_DESK_UX_E2E_PASS"
-    status: ops_desk_ux_pr_opened
-    next_user_action: "非作者 Owner squash PR #59；禁自评自合；禁S7。"
+    goal: "OPS-DESK-UX-FIX：申诉弹窗/冻结列表/用户管理空页"
+    user_value: "处理弹窗可解冻；冻结列表有数据且 20/页；用户管理可见租户"
+    visible_output: "三修复已落地；pytest 4 passed；待开 PR"
+    verify: "docs/.../OPS-DESK-UX-fix-e2e-2026-11-15.txt OPS_DESK_UX_FIX_E2E_PASS"
+    status: ops_desk_ux_fix_pr_opened
+    next_user_action: "非作者 Owner squash PR #60；禁自评自合；禁S7。"
+  ops_desk_ux_fix_2026_11_15:
+    work_order: OPS-DESK-UX-FIX
+    branch: cursor/ops-desk-ux-fix-9973
+    worktree: .worktrees/ops-desk-ux
+    baseline_main: b925a8f
+    prior_pr: 59
+    pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/60"
+    tip: 3ff6e4f
+    unit_tests: "held FIFO + orphan list + list_tenants 4 passed"
+    e2e_evidence: docs/mihuanyuantu-v2/input/OPS-DESK-UX-fix-e2e-2026-11-15.txt
+    evidence_marker: OPS_DESK_UX_FIX_E2E_PASS
+    production_billing: false
+    r9_s7: blocked
   ops_desk_ux_2026_11_15:
     work_order: OPS-DESK-UX
     branch: cursor/ops-desk-ux-9973
     worktree: .worktrees/ops-desk-ux
     baseline_main: 2d807e8
     pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/59"
-    tip: 34c6e34
+    status: merged
+    tip: b925a8f
     t1_tech_desk: done
     t2_users: done
     t3_pass_score_copy: done
@@ -487,22 +501,24 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "OPS-DESK-UX PR #59 待非作者 Owner squash。禁S7；禁放宽PASS_SCORE。"
-  work_order: "OPS-DESK-UX"
-  prior_work_order: "REGISTER-FIX #58 merged; FIVE-LAYER-DEFAULT-OPT #57; DET-SCORE-NONLEGACY #56; DET-SCORE hemostasis #55"
-  branch: cursor/ops-desk-ux-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/59"
-  tip: 34c6e34
-  baseline_main: 2d807e8
-  constraint_ledger: docs/mihuanyuantu-v2/input/OPS-DESK-UX-constraint-ledger.md
-  e2e_evidence: docs/mihuanyuantu-v2/input/OPS-DESK-UX-e2e-2026-11-15.txt
-  evidence_marker: OPS_DESK_UX_E2E_PASS
+  action: "OPS-DESK-UX-FIX PR #60 待非作者 Owner squash。禁S7；禁放宽PASS_SCORE。"
+  work_order: "OPS-DESK-UX-FIX"
+  prior_work_order: "OPS-DESK-UX #59 merged; REGISTER-FIX #58; FIVE-LAYER-DEFAULT-OPT #57"
+  branch: cursor/ops-desk-ux-fix-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/60"
+  tip: 3ff6e4f
+  baseline_main: b925a8f
+  e2e_evidence: docs/mihuanyuantu-v2/input/OPS-DESK-UX-fix-e2e-2026-11-15.txt
+  evidence_marker: OPS_DESK_UX_FIX_E2E_PASS
   production_billing: false
   r9_s7: blocked
+  closed_ops_desk_ux:
+    pr: 59
+    status: merged
+    main_tip: b925a8f
   closed_register_fix:
     pr: 58
     status: merged
-    main_tip: 2d807e8
   closed_default_opt:
     pr: 57
     status: merged

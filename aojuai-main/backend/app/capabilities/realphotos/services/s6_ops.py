@@ -47,7 +47,8 @@ from app.domain.users.models import User, UserRole, UserStatus
 FIXTURE_PROVIDER = "fixture"
 UNCONFIGURED_PROVIDER = "unconfigured"
 USER_PAGE_SIZE = 10
-TENANT_PAGE_SIZE = 10
+TENANT_PAGE_SIZE = 20
+HELD_PAGE_SIZE = 20
 LOG_PAGE_SIZE = 20
 GPS_MODES = {"none", "fixed", "random_by_scene"}
 # PRESET-BULK-IMPORT B1: stop injecting Honeybadger s1-* into merchant enabled list.
@@ -581,21 +582,53 @@ class RealphotosOpsService:
             ]
         }
 
-    async def list_held_credit_tasks(self, *, actor_role_codes: set[str]) -> dict[str, Any]:
-        """按租户聚合 held 冻结积分；tasks 保留逐任务明细供脚本兼容。"""
-        self._require_tech_or_admin(actor_role_codes)
-        held_rows = await self._held_reservation_rows()
-        # 列表展示仍按新→旧；FIFO 释放路径单独升序
-        held_rows_desc = sorted(held_rows, key=lambda pair: int(pair[0].id), reverse=True)[:100]
+    async def list_held_credit_tasks(
+        self, *, actor_role_codes: set[str], page: int = 1
+    ) -> dict[str, Any]:
+        """按租户聚合 held 冻结积分；tasks 保留逐任务明细供脚本兼容。
 
-        tenant_ids = {int(task.tenant_id) for task, _res in held_rows_desc}
-        user_ids = {int(task.owner_account_id) for task, _res in held_rows_desc}
+        列表以 credit_disposition=held_until_tech_support 的任务为主（与旧列表一致），
+        预留金额 left join；避免 INNER JOIN 把无预留行整页滤空。分页 20 条/页。
+        """
+        self._require_tech_or_admin(actor_role_codes)
+        size = HELD_PAGE_SIZE
+        index = max(int(page), 1)
+
+        task_rows = (
+            await self.db.execute(
+                select(RealphotosImageTask)
+                .where(
+                    RealphotosImageTask.deleted_at.is_(None),
+                    RealphotosImageTask.credit_disposition == "held_until_tech_support",
+                )
+                .order_by(RealphotosImageTask.id.desc())
+            )
+        ).scalars().all()
+
+        task_ids = [int(row.id) for row in task_rows]
+        amount_by_task: dict[int, int] = {}
+        if task_ids:
+            res_rows = (
+                await self.db.execute(
+                    select(RealphotosCreditReservation).where(
+                        RealphotosCreditReservation.task_id.in_(task_ids),
+                        RealphotosCreditReservation.deleted_at.is_(None),
+                        RealphotosCreditReservation.state == "held",
+                        RealphotosCreditReservation.amount > 0,
+                    )
+                )
+            ).scalars().all()
+            for reservation in res_rows:
+                amount_by_task[int(reservation.task_id)] = int(reservation.amount)
+
+        tenant_ids = {int(task.tenant_id) for task in task_rows}
+        user_ids = {int(task.owner_account_id) for task in task_rows}
         tenants, users = await self._tenant_user_name_maps(
             tenant_ids=tenant_ids, user_ids=user_ids
         )
 
         by_tenant: dict[int, dict[str, Any]] = {}
-        for task, reservation in held_rows_desc:
+        for task in task_rows:
             tid = int(task.tenant_id)
             bucket = by_tenant.get(tid)
             if bucket is None:
@@ -608,7 +641,9 @@ class RealphotosOpsService:
                     "usernames": [],
                 }
                 by_tenant[tid] = bucket
-            bucket["heldTotal"] = int(bucket["heldTotal"]) + int(reservation.amount)
+            bucket["heldTotal"] = int(bucket["heldTotal"]) + int(
+                amount_by_task.get(int(task.id), 0)
+            )
             bucket["taskCount"] = int(bucket["taskCount"]) + 1
             oid = int(task.owner_account_id)
             if oid not in bucket["ownerAccountIds"]:
@@ -617,11 +652,14 @@ class RealphotosOpsService:
                 if uname:
                     bucket["usernames"].append(uname)
 
-        items = []
+        all_items: list[dict[str, Any]] = []
         for bucket in sorted(by_tenant.values(), key=lambda row: int(row["tenantId"])):
             names = [str(n) for n in bucket.pop("usernames")]
             bucket["accountSummary"] = "、".join(names) if names else None
-            items.append(bucket)
+            all_items.append(bucket)
+
+        start = (index - 1) * size
+        items = all_items[start : start + size]
 
         tasks = [
             {
@@ -630,14 +668,20 @@ class RealphotosOpsService:
                 "tenantName": tenants.get(int(task.tenant_id)),
                 "ownerAccountId": int(task.owner_account_id),
                 "username": users.get(int(task.owner_account_id)),
-                "heldAmount": int(reservation.amount),
+                "heldAmount": int(amount_by_task.get(int(task.id), 0)),
                 "status": task.status,
                 "failureClass": task.failure_class,
                 "creditDisposition": task.credit_disposition,
             }
-            for task, reservation in held_rows_desc
+            for task in task_rows
         ]
-        return {"items": items, "tasks": tasks}
+        return {
+            "page": index,
+            "pageSize": size,
+            "total": len(all_items),
+            "items": items,
+            "tasks": tasks,
+        }
 
     async def list_preset_versions(self, *, actor_role_codes: set[str], code: str) -> list[dict]:
         if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
@@ -1210,16 +1254,66 @@ class RealphotosOpsService:
         self._require_tech_or_admin(actor_role_codes)
         size = TENANT_PAGE_SIZE
         index = max(int(page), 1)
-        tenants = (
-            await self.db.execute(
-                select(Tenant).where(Tenant.deleted_at.is_(None)).order_by(Tenant.id.asc())
-            )
-        ).scalars().all()
+        tenant_rows = list(
+            (
+                await self.db.execute(
+                    select(Tenant).where(Tenant.deleted_at.is_(None)).order_by(Tenant.id.asc())
+                )
+            ).scalars().all()
+        )
+        catalog: list[dict[str, Any]] = [
+            {
+                "tenantId": int(row.id),
+                "tenantName": str(row.name or ""),
+                "tenantCode": str(row.code or ""),
+            }
+            for row in tenant_rows
+        ]
+        # 若 tenants 台账为空/不同步，仍从存活账号反推租户行，避免用户管理整页空白。
+        if not catalog:
+            user_tenant_ids = [
+                int(tid)
+                for tid in (
+                    await self.db.execute(
+                        select(User.tenant_id)
+                        .where(User.deleted_at.is_(None))
+                        .distinct()
+                        .order_by(User.tenant_id.asc())
+                    )
+                ).scalars().all()
+                if tid is not None
+            ]
+            found = {}
+            if user_tenant_ids:
+                found = {
+                    int(row.id): row
+                    for row in (
+                        await self.db.execute(select(Tenant).where(Tenant.id.in_(user_tenant_ids)))
+                    ).scalars().all()
+                }
+            for tid in user_tenant_ids:
+                row = found.get(tid)
+                if row is not None:
+                    catalog.append(
+                        {
+                            "tenantId": tid,
+                            "tenantName": str(row.name or ""),
+                            "tenantCode": str(row.code or ""),
+                        }
+                    )
+                else:
+                    catalog.append(
+                        {
+                            "tenantId": tid,
+                            "tenantName": f"租户#{tid}",
+                            "tenantCode": f"tenant-{tid}",
+                        }
+                    )
         start = (index - 1) * size
-        page_tenants = tenants[start : start + size]
+        page_catalog = catalog[start : start + size]
         counts: dict[int, int] = {}
-        if page_tenants:
-            tenant_ids = [int(t.id) for t in page_tenants]
+        if page_catalog:
+            tenant_ids = [int(row["tenantId"]) for row in page_catalog]
             count_rows = (
                 await self.db.execute(
                     select(User.tenant_id, func.count())
@@ -1229,15 +1323,17 @@ class RealphotosOpsService:
             ).all()
             counts = {int(tid): int(n) for tid, n in count_rows}
         return {
+            "page": index,
             "pageSize": size,
+            "total": len(catalog),
             "items": [
                 {
-                    "tenantId": int(row.id),
-                    "tenantName": str(row.name or ""),
-                    "tenantCode": str(row.code or ""),
-                    "accountCount": int(counts.get(int(row.id), 0)),
+                    "tenantId": int(row["tenantId"]),
+                    "tenantName": str(row["tenantName"] or ""),
+                    "tenantCode": str(row["tenantCode"] or ""),
+                    "accountCount": int(counts.get(int(row["tenantId"]), 0)),
                 }
-                for row in page_tenants
+                for row in page_catalog
             ],
         }
 

@@ -45,8 +45,11 @@ function tenantLabel(row: TenantRow): string {
 export default function RealphotosUsersPage() {
   const [tenants, setTenants] = useState<TenantRow[]>([])
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const [total, setTotal] = useState(0)
   const [message, setMessage] = useState('')
   const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const [accountsOpen, setAccountsOpen] = useState<TenantRow | null>(null)
   const [accounts, setAccounts] = useState<Account[]>([])
@@ -70,16 +73,69 @@ export default function RealphotosUsersPage() {
   const [deleteConfirm, setDeleteConfirm] = useState('')
 
   const loadTenants = useCallback(async () => {
-    const data = await apiFetch<{ items: TenantRow[]; pageSize: number }>(
-      `/api/v1/realphotos/managed-tenants?page=${page}`,
-    )
-    setTenants(data.items)
+    setLoading(true)
+    try {
+      const data = await apiFetch<{
+        items?: TenantRow[]
+        pageSize?: number
+        total?: number
+        page?: number
+      }>(`/api/v1/realphotos/managed-tenants?page=${page}`)
+      const rows = Array.isArray(data?.items) ? data.items : []
+      setTenants(rows)
+      setPageSize(Number(data?.pageSize) || 20)
+      setTotal(Number(data?.total) || rows.length)
+      setMessage('')
+    } catch (error: unknown) {
+      // 回退：旧环境若无 managed-tenants，用账号列表按租户聚合，避免整页空白。
+      try {
+        const users = await apiFetch<{ items?: Account[] }>(
+          `/api/v1/realphotos/managed-users?page=1`,
+        )
+        const accounts = Array.isArray(users?.items) ? users.items : []
+        const byTenant = new Map<number, TenantRow>()
+        for (const account of accounts) {
+          const tid = Number(account.tenantId)
+          if (!Number.isFinite(tid) || tid <= 0) continue
+          const existing = byTenant.get(tid)
+          if (existing) {
+            existing.accountCount += 1
+          } else {
+            byTenant.set(tid, {
+              tenantId: tid,
+              tenantName: `租户#${tid}`,
+              tenantCode: '',
+              accountCount: 1,
+            })
+          }
+        }
+        const rows = Array.from(byTenant.values()).sort((a, b) => a.tenantId - b.tenantId)
+        setTenants(rows)
+        setTotal(rows.length)
+        setPageSize(Math.max(rows.length, 1))
+        setMessage(
+          error instanceof ApiError
+            ? `${error.message}；已回退为账号聚合租户视图`
+            : '租户接口不可用；已回退为账号聚合租户视图',
+        )
+      } catch (fallbackError: unknown) {
+        setTenants([])
+        setTotal(0)
+        setMessage(
+          fallbackError instanceof ApiError
+            ? fallbackError.message
+            : error instanceof ApiError
+              ? error.message
+              : '租户读取失败',
+        )
+      }
+    } finally {
+      setLoading(false)
+    }
   }, [page])
 
   useEffect(() => {
-    void loadTenants().catch((error: unknown) =>
-      setMessage(error instanceof ApiError ? error.message : '租户读取失败'),
-    )
+    void loadTenants()
   }, [loadTenants])
 
   async function loadAccountsForTenant(tenantId: number): Promise<Account[]> {
@@ -226,12 +282,13 @@ export default function RealphotosUsersPage() {
   )
 
   const selectedOpAccount = opAccounts.find((item) => String(item.id) === opUserId) || null
+  const pageCount = Math.max(1, Math.ceil(total / Math.max(pageSize, 1)))
 
   return (
     <main className="space-y-4 p-6">
       <h1 className="text-lg font-medium">用户管理</h1>
       <p className="text-sm text-muted-foreground">按租户查看账号；账号级变更走「操作」弹窗。</p>
-      <p className="text-sm">{message}</p>
+      <p className="text-sm">{message || (loading ? '加载中…' : '')}</p>
       <ListSearch value={search} placeholder="租户名 / 编码 / 编号" onChange={setSearch} />
 
       <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
@@ -248,7 +305,7 @@ export default function RealphotosUsersPage() {
             {visibleTenants.length === 0 ? (
               <tr>
                 <td className="border px-2 py-2 text-muted-foreground" colSpan={4}>
-                  暂无租户
+                  {loading ? '加载中…' : message || '暂无租户'}
                 </td>
               </tr>
             ) : (
@@ -288,19 +345,22 @@ export default function RealphotosUsersPage() {
             )}
           </tbody>
         </table>
-        <div className="flex gap-2 text-sm">
+        <div className="flex items-center gap-2 text-sm">
           <button
             className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
             type="button"
-            disabled={page <= 1}
+            disabled={page <= 1 || loading}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
             上一页
           </button>
-          <span>第 {page} 页</span>
+          <span>
+            第 {page} / {pageCount} 页 · 共 {total} 条
+          </span>
           <button
             className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
             type="button"
+            disabled={page >= pageCount || loading}
             onClick={() => setPage((p) => p + 1)}
           >
             下一页

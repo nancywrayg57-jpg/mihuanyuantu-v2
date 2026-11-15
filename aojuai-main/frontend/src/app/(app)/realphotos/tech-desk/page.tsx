@@ -50,8 +50,9 @@ export default function RealphotosTechDeskPage() {
   const [items, setItems] = useState<Ticket[]>([])
   const [myItems, setMyItems] = useState<Ticket[]>([])
   const [heldItems, setHeldItems] = useState<HeldTenantItem[]>([])
-  const [userId, setUserId] = useState('')
-  const [tenantId, setTenantId] = useState('')
+  const [heldPage, setHeldPage] = useState(1)
+  const [heldTotal, setHeldTotal] = useState(0)
+  const [heldPageSize, setHeldPageSize] = useState(20)
   const [reason, setReason] = useState('')
   const [appealReason, setAppealReason] = useState('')
   const [resolveNote, setResolveNote] = useState('')
@@ -65,17 +66,33 @@ export default function RealphotosTechDeskPage() {
   const [canAppeal, setCanAppeal] = useState(false)
   const [deskTab, setDeskTab] = useState<DeskTab>('appeals')
 
-  async function loadDesk() {
+  async function loadTickets() {
     const data = await apiFetch<{ items: Ticket[] }>('/api/v1/realphotos/support-tickets')
-    setItems(data.items)
+    setItems(Array.isArray(data?.items) ? data.items : [])
     setCanUnfreeze(true)
-    const held = await apiFetch<{ items: HeldTenantItem[] }>('/api/v1/realphotos/held-credits')
-    setHeldItems(held.items || [])
+  }
+
+  async function loadHeld(page = heldPage) {
+    const held = await apiFetch<{
+      items: HeldTenantItem[]
+      page?: number
+      pageSize?: number
+      total?: number
+    }>(`/api/v1/realphotos/held-credits?page=${page}`)
+    setHeldItems(Array.isArray(held?.items) ? held.items : [])
+    setHeldPage(Number(held?.page) || page)
+    setHeldPageSize(Number(held?.pageSize) || 20)
+    setHeldTotal(Number(held?.total) || (Array.isArray(held?.items) ? held.items.length : 0))
+  }
+
+  async function loadDesk() {
+    await loadTickets()
+    await loadHeld(heldPage)
   }
 
   async function loadMine() {
     const data = await apiFetch<{ items: Ticket[] }>('/api/v1/realphotos/my-support-tickets')
-    setMyItems(data.items || [])
+    setMyItems(Array.isArray(data?.items) ? data.items : [])
     setCanAppeal(true)
   }
 
@@ -86,7 +103,17 @@ export default function RealphotosTechDeskPage() {
         setMessage(error instanceof ApiError ? error.message : '工单读取失败'),
       )
     })
+    // initial load only
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if (!canUnfreeze || deskTab !== 'held') return
+    void loadHeld(heldPage).catch((error: unknown) =>
+      setMessage(error instanceof ApiError ? error.message : '冻结列表读取失败'),
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [heldPage, deskTab, canUnfreeze])
 
   const source = canUnfreeze ? items : myItems
   const visible = useMemo(
@@ -112,16 +139,19 @@ export default function RealphotosTechDeskPage() {
     [source, ticketType, search],
   )
   const openCount = source.filter((item) => item.status === 'open').length
+  const heldPageCount = Math.max(1, Math.ceil(heldTotal / Math.max(heldPageSize, 1)))
 
   function openHandle(item: Ticket) {
     setDetail(item)
     setResolveNote('')
     setResolveOutcome('accepted')
+    setReason('')
   }
 
   function closeHandle() {
     setDetail(null)
     setResolveNote('')
+    setReason('')
   }
 
   function heldDraft(tenant: number) {
@@ -135,18 +165,24 @@ export default function RealphotosTechDeskPage() {
     }))
   }
 
-  async function unfreeze() {
+  async function unfreezeFromDetail() {
+    if (!detail) return
     try {
       const payload = await apiFetch<{ closedFreezeTickets?: number }>(
         '/api/v1/realphotos/account-freezes/release',
         {
           method: 'POST',
-          body: JSON.stringify({ userId: Number(userId), tenantId: Number(tenantId), reason }),
+          body: JSON.stringify({
+            userId: Number(detail.ownerAccountId),
+            tenantId: Number(detail.tenantId),
+            reason,
+          }),
         },
       )
       const text = `已解除预审冻结；关闭冻结工单 ${payload.closedFreezeTickets ?? 0} 张`
       setMessage(text)
       toastTask(text, true)
+      closeHandle()
       await loadDesk()
     } catch (error: unknown) {
       const text = error instanceof ApiError ? error.message : '解冻失败'
@@ -217,7 +253,7 @@ export default function RealphotosTechDeskPage() {
       setMessage(text)
       toastTask(text, true)
       patchHeldDraft(row.tenantId, { amount: '', reason: '' })
-      await loadDesk()
+      await loadHeld(heldPage)
     } catch (error: unknown) {
       const text = error instanceof ApiError ? error.message : '释放失败'
       setMessage(text)
@@ -245,7 +281,10 @@ export default function RealphotosTechDeskPage() {
           <button
             className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 ${deskTab === 'held' ? 'bg-muted' : ''}`}
             type="button"
-            onClick={() => setDeskTab('held')}
+            onClick={() => {
+              setDeskTab('held')
+              setHeldPage(1)
+            }}
           >
             积分冻结
           </button>
@@ -326,22 +365,12 @@ export default function RealphotosTechDeskPage() {
         </section>
       ) : null}
 
-      {canUnfreeze && deskTab === 'appeals' ? (
-        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
-          <h2 className="text-sm font-medium">解除预审冻结</h2>
-          <input className="border px-2 py-1 text-sm" placeholder="用户编号" value={userId} onChange={(event) => setUserId(event.target.value)} />
-          <input className="ml-2 border px-2 py-1 text-sm" placeholder="租户编号" value={tenantId} onChange={(event) => setTenantId(event.target.value)} />
-          <input className="ml-2 border px-2 py-1 text-sm" placeholder="原因" value={reason} onChange={(event) => setReason(event.target.value)} />
-          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none ml-2 border px-3 py-1 text-sm" type="button" onClick={() => void unfreeze()}>
-            解冻
-          </button>
-        </section>
-      ) : null}
-
       {canUnfreeze && deskTab === 'held' ? (
         <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
           <h2 className="text-sm font-medium">积分冻结（按租户聚合）</h2>
-          <p className="text-xs text-muted-foreground">按租户展示 held 合计；FIFO 消耗预留直到达到本次释放金额，须写原因。</p>
+          <p className="text-xs text-muted-foreground">
+            按租户展示 held 合计；FIFO 消耗预留直到达到本次释放金额，须写原因。每页 {heldPageSize} 条。
+          </p>
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr>
@@ -401,6 +430,27 @@ export default function RealphotosTechDeskPage() {
               )}
             </tbody>
           </table>
+          <div className="flex items-center gap-2 text-sm">
+            <button
+              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
+              type="button"
+              disabled={heldPage <= 1}
+              onClick={() => setHeldPage((p) => Math.max(1, p - 1))}
+            >
+              上一页
+            </button>
+            <span>
+              第 {heldPage} / {heldPageCount} 页 · 共 {heldTotal} 条
+            </span>
+            <button
+              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
+              type="button"
+              disabled={heldPage >= heldPageCount}
+              onClick={() => setHeldPage((p) => p + 1)}
+            >
+              下一页
+            </button>
+          </div>
         </section>
       ) : null}
 
@@ -466,7 +516,25 @@ export default function RealphotosTechDeskPage() {
               </div>
             ) : null}
             {canUnfreeze && detail.ticketType === 'account_freeze' && detail.status === 'open' ? (
-              <p className="text-muted-foreground">冻结单请在「账号申诉」页下方「解除预审冻结」办结并写审计。</p>
+              <div className="space-y-2 border-t pt-2">
+                <p className="font-medium">解除预审冻结</p>
+                <p className="text-xs text-muted-foreground">
+                  目标已锁定：{tenantLabel(detail)} / {accountLabel(detail)}
+                </p>
+                <input
+                  className="w-full border px-2 py-1"
+                  placeholder="解冻原因（必填）"
+                  value={reason}
+                  onChange={(event) => setReason(event.target.value)}
+                />
+                <button
+                  className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1"
+                  type="button"
+                  onClick={() => void unfreezeFromDetail()}
+                >
+                  解冻
+                </button>
+              </div>
             ) : null}
           </div>
         </div>
