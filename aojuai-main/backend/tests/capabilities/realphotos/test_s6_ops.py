@@ -308,6 +308,8 @@ async def test_held_credits_aggregate_and_release_by_amount_fifo(db):
     first = await _make_held_task(ctx, db, key="s6-held-fifo-1")
     second = await _make_held_task(ctx, db, key="s6-held-fifo-2")
     listed = await ctx["ops"].list_held_credit_tasks(actor_role_codes={ROLE_TECH_SUPPORT})
+    assert listed["pageSize"] == 20
+    assert listed["total"] == 1
     assert len(listed["items"]) == 1
     agg = listed["items"][0]
     assert agg["tenantId"] == ctx["tenant"]
@@ -392,6 +394,28 @@ async def test_held_credits_aggregate_and_release_by_amount_fifo(db):
     emptied = await ctx["ops"].list_held_credit_tasks(actor_role_codes={ROLE_TECH_SUPPORT})
     assert emptied["items"] == []
     assert emptied["tasks"] == []
+
+
+@pytest.mark.asyncio
+async def test_held_list_includes_tasks_without_reservation(db):
+    """列表以 disposition 为主；缺预留行时仍展示，避免整页空白。"""
+    ctx = await _funded(db)
+    orphan = await _make_held_task(ctx, db, key="s6-held-orphan")
+    orphan_res = (
+        await db.execute(
+            select(RealphotosCreditReservation).where(
+                RealphotosCreditReservation.task_id == int(orphan.id)
+            )
+        )
+    ).scalar_one()
+    await db.delete(orphan_res)
+    await db.flush()
+    listed = await ctx["ops"].list_held_credit_tasks(actor_role_codes={ROLE_TECH_SUPPORT})
+    assert listed["pageSize"] == 20
+    assert any(int(row["taskId"]) == int(orphan.id) for row in listed["tasks"])
+    agg = next(row for row in listed["items"] if int(row["tenantId"]) == int(ctx["tenant"]))
+    assert int(agg["taskCount"]) >= 1
+    assert int(agg["heldTotal"]) == 0
 
 
 @pytest.mark.asyncio
@@ -607,7 +631,7 @@ async def test_list_tenants_and_tenant_scoped_users(db):
         role_code=ROLE_MERCHANT,
     )
     tenants = await ctx["ops"].list_tenants(actor_role_codes={ROLE_TECH_SUPPORT})
-    assert tenants["pageSize"] == 10
+    assert tenants["pageSize"] == 20
     match = next((row for row in tenants["items"] if int(row["tenantId"]) == int(ctx["tenant"])), None)
     assert match is not None
     assert match["tenantName"]

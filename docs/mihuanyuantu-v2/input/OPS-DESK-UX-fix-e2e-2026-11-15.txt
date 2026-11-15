@@ -1,0 +1,19 @@
+OPS-DESK-UX-FIX e2e/unit evidence 2026-11-15
+branch=cursor/ops-desk-ux-fix-9973 baseline=origin/main b925a8f (#59)
+
+Fixes:
+1) tech-desk: account_freeze 操作表单归入「处理」弹窗（页底解冻表单移除）
+2) held-credits: 列表改 disposition 主查询 + 预留 left join，避免 INNER JOIN 滤空；pageSize=20 分页
+3) users: managed-tenants 空台账时从 users 反推；FE 防 items 空崩溃 + managed-tenants 失败回退
+
+pytest (sqlite):
+  test_held_credits_aggregate_and_release_by_amount_fifo PASSED
+  test_held_list_includes_tasks_without_reservation PASSED
+  test_only_tech_or_admin_can_release_held_credit PASSED
+  test_list_tenants_and_tenant_scoped_users PASSED
+ruff: PASS
+secret_scan: PASS
+
+OPS_DESK_UX_FIX_E2E_PASS=true
+production_billing=false
+r9_s7=blocked
