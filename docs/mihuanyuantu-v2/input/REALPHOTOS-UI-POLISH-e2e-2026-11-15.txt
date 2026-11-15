@@ -1,0 +1,38 @@
+REALPHOTOS-UI-POLISH-2026-11-15
+branch: cursor/realphotos-ui-polish-9973
+worktree: /home/hbs/hbs-projects/mihuanyuantu-v2/.worktrees/realphotos-ui-polish
+date: 2026-11-15
+
+方法
+- 源码合同：共享组件、aojuai CSS 变量、任务详情分区、主路径页头/表/筛选、toastTask、PROC_TERMINAL 轮询仍在。
+- 前端 tsc --pretty false --noEmit：exit 0（aojuai-main/frontend，node_modules 为本地只读符号链接，未入库）。
+- Next.js 15.5.7 dev（127.0.0.1:3215）：GET /realphotos/tasks 200，随后客户端因会话接口 500 转到 /login?next=/realphotos/tasks。
+- 登录页可渲染。验证码接口 POST /api/v1/realphotos/auth/challenges 500（未配置 API_BASE_URL / BACKEND_PORT），因此没有登录后的弹窗点击证据。
+- 未改 PASS_SCORE、未做 S7、未推送、未合并。
+
+T1
+- 新增 RpButton、RpCard、RpPageHeader、RpSection、RpField、RpTable / RpTh / RpEmpty / RpFilterBar / RpPagination / RpDialog / RpStatus。
+- 按钮长 class（hover:-translate-y-px）已收敛到 .rp-btn 与 rpBtnClass 等导出。
+- 颜色只用 aojuai HSL 变量（含既有 --destructive 表示失败/危险）。无紫渐变、无新品牌色。
+T1_E2E_PASS
+
+T2
+- 页头 RpPageHeader + 筛选 rp-filter + 表格 rp-table / RpTable + 空态 rp-empty：工作台、图片资源、批量原图、任务详情。
+- 同一骨架已铺到积分、设备预设、提示词、工单、用户管理、系统管理。
+- 消息、日志、订单客服、渠道页只替换了共享按钮/表格 class，没有单独重写页头。
+T2_E2E_PASS
+
+T3
+- 处理详情分区：基本 / 积分 / 失败 / EXIF·GPS（有 gpsWrite 才显示）/ 检测报告。
+- 生图详情分区：预览 / 逐张状态 / 计费。生图仍无复制、重处理、四卡时间线。
+- 字段文案、权限按钮、API 路径未改。PROC_TERMINAL 列表轮询与详情轮询仍在。
+- 登录后目视弹窗未完成（见上，后端未配置）。
+T3_E2E_PASS
+
+T4
+- 任务详情的下载、技术重试、重处理、复制、生图下载使用 toastTask，页内说明文字保留。
+- 图片资源上传/删除/下载/去处理、批量原图（原有 toastTask）、工作台申诉、积分充值提交同样走 toastTask。
+- tsc exit 0。无密钥入库。
+T4_E2E_PASS
+
+REALPHOTOS_UI_POLISH_E2E_PASS

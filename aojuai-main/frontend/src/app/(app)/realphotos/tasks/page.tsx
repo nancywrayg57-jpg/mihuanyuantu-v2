@@ -4,6 +4,12 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { RpButton } from '@/components/realphotos/rp-button'
+import { RpField } from '@/components/realphotos/rp-field'
+import { RpPageHeader } from '@/components/realphotos/rp-page-header'
+import { RpSection } from '@/components/realphotos/rp-section'
+import { RpDialog, RpEmpty, RpFilterBar, RpPagination, RpStatus, RpTable, RpTh } from '@/components/realphotos/rp-table'
+import { rpSelectClass, toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import {
   DETECTION_PASS_SCORE,
@@ -112,8 +118,17 @@ function canReprocess(task: ProcessingTask): boolean {
   )
 }
 
+function statusTone(status: string): 'ok' | 'bad' | 'warn' | 'neutral' {
+  if (status === 'DELIVERED') return 'ok'
+  if (status === 'FAILED' || status === 'PRE_REVIEW_FAILED' || status === 'IMAGE_LOCKED') return 'bad'
+  if (status === 'DETECTION' || status === 'FULL_PROCESSING' || status === 'PRE_REVIEW' || status === 'SUBMITTED') {
+    return 'warn'
+  }
+  return 'neutral'
+}
+
 function DetectionReport({ detection }: { detection: Detection | null | undefined }) {
-  if (!detection) return <p>暂无报告</p>
+  if (!detection) return <p className="text-muted-foreground">暂无报告</p>
   const dims: Array<[string, number | undefined]> = [
     ['noise', detection.noise],
     ['depth', detection.depthOfField],
@@ -127,23 +142,38 @@ function DetectionReport({ detection }: { detection: Detection | null | undefine
     (detection.accepted === false ? detectionNotPassedExplanation(detection) : null)
   const guidance = detection.accepted === false ? detectionFailureGuidance(detection) : null
   return (
-    <div className="space-y-1">
-      <p>
-        模型结果：{boolPassLabel(detection.passed)}
-        {detection.accepted !== undefined ? ` · 平台接受：${boolPassLabel(detection.accepted)}` : ''}
-      </p>
-      <p>
-        总分：{detection.total_score ?? '—'} / 100（需达到 {threshold} 分）
-      </p>
+    <div className="space-y-2">
+      <div className="rp-score-grid">
+        <div className="rp-score-cell">
+          <span>总分</span>
+          <strong>{detection.total_score ?? '—'}</strong>
+          <span>需达到 {threshold} / 100</span>
+        </div>
+        {dims.map(([key, value]) => (
+          <div key={key} className="rp-score-cell">
+            <span>{detectionDimensionLabel(key)}</span>
+            <strong>{value ?? '—'}</strong>
+          </div>
+        ))}
+      </div>
+      <dl className="rp-kv">
+        <dt>模型结果</dt>
+        <dd>{boolPassLabel(detection.passed)}</dd>
+        {detection.accepted !== undefined ? (
+          <>
+            <dt>平台接受</dt>
+            <dd>{boolPassLabel(detection.accepted)}</dd>
+          </>
+        ) : null}
+        <dt>检测器</dt>
+        <dd>{detection.detector || '—'}</dd>
+        <dt>原因</dt>
+        <dd>{guidance?.reason || detection.reason || '—'}</dd>
+      </dl>
       {gate ? <p className="text-destructive">{gate}</p> : null}
-      <p>检测器：{detection.detector || '—'}</p>
-      <p>
-        原因：
-        {guidance?.reason || detection.reason || '—'}
-      </p>
       {guidance && guidance.tips.length > 0 ? (
         <div>
-          <p>优化方向：</p>
+          <p className="font-medium">优化方向</p>
           <ul className="list-inside list-disc">
             {guidance.tips.map((tip) => (
               <li key={tip}>{tip}</li>
@@ -151,13 +181,6 @@ function DetectionReport({ detection }: { detection: Detection | null | undefine
           </ul>
         </div>
       ) : null}
-      <ul className="list-inside list-disc">
-        {dims.map(([key, value]) => (
-          <li key={key}>
-            {detectionDimensionLabel(key)}：{value ?? '—'}
-          </li>
-        ))}
-      </ul>
     </div>
   )
 }
@@ -227,6 +250,51 @@ export default function RealphotosTasksPage() {
     )
   }, [tab, loadGeneration])
 
+  const PROC_TERMINAL = useMemo(
+    () => new Set(['DELIVERED', 'FAILED', 'PRE_REVIEW_FAILED', 'IMAGE_LOCKED']),
+    [],
+  )
+
+  // Live refresh while any processing task is non-terminal (no manual page reload).
+  useEffect(() => {
+    if (tab !== 'processing') return
+    const hasInFlight = procItems.some((item) => !PROC_TERMINAL.has(String(item.status || '')))
+    if (!hasInFlight) return
+    const timer = window.setInterval(() => {
+      void loadProcessing().catch(() => undefined)
+    }, 3000)
+    return () => window.clearInterval(timer)
+  }, [tab, procItems, loadProcessing, PROC_TERMINAL])
+
+  // Mirror latest list row into open detail dialog.
+  useEffect(() => {
+    if (!detail) return
+    const next = procItems.find((item) => item.id === detail.id)
+    if (!next) return
+    if (
+      next.status !== detail.status ||
+      next.creditDisposition !== detail.creditDisposition ||
+      next.outputObjectKey !== detail.outputObjectKey
+    ) {
+      setDetail(next)
+    }
+  }, [procItems, detail])
+
+  // Extra detail poll while dialog shows an in-flight task.
+  useEffect(() => {
+    if (!detail) return
+    if (PROC_TERMINAL.has(String(detail.status || ''))) return
+    const timer = window.setInterval(() => {
+      void apiFetch<ProcessingTask>(`/api/v1/realphotos/processing-tasks/${detail.id}`)
+        .then((row) => {
+          setDetail(row)
+          setProcItems((prev) => prev.map((item) => (item.id === row.id ? { ...item, ...row } : item)))
+        })
+        .catch(() => undefined)
+    }, 2500)
+    return () => window.clearInterval(timer)
+  }, [detail, PROC_TERMINAL])
+
   const visibleProcItems = useMemo(
     () =>
       procItems.filter((item) =>
@@ -259,6 +327,7 @@ export default function RealphotosTasksPage() {
     const ids = selected.filter((item) => item.outputObjectKey).map((item) => Number(item.id))
     if (ids.length < 1) {
       setDownloadNote('没有勾选可下载的结果；未勾选时不会默认下载全部')
+      toastTask('没有勾选可下载的结果；未勾选时不会默认下载全部', false)
       return
     }
     try {
@@ -269,6 +338,7 @@ export default function RealphotosTasksPage() {
       const files = listed.items.filter((item) => item.pack === 'file')
       if (files.length < 1) {
         setDownloadNote('勾选的任务还没有可下载结果')
+        toastTask('勾选的任务还没有可下载结果', false)
         return
       }
 
@@ -334,14 +404,18 @@ export default function RealphotosTasksPage() {
         }
       }
       if (mode === 'directory') {
-        setDownloadNote(`已写入选定目录 ${notes.join(' ')}`)
+        const text = `已写入选定目录 ${notes.join(' ')}`
+        setDownloadNote(text)
+        toastTask(text, true)
       } else {
-        setDownloadNote(
-          `已降级为逐文件下载（${fallbackReason || '目录选择器不可用'}；不生成 ZIP）${notes.join(' ')}`,
-        )
+        const text = `已降级为逐文件下载（${fallbackReason || '目录选择器不可用'}；不生成 ZIP）${notes.join(' ')}`
+        setDownloadNote(text)
+        toastTask(text, true)
       }
     } catch (error: unknown) {
-      setDownloadNote(error instanceof ApiError ? error.message : '下载失败')
+      const text = error instanceof ApiError ? error.message : '下载失败'
+      setDownloadNote(text)
+      toastTask(text, false)
     }
   }
 
@@ -353,9 +427,12 @@ export default function RealphotosTasksPage() {
         await apiFetch(`/api/v1/realphotos/processing-tasks/${current.id}/retry`, { method: 'POST' })
       }
       setNotice('技术重试已提交')
+      toastTask('技术重试已提交', true)
       await loadProcessing()
     } catch (error: unknown) {
-      setNotice(error instanceof ApiError ? error.message : '技术重试失败')
+      const text = error instanceof ApiError ? error.message : '技术重试失败'
+      setNotice(text)
+      toastTask(text, false)
     }
   }
 
@@ -373,9 +450,12 @@ export default function RealphotosTasksPage() {
         })
       }
       setNotice('已建立重处理任务，原任务报告仍保留')
+      toastTask('已建立重处理任务，原任务报告仍保留', true)
       await loadProcessing()
     } catch (error: unknown) {
-      setNotice(error instanceof ApiError ? error.message : '主动重处理失败')
+      const text = error instanceof ApiError ? error.message : '主动重处理失败'
+      setNotice(text)
+      toastTask(text, false)
     }
   }
 
@@ -383,6 +463,7 @@ export default function RealphotosTasksPage() {
     const current = selected[0]
     if (!current) {
       setNotice('请先勾选一条处理任务再复制')
+      toastTask('请先勾选一条处理任务再复制', false)
       return
     }
     try {
@@ -396,10 +477,14 @@ export default function RealphotosTasksPage() {
           }),
         },
       )
-      setNotice(`已复制为任务 ${data.id}（copiedFrom=${data.copiedFrom || current.id}，免冻）`)
+      const text = `已复制为任务 ${data.id}（copiedFrom=${data.copiedFrom || current.id}，免冻）`
+      setNotice(text)
+      toastTask(text, true)
       await loadProcessing()
     } catch (error: unknown) {
-      setNotice(error instanceof ApiError ? error.message : '复制失败')
+      const text = error instanceof ApiError ? error.message : '复制失败'
+      setNotice(text)
+      toastTask(text, false)
     }
   }
 
@@ -422,42 +507,39 @@ export default function RealphotosTasksPage() {
         notes.push(`${item.assetId}:失败`)
       }
     }
-    setDownloadNote(notes.length ? `生图逐张 ${notes.join(' ')}` : '无可下载资产')
+    const text = notes.length ? `生图逐张 ${notes.join(' ')}` : '无可下载资产'
+    setDownloadNote(text)
+    toastTask(text, notes.length > 0 && !notes.some((row) => row.endsWith(':失败')))
   }
+
 
   return (
     <main className="space-y-6 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-medium">任务详情</h1>
-        <Link className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1 text-sm" href="/realphotos/messages">
-          消息中心{unreadHint > 0 ? `（未读 ${unreadHint}）` : ''}
-        </Link>
-      </div>
-      <p className="text-sm text-muted-foreground">{notice}</p>
+      <RpPageHeader
+        title="任务详情"
+        description="图片处理与生图任务列表。详情按模块分区，处理中的任务会自动刷新。"
+        actions={
+          <Link className="rp-btn" href="/realphotos/messages">
+            消息中心{unreadHint > 0 ? `（未读 ${unreadHint}）` : ''}
+          </Link>
+        }
+      />
+      {notice ? <p className="text-sm text-muted-foreground">{notice}</p> : null}
       <div className="flex gap-2 text-sm">
-        <button
-          className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 ${tab === 'processing' ? 'bg-muted' : ''}`}
-          type="button"
-          onClick={() => setTab('processing')}
-        >
+        <RpButton pressed={tab === 'processing'} type="button" onClick={() => setTab('processing')}>
           图片处理任务
-        </button>
-        <button
-          className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 ${tab === 'generation' ? 'bg-muted' : ''}`}
-          type="button"
-          onClick={() => setTab('generation')}
-        >
+        </RpButton>
+        <RpButton pressed={tab === 'generation'} type="button" onClick={() => setTab('generation')}>
           生图任务
-        </button>
+        </RpButton>
       </div>
 
       {tab === 'processing' ? (
-        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
-          <div className="flex flex-wrap items-center gap-3 text-sm">
-            <label>
-              状态
+        <section className="rp-card space-y-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+          <RpFilterBar>
+            <RpField label="状态">
               <select
-                className="ml-2 border px-2 py-1"
+                className={rpSelectClass}
                 value={procStatus}
                 onChange={(event) => {
                   setProcStatus(event.target.value)
@@ -473,66 +555,43 @@ export default function RealphotosTasksPage() {
                 <option value="FULL_PROCESSING">处理中</option>
                 <option value="DETECTION">检测中</option>
               </select>
-            </label>
+            </RpField>
             <ListSearch value={procSearch} placeholder="任务 ID / 预设 / 状态" onChange={setProcSearch} />
-            <span>
-              第 {procPage} / {procPageCount} 页 · 共 {procTotal} · 默认 10 条
-            </span>
-            <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" disabled={procPage <= 1} onClick={() => setProcPage((p) => p - 1)}>
-              上一页
-            </button>
-            <button
-              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
-              type="button"
-              disabled={procPage >= procPageCount}
-              onClick={() => setProcPage((p) => p + 1)}
-            >
-              下一页
-            </button>
-            <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" onClick={() => void downloadChecked()}>
+            <RpPagination
+              page={procPage}
+              pageCount={procPageCount}
+              total={procTotal}
+              extra="默认 10 条"
+              onPrev={() => setProcPage((p) => p - 1)}
+              onNext={() => setProcPage((p) => p + 1)}
+            />
+            <RpButton variant="primary" type="button" onClick={() => void downloadChecked()}>
               下载勾选
-            </button>
-            <button
-              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1 disabled:opacity-40"
-              type="button"
-              disabled={!selected.some(canRetry)}
-              onClick={() => void retryTechnical()}
-            >
+            </RpButton>
+            <RpButton type="button" disabled={!selected.some(canRetry)} onClick={() => void retryTechnical()}>
               技术重试
-            </button>
-            <button
-              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1 disabled:opacity-40"
-              type="button"
-              disabled={!selected.some(canReprocess)}
-              onClick={() => void reprocessTask()}
-            >
+            </RpButton>
+            <RpButton type="button" disabled={!selected.some(canReprocess)} onClick={() => void reprocessTask()}>
               主动重处理
-            </button>
-            <button
-              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1 disabled:opacity-40"
-              type="button"
-              disabled={selected.length !== 1}
-              onClick={() => void copyProcessing()}
-            >
+            </RpButton>
+            <RpButton type="button" disabled={selected.length !== 1} onClick={() => void copyProcessing()}>
               复制（免冻）
-            </button>
-          </div>
-          <table className="w-full text-sm">
+            </RpButton>
+          </RpFilterBar>
+          <RpTable>
             <thead>
               <tr>
-                <th className="text-left">勾选</th>
-                <th className="text-left">任务</th>
-                <th className="text-left">状态</th>
-                <th className="text-left">积分处置</th>
-                <th className="text-left">失败原因</th>
-                <th className="text-left">操作</th>
+                <RpTh>勾选</RpTh>
+                <RpTh>任务</RpTh>
+                <RpTh>状态</RpTh>
+                <RpTh>积分处置</RpTh>
+                <RpTh>失败原因</RpTh>
+                <RpTh>操作</RpTh>
               </tr>
             </thead>
             <tbody>
               {visibleProcItems.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>暂无处理任务</td>
-                </tr>
+                <RpEmpty colSpan={6}>暂无处理任务</RpEmpty>
               ) : (
                 visibleProcItems.map((item) => (
                   <tr key={item.id}>
@@ -548,7 +607,9 @@ export default function RealphotosTasksPage() {
                       />
                     </td>
                     <td>{item.id}</td>
-                    <td>{taskStatusLabel(item.status)}</td>
+                    <td>
+                      <RpStatus tone={statusTone(item.status)}>{taskStatusLabel(item.status)}</RpStatus>
+                    </td>
                     <td>{creditDispositionLabel(item.creditDisposition)}</td>
                     <td>
                       {failureClassLabelForTask(item.failureClass, item.detectionMode)}
@@ -559,111 +620,117 @@ export default function RealphotosTasksPage() {
                       ) : null}
                     </td>
                     <td>
-                      <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => setDetail(item)}>
+                      <RpButton size="sm" type="button" onClick={() => setDetail(item)}>
                         详情
-                      </button>
+                      </RpButton>
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
-          </table>
-          <p className="text-sm">{downloadNote}</p>
+          </RpTable>
+          {downloadNote ? <p className="text-sm">{downloadNote}</p> : null}
           {detail ? (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-              onClick={() => setDetail(null)}
-              role="dialog"
-              aria-modal="true"
-              aria-label={`处理任务 ${detail.id} 详情`}
+            <RpDialog
+              title={`处理任务 ${detail.id}`}
+              label={`处理任务 ${detail.id} 详情`}
+              onClose={() => setDetail(null)}
             >
-              <div
-                className="max-h-[90vh] w-full max-w-lg space-y-3 overflow-y-auto rp-card rounded-xl border border-border bg-card p-4 text-sm shadow"
-                onClick={(event) => event.stopPropagation()}
-              >
-                <div className="flex justify-between gap-2">
-                  <strong>处理任务 {detail.id}</strong>
-                  <button type="button" className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" onClick={() => setDetail(null)}>
-                    关闭
-                  </button>
-                </div>
-                <section className="space-y-1">
-                  <h3 className="font-medium">基本</h3>
-                  <p>状态：{taskStatusLabel(detail.status)}</p>
-                  <p>预设名称：{presetDisplayName(detail)}</p>
-                  <p>创建时间：{detail.createdAt || '—'}</p>
-                  {detail.copiedFrom ? <p>复制自：{detail.copiedFrom}</p> : null}
-                </section>
-                <section className="space-y-1">
-                  <h3 className="font-medium">积分</h3>
-                  <p>处置：{creditDispositionLabel(detail.creditDisposition)}</p>
-                  {detail.billingMode ? <p>计费模式：{detail.billingMode}</p> : null}
-                </section>
-                <section className="space-y-1">
-                  <h3 className="font-medium">失败</h3>
-                  <p>
-                    失败原因：
-                    {failureClassLabelForTask(detail.failureClass, detail.detectionMode)}
-                  </p>
+              <RpSection title="基本" tone="basic">
+                <dl className="rp-kv">
+                  <dt>状态</dt>
+                  <dd>{taskStatusLabel(detail.status)}</dd>
+                  <dt>预设名称</dt>
+                  <dd>{presetDisplayName(detail)}</dd>
+                  <dt>创建时间</dt>
+                  <dd>{detail.createdAt || '—'}</dd>
+                  {detail.copiedFrom ? (
+                    <>
+                      <dt>复制自</dt>
+                      <dd>{detail.copiedFrom}</dd>
+                    </>
+                  ) : null}
+                </dl>
+              </RpSection>
+              <RpSection title="积分" tone="credit">
+                <dl className="rp-kv">
+                  <dt>处置</dt>
+                  <dd>{creditDispositionLabel(detail.creditDisposition)}</dd>
+                  {detail.billingMode ? (
+                    <>
+                      <dt>计费模式</dt>
+                      <dd>{detail.billingMode}</dd>
+                    </>
+                  ) : null}
+                </dl>
+              </RpSection>
+              <RpSection title="失败" tone="failure">
+                <dl className="rp-kv">
+                  <dt>失败原因</dt>
+                  <dd>{failureClassLabelForTask(detail.failureClass, detail.detectionMode)}</dd>
                   {detail.detectionMode ? (
-                    <p>
-                      检测模式：
-                      {detail.detectionMode === 'technical'
-                        ? '历史联调替身（已停用）'
-                        : detail.detectionMode}
-                    </p>
+                    <>
+                      <dt>检测模式</dt>
+                      <dd>
+                        {detail.detectionMode === 'technical' ? '历史联调替身（已停用）' : detail.detectionMode}
+                      </dd>
+                    </>
                   ) : null}
                   {detail.failureMessage ? (
-                    <p>
-                      详情：{detail.failureTitle ? `${detail.failureTitle} — ` : ''}
-                      {detail.failureMessage}
-                    </p>
+                    <>
+                      <dt>详情</dt>
+                      <dd>
+                        {detail.failureTitle ? `${detail.failureTitle} — ` : ''}
+                        {detail.failureMessage}
+                      </dd>
+                    </>
                   ) : null}
-                </section>
-                {detail.gpsWrite ? (
-                  <section className="space-y-1">
-                    <h3 className="font-medium">EXIF / GPS</h3>
-                    <p>
-                      GPS 模式：
-                      {detail.gpsWrite.gpsMode
-                        ? gpsModeLabel(String(detail.gpsWrite.gpsMode))
-                        : '—'}
-                    </p>
-                    <p>是否写入 GPS：{detail.gpsWrite.written ? '是' : '否'}</p>
-                    <p>GPS 原因：{detail.gpsWrite.reason || '—'}</p>
+                </dl>
+              </RpSection>
+              {detail.gpsWrite ? (
+                <RpSection title="EXIF / GPS" tone="gps">
+                  <dl className="rp-kv">
+                    <dt>GPS 模式</dt>
+                    <dd>
+                      {detail.gpsWrite.gpsMode ? gpsModeLabel(String(detail.gpsWrite.gpsMode)) : '—'}
+                    </dd>
+                    <dt>是否写入</dt>
+                    <dd>{detail.gpsWrite.written ? '是' : '否'}</dd>
+                    <dt>GPS 原因</dt>
+                    <dd>{detail.gpsWrite.reason || '—'}</dd>
                     {detail.gpsWrite.actualGps ? (
-                      <p>
-                        实际坐标：{detail.gpsWrite.actualGps.latitude ?? '—'},{' '}
-                        {detail.gpsWrite.actualGps.longitude ?? '—'}, 海拔{' '}
-                        {detail.gpsWrite.actualGps.altitude ?? '—'}
-                      </p>
+                      <>
+                        <dt>实际坐标</dt>
+                        <dd>
+                          {detail.gpsWrite.actualGps.latitude ?? '—'}, {detail.gpsWrite.actualGps.longitude ?? '—'}
+                          ，海拔 {detail.gpsWrite.actualGps.altitude ?? '—'}
+                        </dd>
+                      </>
                     ) : null}
-                    {detail.gpsWrite.failedTags && detail.gpsWrite.failedTags.length > 0 ? (
-                      <ul className="list-inside list-disc">
-                        {detail.gpsWrite.failedTags.map((row) => (
-                          <li key={`${row.tag}-${row.reason}`}>
-                            失败标签 {row.tag || '—'}: {row.reason || '回读失败'}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </section>
-                ) : null}
-                <section className="space-y-1">
-                  <h3 className="font-medium">检测报告</h3>
-                  <DetectionReport detection={detail.detection} />
-                </section>
-              </div>
-            </div>
+                  </dl>
+                  {detail.gpsWrite.failedTags && detail.gpsWrite.failedTags.length > 0 ? (
+                    <ul className="list-inside list-disc">
+                      {detail.gpsWrite.failedTags.map((row) => (
+                        <li key={`${row.tag}-${row.reason}`}>
+                          失败标签 {row.tag || '—'}: {row.reason || '回读失败'}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </RpSection>
+              ) : null}
+              <RpSection title="检测报告" tone="report">
+                <DetectionReport detection={detail.detection} />
+              </RpSection>
+            </RpDialog>
           ) : null}
         </section>
       ) : (
-        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
-          <div className="flex flex-wrap items-center gap-3 text-sm">
-            <label>
-              模式
+        <section className="rp-card space-y-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+          <RpFilterBar>
+            <RpField label="模式">
               <select
-                className="ml-2 border px-2 py-1"
+                className={rpSelectClass}
                 value={genMode}
                 onChange={(event) => {
                   setGenMode(event.target.value)
@@ -674,39 +741,31 @@ export default function RealphotosTasksPage() {
                 <option value="text_to_image">文生图</option>
                 <option value="image_to_image">图生图</option>
               </select>
-            </label>
+            </RpField>
             <ListSearch value={genSearch} placeholder="任务 ID / 模式 / 提示词" onChange={setGenSearch} />
-            <span>
-              第 {genPage} / {genPageCount} 页 · 共 {genTotal} · 默认 10 条
-            </span>
-            <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" disabled={genPage <= 1} onClick={() => setGenPage((p) => p - 1)}>
-              上一页
-            </button>
-            <button
-              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
-              type="button"
-              disabled={genPage >= genPageCount}
-              onClick={() => setGenPage((p) => p + 1)}
-            >
-              下一页
-            </button>
-          </div>
-          <table className="w-full text-sm">
+            <RpPagination
+              page={genPage}
+              pageCount={genPageCount}
+              total={genTotal}
+              extra="默认 10 条"
+              onPrev={() => setGenPage((p) => p - 1)}
+              onNext={() => setGenPage((p) => p + 1)}
+            />
+          </RpFilterBar>
+          <RpTable>
             <thead>
               <tr>
-                <th className="text-left">任务</th>
-                <th className="text-left">模式</th>
-                <th className="text-left">数量</th>
-                <th className="text-left">尺寸</th>
-                <th className="text-left">时间</th>
-                <th className="text-left">操作</th>
+                <RpTh>任务</RpTh>
+                <RpTh>模式</RpTh>
+                <RpTh>数量</RpTh>
+                <RpTh>尺寸</RpTh>
+                <RpTh>时间</RpTh>
+                <RpTh>操作</RpTh>
               </tr>
             </thead>
             <tbody>
               {visibleGenItems.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>暂无生图任务</td>
-                </tr>
+                <RpEmpty colSpan={6}>暂无生图任务</RpEmpty>
               ) : (
                 visibleGenItems.map((item) => (
                   <tr key={item.id}>
@@ -718,47 +777,48 @@ export default function RealphotosTasksPage() {
                     </td>
                     <td>{item.createdAt || ''}</td>
                     <td className="space-x-2">
-                      <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => setGenDetail(item)}>
+                      <RpButton size="sm" type="button" onClick={() => setGenDetail(item)}>
                         查看
-                      </button>
-                      <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => void downloadGenAssets(item)}>
+                      </RpButton>
+                      <RpButton size="sm" type="button" onClick={() => void downloadGenAssets(item)}>
                         批量下载
-                      </button>
+                      </RpButton>
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
-          </table>
-          <p className="text-sm">{downloadNote}</p>
+          </RpTable>
+          {downloadNote ? <p className="text-sm">{downloadNote}</p> : null}
           {genDetail ? (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-              onClick={() => setGenDetail(null)}
-              role="dialog"
-              aria-modal="true"
-              aria-label={`生图任务 ${genDetail.id} 详情`}
+            <RpDialog
+              title={`生图任务 ${genDetail.id}`}
+              label={`生图任务 ${genDetail.id} 详情`}
+              onClose={() => setGenDetail(null)}
             >
-              <div
-                className="max-h-[90vh] w-full max-w-lg space-y-2 overflow-y-auto rp-card rounded-xl border border-border bg-card p-4 text-sm shadow"
-                onClick={(event) => event.stopPropagation()}
-              >
-                <div className="flex justify-between">
-                  <strong>生图任务 {genDetail.id}</strong>
-                  <button type="button" className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" onClick={() => setGenDetail(null)}>
-                    关闭
-                  </button>
-                </div>
-                <p>模式：{generationModeLabel(genDetail.mode)}</p>
-                <p>正向：{genDetail.positivePrompt}</p>
-                <p>负向：{genDetail.negativePrompt || '（空）'}</p>
-                <table className="w-full text-sm">
+              <RpSection title="预览" tone="preview">
+                <dl className="rp-kv">
+                  <dt>模式</dt>
+                  <dd>{generationModeLabel(genDetail.mode)}</dd>
+                  <dt>尺寸</dt>
+                  <dd>
+                    {genDetail.width}×{genDetail.height}
+                  </dd>
+                  <dt>数量</dt>
+                  <dd>{genDetail.quantity}</dd>
+                  <dt>正向</dt>
+                  <dd>{genDetail.positivePrompt}</dd>
+                  <dt>负向</dt>
+                  <dd>{genDetail.negativePrompt || '（空）'}</dd>
+                </dl>
+              </RpSection>
+              <RpSection title="逐张状态" tone="items">
+                <RpTable>
                   <thead>
                     <tr>
-                      <th className="text-left">张</th>
-                      <th className="text-left">状态</th>
-                      <th className="text-left">资产</th>
-                      <th className="text-left">计费</th>
+                      <RpTh>张</RpTh>
+                      <RpTh>状态</RpTh>
+                      <RpTh>资产</RpTh>
                     </tr>
                   </thead>
                   <tbody>
@@ -767,14 +827,35 @@ export default function RealphotosTasksPage() {
                         <td>{row.index}</td>
                         <td>{taskStatusLabel(row.status)}</td>
                         <td>{row.assetId || ''}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </RpTable>
+              </RpSection>
+              <RpSection title="计费" tone="billing">
+                <dl className="rp-kv">
+                  <dt>合计消耗</dt>
+                  <dd>{genDetail.items.reduce((sum, row) => sum + Number(row.creditsConsumed || 0), 0)}</dd>
+                </dl>
+                <RpTable>
+                  <thead>
+                    <tr>
+                      <RpTh>张</RpTh>
+                      <RpTh>计费</RpTh>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {genDetail.items.map((row) => (
+                      <tr key={`bill-${row.index}`}>
+                        <td>{row.index}</td>
                         <td>{row.creditsConsumed}</td>
                       </tr>
                     ))}
                   </tbody>
-                </table>
-                <p className="text-xs text-muted-foreground">生图详情无复制、主动重处理、四卡或任务链时间线。</p>
-              </div>
-            </div>
+                </RpTable>
+              </RpSection>
+              <p className="text-xs text-muted-foreground">生图详情无复制、主动重处理、四卡或任务链时间线。</p>
+            </RpDialog>
           ) : null}
         </section>
       )}

@@ -1,0 +1,33 @@
+# REALPHOTOS UI polish · functional fixes (items 1–4) · 2026-11-15
+
+Branch: `cursor/realphotos-ui-polish-9973`
+Worktree: `.worktrees/realphotos-ui-polish`
+
+## 1. Tasks page live refresh
+- File: `aojuai-main/frontend/src/app/(app)/realphotos/tasks/page.tsx`
+- While processing tab has non-terminal statuses (`SUBMITTED`/`PRE_REVIEW`/`FULL_PROCESSING`/`DETECTION`/…), poll list every 3s.
+- Open detail dialog for in-flight task polls `/processing-tasks/{id}` every 2.5s and mirrors list updates.
+- Terminal: `DELIVERED` / `FAILED` / `PRE_REVIEW_FAILED` / `IMAGE_LOCKED` → stop polling.
+
+## 2. Library filename suffix removed
+- File: `aojuai-main/frontend/src/app/(app)/realphotos/library/page.tsx`
+- Removed ` · 请求W×H / 实际W×H` appended after `displayName`.
+- Resolution remains in its own table column.
+
+## 3. PRD §6.2 FR-028 naming — already implemented
+Evidence in code:
+- `services/asset_naming.py`: field order `name→seller→sku→asn→price→website→url`; download basename `sku` / `sku_asn`; `ensure_sku` 16-hex.
+- `s1_processing.upload`: empty sku → generate; tenant undeleted sku clash → append asn or regenerate.
+- URL/JSON import reuses `s1.upload` with meta fields (`s5_growth`).
+- Unit: `tests/.../test_blocking_fix.py::test_filename_order_and_degrade` + inline verify `NAMING_OK`.
+
+No additional product code required for naming; regression covered by unit tests.
+
+## 4. Batch GPS skip copy cleaned
+- Backend `gps_write.py`: indoor/studio skip reason → `室内场景按规则不写入坐标` / `影棚场景按规则不写入坐标` (no English `indoor`).
+- Frontend `batch-client.tsx`: avoid redundant `将跳过 GPS：` prefix when reason already says 不写入/跳过.
+- Inline verify sample reason: `室内场景按规则不写入坐标`.
+
+## Gate (functional subset)
+FUNC_FIXES_1_4_PASS=true
+(UI polish T1–T4 tracked separately by Collaborator subagent)

@@ -1,12 +1,71 @@
-/* Realphotos shell. Uses aojuai HSL tokens; radius/hover match prototype card + btn. */
+/* Realphotos shell. Uses aojuai HSL tokens only; no separate brand palette. */
 .realphotos-shell {
   background: hsl(var(--muted) / 0.45);
   min-height: 100%;
+  color: hsl(var(--foreground));
 }
 
 .realphotos-shell .rp-card {
   border-radius: 14px;
   box-shadow: 0 8px 24px rgba(18, 34, 51, 0.06);
+}
+
+.realphotos-shell .rp-page-header {
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.realphotos-shell .rp-page-header h1 {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.realphotos-shell .rp-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+  background: hsl(var(--card));
+}
+
+.realphotos-shell .rp-field {
+  color: hsl(var(--foreground));
+}
+
+.realphotos-shell .rp-input,
+.realphotos-shell .rp-select,
+.realphotos-shell .rp-filter input:not([type='checkbox']):not([type='file']),
+.realphotos-shell .rp-filter select,
+.realphotos-shell .rp-field input:not([type='checkbox']):not([type='file']),
+.realphotos-shell .rp-field select {
+  height: 2rem;
+  border-radius: 8px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  padding: 0 0.5rem;
+  font-size: 0.875rem;
+}
+
+.realphotos-shell textarea.rp-input {
+  height: auto;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.5rem;
+}
+
+.realphotos-shell .rp-input:focus,
+.realphotos-shell .rp-select:focus,
+.realphotos-shell .rp-filter input:focus,
+.realphotos-shell .rp-filter select:focus,
+.realphotos-shell .rp-field input:focus,
+.realphotos-shell .rp-field select:focus {
+  outline: 2px solid hsl(var(--ring) / 0.45);
+  outline-offset: 1px;
 }
 
 .realphotos-shell .rp-btn,
@@ -20,6 +79,49 @@
     transform 0.18s ease;
 }
 
+.realphotos-shell .rp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  padding: 0.3rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  cursor: pointer;
+}
+
+.realphotos-shell a.rp-btn {
+  text-decoration: none;
+}
+
+.realphotos-shell .rp-btn-sm {
+  padding: 0.1rem 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.realphotos-shell .rp-btn-primary {
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+  border-color: hsl(var(--foreground));
+}
+
+.realphotos-shell .rp-btn-danger {
+  color: hsl(var(--destructive));
+  border-color: hsl(var(--destructive) / 0.45);
+  background: hsl(var(--destructive) / 0.06);
+}
+
+.realphotos-shell .rp-btn.is-active {
+  background: hsl(var(--muted));
+  border-color: hsl(var(--foreground) / 0.35);
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 hsl(var(--foreground) / 0.55);
+}
+
 .realphotos-shell .rp-btn:hover:not(:disabled),
 .realphotos-shell button:hover:not(:disabled) {
   background-color: hsl(var(--accent));
@@ -28,14 +130,237 @@
   transform: translateY(-1px);
 }
 
+.realphotos-shell .rp-btn.rp-btn-primary:hover:not(:disabled) {
+  background-color: hsl(var(--foreground) / 0.88);
+  color: hsl(var(--background));
+  border-color: hsl(var(--foreground));
+}
+
+.realphotos-shell .rp-btn.rp-btn-danger:hover:not(:disabled) {
+  background-color: hsl(var(--destructive) / 0.14);
+  color: hsl(var(--destructive));
+  border-color: hsl(var(--destructive));
+}
+
 .realphotos-shell .rp-btn:disabled,
 .realphotos-shell button:disabled {
   transform: none;
   box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .realphotos-shell button:focus-visible,
-.realphotos-shell .rp-btn:focus-visible {
+.realphotos-shell .rp-btn:focus-visible,
+.realphotos-shell a.rp-btn:focus-visible {
   outline: 3px solid hsl(var(--ring) / 0.35);
   outline-offset: 2px;
+}
+
+.realphotos-shell .rp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.realphotos-shell .rp-table thead th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--muted) / 0.8);
+  border-bottom: 1px solid hsl(var(--border));
+  padding: 0.5rem 0.65rem;
+  white-space: nowrap;
+}
+
+.realphotos-shell .rp-table tbody td {
+  padding: 0.5rem 0.65rem;
+  border-bottom: 1px solid hsl(var(--border));
+  vertical-align: middle;
+}
+
+.realphotos-shell .rp-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.realphotos-shell .rp-table tbody tr:hover td {
+  background: hsl(var(--accent) / 0.65);
+}
+
+.realphotos-shell .rp-empty {
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  padding: 1.5rem 0.75rem !important;
+}
+
+.realphotos-shell .rp-pager {
+  color: hsl(var(--muted-foreground));
+}
+
+.realphotos-shell .rp-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  padding: 0.05rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  white-space: nowrap;
+}
+
+.realphotos-shell .rp-pill[data-tone='ok'] {
+  background: hsl(var(--accent));
+  border-color: hsl(var(--foreground) / 0.18);
+}
+
+.realphotos-shell .rp-pill[data-tone='bad'] {
+  color: hsl(var(--destructive));
+  border-color: hsl(var(--destructive) / 0.4);
+  background: hsl(var(--destructive) / 0.08);
+}
+
+.realphotos-shell .rp-pill[data-tone='warn'] {
+  border-color: hsl(var(--foreground) / 0.25);
+  background: hsl(var(--muted));
+}
+
+.realphotos-shell .rp-section {
+  border: 1px solid hsl(var(--border));
+  border-left-width: 4px;
+  border-radius: 10px;
+  background: hsl(var(--card));
+  overflow: hidden;
+}
+
+.realphotos-shell .rp-section-head {
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  background: hsl(var(--muted) / 0.85);
+  border-bottom: 1px solid hsl(var(--border));
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+.realphotos-shell .rp-section-body {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.7rem 0.75rem 0.8rem;
+}
+
+.realphotos-shell .rp-section[data-tone='basic'] {
+  border-left-color: hsl(var(--foreground) / 0.55);
+}
+
+.realphotos-shell .rp-section[data-tone='credit'] {
+  border-left-color: hsl(var(--ring));
+  background: hsl(var(--muted) / 0.35);
+}
+
+.realphotos-shell .rp-section[data-tone='credit'] .rp-section-head {
+  background: hsl(var(--accent));
+}
+
+.realphotos-shell .rp-section[data-tone='failure'] {
+  border-left-color: hsl(var(--destructive));
+  background: hsl(var(--destructive) / 0.04);
+}
+
+.realphotos-shell .rp-section[data-tone='failure'] .rp-section-head {
+  background: hsl(var(--destructive) / 0.1);
+  color: hsl(var(--destructive));
+}
+
+.realphotos-shell .rp-section[data-tone='gps'] {
+  border-left-color: hsl(var(--foreground) / 0.8);
+  background: hsl(var(--accent) / 0.45);
+}
+
+.realphotos-shell .rp-section[data-tone='report'] {
+  border-left-color: hsl(var(--ring));
+  background: hsl(var(--background));
+}
+
+.realphotos-shell .rp-section[data-tone='report'] .rp-section-head {
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+}
+
+.realphotos-shell .rp-section[data-tone='preview'] {
+  border-left-color: hsl(var(--foreground) / 0.4);
+}
+
+.realphotos-shell .rp-section[data-tone='items'] {
+  border-left-color: hsl(var(--ring));
+  background: hsl(var(--muted) / 0.2);
+}
+
+.realphotos-shell .rp-section[data-tone='billing'] {
+  border-left-color: hsl(var(--foreground));
+  background: hsl(var(--muted) / 0.45);
+}
+
+.realphotos-shell .rp-kv {
+  display: grid;
+  grid-template-columns: 5.75rem minmax(0, 1fr);
+  gap: 0.2rem 0.6rem;
+  margin: 0;
+}
+
+.realphotos-shell .rp-kv dt {
+  color: hsl(var(--muted-foreground));
+}
+
+.realphotos-shell .rp-kv dd {
+  margin: 0;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.realphotos-shell .rp-score-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.25rem, 1fr));
+  gap: 0.45rem;
+}
+
+.realphotos-shell .rp-score-cell {
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  background: hsl(var(--muted) / 0.55);
+  padding: 0.4rem 0.5rem;
+}
+
+.realphotos-shell .rp-score-cell span {
+  display: block;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+}
+
+.realphotos-shell .rp-score-cell strong {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.realphotos-shell .rp-dialog {
+  width: min(42rem, 100%);
+}
+
+@media (max-width: 420px) {
+  .realphotos-shell .rp-kv {
+    grid-template-columns: 1fr;
+  }
+
+  .realphotos-shell .rp-dialog {
+    width: 100%;
+  }
 }

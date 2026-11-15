@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { RpPageHeader } from '@/components/realphotos/rp-page-header'
+import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch } from '@/lib/api'
 import { formatRate } from '@/lib/format-rate'
 import {
@@ -158,11 +160,14 @@ export default function RealphotosWorkspacePage() {
         body: JSON.stringify({ ticketType: 'image_appeal', reason: appealReason }),
       })
       setMessage('已创建图片申诉')
+      toastTask('已创建图片申诉', true)
       setAppealReason('')
       const rows = await apiFetch<{ items: Ticket[] }>('/api/v1/realphotos/my-support-tickets')
       setMyTickets(rows.items || [])
     } catch (error: unknown) {
-      setMessage(error instanceof ApiError ? error.message : '申诉创建失败')
+      const text = error instanceof ApiError ? error.message : '申诉创建失败'
+      setMessage(text)
+      toastTask(text, false)
     }
   }
 
@@ -177,9 +182,10 @@ export default function RealphotosWorkspacePage() {
 
   return (
     <main className="space-y-6 p-6">
-      <h1 className="text-xl font-medium">工作台</h1>
-      {subtitle ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
-      <ListSearch value={search} placeholder="本页列表关键词" onChange={setSearch} />
+      <RpPageHeader title="工作台" description={subtitle || '按角色查看待办与本账号概览'} />
+      <div className="rp-filter">
+        <ListSearch value={search} placeholder="本页列表关键词" onChange={setSearch} />
+      </div>
       {data?.preReviewFrozen && view === 'merchant' ? (
         <p className="text-sm text-destructive">
           账号已冻结：可查看历史与保留期内结果，不能从工作台发起新获取或处理。请到
@@ -220,7 +226,7 @@ export default function RealphotosWorkspacePage() {
       {view === 'admin' && data?.opsMetrics ? (
         <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm">
           <h2 className="mb-2 text-sm font-medium">运营指标</h2>
-          <table className="w-full max-w-3xl border-collapse text-sm">
+          <table className="rp-table w-full max-w-3xl border-collapse text-sm">
             <tbody>
               <tr>
                 <th className="border px-2 py-1 text-left">可用余额</th>
@@ -271,7 +277,7 @@ export default function RealphotosWorkspacePage() {
               打开充值确认
             </Link>
           </div>
-          <table className="w-full text-sm">
+          <table className="rp-table w-full text-sm">
             <thead>
               <tr>
                 <th className="text-left">单号</th>
@@ -285,7 +291,7 @@ export default function RealphotosWorkspacePage() {
             <tbody>
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={6}>暂无待处理充值单</td>
+                  <td className="rp-empty" colSpan={6}>暂无待处理充值单</td>
                 </tr>
               ) : (
                 filteredOrders.map((item) => (
@@ -320,7 +326,7 @@ export default function RealphotosWorkspacePage() {
                   .map(([k, v]) => `${k}=${v}`)
                   .join(' · ')}
           </p>
-          <table className="w-full text-sm">
+          <table className="rp-table w-full text-sm">
             <thead>
               <tr>
                 <th className="text-left">编号</th>
@@ -333,7 +339,7 @@ export default function RealphotosWorkspacePage() {
             <tbody>
               {filteredTechTickets.length === 0 ? (
                 <tr>
-                  <td colSpan={5}>暂无待处理工单</td>
+                  <td className="rp-empty" colSpan={5}>暂无待处理工单</td>
                 </tr>
               ) : (
                 filteredTechTickets.map((item) => (
@@ -359,7 +365,7 @@ export default function RealphotosWorkspacePage() {
               全部任务
             </Link>
           </div>
-          <table className="w-full text-sm">
+          <table className="rp-table w-full text-sm">
             <thead>
               <tr>
                 <th className="text-left">类型</th>
@@ -371,7 +377,7 @@ export default function RealphotosWorkspacePage() {
             <tbody>
               {filteredHistory.length === 0 ? (
                 <tr>
-                  <td colSpan={4}>暂无本账号历史</td>
+                  <td className="rp-empty" colSpan={4}>暂无本账号历史</td>
                 </tr>
               ) : (
                 filteredHistory.map((item) => (
@@ -399,11 +405,11 @@ export default function RealphotosWorkspacePage() {
               value={appealReason}
               onChange={(event) => setAppealReason(event.target.value)}
             />
-            <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1" type="button" onClick={() => void createAppeal()}>
+            <button className="rp-btn border px-3 py-1" type="button" onClick={() => void createAppeal()}>
               创建申诉
             </button>
           </div>
-          <table className="w-full text-sm">
+          <table className="rp-table w-full text-sm">
             <thead>
               <tr>
                 <th className="text-left">编号</th>

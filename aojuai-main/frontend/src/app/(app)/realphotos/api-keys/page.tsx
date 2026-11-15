@@ -51,7 +51,7 @@ export default function RealphotosApiKeysPage() {
         <label className="block text-sm">
           名称
           <input
-            className="mt-1 block w-full max-w-md border px-2 py-1"
+            className="rp-input mt-1 block w-full max-w-md"
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
@@ -61,7 +61,7 @@ export default function RealphotosApiKeysPage() {
             {name.toLowerCase().includes(search.trim().toLowerCase()) ? '名称已匹配搜索词' : '可按搜索词调整名称后再签发'}
           </p>
         ) : null}
-        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 text-sm" type="button" onClick={() => void createKey()}>
+        <button className="rp-btn border px-3 py-1 text-sm" type="button" onClick={() => void createKey()}>
           创建凭证
         </button>
         {plaintext ? <p className="break-all text-sm">明文：{plaintext}</p> : null}
@@ -69,7 +69,7 @@ export default function RealphotosApiKeysPage() {
       <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2 text-sm">
         <h2 className="font-medium">对接规范</h2>
         <button
-          className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1"
+          className="rp-btn border px-3 py-1"
           type="button"
           onClick={() => {
             const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/+$/, '')

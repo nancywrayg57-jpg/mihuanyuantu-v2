@@ -104,7 +104,7 @@ export default function RealphotosOrderSupportPage() {
             onChange={(event) => setReason(event.target.value)}
           />
         </label>
-        <table className="w-full text-sm">
+        <table className="rp-table w-full text-sm">
           <thead>
             <tr>
               <th className="text-left">订单</th>
@@ -131,10 +131,10 @@ export default function RealphotosOrderSupportPage() {
                   <td>{order.voucherNote}</td>
                   <td>{taskStatusLabel(order.status)}</td>
                   <td className="space-x-2">
-                    <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" onClick={() => void confirm(order.id)}>
+                    <button className="rp-btn border px-2 py-1" type="button" onClick={() => void confirm(order.id)}>
                       确认到账
                     </button>
-                    <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" onClick={() => void reject(order.id)}>
+                    <button className="rp-btn border px-2 py-1" type="button" onClick={() => void reject(order.id)}>
                       拒单
                     </button>
                   </td>

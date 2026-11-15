@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch } from '@/lib/api'
 import {
@@ -263,7 +264,7 @@ export default function RealphotosTechDeskPage() {
 
   return (
     <main className="space-y-4 p-6">
-      <h1 className="text-lg font-medium">工单管理</h1>
+      <RpPageHeader title="工单管理" description="处理账号申诉，并查看技术失败导致的积分冻结。" />
       <p className="text-sm">
         {message}
         {canUnfreeze ? ` · 待处理 open=${openCount}` : ''}
@@ -272,14 +273,14 @@ export default function RealphotosTechDeskPage() {
       {canUnfreeze ? (
         <div className="flex gap-2 text-sm">
           <button
-            className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 ${deskTab === 'appeals' ? 'bg-muted' : ''}`}
+            className={`rp-btn border px-3 py-1 ${deskTab === 'appeals' ? 'bg-muted' : ''}`}
             type="button"
             onClick={() => setDeskTab('appeals')}
           >
             账号申诉
           </button>
           <button
-            className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 ${deskTab === 'held' ? 'bg-muted' : ''}`}
+            className={`rp-btn border px-3 py-1 ${deskTab === 'held' ? 'bg-muted' : ''}`}
             type="button"
             onClick={() => {
               setDeskTab('held')
@@ -296,7 +297,7 @@ export default function RealphotosTechDeskPage() {
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <label>
               类型筛选
-              <select className="ml-2 border px-2 py-1" value={ticketType} onChange={(event) => setTicketType(event.target.value)}>
+              <select className="rp-input ml-2" value={ticketType} onChange={(event) => setTicketType(event.target.value)}>
                 <option value="all">全部</option>
                 <option value="account_freeze">{ticketTypeLabel('account_freeze')}</option>
                 <option value="image_appeal">{ticketTypeLabel('image_appeal')}</option>
@@ -305,7 +306,7 @@ export default function RealphotosTechDeskPage() {
             </label>
             <ListSearch value={search} placeholder="编号 / 租户 / 账号 / 原因" onChange={setSearch} />
           </div>
-          <table className="w-full border-collapse text-sm">
+          <table className="rp-table w-full border-collapse text-sm">
             <thead>
               <tr>
                 <th className="border px-2 py-1 text-left">编号</th>
@@ -335,7 +336,7 @@ export default function RealphotosTechDeskPage() {
                     <td className="border px-2 py-1">{item.reason}</td>
                     <td className="border px-2 py-1">
                       <button
-                        className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5"
+                        className="rp-btn border px-2 py-0.5"
                         type="button"
                         onClick={() => openHandle(item)}
                       >
@@ -359,7 +360,7 @@ export default function RealphotosTechDeskPage() {
             value={appealReason}
             onChange={(event) => setAppealReason(event.target.value)}
           />
-          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 text-sm" type="button" onClick={() => void createAppeal()}>
+          <button className="rp-btn border px-3 py-1 text-sm" type="button" onClick={() => void createAppeal()}>
             提交申诉
           </button>
         </section>
@@ -371,7 +372,7 @@ export default function RealphotosTechDeskPage() {
           <p className="text-xs text-muted-foreground">
             按租户展示 held 合计；FIFO 消耗预留直到达到本次释放金额，须写原因。每页 {heldPageSize} 条。
           </p>
-          <table className="w-full border-collapse text-sm">
+          <table className="rp-table w-full border-collapse text-sm">
             <thead>
               <tr>
                 <th className="border px-2 py-1 text-left">租户</th>
@@ -386,7 +387,7 @@ export default function RealphotosTechDeskPage() {
             <tbody>
               {heldItems.length === 0 ? (
                 <tr>
-                  <td className="border px-2 py-1" colSpan={7}>
+                  <td className="rp-empty border px-2 py-1" colSpan={7}>
                     暂无技术失败冻结待客服任务
                   </td>
                 </tr>
@@ -417,7 +418,7 @@ export default function RealphotosTechDeskPage() {
                       </td>
                       <td className="border px-2 py-1">
                         <button
-                          className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5"
+                          className="rp-btn border px-2 py-0.5"
                           type="button"
                           onClick={() => void releaseHeldByAmount(item)}
                         >
@@ -432,7 +433,7 @@ export default function RealphotosTechDeskPage() {
           </table>
           <div className="flex items-center gap-2 text-sm">
             <button
-              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
+              className="rp-btn border px-2 py-1"
               type="button"
               disabled={heldPage <= 1}
               onClick={() => setHeldPage((p) => Math.max(1, p - 1))}
@@ -443,7 +444,7 @@ export default function RealphotosTechDeskPage() {
               第 {heldPage} / {heldPageCount} 页 · 共 {heldTotal} 条
             </span>
             <button
-              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
+              className="rp-btn border px-2 py-1"
               type="button"
               disabled={heldPage >= heldPageCount}
               onClick={() => setHeldPage((p) => p + 1)}
@@ -470,7 +471,7 @@ export default function RealphotosTechDeskPage() {
               <strong>工单 {detail.id}</strong>
               <button
                 type="button"
-                className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5"
+                className="rp-btn border px-2 py-0.5"
                 onClick={() => closeHandle()}
               >
                 关闭
@@ -507,7 +508,7 @@ export default function RealphotosTechDeskPage() {
                   onChange={(event) => setResolveNote(event.target.value)}
                 />
                 <button
-                  className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none ml-2 border px-3 py-1"
+                  className="rp-btn ml-2 border px-3 py-1"
                   type="button"
                   onClick={() => void resolveDetail()}
                 >
@@ -528,7 +529,7 @@ export default function RealphotosTechDeskPage() {
                   onChange={(event) => setReason(event.target.value)}
                 />
                 <button
-                  className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1"
+                  className="rp-btn border px-3 py-1"
                   type="button"
                   onClick={() => void unfreezeFromDetail()}
                 >

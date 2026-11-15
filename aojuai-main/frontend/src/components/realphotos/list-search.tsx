@@ -1,5 +1,7 @@
 'use client'
 
+import { rpInputClass } from './surface'
+
 type ListSearchProps = {
   value: string
   onChange: (value: string) => void
@@ -13,7 +15,7 @@ export function ListSearch({ value, onChange, placeholder = '关键词', classNa
     <label className={className || 'inline-flex items-center gap-2 text-sm'}>
       <span>搜索</span>
       <input
-        className="border px-2 py-1"
+        className={rpInputClass}
         value={value}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}

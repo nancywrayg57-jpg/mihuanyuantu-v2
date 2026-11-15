@@ -126,3 +126,22 @@ def test_gps_mode_none_skips_and_does_not_exif_fail() -> None:
     # No GPS-related EXIF failure: all failed tags must not be GPSLatitude.
     failed = [f for f in out.fields if f.get("verification_status") == "failed"]
     assert all(f.get("tag") != "GPSLatitude" for f in failed)
+
+
+def test_indoor_scene_skip_reason_is_chinese_without_english_token() -> None:
+    """Merchant-facing skip copy must not leak English scene keys like indoor."""
+    from app.capabilities.realphotos.services.gps_write import resolve_gps
+
+    reason = ""
+    for seed in range(64):
+        plan = resolve_gps(
+            preset={"gpsMode": "random_by_scene", "gpsConfig": {"sceneRule": "indoor"}},
+            seed=seed,
+        )
+        if plan.get("action") == "skip":
+            reason = str(plan.get("reason") or "")
+            break
+    assert reason
+    assert "indoor" not in reason.lower()
+    assert "室内" in reason
+    assert "不写入" in reason

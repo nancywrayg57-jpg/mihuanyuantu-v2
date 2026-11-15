@@ -21,6 +21,25 @@ _SCENE_BOXES: dict[str, tuple[float, float, float, float, float, float]] = {
 
 _SKIP_SCENES = {"indoor", "studio"}
 
+_SCENE_LABELS_ZH: dict[str, str] = {
+    "indoor": "室内",
+    "studio": "影棚",
+    "urban": "城市",
+    "landscape": "风景",
+    "beach": "海滩",
+    "mountain": "山地",
+    "street": "街拍",
+    "portrait": "人像",
+    "food": "美食",
+    "sports": "运动",
+    "macro": "微距",
+}
+
+
+def _scene_label_zh(rule: str) -> str:
+    key = str(rule or "").strip().lower()
+    return _SCENE_LABELS_ZH.get(key) or key or "未知"
+
 
 def gps_writability(*, gps_mode: str, gps_config: dict[str, Any] | None = None) -> dict[str, Any]:
     """Ops-facing GPS writability without mutating mode (ALIGN-GAP G6).
@@ -144,7 +163,7 @@ def resolve_gps(*, preset: dict[str, Any], seed: int) -> dict[str, Any]:
                 return {
                     "action": "skip",
                     "mode": mode,
-                    "reason": f"场景 {rule} 按规则跳过 GPS 写入",
+                    "reason": f"{_scene_label_zh(rule)}场景按规则不写入坐标",
                 }
             box = _SCENE_BOXES.get("urban")
         else:
@@ -153,7 +172,7 @@ def resolve_gps(*, preset: dict[str, Any], seed: int) -> dict[str, Any]:
             return {
                 "action": "fail",
                 "mode": mode,
-                "reason": f"未知场景规则 {rule}",
+                "reason": f"未知场景规则（{_scene_label_zh(rule)}）",
             }
         lat = rng.uniform(box[0], box[1])
         lon = rng.uniform(box[2], box[3])

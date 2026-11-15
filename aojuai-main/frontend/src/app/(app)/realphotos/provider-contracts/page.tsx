@@ -43,7 +43,7 @@ export default function RealphotosProviderContractsPage() {
       <p className="text-sm">{message}</p>
       <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
       <ListSearch value={search} placeholder="职责 / 提供商 / 模型" onChange={setSearch} />
-      <table className="w-full border-collapse text-sm">
+      <table className="rp-table w-full border-collapse text-sm">
         <thead>
           <tr>
             <th className="border px-2 py-1 text-left">职责</th>

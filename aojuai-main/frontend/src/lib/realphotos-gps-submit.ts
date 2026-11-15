@@ -28,7 +28,7 @@ export function gpsSubmitGuard(preset: GpsAwarePreset | null | undefined): GpsSu
     Boolean(preset.gpsMode) &&
     preset.gpsMode !== 'none'
       ? preset.gpsWritableReason ||
-        '本预设 GPS 配置不完整，处理时将跳过 GPS 写入（不伪造坐标）'
+        '本预设 GPS 配置不完整，处理时不写入坐标（不伪造）'
       : ''
   const blockReason = blocked
     ? preset.gpsWritableReason || '请先在预设台账补全 GPS'

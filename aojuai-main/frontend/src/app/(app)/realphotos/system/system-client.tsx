@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { ApiError, apiFetch } from '@/lib/api'
 
 import { DetectionPassScoreCard } from './detection-pass-score-card'
@@ -375,14 +376,14 @@ export function RealphotosSystemClient() {
 
   return (
     <main className="space-y-6 p-6">
-      <h1 className="text-xl font-medium">系统管理</h1>
+      <RpPageHeader title="系统管理" description="渠道登记、模型列表与检测基线说明。" />
       <p className="text-sm">{message}</p>
       <div className="flex flex-wrap gap-2 text-sm">
-        <button className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 ${tab === 'redo' ? 'bg-muted' : ''}`} type="button" onClick={() => setTab('redo')}>
+        <button className={`rp-btn border px-3 py-1 ${tab === 'redo' ? 'bg-muted' : ''}`} type="button" onClick={() => setTab('redo')}>
           自动重做
         </button>
         <button
-          className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 ${tab === 'models' ? 'bg-muted' : ''}`}
+          className={`rp-btn border px-3 py-1 ${tab === 'models' ? 'bg-muted' : ''}`}
           type="button"
           onClick={() => setTab('models')}
           disabled={!isAdmin}
@@ -390,7 +391,7 @@ export function RealphotosSystemClient() {
           模型 API
         </button>
         <button
-          className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 ${tab === 'baseline' ? 'bg-muted' : ''}`}
+          className={`rp-btn border px-3 py-1 ${tab === 'baseline' ? 'bg-muted' : ''}`}
           type="button"
           onClick={() => setTab('baseline')}
           disabled={!isAdmin}
@@ -446,7 +447,7 @@ export function RealphotosSystemClient() {
             />
           </label>
           <button
-            className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 disabled:opacity-50"
+            className="rp-btn border px-3 py-1 disabled:opacity-50"
             type="button"
             disabled={!canEditRedo}
             onClick={() => void saveRedo()}
@@ -548,7 +549,7 @@ export function RealphotosSystemClient() {
                   </label>
                 </div>
                 <button
-                  className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 disabled:opacity-50"
+                  className="rp-btn border px-3 py-1 disabled:opacity-50"
                   type="button"
                   disabled={saving}
                   onClick={() => void saveModel()}
@@ -558,11 +559,11 @@ export function RealphotosSystemClient() {
               </div>
 
               <div className="rp-card rounded-xl border border-border bg-card shadow-sm space-y-2 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="rp-filter flex flex-wrap items-center justify-between gap-3">
                   <h2 className="font-medium">已登记渠道</h2>
                   <ListSearch value={channelSearch} placeholder="提供商 / 模型 / 用途" onChange={setChannelSearch} />
                 </div>
-                <table className="w-full border-collapse">
+                <table className="rp-table w-full border-collapse text-sm">
                   <thead>
                     <tr>
                       <th className="border px-2 py-1 text-left">渠道 / 模型 / Base URL</th>
@@ -604,10 +605,10 @@ export function RealphotosSystemClient() {
                         <td className="border px-2 py-1">{item.enabled ? '已启用' : '已停用'}</td>
                         <td className="border px-2 py-1">平台</td>
                         <td className="border px-2 py-1">
-                          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none mr-2 border px-2 py-0.5" type="button" onClick={() => void toggleEnabled(item)}>
+                          <button className="rp-btn mr-2 border px-2 py-0.5" type="button" onClick={() => void toggleEnabled(item)}>
                             {item.enabled ? '停用' : '启用'}
                           </button>
-                          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => void deleteContract(item)}>
+                          <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => void deleteContract(item)}>
                             删除
                           </button>
                         </td>
@@ -615,7 +616,7 @@ export function RealphotosSystemClient() {
                     ))}
                     {editableContracts.length === 0 ? (
                       <tr>
-                        <td className="border px-2 py-2 text-muted-foreground" colSpan={6}>
+                        <td className="rp-empty border px-2 py-2 text-muted-foreground" colSpan={6}>
                           暂无渠道，请先保存配置。
                         </td>
                       </tr>
