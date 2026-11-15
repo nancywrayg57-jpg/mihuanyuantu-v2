@@ -125,7 +125,7 @@ async def _main() -> int:
             actor_role_codes={ROLE_ADMIN, "admin"},
             code=preset_code,
             device_type="phone",
-            brand="RuntimeCam",
+            brand="Apple",
             model_name="BEF-Phone",
             gps_mode="none",
             enabled=True,

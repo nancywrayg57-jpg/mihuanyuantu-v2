@@ -34,21 +34,26 @@ vibe_coding:
   current_loop:
     goal: "KEY-MODEL-SET：按密钥设置模型 + 上线前全量本地端测"
     user_value: "管理员可对每个 API 密钥单独设模型并全站同步；上线前多角色功能有证据"
-    visible_output: "T1 代码+单测绿；T2 本地全量端测 PRELAUNCH_E2E_PASS=false（证据已写）"
-    verify: "KEY-MODEL-SET-e2e-t1 PASS；PRELAUNCH-E2E-2026-11-15 FAIL 诚实记录"
-    status: key_model_set_pr_opened
-    next_user_action: "非作者 Owner squash PR #61；合入后重启 :38000；生图/处理/预设漂移另开止血；禁S7。"
+    visible_output: "PR#61 已取消；临时 prompt_opt 密钥已删并恢复物料 Deepseek；Deepseek TLS 不可达致 live 仍 fail"
+    verify: "PRELAUNCH-E2E-RETEST-2026-11-15；PROMPT_OPT_KEY_RESTORED=true；LIVE_CALL=false"
+    status: key_model_set_pr_cancelled_fixing
+    next_user_action: "修复本机→api.deepseek.com TLS/出网后重测提示词优化；继续修上传/生图端测；禁S7。"
   key_model_set_2026_11_15:
     work_order: KEY-MODEL-SET
     branch: cursor/key-model-set-9973
     worktree: .worktrees/ops-desk-ux
     baseline_main: cabbd5b
     pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/61"
-    tip: 495b465
+    pr_state: closed_cancelled
+    tip: pending
     t1_per_key_model: done_e2e_pass
     t2_prelaunch_e2e: done_fail_documented
+    prompt_opt_temp_key_removed: true
+    prompt_opt_material_key_restored: true
+    prompt_opt_live_tls: fail_deepseek_unreachable
     t1_evidence: docs/mihuanyuantu-v2/input/KEY-MODEL-SET-e2e-t1.txt
     t2_evidence: docs/mihuanyuantu-v2/input/PRELAUNCH-E2E-2026-11-15.txt
+    t2_retest: docs/mihuanyuantu-v2/input/PRELAUNCH-E2E-RETEST-2026-11-15.txt
     evidence_marker_t1: KEY_MODEL_SET_T1_PASS
     evidence_marker_t2: PRELAUNCH_E2E_PASS=false
     work_order_file: docs/mihuanyuantu-v2/input/KEY-MODEL-SET-work-order-2026-11-15.md
@@ -518,16 +523,17 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "KEY-MODEL-SET PR #61 待非作者 Owner squash。合入后重启 :38000；T2 未全绿另排止血。禁S7；禁放宽PASS_SCORE。"
+  action: "KEY-MODEL-SET：PR#61 已取消。密钥已恢复物料 Deepseek；待修复 Deepseek TLS 出网后重测提示词优化，并继续端测止血。禁S7；禁放宽PASS_SCORE。"
   work_order: "KEY-MODEL-SET"
   prior_work_order: "OPS-DESK-UX-FIX #60 merged; OPS-DESK-UX #59; REGISTER-FIX #58"
   branch: cursor/key-model-set-9973
   pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/61"
-  tip: 495b465
+  pr_state: closed_cancelled
   baseline_main: cabbd5b
   work_order_file: docs/mihuanyuantu-v2/input/KEY-MODEL-SET-work-order-2026-11-15.md
   t1_evidence: docs/mihuanyuantu-v2/input/KEY-MODEL-SET-e2e-t1.txt
   t2_evidence: docs/mihuanyuantu-v2/input/PRELAUNCH-E2E-2026-11-15.txt
+  t2_retest: docs/mihuanyuantu-v2/input/PRELAUNCH-E2E-RETEST-2026-11-15.txt
   production_billing: false
   r9_s7: blocked
   closed_ops_desk_ux_fix:

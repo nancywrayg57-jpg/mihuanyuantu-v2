@@ -31,16 +31,34 @@ _DUTIES = frozenset({"generation", "prompt_opt", "pre_review", "final_detection"
 def secret_store_paths() -> list[Path]:
     """Prefer 生产物料 over sparse worktree ``.secrets`` so parallel checkouts still see duty keys."""
     here = Path(__file__).resolve()
+    # .../aojuai-main/backend/app/capabilities/realphotos/services/this.py → checkout root
     repo = here.parents[6]
     parent = repo.parent
-    return [
+    paths: list[Path] = [
         repo / "生产物料" / _STORE_NAME,
         parent / "生产物料" / _STORE_NAME,
         # Primary checkout when this process runs from a sibling git worktree.
         parent / "mihuanyuantu-v2" / "生产物料" / _STORE_NAME,
-        repo / ".secrets" / _STORE_NAME,
-        Path(str(settings.REALPHOTOS_STORAGE_ROOT or "").strip() or "/tmp") / _STORE_NAME,
     ]
+    # In-repo worktree: <main>/.worktrees/<name>/aojuai-main/... → climb to <main>/生产物料
+    if parent.name == ".worktrees":
+        paths.insert(0, parent.parent / "生产物料" / _STORE_NAME)
+    paths.extend(
+        [
+            repo / ".secrets" / _STORE_NAME,
+            Path(str(settings.REALPHOTOS_STORAGE_ROOT or "").strip() or "/tmp") / _STORE_NAME,
+        ]
+    )
+    # De-dupe while preserving order
+    seen: set[Path] = set()
+    ordered: list[Path] = []
+    for path in paths:
+        key = path.resolve() if path.exists() else path
+        if key in seen:
+            continue
+        seen.add(key)
+        ordered.append(path)
+    return ordered
 
 
 def _active_store_path() -> Path | None:

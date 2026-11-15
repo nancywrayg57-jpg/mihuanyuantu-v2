@@ -1,0 +1,38 @@
+# PRELAUNCH E2E retest after key cleanup · 2026-11-15
+
+PR #61: closed per admin (cancel). Branch remains `cursor/key-model-set-9973`.
+API restarted from worktree on `127.0.0.1:38000` (credentials route present).
+
+## prompt_opt key cleanup
+
+| Step | Result |
+|------|--------|
+| Removed e2e temp keys `sk-m••••99` (`sk-model-api-e2e-rotate-XXXX9999`) from `生产物料/realphotos-duty-secrets.json` | DONE |
+| Enabled only material Deepseek key `sk-5••••31` (`蜜獾原图v2-生产物料.md` · Deepseek API), model=`deepseek-chat` | DONE |
+| Admin `GET /provider-contracts` shows prompt_opt n=1 mask `sk-5••••31` enabled | PASS `MATERIAL_OK` |
+| `POST /provider-contracts/credentials` (T1) | PASS http=200 |
+| Live `POST /prompt-optimizations` with material key | **FAIL** status=failed kind=`transport` |
+| Direct HTTPS to `https://api.deepseek.com` from this host | **FAIL** TLS EOF / ConnectError (infra; not key shape) |
+| Contrast: `https://apis.aoju.ai` reachable (301) | OK |
+
+结论：临时密钥已删、物料 Deepseek 已启用并被 runtime 选中；**本机出网 TLS 打不开 Deepseek**，故提示词优化仍无法拿到成功正文。需网络/代理侧修复后再验「能用」。
+
+## Other previous FAIL roots
+
+| Item | Prior FAIL reason | Retest / fix |
+|------|-------------------|--------------|
+| T1 credentials 405 | main process lacked route | Fixed by restarting worktree API → 200 |
+| PRESET_REJECTED in s1/s3 smokes | scripts use obsolete `s1-phone-01` / Honeybadger catalog | `/presets` now returns **405** real Apple presets; not script-default codes |
+| browser_e2e_fix preset brand | `RuntimeCam` blocked by PLACEHOLDER_BRAND_BLOCKLIST | Code fix: brand → `Apple` |
+| Worktree empty credentials | `secret_store_paths` missed `<main>/.worktrees/*` climb | Code fix: insert `parent.parent/生产物料` |
+| 生图 | likely supplier/network; not re-proven green this pass | still open |
+| Upload smoke earlier 400 | likely validation/meta; not fully closed | open |
+
+## Gate
+
+PRELAUNCH_E2E_PASS=false
+PROMPT_OPT_KEY_RESTORED=true
+PROMPT_OPT_LIVE_CALL_PASS=false (deepseek TLS unreachable from host)
+T1_HTTP_PASS=true
+production_billing=false
+r9_s7=blocked
