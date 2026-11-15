@@ -1,0 +1,6 @@
+OPS-DESK-UX T1 evidence 2026-11-14T21:04:52-05:00
+branch=cursor/ops-desk-ux-9973 head=2d807e8
+ruff: pass (s6.py s6_ops.py test_s6_ops.py)
+pytest: test_held_credits_aggregate_and_release_by_amount_fifo PASS
+pytest: test_only_tech_or_admin_can_release_held_credit PASS
+scope: tech-desk tabs + held aggregate/FIFO release + ticket name fields

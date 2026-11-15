@@ -47,6 +47,7 @@ from app.domain.users.models import User, UserRole, UserStatus
 FIXTURE_PROVIDER = "fixture"
 UNCONFIGURED_PROVIDER = "unconfigured"
 USER_PAGE_SIZE = 10
+TENANT_PAGE_SIZE = 10
 LOG_PAGE_SIZE = 20
 GPS_MODES = {"none", "fixed", "random_by_scene"}
 # PRESET-BULK-IMPORT B1: stop injecting Honeybadger s1-* into merchant enabled list.
@@ -229,6 +230,112 @@ class RealphotosOpsService:
         await self.db.flush()
         return {"taskId": int(task.id), "disposition": task.credit_disposition}
 
+    async def release_held_credits_by_amount(
+        self,
+        *,
+        actor_role_codes: set[str],
+        operator_user_id: int,
+        tenant_id: int,
+        amount: object,
+        reason: str,
+    ) -> dict[str, Any]:
+        """按租户 FIFO 释放 held 预留，直到达到指定整数金额。"""
+        self._require_tech_or_admin(actor_role_codes)
+        note = str(reason or "").strip()
+        if not note:
+            raise BusinessError(message="释放必须填写原因", code="INPUT_INVALID")
+        if isinstance(amount, bool) or not isinstance(amount, int):
+            raise BusinessError(message="释放积分必须是整数", code="INPUT_INVALID")
+        want = int(amount)
+        if want <= 0:
+            raise BusinessError(message="释放积分必须为正整数", code="INPUT_INVALID")
+
+        held_rows = await self._held_reservation_rows(tenant_id=int(tenant_id))
+        held_total = sum(int(res.amount) for _task, res in held_rows)
+        if want > held_total:
+            raise BusinessError(
+                message="释放积分不能超过该租户冻结合计",
+                code="INPUT_INVALID",
+                details={"heldTotal": held_total, "amount": want},
+            )
+
+        remaining = want
+        released_chunks: list[dict[str, Any]] = []
+        credits = RealphotosCreditService(self.db)
+        for task, reservation in held_rows:
+            if remaining <= 0:
+                break
+            chunk = min(remaining, int(reservation.amount))
+            await credits.release_reserved(
+                tenant_id=int(tenant_id),
+                amount=chunk,
+                operator_user_id=int(operator_user_id),
+                event_key=f"tech-by-amt:{int(tenant_id)}:{int(task.id)}:{chunk}:{int(reservation.amount)}",
+                reference={
+                    "taskId": int(task.id),
+                    "source": "tech_audit_by_amount",
+                    "reason": note,
+                    "chunk": chunk,
+                },
+            )
+            before_amt = int(reservation.amount)
+            left = before_amt - chunk
+            if left <= 0:
+                reservation.state = "released"
+                # 全额释放：保留原 amount 便于审计回读（与整笔 release 一致）
+                task.credit_disposition = "released_tech_audit"
+            else:
+                reservation.amount = left
+                # 仍有 held 余额，任务保持待客服释放
+                task.credit_disposition = "held_until_tech_support"
+            released_chunks.append(
+                {
+                    "taskId": int(task.id),
+                    "releasedAmount": chunk,
+                    "remainingHeld": max(left, 0),
+                    "disposition": task.credit_disposition,
+                }
+            )
+            remaining -= chunk
+
+        await self.db.flush()
+        after_rows = await self._held_reservation_rows(tenant_id=int(tenant_id))
+        after_total = sum(int(res.amount) for _task, res in after_rows)
+        return {
+            "tenantId": int(tenant_id),
+            "releasedAmount": want,
+            "heldTotalAfter": after_total,
+            "reason": note,
+            "chunks": released_chunks,
+        }
+
+    async def _held_reservation_rows(
+        self, *, tenant_id: int | None = None
+    ) -> list[tuple[RealphotosImageTask, RealphotosCreditReservation]]:
+        """FIFO：按任务 id 升序返回 held 任务与对应预留。"""
+        query = (
+            select(RealphotosImageTask, RealphotosCreditReservation)
+            .join(
+                RealphotosCreditReservation,
+                RealphotosCreditReservation.task_id == RealphotosImageTask.id,
+            )
+            .where(
+                RealphotosImageTask.deleted_at.is_(None),
+                RealphotosImageTask.credit_disposition == "held_until_tech_support",
+                RealphotosCreditReservation.deleted_at.is_(None),
+                RealphotosCreditReservation.state == "held",
+                RealphotosCreditReservation.amount > 0,
+            )
+            .order_by(RealphotosImageTask.id.asc())
+        )
+        if tenant_id is not None:
+            query = query.where(
+                RealphotosImageTask.tenant_id == int(tenant_id),
+                RealphotosCreditReservation.tenant_id == int(tenant_id),
+            )
+        rows = (await self.db.execute(query)).all()
+        return [(task, reservation) for task, reservation in rows]
+
     async def unfreeze_account(
         self,
         *,
@@ -328,14 +435,29 @@ class RealphotosOpsService:
         row.resolution_note = text
         row.resolution_outcome = result
         await self.db.flush()
-        return self._ticket_dict(row)
+        tenants, users = await self._tenant_user_name_maps(
+            tenant_ids={int(row.tenant_id)},
+            user_ids={int(row.owner_account_id)},
+        )
+        return self._ticket_dict(
+            row,
+            tenant_name=tenants.get(int(row.tenant_id)),
+            username=users.get(int(row.owner_account_id)),
+        )
 
     @staticmethod
-    def _ticket_dict(row: RealphotosSupportTicket) -> dict[str, Any]:
+    def _ticket_dict(
+        row: RealphotosSupportTicket,
+        *,
+        tenant_name: str | None = None,
+        username: str | None = None,
+    ) -> dict[str, Any]:
         return {
             "id": int(row.id),
             "tenantId": int(row.tenant_id),
+            "tenantName": tenant_name,
             "ownerAccountId": int(row.owner_account_id),
+            "username": username,
             "ticketType": row.ticket_type,
             "status": row.status,
             "reason": row.reason,
@@ -350,6 +472,24 @@ class RealphotosOpsService:
             "resolutionOutcome": getattr(row, "resolution_outcome", "") or "",
         }
 
+    async def _tenant_user_name_maps(
+        self, *, tenant_ids: set[int], user_ids: set[int]
+    ) -> tuple[dict[int, str], dict[int, str]]:
+        tenants: dict[int, str] = {}
+        users: dict[int, str] = {}
+        if tenant_ids:
+            for tenant in (
+                await self.db.execute(select(Tenant).where(Tenant.id.in_(tenant_ids)))
+            ).scalars().all():
+                tenants[int(tenant.id)] = str(tenant.name or "") or f"租户 #{int(tenant.id)}"
+        if user_ids:
+            for user in (
+                await self.db.execute(select(User).where(User.id.in_(user_ids)))
+            ).scalars().all():
+                label = str(user.username or "").strip() or str(user.nickname or "").strip()
+                users[int(user.id)] = label or f"用户 #{int(user.id)}"
+        return tenants, users
+
     async def list_tickets(self, *, actor_role_codes: set[str]) -> dict[str, Any]:
         self._require_tech_or_admin(actor_role_codes)
         rows = (
@@ -359,7 +499,21 @@ class RealphotosOpsService:
                 .order_by(RealphotosSupportTicket.id.desc())
             )
         ).scalars().all()
-        return {"items": [self._ticket_dict(row) for row in rows]}
+        tenant_ids = {int(row.tenant_id) for row in rows}
+        user_ids = {int(row.owner_account_id) for row in rows}
+        tenants, users = await self._tenant_user_name_maps(
+            tenant_ids=tenant_ids, user_ids=user_ids
+        )
+        return {
+            "items": [
+                self._ticket_dict(
+                    row,
+                    tenant_name=tenants.get(int(row.tenant_id)),
+                    username=users.get(int(row.owner_account_id)),
+                )
+                for row in rows
+            ]
+        }
 
     async def create_ticket(
         self,
@@ -388,7 +542,15 @@ class RealphotosOpsService:
         )
         self.db.add(row)
         await self.db.flush()
-        return self._ticket_dict(row)
+        tenants, users = await self._tenant_user_name_maps(
+            tenant_ids={int(tenant_id)},
+            user_ids={int(owner_account_id)},
+        )
+        return self._ticket_dict(
+            row,
+            tenant_name=tenants.get(int(tenant_id)),
+            username=users.get(int(owner_account_id)),
+        )
 
     async def list_merchant_tickets(
         self, *, tenant_id: int, owner_account_id: int
@@ -404,36 +566,78 @@ class RealphotosOpsService:
                 .order_by(RealphotosSupportTicket.id.desc())
             )
         ).scalars().all()
-        return {"items": [self._ticket_dict(row) for row in rows]}
-
-    async def list_held_credit_tasks(self, *, actor_role_codes: set[str]) -> dict[str, Any]:
-        self._require_tech_or_admin(actor_role_codes)
-        from app.capabilities.realphotos.models import RealphotosImageTask
-
-        rows = (
-            await self.db.execute(
-                select(RealphotosImageTask)
-                .where(
-                    RealphotosImageTask.deleted_at.is_(None),
-                    RealphotosImageTask.credit_disposition == "held_until_tech_support",
-                )
-                .order_by(RealphotosImageTask.id.desc())
-                .limit(100)
-            )
-        ).scalars().all()
+        tenants, users = await self._tenant_user_name_maps(
+            tenant_ids={int(tenant_id)},
+            user_ids={int(owner_account_id)},
+        )
         return {
             "items": [
-                {
-                    "taskId": int(row.id),
-                    "tenantId": int(row.tenant_id),
-                    "ownerAccountId": int(row.owner_account_id),
-                    "status": row.status,
-                    "failureClass": row.failure_class,
-                    "creditDisposition": row.credit_disposition,
-                }
+                self._ticket_dict(
+                    row,
+                    tenant_name=tenants.get(int(row.tenant_id)),
+                    username=users.get(int(row.owner_account_id)),
+                )
                 for row in rows
             ]
         }
+
+    async def list_held_credit_tasks(self, *, actor_role_codes: set[str]) -> dict[str, Any]:
+        """按租户聚合 held 冻结积分；tasks 保留逐任务明细供脚本兼容。"""
+        self._require_tech_or_admin(actor_role_codes)
+        held_rows = await self._held_reservation_rows()
+        # 列表展示仍按新→旧；FIFO 释放路径单独升序
+        held_rows_desc = sorted(held_rows, key=lambda pair: int(pair[0].id), reverse=True)[:100]
+
+        tenant_ids = {int(task.tenant_id) for task, _res in held_rows_desc}
+        user_ids = {int(task.owner_account_id) for task, _res in held_rows_desc}
+        tenants, users = await self._tenant_user_name_maps(
+            tenant_ids=tenant_ids, user_ids=user_ids
+        )
+
+        by_tenant: dict[int, dict[str, Any]] = {}
+        for task, reservation in held_rows_desc:
+            tid = int(task.tenant_id)
+            bucket = by_tenant.get(tid)
+            if bucket is None:
+                bucket = {
+                    "tenantId": tid,
+                    "tenantName": tenants.get(tid),
+                    "heldTotal": 0,
+                    "taskCount": 0,
+                    "ownerAccountIds": [],
+                    "usernames": [],
+                }
+                by_tenant[tid] = bucket
+            bucket["heldTotal"] = int(bucket["heldTotal"]) + int(reservation.amount)
+            bucket["taskCount"] = int(bucket["taskCount"]) + 1
+            oid = int(task.owner_account_id)
+            if oid not in bucket["ownerAccountIds"]:
+                bucket["ownerAccountIds"].append(oid)
+                uname = users.get(oid)
+                if uname:
+                    bucket["usernames"].append(uname)
+
+        items = []
+        for bucket in sorted(by_tenant.values(), key=lambda row: int(row["tenantId"])):
+            names = [str(n) for n in bucket.pop("usernames")]
+            bucket["accountSummary"] = "、".join(names) if names else None
+            items.append(bucket)
+
+        tasks = [
+            {
+                "taskId": int(task.id),
+                "tenantId": int(task.tenant_id),
+                "tenantName": tenants.get(int(task.tenant_id)),
+                "ownerAccountId": int(task.owner_account_id),
+                "username": users.get(int(task.owner_account_id)),
+                "heldAmount": int(reservation.amount),
+                "status": task.status,
+                "failureClass": task.failure_class,
+                "creditDisposition": task.credit_disposition,
+            }
+            for task, reservation in held_rows_desc
+        ]
+        return {"items": items, "tasks": tasks}
 
     async def list_preset_versions(self, *, actor_role_codes: set[str], code: str) -> list[dict]:
         if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
@@ -1002,21 +1206,77 @@ class RealphotosOpsService:
         )
         return {"deleted": True}
 
-    async def list_users(self, *, actor_role_codes: set[str], page: int = 1) -> dict[str, Any]:
+    async def list_tenants(self, *, actor_role_codes: set[str], page: int = 1) -> dict[str, Any]:
         self._require_tech_or_admin(actor_role_codes)
-        size = USER_PAGE_SIZE
+        size = TENANT_PAGE_SIZE
         index = max(int(page), 1)
-        rows = (
+        tenants = (
             await self.db.execute(
-                select(User).where(User.deleted_at.is_(None)).order_by(User.id.asc())
+                select(Tenant).where(Tenant.deleted_at.is_(None)).order_by(Tenant.id.asc())
             )
         ).scalars().all()
         start = (index - 1) * size
-        page_rows = rows[start : start + size]
+        page_tenants = tenants[start : start + size]
+        counts: dict[int, int] = {}
+        if page_tenants:
+            tenant_ids = [int(t.id) for t in page_tenants]
+            count_rows = (
+                await self.db.execute(
+                    select(User.tenant_id, func.count())
+                    .where(User.deleted_at.is_(None), User.tenant_id.in_(tenant_ids))
+                    .group_by(User.tenant_id)
+                )
+            ).all()
+            counts = {int(tid): int(n) for tid, n in count_rows}
         return {
             "pageSize": size,
-            "items": [{"id": int(row.id), "username": row.username, "status": int(row.status)} for row in page_rows],
+            "items": [
+                {
+                    "tenantId": int(row.id),
+                    "tenantName": str(row.name or ""),
+                    "tenantCode": str(row.code or ""),
+                    "accountCount": int(counts.get(int(row.id), 0)),
+                }
+                for row in page_tenants
+            ],
         }
+
+    async def list_users(
+        self,
+        *,
+        actor_role_codes: set[str],
+        page: int = 1,
+        tenant_id: int | None = None,
+    ) -> dict[str, Any]:
+        self._require_tech_or_admin(actor_role_codes)
+        size = USER_PAGE_SIZE
+        index = max(int(page), 1)
+        where = [User.deleted_at.is_(None)]
+        if tenant_id is not None:
+            where.append(User.tenant_id == int(tenant_id))
+        rows = (
+            await self.db.execute(select(User).where(*where).order_by(User.id.asc()))
+        ).scalars().all()
+        # Tenant-scoped account view returns the full tenant roster for the ops modal.
+        if tenant_id is not None:
+            page_rows = list(rows)
+            size = max(len(page_rows), 1) if page_rows else USER_PAGE_SIZE
+        else:
+            start = (index - 1) * size
+            page_rows = rows[start : start + size]
+        items: list[dict[str, Any]] = []
+        for row in page_rows:
+            role_codes = await self._role_codes(int(row.id), int(row.tenant_id))
+            items.append(
+                {
+                    "id": int(row.id),
+                    "username": row.username,
+                    "status": int(row.status),
+                    "tenantId": int(row.tenant_id),
+                    "roleCodes": role_codes,
+                }
+            )
+        return {"pageSize": size, "items": items}
 
     async def list_logs(self, *, actor_role_codes: set[str], page: int = 1) -> dict[str, Any]:
         self._require_tech_or_admin(actor_role_codes)
