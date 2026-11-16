@@ -6,6 +6,7 @@ import { ListSearch, matchSearchText } from '@/components/realphotos/list-search
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch } from '@/lib/api'
+import { ledgerEntryTypeLabel } from '@/lib/realphotos-labels'
 import { RECHARGE_CREDITS_BY_YUAN, RECHARGE_TIERS_YUAN } from '@/lib/realphotos-s1'
 
 type Wallet = { availableInteger?: string; reservedInteger?: string }
@@ -58,13 +59,23 @@ export default function RealphotosWalletPage() {
 
   const credits = RECHARGE_CREDITS_BY_YUAN[tier]
   const visibleLedger = useMemo(
-    () => ledger.filter((row) => matchSearchText(search, row.id, row.entryType, row.deltaAvailable, row.operatorUserId)),
+    () =>
+      ledger.filter((row) =>
+        matchSearchText(
+          search,
+          row.id,
+          row.entryType,
+          ledgerEntryTypeLabel(row.entryType),
+          row.deltaAvailable,
+          row.operatorUserId,
+        ),
+      ),
     [ledger, search],
   )
 
   return (
     <main className="space-y-6 p-6">
-      <RpPageHeader title="积分与充值" description="查看余额、提交充值档位，并核对积分流水。" />
+      <RpPageHeader title="积分与充值" />
       <p className="text-sm text-muted-foreground">{message}</p>
       <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm">
       <table className="rp-table w-full text-sm">
@@ -134,7 +145,7 @@ export default function RealphotosWalletPage() {
             {visibleLedger.map((row) => (
               <tr key={row.id}>
                 <td>{row.id}</td>
-                <td>{row.entryType}</td>
+                <td>{ledgerEntryTypeLabel(row.entryType)}</td>
                 <td>{row.deltaAvailable}</td>
                 <td>{row.operatorUserId || ''}</td>
               </tr>

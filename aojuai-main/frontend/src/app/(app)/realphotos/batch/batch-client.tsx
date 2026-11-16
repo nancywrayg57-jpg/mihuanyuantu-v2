@@ -249,7 +249,7 @@ export function RealphotosBatchClient() {
 
   return (
     <main className="space-y-6 p-6">
-      <RpPageHeader title="批量原图" description="选择设备预设后，把库内图片提交为本批处理。" />
+      <RpPageHeader title="批量原图" />
       {frozen ? (
         <p className="text-sm text-destructive">账号已冻结：可查看历史，不能提交新处理。</p>
       ) : null}

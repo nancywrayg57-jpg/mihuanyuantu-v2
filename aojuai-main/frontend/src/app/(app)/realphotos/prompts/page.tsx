@@ -78,7 +78,7 @@ export default function RealphotosPromptsPage() {
 
   return (
     <main className="space-y-6 p-6">
-      <RpPageHeader title="AI 提示词模板" description="模板供生图选用，选用不扣积分。" />
+      <RpPageHeader title="AI 提示词模板" />
       <p className="text-sm">{message}</p>
       <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
         <h2 className="text-sm font-medium">新建</h2>

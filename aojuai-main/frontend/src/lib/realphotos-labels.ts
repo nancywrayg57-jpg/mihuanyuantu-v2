@@ -65,6 +65,20 @@ export function creditDispositionLabel(value: string | null | undefined): string
   return map[raw] || unknown('积分处置', raw)
 }
 
+/** Wallet ledger entry_type codes (API English) → merchant-facing Chinese. */
+export function ledgerEntryTypeLabel(value: string | null | undefined): string {
+  const raw = String(value || '').trim()
+  if (!raw) return '—'
+  const map: Record<string, string> = {
+    admin_adjust: '管理员调账',
+    freeze: '冻结',
+    consume: '消费',
+    release: '释放',
+    recharge_confirm: '充值确认',
+  }
+  return map[raw] || unknown('流水类型', raw)
+}
+
 export function failureClassLabel(value: string | null | undefined): string {
   const raw = String(value || '').trim()
   if (!raw) return '—'
