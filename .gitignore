@@ -23,6 +23,8 @@
 !.env.*.example
 !.env.*.sample
 !.env.*.template
+# Non-secret local next-dev defaults (FE:3000 / API:38000); .env.local still overrides.
+!aojuai-main/frontend/.env.development
 
 # Private keys and local credential stores.
 *.pem

@@ -19,6 +19,8 @@ function getApiProxyTarget() {
   if (explicit && typeof explicit === 'string') return explicit.replace(/\/+$/, '')
   const backendPort = process.env.BACKEND_PORT
   if (backendPort) return `http://127.0.0.1:${backendPort}`
+  // Align with backend-proxy local default when .env.local is absent (worktrees).
+  if (process.env.NODE_ENV !== 'production') return 'http://127.0.0.1:38000'
   return ''
 }
 

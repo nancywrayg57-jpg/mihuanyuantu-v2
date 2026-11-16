@@ -24,6 +24,12 @@ function resolveBackendBaseUrl() {
     return `http://127.0.0.1:${backendPort.trim()}`
   }
 
+  // Worktrees often lack gitignored .env.local; keep local next dev usable.
+  // Production / staging must still set API_BASE_URL or BACKEND_PORT explicitly.
+  if (process.env.NODE_ENV !== 'production') {
+    return 'http://127.0.0.1:38000'
+  }
+
   throw new Error('Backend API base URL is not configured (API_BASE_URL / NEXT_PUBLIC_API_BASE_URL / BACKEND_PORT)')
 }
 
