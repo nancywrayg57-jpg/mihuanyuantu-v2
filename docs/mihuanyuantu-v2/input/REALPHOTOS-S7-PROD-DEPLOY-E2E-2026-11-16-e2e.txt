@@ -1,0 +1,106 @@
+REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16 evidence
+recorded: 2026-11-16T15:10:00+08:00 (Asia/Shanghai)
+operator: 主代理会话（Windows 工作站 → 生产机 SSH/SFTP）
+
+target_host: 47.242.28.49 (iZj6c5tqrza96o5w52qxpcZ, 内网 172.17.54.212)
+target_domain: https://exif-demo.honeybadgersoft.com
+os: Ubuntu 24.04.2 LTS / kernel 6.8 / 4 vCPU / 7270 MiB / no swap / / 49G (23% used)
+release: 3ed1088d33148fc9b382f02e08c645f8c5f71eba (origin/main tip, shallow clone)
+release_dir: /root/蜜獾原图-v2/releases/3ed1088 ; current -> symlink
+shared_dir: /root/蜜獾原图-v2/shared (0700; *.env/*.json/*.txt = 0600)
+storage_root: /root/蜜獾原图-v2/www/mhyt/{upload,phy-export,export} (pre-existing, writable)
+database: realphotos_prod @ 127.0.0.1:5432 (same-host self-built PostgreSQL 16.15, T01=B)
+db_role: realphotos_app (LOGIN, NOSUPERUSER, NOCREATEDB, NOCREATEROLE), listen_addresses=localhost
+migration: core head base_20260828_tenant_redaction_policies ; realphotos chain realphotos_0005
+runtime: Python 3.12.3 / venv SQLAlchemy 2.0.57 / Node v22.23.1 / pnpm 10.13.1 / exiftool 12.76
+units: realphotos-api, realphotos-web, realphotos-process, realphotos-notify, realphotos-cleanup (enabled + active)
+nginx: /etc/nginx/sites-available/exif-demo.honeybadgersoft.com.conf (app vhost kept as nginx-exif-demo.app.conf)
+tls: Let's Encrypt cert valid, certbot.timer enabled+active, https 200 on placeholder pre/post deploy
+
+=== markers ===
+T0_S7_CHECKLIST_PASS
+T1_INFRA_PASS
+T2_SECRETS_PASS
+T3_DEPLOY_PASS
+T4_SMOKE_PASS
+T5_PROD_E2E_ROLES_PASS
+T5_SUPPLIER_DETECTION_BLOCKED
+T6_GATE_BLOCKED
+T7_PR_OPEN_PENDING_OWNER_MERGE
+REALPHOTOS_S7_PROD_E2E_FAIL failing_item=T5-SUP-FINAL_DETECTION
+
+=== T1 infra evidence ===
+pg_lsclusters: 16 main 5432 online postgres /var/lib/postgresql/16/main
+role check: connected user=realphotos_app db=realphotos_prod ; super=false createdb=false ; listen=localhost
+tls: https=200 ; certbot.timer enabled/active ; df / 23% used
+
+=== T2 secrets evidence ===
+files: backend/.env, frontend/.env.production.local, 生产物料/realphotos-duty-secrets.json (all 0600)
+duty present (no plaintext logged): {"generation": true, "prompt_opt": true, "pre_review": true, "final_detection": true}
+admin provider-contracts: duties=[generation, prompt_opt, pre_review, import, final_detection]
+contracts_with_secret=[generation, prompt_opt, pre_review, final_detection]  (import is URL-only by design)
+GEMINI_API_KEY in backend/.env matches material section (AIza… length 39)
+
+=== T3/T4 deploy + smoke evidence ===
+systemd: api=active web=active process=active notify=active cleanup=active
+local: api_health=200 ; web_login=200 (Next 15.5.7 ready in 796ms)
+public: https_login=200 ; POST /api/v1/realphotos/auth/challenges=200 ; /health=200
+asset upload id=3 bytes=10955146 3072x4096 ; gateway read 200 same bytes
+presets after device-preset-imports/activate-all: 405
+
+=== T5 four-role production E2E (public HTTPS) ===
+PASS https_login_page | http=200
+PASS login:rp_merchant_a1 | roles=['rp_merchant']
+PASS login:rp_order_support | roles=['rp_order_support']
+PASS login:rp_tech_support | roles=['rp_tech_support']
+PASS login:rp_admin | roles=['rp_admin']
+PASS m_workspace_merchant | view=merchant
+PASS m_wallet / m_ledger / m_inbox / m_tasks_list / m_generation_caps | http=200
+PASS m_recharge_orders_staff_only | http=403 (merchant correctly denied staff listing)
+PASS m_recharge_create | http=200 (order created, not credited)
+PASS m_deny managed-users/account-logs/held-credits/provider-contracts | http=403
+PASS m_upload_asset | id=3 bytes=10955146 3072x4096
+PASS m_gateway_read | http=200 bytes matched
+PASS m_presets | n=405
+PASS m_submit_task | task=3 preset=legacy-legacy-online-713
+FAIL m_task_delivered | status=FAILED failure_class=GEMINI_TECHNICAL (see blocker)
+PASS m_generation_live | http=200 provider=aoju gpt-image-2 -> asset id=4 image/png 2585364 bytes 1536x1024
+PASS o_workspace_order_support | view=order_support
+PASS o_recharge_orders | http=200
+PASS o_reject_recharge | http=200 (rejected so no credits credited)
+PASS o_deny held-credits/managed-users/account-logs/device-preset-imports/provider-contracts | http=403
+PASS t_tickets_page20 | http=200
+PASS t_held_credits / t_managed_users / t_account_logs(20) | http=200
+PASS t_deny_provider_contracts | http=403
+PASS a_workspace_admin | view=admin
+PASS a_provider_contracts | http=200
+PASS a_detection_pass_score_read | http=200
+PASS a_device_preset_imports | http=200
+PASS a_ops_metrics | http=200
+fail_count=0 (role/permission matrix)
+
+=== supplier live sampling ===
+pre_review: dashscope qwen3-vl-plus HTTP 200 during task processing (worker log)
+generation: aoju gpt-image-2 HTTP 200, stored asset id=4 (text_to_image, 1536x1024, 2585364 bytes)
+final_detection: BLOCKED — "User location is not supported for the API use." (FAILED_PRECONDITION)
+
+=== task ledger state (production) ===
+task 1 FAILED EXIF_WRITE_FAILED (exiftool missing at the time; installed afterwards)
+task 2 FAILED GEMINI_TECHNICAL (invalid key: material parser wrote 'root' as GEMINI_API_KEY)
+task 3 FAILED GEMINI_TECHNICAL (key fixed and verified 200 from another egress; region block remains)
+credit_disposition for all three: held_until_tech_support (frozen, not consumed)
+
+=== defects fixed in this work order ===
+D1 frontend build P0: src/components/realphotos/rp-table.tsx unused type import broke `next build` (eslint no-unused-vars)
+D2 frontend build P0: src/app/(app)/schedule/page.tsx called hooks after a conditional early return (react-hooks/rules-of-hooks)
+D3 infra P0: exiftool missing on production host -> EXIF_WRITE_FAILED (installed libimage-exiftool-perl 12.76)
+D4 infra P0: SQLAlchemy 2.1 (unpinned) switched the `postgresql://` default DBAPI to psycopg3 and broke migrations -> pinned to >=2.0.36,<2.1 per pyproject contract
+D5 config P0: material markdown parser mis-picked the server credential block as the Gemini key
+
+=== public entry state after this work order ===
+rolled back to placeholder page (per work order failure protocol)
+roll-forward command: sh /root/蜜獾原图-v2/shared/06_nginx.sh
+rollback command:    sh /root/蜜獾原图-v2/shared/08_rollback.sh
+
+production_billing=false
+REALPHOTOS_S7_PROD_E2E_PASS: NOT ACHIEVED

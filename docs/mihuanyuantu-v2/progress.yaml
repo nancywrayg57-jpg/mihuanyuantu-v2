@@ -9,6 +9,47 @@ grill_session: confirmed_2026-11-04
 grill_round2: confirmed_2026-11-05
 autonomous_stages: "S0-S6"
 s7_requires_admin_confirm: true
+s7_authorized: true
+s7_authorization: "管理员工单 REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16（2026-11-16，桌面工单即授权载体）"
+s7_prod_deploy_2026_11_16:
+  work_order: REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16
+  branch: cursor/s7-prod-deploy-9973
+  baseline_main: 3ed1088
+  t0_checklist: docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md#§10.9
+  t01_decision: B_same_host_postgres_accepted_risk
+  t03_decision: formal_supplier_api_type_import
+  target_host: 47.242.28.49
+  target_domain: https://exif-demo.honeybadgersoft.com
+  storage_root: /root/蜜獾原图-v2/www/mhyt
+  status: blocked_supplier_detection_region
+  markers:
+    T0_S7_CHECKLIST_PASS: true
+    T1_INFRA_PASS: true
+    T2_SECRETS_PASS: true
+    T3_DEPLOY_PASS: true
+    T4_SMOKE_PASS: true
+    T5_PROD_E2E_ROLES_PASS: true
+    T5_SUPPLIER_DETECTION_BLOCKED: true
+    T6_GATE_BLOCKED: true
+    T7_PR_OPEN_PENDING_OWNER_MERGE: true
+    REALPHOTOS_S7_PROD_E2E_PASS: false
+    REALPHOTOS_S7_PROD_E2E_FAIL: T5-SUP-FINAL_DETECTION
+  evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-e2e.txt
+  closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md
+  blocker: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md
+  release: 3ed1088 at /root/蜜獾原图-v2/releases/3ed1088 (current symlink)
+  database: realphotos_prod @127.0.0.1:5432 same-host PG16.15, role realphotos_app non-super
+  units: realphotos-api/web/process/notify/cleanup (enabled+active)
+  public_entry: rolled_back_to_placeholder_per_failure_protocol
+  roll_forward_cmd: sh /root/蜜獾原图-v2/shared/06_nginx.sh
+  rollback_cmd: sh /root/蜜獾原图-v2/shared/08_rollback.sh
+  supplier_live_samples:
+    pre_review: dashscope qwen3-vl-plus http=200
+    generation: aoju gpt-image-2 http=200 asset_id=4 1536x1024
+    final_detection: blocked_user_location_not_supported
+  defects_fixed: [D1_rp_table_unused_type, D2_schedule_hooks_after_return, D3_exiftool_missing, D4_sqlalchemy_21_psycopg3, D5_gemini_key_parse]
+  e2e_log: /tmp/realphotos-s7-prod-e2e.log
+  production_billing: false
 s0_coding_authorized: true
 s0_pause_after_milestone: true
 
@@ -515,18 +556,23 @@ known_conflicts:
     detail: "前置校验用库内资产的软删、不属于提交账号或入库字节再次 inspect 失败，发生在按张冻结之后。PostgreSQL 部分成功的可下载张使用 detection_mode=pass，detector=fixture，任务 40 消费 10、任务 41 释放 10。这不是新的 Gemini 小样，也不代替任务 29。SQLite 单测没有代替 /tmp/s4-pg-e2e.log。"
 
 next_action:
-  owner: collaborator
-  action: "PRELAUNCH-E2E：推 cursor/prelaunch-e2e-9973 开 PR；非作者 Owner squash。禁S7；禁自评自合。"
-  work_order: "REALPHOTOS-PRELAUNCH-E2E-2026-11-15"
-  prior_work_order: "UI polish #64 merged; OPS-DESK-UX-FIX #60; OPS-DESK-UX #59"
-  branch: cursor/prelaunch-e2e-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/65"
-  tip: bcc3320
-  baseline_main: 6bb498a
-  e2e_evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-e2e.txt
-  evidence_marker: REALPHOTOS_PRELAUNCH_E2E_PASS
+  owner: admin_decision
+  action: "S7 已部署并完成四角色生产端测，但 Gemini 最终检测被出口地区策略拒绝。请管理员在 blocker 的 A/B/C/D 中选定处置（允许地区出站代理 / 迁节点 / 换检测供应商 / 暂缓），选定后由 Collaborator 续作 T5–T6。"
+  work_order: "REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16"
+  branch: cursor/s7-prod-deploy-9973
+  pr: "（本单 PR，Collaborator 推送，Owner 非作者审合）"
+  blocker: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md
+  closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md
+  production_entry: rolled_back_to_placeholder
   production_billing: false
-  r9_s7: blocked
+  prior_work_order: "REALPHOTOS-PRELAUNCH-E2E-2026-11-15（#65 merged）；UI polish #64；OPS-DESK-UX-FIX #60；OPS-DESK-UX #59"
+  prior_branch: cursor/prelaunch-e2e-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/65"
+  prior_tip: bcc3320
+  prior_baseline_main: 6bb498a
+  prior_e2e_evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-e2e.txt
+  prior_evidence_marker: REALPHOTOS_PRELAUNCH_E2E_PASS
+  r9_s7: authorized_in_progress_blocked_supplier_detection
   closed_ops_desk_ux:
     pr: 59
     status: merged

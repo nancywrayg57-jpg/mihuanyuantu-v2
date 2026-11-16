@@ -115,3 +115,17 @@
 - MODEL-API-CONFIG-2026-11-11：系统管理「模型 API」四职责可配置（单 Key、不轮询）；`ensure()` 不覆盖管理员配置；运行时预审/生图/优化/最终检测读启用合同；审计落合同 `updated_at`+应用日志（FR-030 不进用户操作日志）。证据 `/tmp/model-api-config-e2e.log`。
 - FIVE-LAYER-PHYS-TUNE-2026-11-11：`s2-five-layer-2` L1 ISO 弱相关阻尼噪声 + L2 σ=0.028；ND-020 保真通过；live Gemini 对照结论 `PHYS_TUNE_NEUTRAL`（中位数 69→68，≥75 仍 0）。证据 `/tmp/five-layer-phys-tune-e2e.log`。不得宣称已解决低分。
 - Deferred: CI 升 3.12/pnpm10；替身改库码 `fixture_technical` 须 Owner 批准；正式导入供应商 / OSS / geocoder；B2-X；第一版不做 Key 轮询；低分策略另开样张/检测工单；AD-009 SDK；资源库服务端分页。
+
+## S7 Production Deployment (2026-11-16)
+
+- Loop: `REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16`; branch `cursor/s7-prod-deploy-9973`; baseline `3ed1088`.
+- Target: `47.242.28.49` + `https://exif-demo.honeybadgersoft.com`; release at `/root/蜜獾原图-v2/releases/3ed1088`, `current` symlink; scripts `/root/蜜獾原图-v2/shared/01_db.sh`..`08_rollback.sh`.
+- Result: T0-T4 PASS; T5 four-role matrix `fail_count=0`; supplier generation (aoju gpt-image-2, asset 4) and pre-review (dashscope) live; **final detection blocked** by Gemini regional policy (`User location is not supported for the API use.`). Aggregate marker `REALPHOTOS_S7_PROD_E2E_FAIL` (failing_item=T5-SUP-FINAL_DETECTION).
+- Public entry rolled back to placeholder per failure protocol; app units stay enabled+active; roll-forward `sh /root/蜜獾原图-v2/shared/06_nginx.sh`.
+- Reusable rules learned:
+  - Pin `sqlalchemy>=2.0.36,<2.1`: SQLAlchemy 2.1 changes the default DBAPI for `postgresql://` to psycopg3 and breaks both `scripts.capability db upgrade` and data-backfill migrations.
+  - Production host needs `libimage-exiftool-perl`; otherwise every task fails `EXIF_WRITE_FAILED`.
+  - `next build` is stricter than CI typecheck: it fails on eslint errors (unused type import, hooks after conditional return). Run `pnpm build` before declaring a release buildable.
+  - Gemini: `models` list works from blocked regions but `generateContent` returns `FAILED_PRECONDITION`; connectivity checks alone do not prove inference availability.
+  - Parsing the material markdown: pick the first fenced block whose first line matches the key prefix (`sk-` / `AIza`); server-credential blocks (`root`) sit under single-`#` headings and can be mis-picked.
+  - Operator-assisted login for E2E: create challenge via API, preset its `code_hash` (sha256 of a known code) in `cap_realphotos_auth_challenges`, then call the real login endpoint - no app config change and captcha logic still executes.

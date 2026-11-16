@@ -138,13 +138,6 @@ export default function SchedulePage() {
   }, [router])
 
   const monthValue = useMemo(() => `${month.getFullYear()}-${pad2(month.getMonth() + 1)}`, [month])
-  if (blocked) {
-    return (
-      <main className="p-6 text-sm text-muted-foreground">
-        当前业务角色无权访问演示页，已离开日程演示。
-      </main>
-    )
-  }
 
   const gridDays = useMemo(() => {
     const first = startOfMonth(month)
@@ -171,6 +164,14 @@ export default function SchedulePage() {
   const [fStart, setFStart] = useState('')
   const [fEnd, setFEnd] = useState('')
   const [fRemark, setFRemark] = useState('')
+
+  if (blocked) {
+    return (
+      <main className="p-6 text-sm text-muted-foreground">
+        当前业务角色无权访问演示页，已离开日程演示。
+      </main>
+    )
+  }
 
   const openCreate = (date: string) => {
     setDialogMode('create')

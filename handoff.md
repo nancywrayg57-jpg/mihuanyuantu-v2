@@ -7,26 +7,34 @@
 
 | 项 | 值 |
 | --- | --- |
-| 当前工单 | `REALPHOTOS-PRELAUNCH-E2E-2026-11-15` |
-| 分支 | `cursor/prelaunch-e2e-9973`（worktree `.worktrees/prelaunch-e2e`） |
-| 基线 | `origin/main` @ `6bb498a`（含 #64 polish） |
-| 交付 | 上线前四角色全量端测 + 已知回归复测 + §11 门槛核对（非部署） |
-| 验证 | `/tmp/realphotos-prelaunch-e2e.log` 含 `T1`–`T3` PASS；证据入库见 input/ |
-| 阶段红线 | **禁止开 S7**；禁止生产收费宣称；不改 PASS_SCORE；作者不得自合 |
+| 当前工单 | `REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16` |
+| 分支 | `cursor/s7-prod-deploy-9973` |
+| 基线 | `origin/main` @ `3ed1088`（含预发端测 #65、API 型 URL 导入 #67） |
+| 生产目标 | `47.242.28.49` · `https://exif-demo.honeybadgersoft.com` |
+| T01 / T03 | B 同机 PostgreSQL（已接受单点） / 正式供应商 API 型导入 |
+| 已达成 | T0–T4 PASS；T5 四角色矩阵 `fail_count=0`；生成/预审真供应商抽样 PASS |
+| **阻塞** | **最终检测被 Gemini 地区策略拒绝**：`User location is not supported for the API use.` |
+| 生产入口 | 已按失败协议回滚占位页；五个 systemd 单元 enabled+active |
+| 收费 | `production_billing=false` |
 
 ## 2. 证据指针
 
-- 工单副本：`docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15.md`
-- 端测摘要：`docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-e2e.txt`
-- 门槛核对：`docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-closeout.md`
-- 运行日志：`/tmp/realphotos-prelaunch-e2e.log`
+- 端测证据：`docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-e2e.txt`
+- 收口与 T0–T7 状态：`docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md`
+- 阻塞说明与处置选项：`docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md`
+- 运行日志：`/tmp/realphotos-s7-prod-e2e.log`（生产机）；服务日志 `/var/log/realphotos/*.log`
+- 生产机部署脚本：`/root/蜜獾原图-v2/shared/01_db.sh` … `08_rollback.sh`
 
 ## 3. 风险 / 勿做
 
-- S7 清单未齐；本 PR 不含 Tag / 真部署 / 改分支保护
-- FE 冷启动偶发短超时；复测用更长超时
-- 双账号：禁自评自合；禁打 Tag / 真部署
+- **检测未通**：Gemini 拒绝香港/大陆出口；解决前不得宣称「检测通过」或开收费。
+- 三条历史任务（1/2/3）均为技术失败，各 10 积分 `held_until_tech_support` 冻结，未擅自释放。
+- 验收账号仍是种子口令，上线前须改强口令。
+- 无 Swap、无自动告警；备份仅手工规程。
+- 双账号：禁自评自合；Collaborator 不打 Tag、不触发生产部署。
 
 ## 4. 下一步
 
-Collaborator 推分支并开/更新 PR；Owner（非作者）审合。禁 S7。
+1. 管理员决策出口方案（允许地区代理 / 迁节点 / 换检测供应商 / 暂缓）。
+2. 方案落地后：注入可达基址或代理 → `systemctl restart realphotos-api realphotos-process` → `sh /root/蜜獾原图-v2/shared/06_nginx.sh` 切回 → 复跑检测抽样 → 再走 T5/T6。
+3. 通过后 Owner（非作者）审合 PR 并打 `v2.M.P`。

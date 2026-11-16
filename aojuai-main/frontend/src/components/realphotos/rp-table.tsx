@@ -1,6 +1,6 @@
 'use client'
 
-import type { HTMLAttributes, ReactNode, TdHTMLAttributes, ThHTMLAttributes } from 'react'
+import type { HTMLAttributes, ReactNode, ThHTMLAttributes } from 'react'
 
 import { cn } from '@/lib/utils'
 
