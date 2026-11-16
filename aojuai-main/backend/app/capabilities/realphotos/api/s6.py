@@ -240,10 +240,11 @@ async def list_tickets(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
+    page: int = 1,
     _: None = Depends(PermissionChecker([TECH_DESK_READ])),
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
-    payload = await RealphotosOpsService(db).list_tickets(actor_role_codes=roles)
+    payload = await RealphotosOpsService(db).list_tickets(actor_role_codes=roles, page=page)
     return SuccessResponse(data=payload)
 
 
@@ -289,11 +290,13 @@ async def list_my_tickets(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
+    page: int = 1,
     _: None = Depends(PermissionChecker([WORKSPACE_READ])),
 ) -> dict[str, Any]:
     payload = await RealphotosOpsService(db).list_merchant_tickets(
         tenant_id=int(tenant_ctx.tenant_id),
         owner_account_id=int(current_user.id),
+        page=page,
     )
     return SuccessResponse(data=payload)
 

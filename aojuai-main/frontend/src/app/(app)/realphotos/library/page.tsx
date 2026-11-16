@@ -81,7 +81,9 @@ export default function RealphotosLibraryPage() {
         if (cancelled) return
         if (!item.objectKey) continue
         try {
-          const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${item.objectKey}`)
+          const blob = await apiFetchBlob(
+            `/api/v1/realphotos/gateway/objects/${item.objectKey.split('/').map(encodeURIComponent).join('/')}`,
+          )
           if (cancelled) return
           const url = URL.createObjectURL(blob)
           created.push(url)
@@ -167,7 +169,9 @@ export default function RealphotosLibraryPage() {
       return
     }
     try {
-      const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${item.objectKey}`)
+      const blob = await apiFetchBlob(
+        `/api/v1/realphotos/gateway/objects/${item.objectKey.split('/').map(encodeURIComponent).join('/')}`,
+      )
       const ext = extensionForContentType(item.contentType || blob.type)
       const base = item.downloadBasename || item.displayName || `${item.originKind}_${item.id}`
       const fileName = allocateDownloadFileName(base, ext, usedNames)
@@ -256,7 +260,7 @@ export default function RealphotosLibraryPage() {
 
   return (
     <main className="space-y-6 p-6">
-      <RpPageHeader title="图片资源" description="入库、勾选、去处理，下载经受控网关。" />
+      <RpPageHeader title="图片资源" />
       <p className="text-sm">{message}</p>
       {frozen ? (
         <p className="text-sm text-amber-800">

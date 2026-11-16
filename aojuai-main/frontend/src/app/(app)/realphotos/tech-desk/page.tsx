@@ -54,6 +54,9 @@ export default function RealphotosTechDeskPage() {
   const [heldPage, setHeldPage] = useState(1)
   const [heldTotal, setHeldTotal] = useState(0)
   const [heldPageSize, setHeldPageSize] = useState(20)
+  const [ticketPage, setTicketPage] = useState(1)
+  const [ticketTotal, setTicketTotal] = useState(0)
+  const [ticketPageSize, setTicketPageSize] = useState(20)
   const [reason, setReason] = useState('')
   const [appealReason, setAppealReason] = useState('')
   const [resolveNote, setResolveNote] = useState('')
@@ -67,9 +70,17 @@ export default function RealphotosTechDeskPage() {
   const [canAppeal, setCanAppeal] = useState(false)
   const [deskTab, setDeskTab] = useState<DeskTab>('appeals')
 
-  async function loadTickets() {
-    const data = await apiFetch<{ items: Ticket[] }>('/api/v1/realphotos/support-tickets')
+  async function loadTickets(page = ticketPage) {
+    const data = await apiFetch<{
+      items: Ticket[]
+      page?: number
+      pageSize?: number
+      total?: number
+    }>(`/api/v1/realphotos/support-tickets?page=${page}`)
     setItems(Array.isArray(data?.items) ? data.items : [])
+    setTicketPage(Number(data?.page) || page)
+    setTicketPageSize(Number(data?.pageSize) || 20)
+    setTicketTotal(Number(data?.total) || (Array.isArray(data?.items) ? data.items.length : 0))
     setCanUnfreeze(true)
   }
 
@@ -87,20 +98,28 @@ export default function RealphotosTechDeskPage() {
   }
 
   async function loadDesk() {
-    await loadTickets()
+    await loadTickets(ticketPage)
     await loadHeld(heldPage)
   }
 
-  async function loadMine() {
-    const data = await apiFetch<{ items: Ticket[] }>('/api/v1/realphotos/my-support-tickets')
+  async function loadMine(page = ticketPage) {
+    const data = await apiFetch<{
+      items: Ticket[]
+      page?: number
+      pageSize?: number
+      total?: number
+    }>(`/api/v1/realphotos/my-support-tickets?page=${page}`)
     setMyItems(Array.isArray(data?.items) ? data.items : [])
+    setTicketPage(Number(data?.page) || page)
+    setTicketPageSize(Number(data?.pageSize) || 20)
+    setTicketTotal(Number(data?.total) || (Array.isArray(data?.items) ? data.items.length : 0))
     setCanAppeal(true)
   }
 
   useEffect(() => {
     void loadDesk().catch(() => {
       setCanUnfreeze(false)
-      void loadMine().catch((error: unknown) =>
+      void loadMine(1).catch((error: unknown) =>
         setMessage(error instanceof ApiError ? error.message : '工单读取失败'),
       )
     })
@@ -115,6 +134,22 @@ export default function RealphotosTechDeskPage() {
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [heldPage, deskTab, canUnfreeze])
+
+  useEffect(() => {
+    if (deskTab !== 'appeals' && canUnfreeze) return
+    if (canUnfreeze) {
+      void loadTickets(ticketPage).catch((error: unknown) =>
+        setMessage(error instanceof ApiError ? error.message : '工单读取失败'),
+      )
+      return
+    }
+    if (canAppeal) {
+      void loadMine(ticketPage).catch((error: unknown) =>
+        setMessage(error instanceof ApiError ? error.message : '工单读取失败'),
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticketPage, deskTab, canUnfreeze, canAppeal])
 
   const source = canUnfreeze ? items : myItems
   const visible = useMemo(
@@ -141,6 +176,7 @@ export default function RealphotosTechDeskPage() {
   )
   const openCount = source.filter((item) => item.status === 'open').length
   const heldPageCount = Math.max(1, Math.ceil(heldTotal / Math.max(heldPageSize, 1)))
+  const ticketPageCount = Math.max(1, Math.ceil(ticketTotal / Math.max(ticketPageSize, 1)))
 
   function openHandle(item: Ticket) {
     setDetail(item)
@@ -264,7 +300,7 @@ export default function RealphotosTechDeskPage() {
 
   return (
     <main className="space-y-4 p-6">
-      <RpPageHeader title="工单管理" description="处理账号申诉，并查看技术失败导致的积分冻结。" />
+      <RpPageHeader title="工单管理" />
       <p className="text-sm">
         {message}
         {canUnfreeze ? ` · 待处理 open=${openCount}` : ''}
@@ -348,6 +384,27 @@ export default function RealphotosTechDeskPage() {
               )}
             </tbody>
           </table>
+          <div className="flex items-center gap-2 text-sm">
+            <button
+              className="rp-btn border px-2 py-1"
+              type="button"
+              disabled={ticketPage <= 1}
+              onClick={() => setTicketPage((p) => Math.max(1, p - 1))}
+            >
+              上一页
+            </button>
+            <span>
+              第 {ticketPage} / {ticketPageCount} 页 · 共 {ticketTotal} 条 · 每页 {ticketPageSize}
+            </span>
+            <button
+              className="rp-btn border px-2 py-1"
+              type="button"
+              disabled={ticketPage >= ticketPageCount}
+              onClick={() => setTicketPage((p) => p + 1)}
+            >
+              下一页
+            </button>
+          </div>
         </section>
       ) : null}
 

@@ -139,6 +139,16 @@ export function RealphotosSystemClient() {
     return tech && !isAdmin && !merchant
   }, [isAdmin, roles])
   const canEditRedo = !isTechOnly
+  // Model API + detection baseline are admin-only; hide entry points for other roles.
+  const canManageModels = isAdmin
+  const canManageBaseline = isAdmin
+
+  useEffect(() => {
+    if (!roles.length) return
+    if ((tab === 'models' && !canManageModels) || (tab === 'baseline' && !canManageBaseline)) {
+      setTab('redo')
+    }
+  }, [roles, tab, canManageModels, canManageBaseline])
 
   const shownModels = useMemo(() => {
     if (modelId && !modelOptions.includes(modelId)) return [modelId, ...modelOptions]
@@ -376,37 +386,33 @@ export function RealphotosSystemClient() {
 
   return (
     <main className="space-y-6 p-6">
-      <RpPageHeader title="系统管理" description="渠道登记、模型列表与检测基线说明。" />
+      <RpPageHeader title="系统管理" />
       <p className="text-sm">{message}</p>
       <div className="flex flex-wrap gap-2 text-sm">
         <button className={`rp-btn border px-3 py-1 ${tab === 'redo' ? 'bg-muted' : ''}`} type="button" onClick={() => setTab('redo')}>
           自动重做
         </button>
-        <button
-          className={`rp-btn border px-3 py-1 ${tab === 'models' ? 'bg-muted' : ''}`}
-          type="button"
-          onClick={() => setTab('models')}
-          disabled={!isAdmin}
-        >
-          模型 API
-        </button>
-        <button
-          className={`rp-btn border px-3 py-1 ${tab === 'baseline' ? 'bg-muted' : ''}`}
-          type="button"
-          onClick={() => setTab('baseline')}
-          disabled={!isAdmin}
-        >
-          检测基线
-        </button>
+        {canManageModels ? (
+          <button
+            className={`rp-btn border px-3 py-1 ${tab === 'models' ? 'bg-muted' : ''}`}
+            type="button"
+            onClick={() => setTab('models')}
+          >
+            模型 API
+          </button>
+        ) : null}
+        {canManageBaseline ? (
+          <button
+            className={`rp-btn border px-3 py-1 ${tab === 'baseline' ? 'bg-muted' : ''}`}
+            type="button"
+            onClick={() => setTab('baseline')}
+          >
+            检测基线
+          </button>
+        ) : null}
       </div>
 
-      {tab === 'baseline' ? (
-        isAdmin ? (
-          <DetectionPassScoreCard />
-        ) : (
-          <p className="text-sm">仅平台管理员可查看与修改检测基线。</p>
-        )
-      ) : null}
+      {tab === 'baseline' && canManageBaseline ? <DetectionPassScoreCard /> : null}
 
       {tab === 'redo' ? (
         <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3 text-sm">
@@ -457,12 +463,8 @@ export function RealphotosSystemClient() {
         </section>
       ) : null}
 
-      {tab === 'models' ? (
+      {tab === 'models' && canManageModels ? (
         <section className="space-y-5 text-sm">
-          {!isAdmin ? (
-            <p>仅平台管理员可配置模型 API。</p>
-          ) : (
-            <>
               <div className="rp-card rounded-xl border border-border bg-card shadow-sm space-y-3 p-4">
                 <h2 className="font-medium">大模型 API Key 配置与管理</h2>
                 <div className="grid gap-3 md:grid-cols-2">
@@ -624,8 +626,6 @@ export function RealphotosSystemClient() {
                   </tbody>
                 </table>
               </div>
-            </>
-          )}
         </section>
       ) : null}
     </main>

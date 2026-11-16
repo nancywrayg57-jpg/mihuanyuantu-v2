@@ -371,8 +371,13 @@ class RealphotosGrowthService:
         page: int = 1,
         page_size: int = 20,
         origin_kind: str | None = None,
+        asset_ids: list[int] | None = None,
     ) -> tuple[list[RealphotosAsset], int, int, int]:
-        """FR-028：服务端分页。返回 (items, total, page, page_size)。"""
+        """FR-028：服务端分页。返回 (items, total, page, page_size)。
+
+        When ``asset_ids`` is set, return those rows (owner-scoped) without page
+        slicing so batch/library handoff can resolve objectKey for selected IDs.
+        """
         from app.capabilities.realphotos.constants import ASSET_PAGE_SIZE_DEFAULT, ASSET_PAGE_SIZE_MAX
 
         page_n = max(1, int(page or 1))
@@ -389,6 +394,19 @@ class RealphotosGrowthService:
         kind = str(origin_kind or "").strip()
         if kind and kind != "all":
             filters.append(RealphotosAsset.origin_kind == kind)
+        id_list = [int(x) for x in (asset_ids or []) if str(x).strip()]
+        if id_list:
+            # Cap to batch handoff size; preserve request order after fetch.
+            id_list = id_list[: ASSET_PAGE_SIZE_MAX]
+            filters.append(RealphotosAsset.id.in_(id_list))
+            rows = list(
+                (
+                    await self.db.execute(select(RealphotosAsset).where(*filters))
+                ).scalars().all()
+            )
+            by_id = {int(row.id): row for row in rows}
+            ordered = [by_id[i] for i in id_list if i in by_id]
+            return ordered, len(ordered), 1, max(len(ordered), 1)
         total = int(
             await self.db.scalar(select(func.count()).select_from(RealphotosAsset).where(*filters)) or 0
         )

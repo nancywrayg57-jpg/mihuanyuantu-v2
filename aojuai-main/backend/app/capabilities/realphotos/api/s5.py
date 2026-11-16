@@ -101,6 +101,7 @@ async def list_assets(
     page: int = Query(1, ge=1),
     page_size: int | None = Query(None, alias="pageSize"),
     origin_kind: str | None = Query(None, alias="originKind"),
+    ids: str | None = Query(None, description="Comma-separated asset ids for batch handoff"),
     _: None = Depends(PermissionChecker([WORKSPACE_READ])),
 ) -> dict[str, Any]:
     """FR-028：服务端分页；兼容旧客户端省略 page 时仍返回本页 items + total。"""
@@ -113,12 +114,23 @@ async def list_assets(
     )
     from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService, pixel_identity
 
+    asset_ids: list[int] = []
+    for part in str(ids or "").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        try:
+            asset_ids.append(int(part))
+        except ValueError:
+            continue
+
     rows, total, page_n, size = await RealphotosGrowthService(db).list_assets_page(
         tenant_id=int(tenant_ctx.tenant_id),
         owner_account_id=int(current_user.id),
         page=int(page or 1),
         page_size=int(page_size) if page_size is not None else ASSET_PAGE_SIZE_DEFAULT,
         origin_kind=origin_kind,
+        asset_ids=asset_ids or None,
     )
     locked_ids = await RealphotosOpsService(db).locked_identities(
         tenant_id=int(tenant_ctx.tenant_id),

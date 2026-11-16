@@ -137,7 +137,7 @@ def resolve_gps(*, preset: dict[str, Any], seed: int) -> dict[str, Any]:
             return {
                 "action": "skip",
                 "mode": mode,
-                "reason": "fixed 无坐标：已按旧版跳过 GPS 写入（不伪造、不失败）",
+                "reason": "固定坐标未填写，已跳过 GPS 写入",
             }
         if not (-90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0):
             return {"action": "fail", "mode": mode, "reason": "fixed 坐标超出合法范围"}
