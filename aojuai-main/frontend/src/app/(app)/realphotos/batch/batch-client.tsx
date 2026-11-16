@@ -74,25 +74,29 @@ export function RealphotosBatchClient() {
     async function loadLibraryThumbs() {
       let assets: { id: string; objectKey?: string }[] = []
       try {
+        // Resolve selected ids directly — default assets pageSize=20 would miss older picks.
         const data = await apiFetch<{ items: { id: string; objectKey?: string }[] }>(
-          '/api/v1/realphotos/assets',
+          `/api/v1/realphotos/assets?ids=${encodeURIComponent(ids.join(','))}`,
         )
         assets = data.items || []
       } catch {
         if (!cancelled) setNotice((prev) => `${prev}；资源列表加载失败，缩略图暂不可用`)
         return
       }
-      const byId = new Map(assets.map((item) => [item.id, item]))
+      const byId = new Map(assets.map((item) => [String(item.id), item]))
+      let missing = 0
       let thumbFail = 0
       for (const id of ids) {
         if (cancelled) return
-        const objectKey = byId.get(id)?.objectKey
+        const objectKey = byId.get(String(id))?.objectKey
         if (!objectKey) {
-          thumbFail += 1
+          missing += 1
           continue
         }
         try {
-          const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${objectKey}`)
+          const blob = await apiFetchBlob(
+            `/api/v1/realphotos/gateway/objects/${objectKey.split('/').map(encodeURIComponent).join('/')}`,
+          )
           if (cancelled) return
           const url = URL.createObjectURL(blob)
           created.push(url)
@@ -104,8 +108,12 @@ export function RealphotosBatchClient() {
           thumbFail += 1
         }
       }
-      if (!cancelled && thumbFail > 0) {
-        setNotice((prev) => `${prev}；缩略图加载失败 ${thumbFail} 张（不阻断提交）`)
+      if (!cancelled && (missing > 0 || thumbFail > 0)) {
+        const parts = [
+          missing > 0 ? `未找到资源 ${missing} 张` : '',
+          thumbFail > 0 ? `缩略图加载失败 ${thumbFail} 张` : '',
+        ].filter(Boolean)
+        setNotice((prev) => `${prev}；${parts.join('，')}（文件缺失时提交也会失败）`)
       }
     }
 

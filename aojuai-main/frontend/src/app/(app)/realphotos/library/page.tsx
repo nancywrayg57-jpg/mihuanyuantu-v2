@@ -81,7 +81,9 @@ export default function RealphotosLibraryPage() {
         if (cancelled) return
         if (!item.objectKey) continue
         try {
-          const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${item.objectKey}`)
+          const blob = await apiFetchBlob(
+            `/api/v1/realphotos/gateway/objects/${item.objectKey.split('/').map(encodeURIComponent).join('/')}`,
+          )
           if (cancelled) return
           const url = URL.createObjectURL(blob)
           created.push(url)
@@ -167,7 +169,9 @@ export default function RealphotosLibraryPage() {
       return
     }
     try {
-      const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${item.objectKey}`)
+      const blob = await apiFetchBlob(
+        `/api/v1/realphotos/gateway/objects/${item.objectKey.split('/').map(encodeURIComponent).join('/')}`,
+      )
       const ext = extensionForContentType(item.contentType || blob.type)
       const base = item.downloadBasename || item.displayName || `${item.originKind}_${item.id}`
       const fileName = allocateDownloadFileName(base, ext, usedNames)
