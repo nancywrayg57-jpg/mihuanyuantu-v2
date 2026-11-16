@@ -71,6 +71,8 @@ sh /root/蜜獾原图-v2/shared/06_nginx.sh
 
 **管理员已选定 A（出站代理）**：应用侧代理支持已交付为 `09_proxy.sh`（systemd drop-in + `NO_PROXY` 保留国内供应商直连），待管理员提供允许地区代理地址后 `apply` 即可；详见 blocker §3.1。
 
+运维承接：日常启停 / 切流 / 回滚 / 代理 / 密钥轮换 / 故障对照 / 备份规程见 [`S7-生产运维手册-2026-11-16.md`](S7-生产运维手册-2026-11-16.md)。
+
 五个 systemd 单元保持 `enabled` 且 `active`；`current` 仍指向 `releases/3ed1088`，该目录已 `git fetch` 并对齐分支 tip `0f5fd1c`（工作树干净）；两处 P0 修复文件的 sha256 与构建时源码一致，`.next/BUILD_ID` 保留，无需重建。
 
 ## 残余风险

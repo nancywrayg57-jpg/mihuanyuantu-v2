@@ -23,6 +23,7 @@
 - 收口与 T0–T7 状态：`docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md`
 - 阻塞说明与处置选项：`docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md`
 - 运行日志：`/tmp/realphotos-s7-prod-e2e.log`（生产机）；服务日志 `/var/log/realphotos/*.log`
+- **生产运维手册**：[`S7-生产运维手册-2026-11-16.md`](docs/mihuanyuantu-v2/S7-生产运维手册-2026-11-16.md)（启停 / 切流 / 回滚 / 代理 / 密钥 / 故障 / 备份）
 - 生产机部署脚本：`/root/蜜獾原图-v2/shared/01_db.sh` … `08_rollback.sh`
 
 ## 3. 风险 / 勿做
