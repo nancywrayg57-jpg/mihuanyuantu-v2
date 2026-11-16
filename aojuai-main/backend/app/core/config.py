@@ -336,8 +336,10 @@ class Settings(BaseSettings):
     REALPHOTOS_OSS_ACCESS_KEY_ID: str = ""
     REALPHOTOS_OSS_ACCESS_KEY_SECRET: str = ""
     REALPHOTOS_OSS_PREFIX: str = ""
-    # MODULE-A-GAP: admin-authorized staging image-host import (formalSupplier stays false).
+    # Legacy staging gate (no longer required for import; kept for env compatibility).
     REALPHOTOS_IMPORT_STAGING: str = ""
+    # Default base URL for duty=import when contract/env seed needs a fallback.
+    REALPHOTOS_IMPORT_BASE_URL: str = "http://47.85.47.252"
     # duty|model_id → {unit_cost, currency, unit_name}; empty = no known unit price.
     REALPHOTOS_UNIT_COSTS_JSON: str = ""
     # E2E only: force notify outbox deliver to fail for the first N attempts.
