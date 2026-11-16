@@ -287,7 +287,7 @@ export default function RealphotosUsersPage() {
 
   return (
     <main className="space-y-4 p-6">
-      <RpPageHeader title="用户管理" description="按租户查看账号；账号级变更走「操作」弹窗。" />
+      <RpPageHeader title="用户管理" />
       <p className="text-sm">{message || (loading ? '加载中…' : '')}</p>
       <div className="rp-filter">
         <ListSearch value={search} placeholder="租户名 / 编码 / 编号" onChange={setSearch} />

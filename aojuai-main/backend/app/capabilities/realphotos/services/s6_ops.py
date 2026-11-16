@@ -49,6 +49,7 @@ UNCONFIGURED_PROVIDER = "unconfigured"
 USER_PAGE_SIZE = 10
 TENANT_PAGE_SIZE = 20
 HELD_PAGE_SIZE = 20
+TICKET_PAGE_SIZE = 20
 LOG_PAGE_SIZE = 20
 GPS_MODES = {"none", "fixed", "random_by_scene"}
 # PRESET-BULK-IMPORT B1: stop injecting Honeybadger s1-* into merchant enabled list.
@@ -491,8 +492,12 @@ class RealphotosOpsService:
                 users[int(user.id)] = label or f"用户 #{int(user.id)}"
         return tenants, users
 
-    async def list_tickets(self, *, actor_role_codes: set[str]) -> dict[str, Any]:
+    async def list_tickets(
+        self, *, actor_role_codes: set[str], page: int = 1
+    ) -> dict[str, Any]:
         self._require_tech_or_admin(actor_role_codes)
+        size = TICKET_PAGE_SIZE
+        index = max(int(page), 1)
         rows = (
             await self.db.execute(
                 select(RealphotosSupportTicket)
@@ -500,20 +505,26 @@ class RealphotosOpsService:
                 .order_by(RealphotosSupportTicket.id.desc())
             )
         ).scalars().all()
-        tenant_ids = {int(row.tenant_id) for row in rows}
-        user_ids = {int(row.owner_account_id) for row in rows}
+        total = len(rows)
+        start = (index - 1) * size
+        page_rows = rows[start : start + size]
+        tenant_ids = {int(row.tenant_id) for row in page_rows}
+        user_ids = {int(row.owner_account_id) for row in page_rows}
         tenants, users = await self._tenant_user_name_maps(
             tenant_ids=tenant_ids, user_ids=user_ids
         )
         return {
+            "page": index,
+            "pageSize": size,
+            "total": total,
             "items": [
                 self._ticket_dict(
                     row,
                     tenant_name=tenants.get(int(row.tenant_id)),
                     username=users.get(int(row.owner_account_id)),
                 )
-                for row in rows
-            ]
+                for row in page_rows
+            ],
         }
 
     async def create_ticket(
@@ -554,8 +565,10 @@ class RealphotosOpsService:
         )
 
     async def list_merchant_tickets(
-        self, *, tenant_id: int, owner_account_id: int
+        self, *, tenant_id: int, owner_account_id: int, page: int = 1
     ) -> dict[str, Any]:
+        size = TICKET_PAGE_SIZE
+        index = max(int(page), 1)
         rows = (
             await self.db.execute(
                 select(RealphotosSupportTicket)
@@ -567,11 +580,17 @@ class RealphotosOpsService:
                 .order_by(RealphotosSupportTicket.id.desc())
             )
         ).scalars().all()
+        total = len(rows)
+        start = (index - 1) * size
+        rows = rows[start : start + size]
         tenants, users = await self._tenant_user_name_maps(
             tenant_ids={int(tenant_id)},
             user_ids={int(owner_account_id)},
         )
         return {
+            "page": index,
+            "pageSize": size,
+            "total": total,
             "items": [
                 self._ticket_dict(
                     row,
@@ -579,7 +598,7 @@ class RealphotosOpsService:
                     username=users.get(int(row.owner_account_id)),
                 )
                 for row in rows
-            ]
+            ],
         }
 
     async def list_held_credit_tasks(
@@ -1427,7 +1446,9 @@ class RealphotosOpsService:
             return ACCOUNT_LOG_RESULT_ZH.get(key, f"未知（{raw or '空'}）")
 
         return {
+            "page": index,
             "pageSize": size,
+            "total": len(rows),
             "items": [
                 {
                     "id": int(row.id),
