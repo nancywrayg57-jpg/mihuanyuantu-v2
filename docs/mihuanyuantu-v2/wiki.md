@@ -137,3 +137,9 @@
 - Lesson: a "subscription URL" (`/api/sub/<token>`, text/yaml with `proxies:`) is a Clash config, not a proxy endpoint - you need a client (Xray/sing-box) to turn it into a local HTTP/SOCKS port. Keep the token in a 0600 file on the host, never in the repo or logs.
 - Lesson: `detection_not_passed` surfaces as task status FAILED with `output_object_key` set and credit released - business rejection, not infrastructure failure. Do not read it as a technical error.
 - Residual: the node name carries an expiry (2026-12-06); replace with an owned SG/JP proxy before then (closeout R7).
+
+### Detector model switch + env incident (2026-11-17)
+
+- Switched `final_detection` to `gemini-2.5-flash` through the admin contract API (`POST /provider-contracts`, `{duty, modelId}` only - omitted fields keep existing provider/baseUrl/enabled), then synced `GEMINI_MODEL` in `backend/.env` and restarted api/process. Verified with a real task: `detector=gemini-2.5-flash`, `total_score=60`.
+- `gemini-2.5-pro` is rejected by Google for new users ("no longer available to new users") - probe before switching.
+- Incident + lesson: never rewrite `.env` with PowerShell `Set-Content -NoNewline`; it collapsed 44 lines into one, so pydantic fell back to defaults. Repair path: rebuild from authoritative sources (`shared/db_password.txt`, `shared/proxy_secret.txt`, duty-secrets json, JWT from the wreckage by 64-hex match) and verify with a DB-backed endpoint (`POST /auth/challenges` -> 200), not just `/health`.

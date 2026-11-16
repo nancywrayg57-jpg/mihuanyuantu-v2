@@ -69,6 +69,20 @@
 - 订阅 token 只存于生产机 `/root/蜜獾原图-v2/shared/`（0600），**未入库**。
 - 节点名称自带到期日 **2026-12-06** → 必须在此之前替换为自有 SG/JP 代理，否则检测链路中断（见 R7）。
 
+## 变更记录
+
+### 2026-11-17 · 最终检测模型切换为 `gemini-2.5-flash`
+
+| 项 | 值 |
+| --- | --- |
+| 变更前 | `gemini-3.1-pro-preview`（task 4 实测 52 分未通过） |
+| 变更后 | `gemini-2.5-flash`（task 5 实测 60 分未通过） |
+| 入口 | 管理端合同接口 `POST /api/v1/realphotos/provider-contracts`（`duty=final_detection`，`modelId=gemini-2.5-flash`），provider / baseUrl / enabled 保持不变 |
+| 配置同步 | `backend/.env` 的 `GEMINI_MODEL` 同步为 `gemini-2.5-flash`（仅作 seed 回退），api/process 已重启 |
+| 可用性预检 | 经出口代理直接调用 `models/gemini-2.5-flash:generateContent` → 200；`gemini-2.5-pro` 返回 404「no longer available to new users」，故未选 |
+| 端到端复核 | task 5：`detector=gemini-2.5-flash`、`total_score=60`、`passed=false`、输出 12,359,870 B、积分 `released_detection_not_passed` |
+| 回滚 | 同一接口把 `modelId` 改回 `gemini-3.1-pro-preview` 即可 |
+
 ## 回滚与续作
 
 ```sh

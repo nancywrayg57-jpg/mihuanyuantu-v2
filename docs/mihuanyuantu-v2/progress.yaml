@@ -36,6 +36,7 @@ s7_prod_deploy_2026_11_16:
     T6_GATE_PASS: true
     T7_PR_PASS: true
     REALPHOTOS_S7_PROD_E2E_PASS: true
+  final_detection_model: gemini-2.5-flash (2026-11-17 switch; task5 detector verified)
   evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-e2e.txt
   closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md
   blocker: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md

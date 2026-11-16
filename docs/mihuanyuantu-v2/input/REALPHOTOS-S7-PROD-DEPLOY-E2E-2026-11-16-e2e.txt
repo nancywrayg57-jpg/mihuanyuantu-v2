@@ -108,3 +108,11 @@ serving the application (not placeholder); rollback available: sh /root/蜜獾�
 
 production_billing=false
 REALPHOTOS_S7_PROD_E2E_PASS
+
+=== model switch 2026-11-17 ===
+contract: final_detection gemini-3.1-pro-preview -> gemini-2.5-flash (admin provider-contracts API; provider/baseUrl/enabled unchanged)
+env: GEMINI_MODEL=gemini-2.5-flash (seed fallback); realphotos-api + realphotos-process restarted
+precheck: models/gemini-2.5-flash:generateContent -> 200 via egress proxy; gemini-2.5-pro -> 404 (no longer available to new users)
+task 5: detector=gemini-2.5-flash total_score=60 passed=false output_byte_size=12359870 credit=released_detection_not_passed
+task 4 (before): detector=gemini-3.1-pro-preview total_score=52 passed=false output_byte_size=12370703
+rollback: same API with modelId=gemini-3.1-pro-preview
