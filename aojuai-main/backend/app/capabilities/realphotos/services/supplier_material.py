@@ -21,7 +21,7 @@ def supplier_live_enabled() -> bool:
 
 
 def import_staging_enabled() -> bool:
-    """Admin work-order gate for temporary image-host联调. Not ND-012 formal closure."""
+    """Legacy env flag. Import enablement is now duty=import contract enabled + base_url."""
     return str(settings.REALPHOTOS_IMPORT_STAGING or "").strip().lower() in {
         "1",
         "true",

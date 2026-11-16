@@ -9,7 +9,6 @@ type ImportResult = {
   imported?: number
   failed?: Array<{ index: number; code: string; message: string }>
   formalSupplier?: boolean
-  stagingAllowed?: boolean
   strategy?: string
   creditsCharged?: number
 }
@@ -68,6 +67,11 @@ export default function RealphotosImportsPage() {
   return (
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">URL 导入</h1>
+      <p className="text-sm text-muted-foreground">
+        粘贴完整图片 URL（支持 <code className="font-mono">/api/images/…</code> 或{' '}
+        <code className="font-mono">/images/…</code>）。系统按已启用的 API 型导入供应商，统一经{' '}
+        <code className="font-mono">{`{base}/api/images/<file>`}</code> 拉取入库；单次最多 100 条。
+      </p>
       {frozen ? (
         <p className="text-sm text-amber-800">账号已因预审冻结：导入入口已禁用。</p>
       ) : null}

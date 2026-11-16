@@ -326,23 +326,32 @@ async def test_prompt_optimization_and_template_do_not_share_generation_freeze(d
 
 
 @pytest.mark.asyncio
-async def test_url_import_rejects_101_and_stays_unconfigured(db):
+async def test_url_import_rejects_101_and_skips_bad_hosts(db):
     ctx = await _funded(db)
+    from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
+
+    suppliers = RealphotosSupplierConfigService(db)
+    await suppliers.ensure()
     before = int(await db.scalar(select(func.count()).select_from(RealphotosAsset)) or 0)
     with pytest.raises(BusinessError) as too_many:
         await ctx["growth"].import_resources(
-            payload="\n".join(f"https://example.invalid/{index}.jpg" for index in range(101)),
+            payload="\n".join(f"https://example.invalid/images/{index}.jpg" for index in range(101)),
             tenant_id=ctx["tenant"],
             owner_account_id=ctx["user"],
         )
     assert too_many.value.code == "INPUT_INVALID"
-    with pytest.raises(BusinessError) as unconfigured:
-        await ctx["growth"].import_resources(
-            payload="https://example.invalid/a.jpg",
-            tenant_id=ctx["tenant"],
-            owner_account_id=ctx["user"],
-        )
-    assert unconfigured.value.code == "SERVICE_NOT_CONFIGURED"
+
+    # Contract enabled by seed → per-item reject (not whole-batch SERVICE_NOT_CONFIGURED).
+    single = await ctx["growth"].import_resources(
+        payload="https://example.invalid/images/a.jpg",
+        tenant_id=ctx["tenant"],
+        owner_account_id=ctx["user"],
+    )
+    assert single["imported"] == 0
+    assert single["failed"]
+    assert single["failed"][0]["code"] == "IMPORT_URL_REJECTED"
+    assert single.get("formalSupplier") is True
+
     hundred = [
         {
             "name": str(index),
@@ -351,24 +360,23 @@ async def test_url_import_rejects_101_and_stays_unconfigured(db):
             "asn": "a",
             "price": "1",
             "website": "https://example.invalid",
-            "url": f"https://example.invalid/{index}.jpg",
+            "url": f"https://example.invalid/images/{index}.jpg",
         }
         for index in range(100)
     ]
-    with pytest.raises(BusinessError) as pasted:
-        await ctx["growth"].import_resources(
-            payload=json.dumps(hundred),
-            tenant_id=ctx["tenant"],
-            owner_account_id=ctx["user"],
-        )
-    assert pasted.value.code == "SERVICE_NOT_CONFIGURED"
-    with pytest.raises(BusinessError) as pasted_file:
-        await ctx["growth"].import_resource_file(
-            raw=json.dumps(hundred).encode(),
-            tenant_id=ctx["tenant"],
-            owner_account_id=ctx["user"],
-        )
-    assert pasted_file.value.code == "SERVICE_NOT_CONFIGURED"
+    pasted = await ctx["growth"].import_resources(
+        payload=json.dumps(hundred),
+        tenant_id=ctx["tenant"],
+        owner_account_id=ctx["user"],
+    )
+    assert pasted["imported"] == 0
+    assert len(pasted["failed"]) == 100
+    pasted_file = await ctx["growth"].import_resource_file(
+        raw=json.dumps(hundred).encode(),
+        tenant_id=ctx["tenant"],
+        owner_account_id=ctx["user"],
+    )
+    assert pasted_file["imported"] == 0
     with pytest.raises(BusinessError) as too_many_json:
         await ctx["growth"].import_resource_file(
             raw=json.dumps(hundred + [hundred[0]]).encode(),
@@ -376,6 +384,19 @@ async def test_url_import_rejects_101_and_stays_unconfigured(db):
             owner_account_id=ctx["user"],
         )
     assert too_many_json.value.code == "INPUT_INVALID"
+
+    # Disabled contract → SERVICE_NOT_CONFIGURED
+    row = await suppliers._row("import")
+    assert row is not None
+    row.enabled = False
+    await db.flush()
+    with pytest.raises(BusinessError) as unconfigured:
+        await ctx["growth"].import_resources(
+            payload="http://47.85.47.252/images/a.png",
+            tenant_id=ctx["tenant"],
+            owner_account_id=ctx["user"],
+        )
+    assert unconfigured.value.code == "SERVICE_NOT_CONFIGURED"
     after = int(await db.scalar(select(func.count()).select_from(RealphotosAsset)) or 0)
     assert after == before
 
