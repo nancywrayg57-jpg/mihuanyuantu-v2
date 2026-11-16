@@ -23,7 +23,6 @@ from app.capabilities.realphotos.services.supplier_clients import (
     GENERATION_BASE,
 )
 from app.capabilities.realphotos.services.supplier_material import (
-    import_staging_enabled,
     supplier_live_enabled,
 )
 from app.capabilities.realphotos.services.supplier_secrets import (
@@ -39,7 +38,10 @@ from app.core.config import settings
 from app.core.exceptions import BusinessError, ForbiddenError
 
 _LOG = logging.getLogger("realphotos.supplier_config")
-_ADMIN_DUTIES = frozenset({"pre_review", "generation", "prompt_opt", "final_detection"})
+_ADMIN_DUTIES = frozenset(
+    {"pre_review", "generation", "prompt_opt", "final_detection", "import"}
+)
+_NO_SECRET_DUTIES = frozenset({"import"})
 _URL_RE = re.compile(r"^https?://", re.I)
 
 # ensure() may refresh only these capability keys on non-adminManaged generation rows.
@@ -112,21 +114,22 @@ _SPECS: tuple[dict[str, Any], ...] = (
     },
     {
         "duty": "import",
-        "provider": "staging-image-host",
-        "model_id": "staging-image-host",
+        "provider": "api-image-host",
+        "model_id": "api-image-host",
         "region": "47.85.47.252",
-        "credential_ref": "生产物料清单§4 临时图床（仅联调）",
+        "credential_ref": "生产物料清单§4 API 型导入（无鉴权联调站可作默认基址）",
         "base_url": "http://47.85.47.252",
         "capabilities": {
-            "formalSupplier": False,
-            "stagingAllowed": True,
-            "pathPrefix": "/images/",
+            "formalSupplier": True,
+            "authRequired": False,
+            "pathPrefix": "/api/images/",
             "methods": ["GET"],
-            "readOnlyInModelApi": True,
+            "listPath": "/api/images",
+            "acceptStaticPath": "/images/",
         },
         "gap_note": (
-            "正式供应商 PENDING；管理员 2026-11-10 授权临时图床联调外呼，"
-            "不得宣称 ND-012 正式闭合。MODEL-API 主表单不写此职责。"
+            "API 型 URL 导入：粘贴 /images/ 或 /api/images/ URL，"
+            "运行时统一 GET {base}/api/images/<file>。无 Key；基址可管理端配置。"
         ),
         "secret_duty": "",
     },
@@ -153,6 +156,8 @@ _PURPOSE_TO_DUTY = {
     "生图渠道": "generation",
     "提示词优化": "prompt_opt",
     "最终检测": "final_detection",
+    "URL导入": "import",
+    "资源导入": "import",
 }
 _DUTY_TO_PURPOSE = {v: k for k, v in _PURPOSE_TO_DUTY.items()}
 
@@ -293,7 +298,10 @@ def _next_config_version() -> str:
 def _seed_enabled(spec: dict[str, Any]) -> bool:
     duty = str(spec["duty"])
     if duty == "import":
-        return bool(import_staging_enabled() and dict(spec["capabilities"]).get("stagingAllowed") is True)
+        # Formal API import: seed enabled when base_url is present (no Key required).
+        return bool(str(spec.get("base_url") or "").strip()) and bool(
+            dict(spec["capabilities"]).get("formalSupplier") is True
+        )
     if duty == "final_detection":
         return has_duty_secret("final_detection") or bool(str(settings.GEMINI_API_KEY or "").strip())
     secret_duty = str(spec.get("secret_duty") or "")
@@ -339,21 +347,33 @@ class RealphotosSupplierConfigService:
                     if existing.gap_note != spec["gap_note"]:
                         existing.gap_note = str(spec["gap_note"])
                 elif duty == "import":
-                    # Staging host is ops-controlled; keep enabled aligned with flag when not adminManaged.
-                    staging = import_staging_enabled()
+                    # Migrate non-admin rows to formal API import seed; do not clobber adminManaged.
                     caps = dict(spec["capabilities"])
-                    existing.enabled = bool(staging and caps.get("stagingAllowed") is True)
-                    existing.base_url = str(spec["base_url"])
+                    old_caps = dict(existing.capabilities or {})
+                    migrating = old_caps.get("formalSupplier") is not True
                     existing.provider = str(spec["provider"])
                     existing.model_id = str(spec["model_id"])
+                    if not str(existing.base_url or "").strip():
+                        existing.base_url = str(
+                            getattr(settings, "REALPHOTOS_IMPORT_BASE_URL", "") or spec["base_url"]
+                        )
                     existing.capabilities = caps
                     existing.gap_note = str(spec["gap_note"])
+                    existing.credential_ref = str(spec["credential_ref"])
+                    # One-shot enable when upgrading legacy staging rows; later admin toggles stick.
+                    if migrating and str(existing.base_url or "").strip():
+                        existing.enabled = True
                 continue
 
             model_id = str(spec["model_id"])
             if duty == "final_detection":
                 model_id = str(settings.GEMINI_MODEL or model_id).strip() or model_id
             enabled = _seed_enabled(spec)
+            seed_base = str(spec["base_url"])
+            if duty == "import":
+                seed_base = str(
+                    getattr(settings, "REALPHOTOS_IMPORT_BASE_URL", "") or seed_base
+                ).strip() or seed_base
             self.db.add(
                 RealphotosProviderContract(
                     tenant_id=0,
@@ -363,7 +383,7 @@ class RealphotosSupplierConfigService:
                     config_version=CONFIG_VERSION,
                     region=str(spec["region"]),
                     credential_ref=str(spec["credential_ref"]),
-                    base_url=str(spec["base_url"]),
+                    base_url=seed_base,
                     capabilities=dict(spec["capabilities"]),
                     enabled=enabled,
                     gap_note=str(spec["gap_note"]),
@@ -433,8 +453,6 @@ class RealphotosSupplierConfigService:
     ) -> dict[str, Any]:
         self._admin(actor_role_codes)
         label = purpose_to_duty(duty)
-        if label == "import":
-            raise BusinessError(message="临时图床职责只读，请走联调开关", code="INPUT_INVALID")
         if label not in _ADMIN_DUTIES:
             raise BusinessError(message="职责不存在", code="NOT_FOUND")
 
@@ -483,7 +501,15 @@ class RealphotosSupplierConfigService:
         caps = dict(row.capabilities or {})
         caps["adminManaged"] = True
         caps["pollingEnabled"] = False
+        if label == "import":
+            # Keep formal API import markers even when admin edits base/enabled.
+            caps.setdefault("formalSupplier", True)
+            caps.setdefault("authRequired", False)
+            caps.setdefault("pathPrefix", "/api/images/")
+            caps.setdefault("methods", ["GET"])
         if api_key and str(api_key).strip():
+            if label in _NO_SECRET_DUTIES:
+                raise BusinessError(message="URL 导入供应商无需 API Key", code="INPUT_INVALID")
             public_cred = append_duty_credential(
                 label,
                 str(api_key).strip(),
@@ -496,7 +522,7 @@ class RealphotosSupplierConfigService:
             if public_cred.get("enabled"):
                 caps["activeCredentialId"] = str(public_cred.get("id") or "")
             key_written = True
-        else:
+        elif label not in _NO_SECRET_DUTIES:
             sync_enabled_credential_meta(
                 label,
                 provider=str(row.provider or ""),
@@ -515,7 +541,10 @@ class RealphotosSupplierConfigService:
             if want_enabled:
                 if not str(row.model_id or "").strip():
                     raise BusinessError(message="启用前须填写 model ID", code="INPUT_INVALID")
-                if not has_duty_secret(label):
+                if label == "import":
+                    if not str(row.base_url or "").strip():
+                        raise BusinessError(message="启用前须填写 Base URL", code="INPUT_INVALID")
+                elif not has_duty_secret(label):
                     raise BusinessError(message="启用前须配置 API Key", code="INPUT_INVALID")
             row.enabled = want_enabled
 
@@ -588,7 +617,7 @@ class RealphotosSupplierConfigService:
     ) -> dict[str, Any]:
         self._admin(actor_role_codes)
         label = purpose_to_duty(duty)
-        if label == "import" or label not in _ADMIN_DUTIES:
+        if label not in _ADMIN_DUTIES or label in _NO_SECRET_DUTIES:
             raise BusinessError(message="职责不存在", code="NOT_FOUND")
         try:
             public_cred = set_credential_enabled(label, credential_id, enabled)
@@ -669,8 +698,6 @@ class RealphotosSupplierConfigService:
     ) -> dict[str, Any]:
         self._admin(actor_role_codes)
         label = purpose_to_duty(duty)
-        if label == "import":
-            raise BusinessError(message="临时图床职责不可删除", code="INPUT_INVALID")
         row = await self._row(label)
         if row is None:
             raise BusinessError(message="职责不存在", code="NOT_FOUND")

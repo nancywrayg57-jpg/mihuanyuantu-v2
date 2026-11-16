@@ -43,6 +43,7 @@ const PURPOSES: { duty: string; label: string }[] = [
   { duty: 'generation', label: '生图渠道' },
   { duty: 'prompt_opt', label: '提示词优化' },
   { duty: 'final_detection', label: '最终检测' },
+  { duty: 'import', label: 'URL导入' },
 ]
 
 const PROVIDERS = [
@@ -54,6 +55,7 @@ const PROVIDERS = [
   'google-gemini',
   'deepseek',
   'dashscope',
+  'api-image-host',
   '其他',
 ]
 
@@ -62,6 +64,7 @@ const DUTY_DEFAULT_BASE: Record<string, string> = {
   generation: 'https://apis.aoju.ai/v1',
   prompt_opt: 'https://api.deepseek.com/chat/completions',
   final_detection: 'https://generativelanguage.googleapis.com/v1beta',
+  import: 'http://47.85.47.252',
 }
 
 /** Keep in sync with supplier_clients.PROVIDER_DEFAULT_BASE. Switching provider must not clear Base URL. */
@@ -74,6 +77,7 @@ const PROVIDER_DEFAULT_BASE: Record<string, string> = {
   dashscope: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
   'ChatGPT Image 2': 'https://apis.aoju.ai/v1',
   aoju: 'https://apis.aoju.ai/v1',
+  'api-image-host': 'http://47.85.47.252',
 }
 
 const PROVIDER_STATIC_MODELS: Record<string, string[]> = {
@@ -85,6 +89,7 @@ const PROVIDER_STATIC_MODELS: Record<string, string[]> = {
   dashscope: ['qwen3-vl-plus', 'qwen-vl-plus', 'qwen-plus', 'qwen-turbo', 'qwen-max'],
   'ChatGPT Image 2': ['gpt-image-2', 'gpt-image-2-vip'],
   aoju: ['gpt-image-2', 'gpt-image-2-vip'],
+  'api-image-host': ['api-image-host'],
 }
 
 function nonEmptyBase(preferred: string | undefined, duty: string): string {
@@ -243,6 +248,12 @@ export function RealphotosSystemClient() {
         setProviderChoice('其他')
         setProviderCustom(existing.provider || '')
       }
+    } else if (duty === 'import') {
+      setProviderChoice('api-image-host')
+      setProviderCustom('')
+      setModelOptions(['api-image-host'])
+      setModelId('api-image-host')
+      setBaseUrl(nonEmptyBase(DUTY_DEFAULT_BASE.import, duty))
     } else {
       const fallback = PROVIDER_STATIC_MODELS[providerChoice] || []
       setModelOptions(fallback)
@@ -333,6 +344,10 @@ export function RealphotosSystemClient() {
       setMessage('请填写 Base URL')
       return
     }
+    if (duty !== 'import' && !apiKey.trim()) {
+      // Non-import duties historically allow empty key when rotating meta only;
+      // keep prior behavior (backend rejects enable without secret).
+    }
     setSaving(true)
     try {
       await apiFetch('/api/v1/realphotos/provider-contracts', {
@@ -342,12 +357,16 @@ export function RealphotosSystemClient() {
           provider,
           modelId: modelId.trim(),
           baseUrl: baseUrl.trim(),
-          apiKey: apiKey.trim() || undefined,
+          apiKey: duty === 'import' ? undefined : apiKey.trim() || undefined,
           enabled: true,
         }),
       })
       setApiKey('')
-      setMessage('模型配置已追加保存；列表仅显示掩码。同用途可共存多 Key，同时只启用一套。第一版不轮询。')
+      setMessage(
+        duty === 'import'
+          ? 'URL 导入供应商已保存（无需 API Key）；商家粘贴 /images/ 或 /api/images/ URL 后统一经 API 拉取。'
+          : '模型配置已追加保存；列表仅显示掩码。同用途可共存多 Key，同时只启用一套。第一版不轮询。',
+      )
       await loadContracts()
     } catch (error: unknown) {
       setMessage(error instanceof ApiError ? error.message : '保存失败')
@@ -538,17 +557,24 @@ export function RealphotosSystemClient() {
                       onChange={(event) => setBaseUrl(event.target.value)}
                     />
                   </label>
-                  <label className="block md:col-span-2">
-                    API Key
-                    <input
-                      className="mt-1 w-full border px-2 py-1"
-                      type="password"
-                      autoComplete="off"
-                      value={apiKey}
-                      onChange={(event) => setApiKey(event.target.value)}
-                      placeholder="填写则追加一条，不覆盖已有 Key"
-                    />
-                  </label>
+                  {duty === 'import' ? (
+                    <p className="md:col-span-2 text-xs text-muted-foreground">
+                      URL 导入为 API 型供应商：无需 API Key；粘贴图床完整 URL，系统统一请求{' '}
+                      <code className="font-mono">{`{base}/api/images/<file>`}</code>。
+                    </p>
+                  ) : (
+                    <label className="block md:col-span-2">
+                      API Key
+                      <input
+                        className="mt-1 w-full border px-2 py-1"
+                        type="password"
+                        autoComplete="off"
+                        value={apiKey}
+                        onChange={(event) => setApiKey(event.target.value)}
+                        placeholder="填写则追加一条，不覆盖已有 Key"
+                      />
+                    </label>
+                  )}
                 </div>
                 <button
                   className="rp-btn border px-3 py-1 disabled:opacity-50"
@@ -586,7 +612,9 @@ export function RealphotosSystemClient() {
                         </td>
                         <td className="border px-2 py-1">{item.purpose || purposeLabel(item.duty)}</td>
                         <td className="border px-2 py-1 font-mono text-xs">
-                          {(item.credentials || []).length > 0 ? (
+                          {item.duty === 'import' ? (
+                            <span className="font-sans text-muted-foreground">无需鉴权</span>
+                          ) : (item.credentials || []).length > 0 ? (
                             <div className="space-y-1">
                               {(item.credentials || []).map((cred) => (
                                 <div key={cred.id} className="flex flex-wrap items-center gap-1">

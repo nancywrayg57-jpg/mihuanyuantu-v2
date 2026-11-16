@@ -570,7 +570,7 @@ class RealphotosGrowthService:
         tenant_id: int,
         owner_account_id: int,
     ) -> dict:
-        """URL/JSON 导入联调路径。上限 100。缺联调授权时不外呼、不入库。
+        """URL/JSON 导入（API 型供应商）。上限 100。合同未启用时不外呼、不入库。
 
         Strategy: ``per_item_continue`` — allowlist/validation failures skip that
         row; successful rows still land (FR-003 spirit). Count >100 still rejects
@@ -579,11 +579,11 @@ class RealphotosGrowthService:
         from app.capabilities.realphotos.services.import_fetch import (
             fetch_import_bytes,
             host_allowlist_from_base_url,
+            normalize_import_base_url,
         )
         from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
         from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
         from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
-        from app.capabilities.realphotos.services.supplier_material import import_staging_enabled
 
         # FR-002：冻结账号禁止 URL/JSON 导入入库
         await RealphotosOpsService(self.db).assert_can_create_task(
@@ -595,20 +595,15 @@ class RealphotosGrowthService:
             raise BusinessError(message="第 101 条整单拒绝", code="INPUT_INVALID")
 
         contract = await RealphotosSupplierConfigService(self.db).enabled("import")
-        caps = dict(contract.capabilities or {}) if contract is not None else {}
-        staging_ok = bool(
-            import_staging_enabled()
-            and contract is not None
-            and caps.get("stagingAllowed") is True
-            and caps.get("formalSupplier") is not True
-        )
-        if not staging_ok:
+        if contract is None or not str(contract.base_url or "").strip():
             raise BusinessError(
                 message="缺少供应商合同与接口证据",
                 code="SERVICE_NOT_CONFIGURED",
             )
-
-        allowed_hosts = host_allowlist_from_base_url(str(contract.base_url or ""))
+        caps = dict(contract.capabilities or {})
+        formal = caps.get("formalSupplier") is True
+        base_url = normalize_import_base_url(str(contract.base_url or ""))
+        allowed_hosts = host_allowlist_from_base_url(base_url)
         s1 = RealphotosS1Service(self.db)
         imported: list[dict] = []
         failed: list[dict] = []
@@ -621,7 +616,11 @@ class RealphotosGrowthService:
                 # JSON objects require name for FR-028 required semantics when not a bare URL line.
                 if isinstance(entry, dict) and not fields["name"]:
                     raise BusinessError(message="缺少 name", code="INPUT_INVALID")
-                raw = await fetch_import_bytes(url, allowed_hosts=allowed_hosts)
+                raw = await fetch_import_bytes(
+                    url,
+                    allowed_hosts=allowed_hosts,
+                    base_url=base_url,
+                )
                 asset = await s1.upload(
                     tenant_id=int(tenant_id),
                     owner_account_id=int(owner_account_id),
@@ -667,11 +666,10 @@ class RealphotosGrowthService:
                 after_state={
                     "imported": len(imported),
                     "failed": len(failed),
-                    "formalSupplier": False,
-                    "stagingAllowed": True,
+                    "formalSupplier": formal,
                     "strategy": "per_item_continue",
                 },
-                reason="staging image-host import batch",
+                reason="api image-host import batch",
                 result="success" if imported else "failed",
             )
         )
@@ -680,8 +678,7 @@ class RealphotosGrowthService:
             "imported": len(imported),
             "failed": failed,
             "items": imported,
-            "formalSupplier": False,
-            "stagingAllowed": True,
+            "formalSupplier": formal,
             "strategy": "per_item_continue",
             "creditsCharged": 0,
             "processingTasksCreated": 0,
@@ -694,7 +691,7 @@ class RealphotosGrowthService:
         tenant_id: int,
         owner_account_id: int,
     ) -> dict:
-        """上传的 JSON 文件按数组条数计；启用联调后按 URL 拉取。"""
+        """上传的 JSON 文件按数组条数计；合同启用后按 API 拉取。"""
         try:
             text = bytes(raw).decode("utf-8")
         except UnicodeDecodeError as exc:
