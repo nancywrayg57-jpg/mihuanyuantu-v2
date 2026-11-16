@@ -41,6 +41,9 @@ s7_prod_deploy_2026_11_16:
   database: realphotos_prod @127.0.0.1:5432 same-host PG16.15, role realphotos_app non-super
   units: realphotos-api/web/process/notify/cleanup (enabled+active)
   public_entry: rolled_back_to_placeholder_per_failure_protocol
+  unblock_decision: A_outbound_https_proxy (admin 2026-11-16)
+  unblock_state: app_side_ready_awaiting_proxy_endpoint
+  proxy_script: /root/蜜獾原图-v2/shared/09_proxy.sh (apply <proxy-url> | revert)
   roll_forward_cmd: sh /root/蜜獾原图-v2/shared/06_nginx.sh
   rollback_cmd: sh /root/蜜獾原图-v2/shared/08_rollback.sh
   supplier_live_samples:
@@ -557,7 +560,7 @@ known_conflicts:
 
 next_action:
   owner: admin_decision
-  action: "S7 已部署并完成四角色生产端测，但 Gemini 最终检测被出口地区策略拒绝。请管理员在 blocker 的 A/B/C/D 中选定处置（允许地区出站代理 / 迁节点 / 换检测供应商 / 暂缓），选定后由 Collaborator 续作 T5–T6。"
+  action: "S7 阻塞已定为方案 A（出站代理）。应用侧代理支持已就绪（09_proxy.sh）。请提供一个允许地区（SG/JP/US）的 HTTP 正向代理地址（仅需放行 generativelanguage.googleapis.com:443）；收到后 apply → 切回 Nginx → 复跑检测抽样 → 续 T5/T6。"
   work_order: "REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16"
   branch: cursor/s7-prod-deploy-9973
   pr: "（本单 PR，Collaborator 推送，Owner 非作者审合）"

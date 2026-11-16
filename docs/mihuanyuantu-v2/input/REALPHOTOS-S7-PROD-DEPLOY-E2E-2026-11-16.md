@@ -69,6 +69,8 @@ sh /root/蜜獾原图-v2/shared/08_rollback.sh
 sh /root/蜜獾原图-v2/shared/06_nginx.sh
 ```
 
+**管理员已选定 A（出站代理）**：应用侧代理支持已交付为 `09_proxy.sh`（systemd drop-in + `NO_PROXY` 保留国内供应商直连），待管理员提供允许地区代理地址后 `apply` 即可；详见 blocker §3.1。
+
 五个 systemd 单元保持 `enabled` 且 `active`；`current` 仍指向 `releases/3ed1088`。
 
 ## 残余风险

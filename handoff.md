@@ -35,6 +35,6 @@
 
 ## 4. 下一步
 
-1. 管理员决策出口方案（允许地区代理 / 迁节点 / 换检测供应商 / 暂缓）。
-2. 方案落地后：注入可达基址或代理 → `systemctl restart realphotos-api realphotos-process` → `sh /root/蜜獾原图-v2/shared/06_nginx.sh` 切回 → 复跑检测抽样 → 再走 T5/T6。
-3. 通过后 Owner（非作者）审合 PR 并打 `v2.M.P`。
+1. 管理员已选 **A 出站代理**；应用侧 `09_proxy.sh` 已就绪（drop-in + NO_PROXY 保留国内供应商直连）。
+2. 拿到允许地区代理地址后：`09_proxy.sh apply http://<host>:<port>` → `06_nginx.sh` 切回 → 复跑检测抽样 → 再走 T5/T6。
+3. 通过后 Owner（非作者）审合 PR #68 并打 `v2.M.P`。

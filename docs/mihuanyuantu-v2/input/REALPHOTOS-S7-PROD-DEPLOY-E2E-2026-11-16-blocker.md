@@ -45,6 +45,23 @@ HTTP 400
 
 > 本会话**不自行选择**以上任一项：A/B 涉及采购与网络变更，C 改 PRD 合同，均超出工单授权。
 
+## 3.1 管理员已选定 A（2026-11-16）
+
+管理员选择 **A 出站 HTTPS 代理**。应用侧已就绪：
+
+- `/root/蜜獾原图-v2/shared/09_proxy.sh apply <proxy-url>`：为 `realphotos-api/process/notify/cleanup` 写入 systemd drop-in（`HTTPS_PROXY`/`NO_PROXY`），`NO_PROXY` 保留 dashscope、aoju、deepseek、本地库与内网直连，代理只承载 Gemini 流量；`revert` 一键撤除。
+- 脚本已上传并通过 `sh -n` 语法检查，当前**未 apply**（尚无可用代理端点）。
+
+**待办（管理员）**：提供一个允许地区（新加坡/日本/美国）的 HTTP 正向代理地址，例如 SG 小机型上的 `tinyproxy`/`squid`，仅放行 `generativelanguage.googleapis.com:443`。拿到地址后执行：
+
+```sh
+sh /root/蜜獾原图-v2/shared/09_proxy.sh apply http://<proxy-host>:<port>
+sh /root/蜜獾原图-v2/shared/06_nginx.sh          # 切回应用
+# 复跑检测抽样（商家提交一张 → 轮询到 DELIVERED 且 detector=gemini-*）
+```
+
+验证说明：本会话曾尝试用工作站反向隧道做就地验证，但工作站 WLAN 出口到 Google 443 时通时断，不能作为生产代理的可信证据，故未据此宣称检测可用。
+
 ## 4. 已就绪、可随时续作
 
 - 应用已部署并在 `current` 指向 `3ed1088`，五个 systemd 单元 enabled（当前 active，公网入口已回滚占位）。
