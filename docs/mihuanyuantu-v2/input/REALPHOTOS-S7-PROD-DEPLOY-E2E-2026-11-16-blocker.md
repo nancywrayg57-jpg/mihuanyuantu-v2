@@ -103,6 +103,19 @@ sh /root/蜜獾原图-v2/shared/06_nginx.sh
 
 > 安全建议：代理只放行上述单域名、只允许生产机 IP、不开放匿名访问；上线前把该代理写入物料清单并登记为新的单点。
 
+### 3.4 apply / revert 已在生产机空跑验证（2026-11-16）
+
+用本地哑端口（`127.0.0.1:18999`，非真实代理）走了一遍真实运维路径，只验证管道、不验证出口：
+
+| 步骤 | 结果 |
+| --- | --- |
+| `09_proxy.sh apply http://127.0.0.1:18999` | `realphotos-api/process/notify/cleanup` 全部 active；drop-in 生效 |
+| `systemctl show realphotos-process -p Environment` | 注入 `HTTPS_PROXY`/`HTTP_PROXY`/`https_proxy`/`http_proxy` + `NO_PROXY`（dashscope、aoju、deepseek、`47.85.47.252`、内网直连） |
+| `systemctl show realphotos-api -p Environment` | 同一组 6 项，API 进程同样感知 |
+| `09_proxy.sh revert` | 环境变量归零（计数 0），五单元仍 active |
+
+→ 真实代理地址一到，`apply` 即可生效，无需再改代码或单元文件。
+
 ## 4. 已就绪、可随时续作
 
 - 应用已部署并在 `current` 指向 `3ed1088`，五个 systemd 单元 enabled（当前 active，公网入口已回滚占位）。
