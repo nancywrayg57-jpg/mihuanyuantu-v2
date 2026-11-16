@@ -203,6 +203,8 @@ export default function RealphotosTasksPage() {
   const [unreadHint, setUnreadHint] = useState(0)
   const [procSearch, setProcSearch] = useState('')
   const [genSearch, setGenSearch] = useState('')
+  const [thumbs, setThumbs] = useState<Record<string, string>>({})
+  const [preview, setPreview] = useState<{ id: string; url: string } | null>(null)
 
   const loadProcessing = useCallback(async () => {
     const qs = new URLSearchParams({
@@ -265,6 +267,54 @@ export default function RealphotosTasksPage() {
     }, 3000)
     return () => window.clearInterval(timer)
   }, [tab, procItems, loadProcessing, PROC_TERMINAL])
+
+  const procThumbTargets = useMemo(
+    () =>
+      procItems
+        .filter((item) => Boolean(item.outputObjectKey))
+        .map((item) => ({ id: item.id, key: String(item.outputObjectKey) })),
+    [procItems],
+  )
+  const procThumbSignature = useMemo(
+    () => procThumbTargets.map((item) => `${item.id}:${item.key}`).join('|'),
+    [procThumbTargets],
+  )
+
+  // Thumbnail of processed output only; incomplete rows stay blank.
+  useEffect(() => {
+    if (tab !== 'processing') return
+    let cancelled = false
+    const created: string[] = []
+
+    async function loadThumbs() {
+      setThumbs((prev) => {
+        for (const url of Object.values(prev)) URL.revokeObjectURL(url)
+        return {}
+      })
+      for (const item of procThumbTargets) {
+        if (cancelled || !item.key) continue
+        try {
+          const blob = await apiFetchBlob(
+            `/api/v1/realphotos/gateway/objects/${item.key.split('/').map(encodeURIComponent).join('/')}`,
+          )
+          if (cancelled) return
+          const url = URL.createObjectURL(blob)
+          created.push(url)
+          setThumbs((prev) => ({ ...prev, [item.id]: url }))
+        } catch {
+          // gateway miss → leave blank cell
+        }
+      }
+    }
+
+    void loadThumbs()
+    return () => {
+      cancelled = true
+      for (const url of created) URL.revokeObjectURL(url)
+    }
+    // signature covers id+objectKey changes without thrashing on unrelated poll fields
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, procThumbSignature])
 
   // Mirror latest list row into open detail dialog.
   useEffect(() => {
@@ -581,6 +631,7 @@ export default function RealphotosTasksPage() {
             <thead>
               <tr>
                 <RpTh>勾选</RpTh>
+                <RpTh>缩略图</RpTh>
                 <RpTh>任务</RpTh>
                 <RpTh>状态</RpTh>
                 <RpTh>积分处置</RpTh>
@@ -590,7 +641,7 @@ export default function RealphotosTasksPage() {
             </thead>
             <tbody>
               {visibleProcItems.length === 0 ? (
-                <RpEmpty colSpan={6}>暂无处理任务</RpEmpty>
+                <RpEmpty colSpan={7}>暂无处理任务</RpEmpty>
               ) : (
                 visibleProcItems.map((item) => (
                   <tr key={item.id}>
@@ -604,6 +655,21 @@ export default function RealphotosTasksPage() {
                           setChecked((prev) => ({ ...prev, [item.id]: event.target.checked }))
                         }
                       />
+                    </td>
+                    <td>
+                      {thumbs[item.id] ? (
+                        <button
+                          type="button"
+                          className="block"
+                          aria-label={`查看任务 ${item.id} 处理结果`}
+                          onClick={() => setPreview({ id: item.id, url: thumbs[item.id] })}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={thumbs[item.id]} alt="" className="h-10 w-10 border object-cover" />
+                        </button>
+                      ) : (
+                        <span className="inline-block h-10 w-10" aria-hidden />
+                      )}
                     </td>
                     <td>{item.id}</td>
                     <td>
@@ -628,6 +694,22 @@ export default function RealphotosTasksPage() {
               )}
             </tbody>
           </RpTable>
+          {preview ? (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6"
+              onClick={() => setPreview(null)}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`任务 ${preview.id} 处理结果预览`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={preview.url}
+                alt={`任务 ${preview.id} 处理结果`}
+                className="max-h-full max-w-full border bg-white"
+              />
+            </div>
+          ) : null}
           {downloadNote ? <p className="text-sm">{downloadNote}</p> : null}
           {detail ? (
             <RpDialog
