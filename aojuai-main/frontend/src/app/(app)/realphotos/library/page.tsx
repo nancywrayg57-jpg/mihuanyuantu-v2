@@ -256,7 +256,7 @@ export default function RealphotosLibraryPage() {
 
   return (
     <main className="space-y-6 p-6">
-      <RpPageHeader title="图片资源" description="入库、勾选、去处理，下载经受控网关。" />
+      <RpPageHeader title="图片资源" />
       <p className="text-sm">{message}</p>
       {frozen ? (
         <p className="text-sm text-amber-800">

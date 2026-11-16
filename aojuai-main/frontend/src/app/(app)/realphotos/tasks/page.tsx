@@ -517,7 +517,6 @@ export default function RealphotosTasksPage() {
     <main className="space-y-6 p-6">
       <RpPageHeader
         title="任务详情"
-        description="图片处理与生图任务列表。详情按模块分区，处理中的任务会自动刷新。"
         actions={
           <Link className="rp-btn" href="/realphotos/messages">
             消息中心{unreadHint > 0 ? `（未读 ${unreadHint}）` : ''}
