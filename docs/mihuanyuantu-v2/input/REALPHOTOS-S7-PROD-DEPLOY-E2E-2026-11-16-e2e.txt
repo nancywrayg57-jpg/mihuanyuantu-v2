@@ -5,7 +5,7 @@ operator: 主代理会话（Windows 工作站 → 生产机 SSH/SFTP）
 target_host: 47.242.28.49 (iZj6c5tqrza96o5w52qxpcZ, 内网 172.17.54.212)
 target_domain: https://exif-demo.honeybadgersoft.com
 os: Ubuntu 24.04.2 LTS / kernel 6.8 / 4 vCPU / 7270 MiB / no swap / / 49G (23% used)
-release: 3ed1088d33148fc9b382f02e08c645f8c5f71eba (origin/main tip, shallow clone)
+release: 3ed1088d33148fc9b382f02e08c645f8c5f71eba (deployed), then reconciled to branch tip 0f5fd1c (clean tree)
 release_dir: /root/蜜獾原图-v2/releases/3ed1088 ; current -> symlink
 shared_dir: /root/蜜獾原图-v2/shared (0700; *.env/*.json/*.txt = 0600)
 storage_root: /root/蜜獾原图-v2/www/mhyt/{upload,phy-export,export} (pre-existing, writable)

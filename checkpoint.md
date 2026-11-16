@@ -19,7 +19,7 @@
 | T6 | BLOCKED（§11 检测证据缺失；收费仍 false） |
 | 汇总标记 | ❌ `REALPHOTOS_S7_PROD_E2E_FAIL`（failing_item=`T5-SUP-FINAL_DETECTION`） |
 | 证据 | `docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-e2e.txt`；`-blocker.md`；`/tmp/realphotos-s7-prod-e2e.log` |
-| 生产入口 | 已按失败协议**回滚占位页**；应用单元 enabled+active；`current` → `releases/3ed1088` |
+| 生产入口 | 已按失败协议**回滚占位页**；应用单元 enabled+active；`current` → `releases/3ed1088`（工作树已对齐分支 tip `0f5fd1c`，`git status` 干净） |
 | production_billing | false |
 | S7 | 已开工、未完成（等管理员对出口/检测供应商做决策） |
 | 下一步 | 管理员决策出口代理/迁节点/换检测供应商；续作只用一条命令切回应用并复跑检测抽样 |
