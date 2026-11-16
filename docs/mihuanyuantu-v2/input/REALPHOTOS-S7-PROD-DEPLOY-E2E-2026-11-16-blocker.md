@@ -62,6 +62,47 @@ sh /root/蜜獾原图-v2/shared/06_nginx.sh          # 切回应用
 
 验证说明：本会话曾尝试用工作站反向隧道做就地验证，但工作站 WLAN 出口到 Google 443 时通时断，不能作为生产代理的可信证据，故未据此宣称检测可用。
 
+### 3.2 已排除的绕行方案（2026-11-16 实测）
+
+| 尝试 | 结果 | 结论 |
+| --- | --- | --- |
+| 生产机 IPv4 直连 `generativelanguage.googleapis.com` | `400 FAILED_PRECONDITION User location is not supported` | 地区策略拒绝 |
+| 生产机 IPv6（AAAA `2001:4860:...`） | `curl -6` 无路由（`000`） | 该主机无 v6 出口 |
+| 区域主机 `us-central1-` / `asia-southeast1-generativelanguage.googleapis.com` | `404`（非有效 API 主机） | 不存在按区域绕过的端点 |
+| `models` 列表接口 | `200` | 连通性≠推理可用，不能作为证据 |
+| aoju 中转原生 Gemini 路径 | `403 该令牌无权访问模型 gemini-3.1-pro-preview` | 该中转不承载 Gemini |
+
+→ 在**不改检测供应商**（不改 PRD）的前提下，允许地区出站代理是唯一可行路径。
+
+### 3.3 代理搭建配方（管理员侧，约 10 分钟）
+
+在允许地区（新加坡/日本/美国）一台最小 VM 上：
+
+```sh
+apt-get install -y tinyproxy
+cat >/etc/tinyproxy/tinyproxy.conf <<'EOF'
+Port 8888
+Listen 0.0.0.0
+Allow 47.242.28.49          # 生产机出口 IP
+ConnectPort 443
+Filter "/etc/tinyproxy/filter"
+FilterURLs On
+FilterDefaultDeny Yes
+EOF
+echo '^generativelanguage\.googleapis\.com$' >/etc/tinyproxy/filter
+systemctl enable --now tinyproxy
+```
+
+生产机侧（已内置于 `09_proxy.sh`，`NO_PROXY` 保留 dashscope / aoju / deepseek 直连）：
+
+```sh
+sh /root/蜜獾原图-v2/shared/09_proxy.sh apply http://<vm-ip>:8888
+curl -s -o /dev/null -w '%{http_code}\n' -x http://<vm-ip>:8888 https://generativelanguage.googleapis.com/   # 期望 404（可达即可）
+sh /root/蜜獾原图-v2/shared/06_nginx.sh
+```
+
+> 安全建议：代理只放行上述单域名、只允许生产机 IP、不开放匿名访问；上线前把该代理写入物料清单并登记为新的单点。
+
 ## 4. 已就绪、可随时续作
 
 - 应用已部署并在 `current` 指向 `3ed1088`，五个 systemd 单元 enabled（当前 active，公网入口已回滚占位）。
