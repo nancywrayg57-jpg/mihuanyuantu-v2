@@ -32,12 +32,27 @@ vibe_coding:
   timebox_minutes: 30
   prototype_intent: reviewable_mvp
   current_loop:
-    goal: "REALPHOTOS-UI-POLISH：功能修补(1–4)+全站 UI 正式化 T1–T4"
-    user_value: "任务详情实时刷新；资源文件名干净；导入命名对齐 PRD；GPS 跳过文案中文化；运营后台观感正式"
-    visible_output: "分支 cursor/realphotos-ui-polish-9973；功能修补保留；UI T1–T4 组件与任务详情分区已落地"
-    verify: "docs/mihuanyuantu-v2/input/REALPHOTOS-UI-POLISH-e2e-2026-11-15.txt；tsc --noEmit exit 0；登录后目视仍受本地后端未配置限制"
-    status: ui_polish_implemented
-    next_user_action: "Owner 审阅后开 PR（作者不得自合）；禁 S7。登录后目视任务详情分区。"
+    goal: "REALPHOTOS-PRELAUNCH-E2E：上线前四角色全量端测 + §11 门槛核对（非 S7）"
+    user_value: "确认商家/订单客服/技术客服/管理员主路径与资源网关可用；登记残余风险；开 PR 待 Owner 审合"
+    visible_output: "分支 cursor/prelaunch-e2e-9973；证据与 closeout 入库；production_billing=false"
+    verify: "docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-e2e.txt；/tmp/realphotos-prelaunch-e2e.log"
+    status: prelaunch_e2e_pass_pending_pr
+    next_user_action: "Collaborator 推 PR；非作者 Owner squash；禁 S7。"
+  prelaunch_e2e_2026_11_15:
+    work_order: REALPHOTOS-PRELAUNCH-E2E-2026-11-15
+    branch: cursor/prelaunch-e2e-9973
+    worktree: .worktrees/prelaunch-e2e
+    baseline_main: 6bb498a
+    t1_env: pass
+    t2_roles: pass
+    t3_regressions: pass
+    t4_closeout: pass
+    evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-e2e.txt
+    closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-closeout.md
+    work_order_file: docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15.md
+    evidence_marker: REALPHOTOS_PRELAUNCH_E2E_PASS
+    production_billing: false
+    r9_s7: blocked
   ops_desk_ux_fix_2026_11_15:
     work_order: OPS-DESK-UX-FIX
     branch: cursor/ops-desk-ux-fix-9973
@@ -501,15 +516,15 @@ known_conflicts:
 
 next_action:
   owner: collaborator
-  action: "OPS-DESK-UX-FIX PR #60 待非作者 Owner squash。禁S7；禁放宽PASS_SCORE。"
-  work_order: "OPS-DESK-UX-FIX"
-  prior_work_order: "OPS-DESK-UX #59 merged; REGISTER-FIX #58; FIVE-LAYER-DEFAULT-OPT #57"
-  branch: cursor/ops-desk-ux-fix-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/60"
-  tip: 3ff6e4f
-  baseline_main: b925a8f
-  e2e_evidence: docs/mihuanyuantu-v2/input/OPS-DESK-UX-fix-e2e-2026-11-15.txt
-  evidence_marker: OPS_DESK_UX_FIX_E2E_PASS
+  action: "PRELAUNCH-E2E：推 cursor/prelaunch-e2e-9973 开 PR；非作者 Owner squash。禁S7；禁自评自合。"
+  work_order: "REALPHOTOS-PRELAUNCH-E2E-2026-11-15"
+  prior_work_order: "UI polish #64 merged; OPS-DESK-UX-FIX #60; OPS-DESK-UX #59"
+  branch: cursor/prelaunch-e2e-9973
+  pr: pending
+  tip: 6bb498a
+  baseline_main: 6bb498a
+  e2e_evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-e2e.txt
+  evidence_marker: REALPHOTOS_PRELAUNCH_E2E_PASS
   production_billing: false
   r9_s7: blocked
   closed_ops_desk_ux:

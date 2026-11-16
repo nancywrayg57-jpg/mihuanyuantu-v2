@@ -1,0 +1,88 @@
+REALPHOTOS-PRELAUNCH-E2E-2026-11-15 evidence summary
+baseline: 6bb498a (origin/main tip at kickoff)
+branch: cursor/prelaunch-e2e-9973
+worktree: /home/hbs/hbs-projects/mihuanyuantu-v2/.worktrees/prelaunch-e2e
+runtime_log: /tmp/realphotos-prelaunch-e2e.log
+recorded: 2026-11-15T22:25:07-05:00
+
+=== markers ===
+T1_ENV_PASS
+=== T1 reaffirm ===
+=== T3 static regressions ===
+=== T2-M merchant ===
+T2_M_PASS
+=== T2-O order_support ===
+T2_O_PASS
+=== T2-T tech_support ===
+T2_T_PASS
+=== T2-A admin ===
+T2_A_PASS
+=== T3 runtime regressions ===
+=== SUMMARY ===
+T2_M_PASS
+T2_O_PASS
+T2_T_PASS
+T2_A_PASS
+T2_E2E_PASS
+T3_FIX_PASS
+assets_by_ids PASS want=['377', '376', '375'] got=['377', '376', '375'] http=200
+
+=== fail/defect ===
+fail_count=0
+defect_count=0
+
+=== tail ===
+  PASS tickets_le_20 | n=20 pageSize=20
+  PASS held_credits | http=200
+  PASS managed_users | http=200
+  PASS account_logs_page20 | http=200
+  PASS logs_le_20 | n=20
+  PASS redo_settings_visible | http=200
+  PASS system_client_admin_gated
+  PASS tech_provider_contracts_note | http=403 (record only if 200)
+  PASS fe_page_tech:/realphotos/workspace | http=200
+  PASS fe_page_tech:/realphotos/system | http=200
+T2_T_PASS
+=== T2-A admin ===
+  PASS login:rp_admin | http=200
+  PASS admin_role | roles=['rp_admin']
+  PASS workspace_view_admin | view=admin
+  PASS provider_contracts | http=200
+  PASS contracts_payload
+  PASS detection_pass_score_read | path=/api/v1/realphotos/detection-pass-score
+  PASS device_presets_ops | http=200
+  PASS ops_metrics | http=200
+  PASS fe_admin_system
+  PASS fe_admin_workspace
+T2_A_PASS
+=== T3 runtime regressions ===
+  PASS login:rp_merchant_a1 | http=200
+  PASS t3_no_empty_localdisk_objects | missing=0/5
+  PASS t3_secret_pre_review
+  PASS t3_secret_final_detection
+  PASS t3_secret_generation
+  PASS t3_secret_prompt_opt
+=== SUMMARY ===
+fail_count=0
+defect_count=0
+T2_M_PASS
+T2_O_PASS
+T2_T_PASS
+T2_A_PASS
+T2_E2E_PASS
+T3_FIX_PASS
+assets_by_ids PASS want=['377', '376', '375'] got=['377', '376', '375'] http=200
+PYTEST_S0_PASS
+RUFF_REALPHOTOS_PASS
+SECRET_SCAN_PASS
+T1_ENV_PASS
+T2_A_PASS
+T2_E2E_PASS
+T2_M_PASS
+T2_O_PASS
+T2_T_PASS
+T3_FIX_PASS
+T4_CLOSEOUT_PASS
+T5_CI_LOCAL_PASS
+TSC_FAIL
+TSC_PASS

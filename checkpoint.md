@@ -7,14 +7,16 @@
 | 字段 | 当前值 |
 | --- | --- |
 | updated | 2026-11-15 CST |
-| origin/main | `2d807e8` |
-| 工作区分支 | `cursor/ops-desk-ux-9973`（`.worktrees/ops-desk-ux`） |
-| 工单 | OPS-DESK-UX |
-| T1 | done（tech-desk 双标签 / 处理弹窗 / held 按租户聚合+按量释放） |
-| T2 | done（managed-tenants + 用户管理弹窗） |
-| T3 | done（检测基线说明文案删除） |
-| 单测 | held FIFO + tenants list 相关 3 passed |
-| 证据 | `docs/mihuanyuantu-v2/input/OPS-DESK-UX-e2e-2026-11-15.txt` |
+| origin/main | `6bb498a`（含 UI polish #64） |
+| 工作区分支 | `cursor/prelaunch-e2e-9973`（`.worktrees/prelaunch-e2e`） |
+| 工单 | `REALPHOTOS-PRELAUNCH-E2E-2026-11-15` |
+| T1 | PASS（共享 LocalDisk + duty secrets 四岗 + FE/API/worker） |
+| T2 | PASS（商家 / 订单客服 / 技术客服 / 管理员主路径） |
+| T3 | PASS（已知回归复测；本轮无新 P0/P1） |
+| T4 | PASS（上线门槛核对表 + 残余风险；**未执行 S7**） |
+| T5 | 本地 secret_scan / ruff / pytest 绿；tsc 见证据；待 Collaborator PR |
+| 证据 | `docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-e2e.txt`；`/tmp/realphotos-prelaunch-e2e.log` |
+| 收尾 | `docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-closeout.md` |
 | production_billing | false |
-| S7 | blocked |
-| 下一步 | 推分支开 PR；禁自评自合 |
+| S7 | blocked（清单未齐 + 须管理员确认） |
+| 下一步 | Collaborator 推 PR；非作者 Owner squash；禁自评自合；禁 S7 |

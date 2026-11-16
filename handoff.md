@@ -7,24 +7,26 @@
 
 | 项 | 值 |
 | --- | --- |
-| 当前工单 | `OPS-DESK-UX` |
-| 分支 | `cursor/ops-desk-ux-9973`（worktree `.worktrees/ops-desk-ux`） |
-| 基线 | `origin/main` @ `2d807e8`（含 REGISTER-FIX #58） |
-| 交付 | T1 工单双标签+申诉弹窗+租户聚合冻结释放；T2 租户列表/查看账号/操作弹窗；T3 删检测基线说明文案 |
-| 验证 | pytest 3 项 + ruff；证据 `OPS-DESK-UX-e2e-2026-11-15.txt` |
-| 阶段红线 | **禁止开 S7**；禁止生产收费宣称；不改 PASS_SCORE 合同默认 |
+| 当前工单 | `REALPHOTOS-PRELAUNCH-E2E-2026-11-15` |
+| 分支 | `cursor/prelaunch-e2e-9973`（worktree `.worktrees/prelaunch-e2e`） |
+| 基线 | `origin/main` @ `6bb498a`（含 #64 polish） |
+| 交付 | 上线前四角色全量端测 + 已知回归复测 + §11 门槛核对（非部署） |
+| 验证 | `/tmp/realphotos-prelaunch-e2e.log` 含 `T1`–`T3` PASS；证据入库见 input/ |
+| 阶段红线 | **禁止开 S7**；禁止生产收费宣称；不改 PASS_SCORE；作者不得自合 |
 
 ## 2. 证据指针
 
-- 工单 / 账本：`docs/mihuanyuantu-v2/input/OPS-DESK-UX-work-order-2026-11-14.md`、`OPS-DESK-UX-constraint-ledger.md`
-- 端测：`docs/mihuanyuantu-v2/input/OPS-DESK-UX-e2e-2026-11-15.txt`
+- 工单副本：`docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15.md`
+- 端测摘要：`docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-e2e.txt`
+- 门槛核对：`docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-closeout.md`
+- 运行日志：`/tmp/realphotos-prelaunch-e2e.log`
 
 ## 3. 风险 / 勿做
 
-- `GET /held-credits` 的 `items` 现为租户聚合；逐任务明细在 `tasks`（旧脚本勿再读 `items[].taskId`）
-- 主树 `gemini-dof-light-opt` 脏工作勿与本 worktree 混用
+- S7 清单未齐；本 PR 不含 Tag / 真部署 / 改分支保护
+- FE 冷启动偶发短超时；复测用更长超时
 - 双账号：禁自评自合；禁打 Tag / 真部署
 
 ## 4. 下一步
 
-推分支并开 PR；非作者 Owner squash。禁 S7。
+Collaborator 推分支并开/更新 PR；Owner（非作者）审合。禁 S7。
