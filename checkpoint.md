@@ -14,7 +14,7 @@
 | T2 | PASS（商家 / 订单客服 / 技术客服 / 管理员主路径） |
 | T3 | PASS（已知回归复测；本轮无新 P0/P1） |
 | T4 | PASS（上线门槛核对表 + 残余风险；**未执行 S7**） |
-| T5 | 本地 secret_scan / ruff / pytest 绿；tsc 见证据；待 Collaborator PR |
+| T5 | PASS（本地 CI 绿；PR https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/65） |
 | 证据 | `docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-e2e.txt`；`/tmp/realphotos-prelaunch-e2e.log` |
 | 收尾 | `docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-closeout.md` |
 | production_billing | false |

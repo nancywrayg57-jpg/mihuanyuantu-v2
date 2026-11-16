@@ -520,8 +520,8 @@ next_action:
   work_order: "REALPHOTOS-PRELAUNCH-E2E-2026-11-15"
   prior_work_order: "UI polish #64 merged; OPS-DESK-UX-FIX #60; OPS-DESK-UX #59"
   branch: cursor/prelaunch-e2e-9973
-  pr: pending
-  tip: 6bb498a
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/65"
+  tip: bcc3320
   baseline_main: 6bb498a
   e2e_evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-e2e.txt
   evidence_marker: REALPHOTOS_PRELAUNCH_E2E_PASS
