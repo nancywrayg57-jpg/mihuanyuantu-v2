@@ -1,5 +1,7 @@
 # S7 生产部署 · 阻塞说明（Gemini 出口地区限制）
 
+> **状态更新（2026-11-16 23:55）：已解除。** 管理员提供的代理订阅（vmess 节点，美国出口）已在生产机以 Xray 落地为 `gemini-egress-proxy.service`（本地 `127.0.0.1:7890`）；`09_proxy.sh apply` 注入后 Gemini `generateContent` 返回 200，task 4 取得真实报告 `gemini-3.1-pro-preview total_score=52 passed=false`，交付物 12,370,703 B 可下载，积分按 PRD 释放。`REALPHOTOS_S7_PROD_E2E_PASS` 已达成。**遗留**：该节点为第三方订阅（名称含到期日 2026-12-06），须在此前替换为自有 SG/JP 代理（见 closeout R7）。下文保留原始诊断与排除过程，供复盘。
+
 工单：`REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16`  
 日期：2026-11-16  
 状态：**`T5_SUPPLIER_DETECTION_BLOCKED` / `REALPHOTOS_S7_PROD_E2E_FAIL`（failing_item=T5-SUP-FINAL_DETECTION）**

@@ -129,3 +129,11 @@
   - Gemini: `models` list works from blocked regions but `generateContent` returns `FAILED_PRECONDITION`; connectivity checks alone do not prove inference availability.
   - Parsing the material markdown: pick the first fenced block whose first line matches the key prefix (`sk-` / `AIza`); server-credential blocks (`root`) sit under single-`#` headings and can be mis-picked.
   - Operator-assisted login for E2E: create challenge via API, preset its `code_hash` (sha256 of a known code) in `cap_realphotos_auth_challenges`, then call the real login endpoint - no app config change and captcha logic still executes.
+
+### S7 egress resolution (2026-11-16 23:55)
+
+- Blocker cleared: admin supplied a Clash subscription (vmess node, `/api/sub/...`), not an HTTP proxy. Deployed Xray 26.11.9 on the app host as `gemini-egress-proxy.service` with a local HTTP inbound on `127.0.0.1:7890`; `09_proxy.sh apply` then injected `HTTPS_PROXY`/`NO_PROXY` into api/process/notify/cleanup.
+- Verified: egress IP changed to the node's US exit; Gemini `generateContent` -> 200; task 4 produced a real report `gemini-3.1-pro-preview total_score=52 passed=false`, output 12,370,703 B downloadable, credit `released_detection_not_passed`.
+- Lesson: a "subscription URL" (`/api/sub/<token>`, text/yaml with `proxies:`) is a Clash config, not a proxy endpoint - you need a client (Xray/sing-box) to turn it into a local HTTP/SOCKS port. Keep the token in a 0600 file on the host, never in the repo or logs.
+- Lesson: `detection_not_passed` surfaces as task status FAILED with `output_object_key` set and credit released - business rejection, not infrastructure failure. Do not read it as a technical error.
+- Residual: the node name carries an expiry (2026-12-06); replace with an owned SG/JP proxy before then (closeout R7).

@@ -21,35 +21,51 @@ s7_prod_deploy_2026_11_16:
   target_host: 47.242.28.49
   target_domain: https://exif-demo.honeybadgersoft.com
   storage_root: /root/蜜獾原图-v2/www/mhyt
-  status: blocked_supplier_detection_region
+  status: deployed_and_verified_pending_owner_merge
   markers:
     T0_S7_CHECKLIST_PASS: true
     T1_INFRA_PASS: true
     T2_SECRETS_PASS: true
     T3_DEPLOY_PASS: true
     T4_SMOKE_PASS: true
-    T5_PROD_E2E_ROLES_PASS: true
-    T5_SUPPLIER_DETECTION_BLOCKED: true
-    T6_GATE_BLOCKED: true
-    T7_PR_OPEN_PENDING_OWNER_MERGE: true
-    REALPHOTOS_S7_PROD_E2E_PASS: false
-    REALPHOTOS_S7_PROD_E2E_FAIL: T5-SUP-FINAL_DETECTION
+    T5_M_PASS: true
+    T5_O_PASS: true
+    T5_T_PASS: true
+    T5_A_PASS: true
+    T5_PROD_E2E_PASS: true
+    T6_GATE_PASS: true
+    T7_PR_PASS: true
+    REALPHOTOS_S7_PROD_E2E_PASS: true
   evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-e2e.txt
   closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md
   blocker: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md
   release: 3ed1088 at /root/蜜獾原图-v2/releases/3ed1088 (current symlink)
   database: realphotos_prod @127.0.0.1:5432 same-host PG16.15, role realphotos_app non-super
   units: realphotos-api/web/process/notify/cleanup (enabled+active)
-  public_entry: rolled_back_to_placeholder_per_failure_protocol
+  public_entry: serving_application
   unblock_decision: A_outbound_https_proxy (admin 2026-11-16)
-  unblock_state: app_side_ready_awaiting_proxy_endpoint
+  unblock_state: resolved_via_egress_proxy
   proxy_script: /root/蜜獾原图-v2/shared/09_proxy.sh (apply <proxy-url> | revert)
   roll_forward_cmd: sh /root/蜜獾原图-v2/shared/06_nginx.sh
   rollback_cmd: sh /root/蜜獾原图-v2/shared/08_rollback.sh
+  egress_proxy:
+    unit: gemini-egress-proxy.service (Xray 26.11.9, enabled+active)
+    local_endpoint: http://127.0.0.1:7890
+    exit_ip: 150.241.181.64
+    dependency: third_party_subscription_node
+    expiry_warning: "node name states 2026-12-06; replace with owned SG/JP proxy (R7)"
+  detection_task_4:
+    failure_class: detection_not_passed
+    detector: gemini-3.1-pro-preview
+    total_score: 52
+    output_bytes: 12370703
+    output_expires_at: "2026-11-23T15:50:12Z"
+    gateway_download: http=200 jpeg_header=true
+    credit_disposition: released_detection_not_passed
   supplier_live_samples:
     pre_review: dashscope qwen3-vl-plus http=200
     generation: aoju gpt-image-2 http=200 asset_id=4 1536x1024
-    final_detection: blocked_user_location_not_supported
+    final_detection: gemini-3.1-pro-preview http=200 via egress proxy; task4 total_score=52 passed=false
   defects_fixed: [D1_rp_table_unused_type, D2_schedule_hooks_after_return, D3_exiftool_missing, D4_sqlalchemy_21_psycopg3, D5_gemini_key_parse]
   e2e_log: /tmp/realphotos-s7-prod-e2e.log
   production_billing: false
@@ -559,14 +575,14 @@ known_conflicts:
     detail: "前置校验用库内资产的软删、不属于提交账号或入库字节再次 inspect 失败，发生在按张冻结之后。PostgreSQL 部分成功的可下载张使用 detection_mode=pass，detector=fixture，任务 40 消费 10、任务 41 释放 10。这不是新的 Gemini 小样，也不代替任务 29。SQLite 单测没有代替 /tmp/s4-pg-e2e.log。"
 
 next_action:
-  owner: admin_decision
-  action: "S7 阻塞已定为方案 A（出站代理）。应用侧代理支持已就绪（09_proxy.sh）。请提供一个允许地区（SG/JP/US）的 HTTP 正向代理地址（仅需放行 generativelanguage.googleapis.com:443）；收到后 apply → 切回 Nginx → 复跑检测抽样 → 续 T5/T6。"
+  owner: owner_merge
+  action: "S7 已部署并通过四角色 + 三岗供应商生产端测（REALPHOTOS_S7_PROD_E2E_PASS）。下一步：Owner 以非作者账号审合 PR #68（禁自评自合），通过后打 v2.M.P；并在 2026-12-06 前把第三方订阅出口代理替换为自有 SG/JP 代理（R7）。收费保持 false。"
   work_order: "REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16"
   branch: cursor/s7-prod-deploy-9973
-  pr: "（本单 PR，Collaborator 推送，Owner 非作者审合）"
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/68"
   blocker: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md
   closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md
-  production_entry: rolled_back_to_placeholder
+  production_entry: serving_application
   production_billing: false
   prior_work_order: "REALPHOTOS-PRELAUNCH-E2E-2026-11-15（#65 merged）；UI polish #64；OPS-DESK-UX-FIX #60；OPS-DESK-UX #59"
   prior_branch: cursor/prelaunch-e2e-9973
