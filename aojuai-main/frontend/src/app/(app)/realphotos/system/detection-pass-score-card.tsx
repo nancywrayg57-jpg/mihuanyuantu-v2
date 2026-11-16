@@ -77,7 +77,7 @@ export function DetectionPassScoreCard() {
       </label>
       {writable ? (
         <button
-          className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 disabled:opacity-50"
+          className="rp-btn border px-3 py-1 disabled:opacity-50"
           type="button"
           disabled={saving || !view}
           onClick={() => void save()}

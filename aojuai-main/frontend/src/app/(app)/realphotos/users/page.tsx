@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { ApiError, apiFetch } from '@/lib/api'
 
 type TenantRow = {
@@ -286,13 +287,14 @@ export default function RealphotosUsersPage() {
 
   return (
     <main className="space-y-4 p-6">
-      <h1 className="text-lg font-medium">用户管理</h1>
-      <p className="text-sm text-muted-foreground">按租户查看账号；账号级变更走「操作」弹窗。</p>
+      <RpPageHeader title="用户管理" description="按租户查看账号；账号级变更走「操作」弹窗。" />
       <p className="text-sm">{message || (loading ? '加载中…' : '')}</p>
-      <ListSearch value={search} placeholder="租户名 / 编码 / 编号" onChange={setSearch} />
+      <div className="rp-filter">
+        <ListSearch value={search} placeholder="租户名 / 编码 / 编号" onChange={setSearch} />
+      </div>
 
       <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
-        <table className="w-full border-collapse text-sm">
+        <table className="rp-table w-full border-collapse text-sm">
           <thead>
             <tr>
               <th className="border px-2 py-1 text-left">租户编号</th>
@@ -304,7 +306,7 @@ export default function RealphotosUsersPage() {
           <tbody>
             {visibleTenants.length === 0 ? (
               <tr>
-                <td className="border px-2 py-2 text-muted-foreground" colSpan={4}>
+                <td className="rp-empty border px-2 py-2 text-muted-foreground" colSpan={4}>
                   {loading ? '加载中…' : message || '暂无租户'}
                 </td>
               </tr>
@@ -319,21 +321,21 @@ export default function RealphotosUsersPage() {
                   <td className="border px-2 py-1">{item.accountCount}</td>
                   <td className="border px-2 py-1 space-x-1 whitespace-nowrap">
                     <button
-                      className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5"
+                      className="rp-btn border px-2 py-0.5"
                       type="button"
                       onClick={() => void openAccounts(item)}
                     >
                       查看账号
                     </button>
                     <button
-                      className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5"
+                      className="rp-btn border px-2 py-0.5"
                       type="button"
                       onClick={() => void openCreate(item)}
                     >
                       创建账号
                     </button>
                     <button
-                      className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5"
+                      className="rp-btn border px-2 py-0.5"
                       type="button"
                       onClick={() => void openOp(item)}
                     >
@@ -347,7 +349,7 @@ export default function RealphotosUsersPage() {
         </table>
         <div className="flex items-center gap-2 text-sm">
           <button
-            className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
+            className="rp-btn border px-2 py-1"
             type="button"
             disabled={page <= 1 || loading}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -358,7 +360,7 @@ export default function RealphotosUsersPage() {
             第 {page} / {pageCount} 页 · 共 {total} 条
           </span>
           <button
-            className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
+            className="rp-btn border px-2 py-1"
             type="button"
             disabled={page >= pageCount || loading}
             onClick={() => setPage((p) => p + 1)}
@@ -383,7 +385,7 @@ export default function RealphotosUsersPage() {
             <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
               <h2 className="text-sm font-medium">账号列表 · {tenantLabel(accountsOpen)}</h2>
               <button
-                className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5"
+                className="rp-btn border px-2 py-0.5"
                 type="button"
                 onClick={() => setAccountsOpen(null)}
               >
@@ -394,7 +396,7 @@ export default function RealphotosUsersPage() {
               {accountsLoading ? (
                 <p className="text-muted-foreground">加载中…</p>
               ) : (
-                <table className="w-full border-collapse text-sm">
+                <table className="rp-table w-full border-collapse text-sm">
                   <thead>
                     <tr>
                       <th className="border px-2 py-1 text-left">编号</th>
@@ -443,7 +445,7 @@ export default function RealphotosUsersPage() {
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-medium">创建账号 · {tenantLabel(createOpen)}</h2>
               <button
-                className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5"
+                className="rp-btn border px-2 py-0.5"
                 type="button"
                 onClick={() => setCreateOpen(null)}
               >
@@ -472,7 +474,7 @@ export default function RealphotosUsersPage() {
               ))}
             </select>
             <button
-              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1"
+              className="rp-btn border px-3 py-1"
               type="button"
               onClick={() => void createUser()}
             >
@@ -497,7 +499,7 @@ export default function RealphotosUsersPage() {
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-medium">操作 · {tenantLabel(opOpen)}</h2>
               <button
-                className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5"
+                className="rp-btn border px-2 py-0.5"
                 type="button"
                 onClick={() => setOpOpen(null)}
               >
@@ -601,7 +603,7 @@ export default function RealphotosUsersPage() {
             ) : null}
 
             <button
-              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1"
+              className="rp-btn border px-3 py-1"
               type="button"
               onClick={() => void submitOp()}
             >

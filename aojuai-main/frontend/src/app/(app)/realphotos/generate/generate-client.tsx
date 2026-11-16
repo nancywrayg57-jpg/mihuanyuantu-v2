@@ -239,7 +239,7 @@ export function RealphotosGenerateClient() {
               </option>
             ))}
           </select>
-          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1" type="button" onClick={applyTemplate}>
+          <button className="rp-btn border px-3 py-1" type="button" onClick={applyTemplate}>
             选用
           </button>
         </div>
@@ -248,7 +248,7 @@ export function RealphotosGenerateClient() {
         <h2 className="text-sm font-medium">提交</h2>
         <label className="block text-sm">
           模式
-          <select className="mt-1 block border px-2 py-1" value={mode} onChange={(event) => setMode(event.target.value)}>
+          <select className="rp-input mt-1 block" value={mode} onChange={(event) => setMode(event.target.value)}>
             <option value="text_to_image">文生图</option>
             <option value="image_to_image">图生图</option>
           </select>
@@ -314,11 +314,11 @@ export function RealphotosGenerateClient() {
         {lastSizes ? <p className="text-xs text-muted-foreground">{lastSizes}</p> : null}
         <div className="space-y-2 text-sm">
           <div className="flex flex-wrap gap-2">
-            <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1" type="button" onClick={() => void optimize()}>
+            <button className="rp-btn border px-3 py-1" type="button" onClick={() => void optimize()}>
               提示词优化
             </button>
             <button
-              className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 disabled:opacity-40"
+              className="rp-btn border px-3 py-1 disabled:opacity-40"
               type="button"
               disabled={!optId || !optimizedText}
               onClick={() => void confirmOpt()}
@@ -336,7 +336,7 @@ export function RealphotosGenerateClient() {
             </div>
           ) : null}
         </div>
-        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 text-sm" type="button" onClick={() => void submit()}>
+        <button className="rp-btn border px-3 py-1 text-sm" type="button" onClick={() => void submit()}>
           提交生图
         </button>
       </section>

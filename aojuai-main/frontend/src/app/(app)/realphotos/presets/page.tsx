@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { ApiError, apiFetch } from '@/lib/api'
 import { deviceTypeLabel, gpsModeLabel } from '@/lib/realphotos-labels'
 import {
@@ -479,12 +480,12 @@ export default function RealphotosPresetsPage() {
 
   return (
     <main className="space-y-4 p-6">
-      <h1 className="text-lg font-medium">设备预设</h1>
+      <RpPageHeader title="设备预设" description="按类型、品牌与型号维护处理预设。" />
       <p className="text-sm">{message}</p>
 
       <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1" type="button" onClick={openCreate}>
+      <div className="rp-filter flex flex-wrap items-center gap-3 text-sm">
+        <button className="rp-btn border px-3 py-1" type="button" onClick={openCreate}>
           新增预设
         </button>
         <ListSearch
@@ -498,11 +499,11 @@ export default function RealphotosPresetsPage() {
         <span>
           第 {page} / {pageCount} 页 · 每页 {PRESET_PAGE_SIZE} 条 · 共 {filteredItems.length} 条
         </span>
-        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+        <button className="rp-btn border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
           上一页
         </button>
         <button
-          className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
+          className="rp-btn border px-2 py-1"
           type="button"
           disabled={page >= pageCount}
           onClick={() => setPage((p) => p + 1)}
@@ -511,7 +512,7 @@ export default function RealphotosPresetsPage() {
         </button>
       </div>
 
-      <table className="w-full border-collapse text-sm">
+      <table className="rp-table w-full border-collapse text-sm">
         <thead>
           <tr>
             <th className="border px-2 py-1 text-left">预设名称</th>
@@ -526,7 +527,7 @@ export default function RealphotosPresetsPage() {
         <tbody>
           {pageItems.length === 0 ? (
             <tr>
-              <td className="border px-2 py-1" colSpan={7}>
+              <td className="rp-empty border px-2 py-1" colSpan={7}>
                 暂无预设
               </td>
             </tr>
@@ -540,20 +541,20 @@ export default function RealphotosPresetsPage() {
                 <td className="border px-2 py-1">{gpsModeLabel(item.gpsMode)}</td>
                 <td className="border px-2 py-1">{item.enabled ? '启用' : '停用'}</td>
                 <td className="border px-2 py-1 space-x-1">
-                  <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" onClick={() => void openDetail(item)}>
+                  <button className="rp-btn border px-2 py-1" type="button" onClick={() => void openDetail(item)}>
                     查看详情
                   </button>
-                  <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" onClick={() => void openEdit(item)}>
+                  <button className="rp-btn border px-2 py-1" type="button" onClick={() => void openEdit(item)}>
                     编辑
                   </button>
                   <button
-                    className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
+                    className="rp-btn border px-2 py-1"
                     type="button"
                     onClick={() => void setEnabled(item.code, !item.enabled)}
                   >
                     {item.enabled ? '停用' : '启用'}
                   </button>
-                  <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" onClick={() => void loadVersions(item.code)}>
+                  <button className="rp-btn border px-2 py-1" type="button" onClick={() => void loadVersions(item.code)}>
                     版本
                   </button>
                 </td>
@@ -578,7 +579,7 @@ export default function RealphotosPresetsPage() {
           >
             <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
               <h2 className="text-sm font-medium">{formMode === 'create' ? '新增预设' : '编辑预设'}</h2>
-              <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => setFormOpen(false)}>
+              <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => setFormOpen(false)}>
                 关闭
               </button>
             </div>
@@ -586,7 +587,7 @@ export default function RealphotosPresetsPage() {
               {PRESET_FORM_TABS.map((tab) => (
                 <button
                   key={tab.id}
-                  className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 whitespace-nowrap ${formTab === tab.id ? 'bg-muted font-medium' : ''}`}
+                  className={`rp-btn border px-3 py-1 whitespace-nowrap ${formTab === tab.id ? 'bg-muted font-medium' : ''}`}
                   type="button"
                   data-preset-form-tab={tab.id}
                   onClick={() => setFormTab(tab.id)}
@@ -648,7 +649,7 @@ export default function RealphotosPresetsPage() {
               ) : null}
             </div>
             <div className="border-t px-4 py-3">
-              <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 text-sm" type="button" onClick={() => void savePreset()}>
+              <button className="rp-btn border px-3 py-1 text-sm" type="button" onClick={() => void savePreset()}>
                 保存并生成版本快照
               </button>
             </div>
@@ -670,7 +671,7 @@ export default function RealphotosPresetsPage() {
           >
             <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
               <strong>预设详情 · {presetDisplayName(detail)}</strong>
-              <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => setDetail(null)}>
+              <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => setDetail(null)}>
                 关闭
               </button>
             </div>
@@ -678,7 +679,7 @@ export default function RealphotosPresetsPage() {
               {PRESET_FORM_TABS.map((tab) => (
                 <button
                   key={tab.id}
-                  className={`rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 whitespace-nowrap ${detailTab === tab.id ? 'bg-muted font-medium' : ''}`}
+                  className={`rp-btn border px-3 py-1 whitespace-nowrap ${detailTab === tab.id ? 'bg-muted font-medium' : ''}`}
                   type="button"
                   onClick={() => setDetailTab(tab.id)}
                 >
@@ -693,7 +694,7 @@ export default function RealphotosPresetsPage() {
               ) : null}
               {detailTab === 'exif' ? renderGpsDetail(detail) : null}
               <button
-                className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
+                className="rp-btn border px-2 py-1"
                 type="button"
                 onClick={() => {
                   setDetail(null)
@@ -713,7 +714,7 @@ export default function RealphotosPresetsPage() {
             版本快照 ·{' '}
             {presetDisplayName(items.find((item) => item.code === versionCode) || { code: versionCode })}
           </h2>
-          <table className="w-full border-collapse text-sm">
+          <table className="rp-table w-full border-collapse text-sm">
             <thead>
               <tr>
                 <th className="border px-2 py-1 text-left">版本</th>

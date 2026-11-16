@@ -7,12 +7,30 @@ import { toast } from 'sonner'
  * Cards follow the aojuai `Card` token (rounded-xl, border, bg-card, shadow-sm).
  * Buttons follow prototype `.btn` density: 10px radius, 180ms ease, hover lift.
  * Palette stays on the existing aojuai tokens (accent hover), not a new theme.
+ *
+ * Visual chrome for `.rp-btn` / `.rp-card` lives in `realphotos-surface.css`
+ * so pages share one export instead of copying the long hover class string.
  */
 export const rpCardClass =
   'rp-card rounded-xl border border-border bg-card text-card-foreground shadow-sm'
 
-export const rpBtnClass =
-  'rp-btn inline-flex items-center justify-center rounded-[10px] border border-border bg-background px-3 py-1 text-sm font-medium transition duration-150 hover:-translate-y-px hover:border-foreground/25 hover:bg-accent hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-background disabled:hover:shadow-none'
+export const rpBtnClass = 'rp-btn'
+
+export const rpBtnSmClass = 'rp-btn rp-btn-sm'
+
+export const rpBtnPrimaryClass = 'rp-btn rp-btn-primary'
+
+export const rpBtnDangerClass = 'rp-btn rp-btn-danger'
+
+export const rpInputClass = 'rp-input'
+
+export const rpSelectClass = 'rp-input rp-select'
+
+export const rpTableClass = 'rp-table w-full border-collapse text-sm'
+
+export const rpFilterClass = 'rp-filter'
+
+export const rpEmptyClass = 'rp-empty'
 
 /** Success/failure feedback for user-triggered tasks and staff ticket completion. */
 export function toastTask(message: string, ok = true) {

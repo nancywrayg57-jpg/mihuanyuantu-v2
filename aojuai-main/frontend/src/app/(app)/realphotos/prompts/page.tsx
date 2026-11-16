@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { ApiError, apiFetch } from '@/lib/api'
 
 type Template = {
@@ -77,17 +78,17 @@ export default function RealphotosPromptsPage() {
 
   return (
     <main className="space-y-6 p-6">
-      <h1 className="text-xl font-medium">AI 提示词模板</h1>
+      <RpPageHeader title="AI 提示词模板" description="模板供生图选用，选用不扣积分。" />
       <p className="text-sm">{message}</p>
       <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
         <h2 className="text-sm font-medium">新建</h2>
         <label className="block text-sm">
           名称
-          <input className="mt-1 block w-full max-w-md border px-2 py-1" value={name} onChange={(event) => setName(event.target.value)} />
+          <input className="rp-input mt-1 block w-full max-w-md" value={name} onChange={(event) => setName(event.target.value)} />
         </label>
         <label className="block text-sm">
           适用模式
-          <select className="mt-1 block border px-2 py-1" value={mode} onChange={(event) => setMode(event.target.value)}>
+          <select className="rp-input mt-1 block" value={mode} onChange={(event) => setMode(event.target.value)}>
             <option value="general">通用</option>
             <option value="text_to_image">文生图</option>
             <option value="image_to_image">图生图</option>
@@ -96,7 +97,7 @@ export default function RealphotosPromptsPage() {
         {isAdmin ? (
           <label className="block text-sm">
             范围
-            <select className="mt-1 block border px-2 py-1" value={scope} onChange={(event) => setScope(event.target.value)}>
+            <select className="rp-input mt-1 block" value={scope} onChange={(event) => setScope(event.target.value)}>
               <option value="tenant">租户</option>
               <option value="platform">平台</option>
             </select>
@@ -104,18 +105,18 @@ export default function RealphotosPromptsPage() {
         ) : null}
         <label className="block text-sm">
           正向提示词
-          <textarea className="mt-1 block w-full max-w-md border px-2 py-1" rows={2} value={prompt} onChange={(event) => setPrompt(event.target.value)} />
+          <textarea className="rp-input mt-1 block w-full max-w-md" rows={2} value={prompt} onChange={(event) => setPrompt(event.target.value)} />
         </label>
         <label className="block text-sm">
           负向提示词
-          <textarea className="mt-1 block w-full max-w-md border px-2 py-1" rows={2} value={negative} onChange={(event) => setNegative(event.target.value)} />
+          <textarea className="rp-input mt-1 block w-full max-w-md" rows={2} value={negative} onChange={(event) => setNegative(event.target.value)} />
         </label>
-        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 text-sm" type="button" onClick={() => void save()}>
+        <button className="rp-btn border px-3 py-1 text-sm" type="button" onClick={() => void save()}>
           保存模板
         </button>
       </section>
       <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
-        <div className="flex flex-wrap items-center gap-3 text-sm">
+        <div className="rp-filter flex flex-wrap items-center gap-3 text-sm">
           <ListSearch
             value={search}
             placeholder="名称 / 模式 / 提示词"
@@ -127,14 +128,14 @@ export default function RealphotosPromptsPage() {
           <span>
             第 {page} / {pageCount} 页 · 共 {filteredItems.length}
           </span>
-          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+          <button className="rp-btn border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
             上一页
           </button>
-          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>
+          <button className="rp-btn border px-2 py-1" type="button" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>
             下一页
           </button>
         </div>
-        <table className="w-full text-sm">
+        <table className="rp-table w-full text-sm">
           <thead>
             <tr>
               <th className="text-left">名称</th>
@@ -147,7 +148,7 @@ export default function RealphotosPromptsPage() {
           <tbody>
             {pageItems.length === 0 ? (
               <tr>
-                <td colSpan={5}>暂无模板</td>
+                <td className="rp-empty" colSpan={5}>暂无模板</td>
               </tr>
             ) : (
               pageItems.map((item) => (

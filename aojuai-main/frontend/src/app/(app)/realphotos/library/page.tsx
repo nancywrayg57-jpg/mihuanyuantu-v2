@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+import { RpPageHeader } from '@/components/realphotos/rp-page-header'
+import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { allocateDownloadFileName, extensionForContentType } from '@/lib/realphotos-download'
 import { formatByteSizeMb, originKindLabel } from '@/lib/realphotos-labels'
@@ -139,6 +141,11 @@ export default function RealphotosLibraryPage() {
     })
   }
 
+  function report(text: string, ok: boolean) {
+    setMessage(text)
+    toastTask(text, ok)
+  }
+
   async function removeOne(id: string) {
     try {
       await apiFetch(`/api/v1/realphotos/assets/${id}`, { method: 'DELETE' })
@@ -148,15 +155,15 @@ export default function RealphotosLibraryPage() {
         return next
       })
       await reload()
-      setMessage(`已删除资源 ${id}`)
+      report(`已删除资源 ${id}`, true)
     } catch (error: unknown) {
-      setMessage(error instanceof ApiError ? error.message : '删除失败')
+      report(error instanceof ApiError ? error.message : '删除失败', false)
     }
   }
 
   async function downloadOne(item: Asset, usedNames: Map<string, number> = downloadUsedNames.current) {
     if (!item.objectKey) {
-      setMessage('缺少对象键，无法经网关下载')
+      report('缺少对象键，无法经网关下载', false)
       return
     }
     try {
@@ -171,7 +178,7 @@ export default function RealphotosLibraryPage() {
       anchor.click()
       URL.revokeObjectURL(url)
     } catch (error: unknown) {
-      setMessage(error instanceof ApiError ? error.message : '下载失败')
+      report(error instanceof ApiError ? error.message : '下载失败', false)
     }
   }
 
@@ -198,13 +205,13 @@ export default function RealphotosLibraryPage() {
     const lockedCount = selectedIds.length - unlocked.length
     const ids = unlocked.slice(0, 10)
     if (!ids.length) {
-      setMessage(lockedCount ? '所选资源均已锁定，不能去处理' : '请先勾选 1–10 张资源')
+      report(lockedCount ? '所选资源均已锁定，不能去处理' : '请先勾选 1–10 张资源', false)
       return
     }
     if (lockedCount > 0) {
-      setMessage(`已跳过 ${lockedCount} 张锁定图；去处理最多 10 张`)
+      report(`已跳过 ${lockedCount} 张锁定图；去处理最多 10 张`, true)
     } else if (unlocked.length > 10) {
-      setMessage('去处理最多 10 张，已截取前 10 张')
+      report('去处理最多 10 张，已截取前 10 张', true)
     }
     router.push(`/realphotos/batch?assetIds=${ids.join(',')}`)
   }
@@ -212,18 +219,18 @@ export default function RealphotosLibraryPage() {
   async function onLocalUpload(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return
     if (frozen) {
-      setMessage('账号已因预审冻结，不能上传新资源')
+      report('账号已因预审冻结，不能上传新资源', false)
       return
     }
     const files = Array.from(fileList)
     if (files.length > UPLOAD_BATCH_MAX) {
-      setMessage(`单次最多上传 ${UPLOAD_BATCH_MAX} 张，整批已拒绝`)
+      report(`单次最多上传 ${UPLOAD_BATCH_MAX} 张，整批已拒绝`, false)
       return
     }
     for (const file of files) {
       const inspected = await inspectLocalFile(file)
       if (!inspected.ok) {
-        setMessage(inspected.message)
+        report(inspected.message, false)
         return
       }
     }
@@ -239,17 +246,17 @@ export default function RealphotosLibraryPage() {
         }
         await apiFetch('/api/v1/realphotos/assets/batch', { method: 'POST', body })
       }
-      setMessage(`本地上传已入库 ${files.length} 张`)
+      report(`本地上传已入库 ${files.length} 张`, true)
       setPage(1)
       await reload()
     } catch (error: unknown) {
-      setMessage(error instanceof ApiError ? error.message : '上传失败')
+      report(error instanceof ApiError ? error.message : '上传失败', false)
     }
   }
 
   return (
     <main className="space-y-6 p-6">
-      <h1 className="text-xl font-medium">图片资源</h1>
+      <RpPageHeader title="图片资源" description="入库、勾选、去处理，下载经受控网关。" />
       <p className="text-sm">{message}</p>
       {frozen ? (
         <p className="text-sm text-amber-800">
@@ -275,7 +282,7 @@ export default function RealphotosLibraryPage() {
         {frozen ? (
           <span className="border px-2 py-1 opacity-50">URL 导入（已冻结）</span>
         ) : (
-          <Link className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" href="/realphotos/imports">
+          <Link className="rp-btn border px-2 py-1" href="/realphotos/imports">
             URL 导入
           </Link>
         )}
@@ -283,7 +290,7 @@ export default function RealphotosLibraryPage() {
           <span className="border px-2 py-1 opacity-50">本地上传（已冻结）</span>
         ) : (
           <button
-            className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
+            className="rp-btn border px-2 py-1"
             type="button"
             onClick={() => fileInputRef.current?.click()}
           >
@@ -293,36 +300,36 @@ export default function RealphotosLibraryPage() {
         {frozen ? (
           <span className="border px-2 py-1 opacity-50">文生图（已冻结）</span>
         ) : (
-          <Link className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" href="/realphotos/generate?mode=text_to_image">
+          <Link className="rp-btn border px-2 py-1" href="/realphotos/generate?mode=text_to_image">
             文生图
           </Link>
         )}
         {frozen ? (
           <span className="border px-2 py-1 opacity-50">图生图（已冻结）</span>
         ) : (
-          <Link className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" href="/realphotos/generate?mode=image_to_image">
+          <Link className="rp-btn border px-2 py-1" href="/realphotos/generate?mode=image_to_image">
             图生图
           </Link>
         )}
       </section>
 
       <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 flex flex-wrap gap-2 text-sm">
-        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" onClick={() => goProcess()}>
+        <button className="rp-btn rp-btn-primary border px-2 py-1" type="button" onClick={() => goProcess()}>
           去处理（已选 {selectedIds.length}）
         </button>
-        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" onClick={() => void downloadSelected()}>
+        <button className="rp-btn border px-2 py-1" type="button" onClick={() => void downloadSelected()}>
           批量下载
         </button>
-        <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1" type="button" onClick={() => void removeSelected()}>
+        <button className="rp-btn rp-btn-danger border px-2 py-1" type="button" onClick={() => void removeSelected()}>
           批量删除
         </button>
       </section>
 
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 flex flex-wrap items-center gap-3 text-sm">
+      <section className="rp-filter rp-card rounded-xl border border-border bg-card shadow-sm p-4 flex flex-wrap items-center gap-3 text-sm">
         <label>
           搜索
           <input
-            className="ml-2 border px-2 py-1"
+            className="rp-input ml-2"
             value={search}
             placeholder="文件名 / 来源 / ID"
             onChange={(event) => setSearch(event.target.value)}
@@ -331,7 +338,7 @@ export default function RealphotosLibraryPage() {
         <label>
           来源
           <select
-            className="ml-2 border px-2 py-1"
+            className="rp-input ml-2"
             value={originFilter}
             onChange={(event) => {
               setOriginFilter(event.target.value)
@@ -348,7 +355,7 @@ export default function RealphotosLibraryPage() {
           第 {page} / {pageCount} 页 · 共 {total} 条 · 已选 {selectedIds.length} 张
         </span>
         <button
-          className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
+          className="rp-btn border px-2 py-1"
           type="button"
           disabled={page <= 1}
           onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -356,7 +363,7 @@ export default function RealphotosLibraryPage() {
           上一页
         </button>
         <button
-          className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-1"
+          className="rp-btn border px-2 py-1"
           type="button"
           disabled={page >= pageCount}
           onClick={() => setPage((p) => p + 1)}
@@ -364,7 +371,7 @@ export default function RealphotosLibraryPage() {
           下一页
         </button>
       </section>
-      <table className="w-full text-sm">
+      <table className="rp-table w-full text-sm">
         <thead>
           <tr>
             <th className="text-left">
@@ -394,7 +401,7 @@ export default function RealphotosLibraryPage() {
         <tbody>
           {visibleItems.length === 0 ? (
             <tr>
-              <td colSpan={8}>暂无资源</td>
+              <td className="rp-empty" colSpan={8}>暂无资源</td>
             </tr>
           ) : (
             visibleItems.map((item) => (
@@ -421,12 +428,7 @@ export default function RealphotosLibraryPage() {
                     <span className="inline-block h-10 w-10 border text-center leading-10 text-xs">图</span>
                   )}
                 </td>
-                <td>
-                  {item.displayName || `${item.originKind}_${item.id}`}
-                  {item.requestedWidth && item.actualWidth && item.requestedWidth !== item.actualWidth
-                    ? ` · 请求${item.requestedWidth}×${item.requestedHeight} / 实际${item.actualWidth}×${item.actualHeight}`
-                    : ''}
-                </td>
+                <td>{item.displayName || `${item.originKind}_${item.id}`}</td>
                 <td>{originKindLabel(item.originKind)}</td>
                 <td>{item.locked ? '图片锁定' : '可用'}</td>
                 <td>
@@ -434,10 +436,10 @@ export default function RealphotosLibraryPage() {
                 </td>
                 <td>{formatByteSizeMb(item.byteSize)}</td>
                 <td className="space-x-2">
-                  <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => void downloadOne(item)}>
+                  <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => void downloadOne(item)}>
                     下载
                   </button>
-                  <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-2 py-0.5" type="button" onClick={() => void removeOne(item.id)}>
+                  <button className="rp-btn rp-btn-sm rp-btn-danger border px-2 py-0.5" type="button" onClick={() => void removeOne(item.id)}>
                     删除
                   </button>
                 </td>

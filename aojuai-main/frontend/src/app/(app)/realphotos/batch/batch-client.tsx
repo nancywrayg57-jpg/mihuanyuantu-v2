@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { gpsSubmitGuard } from '@/lib/realphotos-gps-submit'
@@ -248,7 +249,7 @@ export function RealphotosBatchClient() {
 
   return (
     <main className="space-y-6 p-6">
-      <h1 className="text-xl font-medium">批量原图</h1>
+      <RpPageHeader title="批量原图" description="选择设备预设后，把库内图片提交为本批处理。" />
       {frozen ? (
         <p className="text-sm text-destructive">账号已冻结：可查看历史，不能提交新处理。</p>
       ) : null}
@@ -258,11 +259,11 @@ export function RealphotosBatchClient() {
           <h2 className="text-sm font-medium">设备预设（类型 → 品牌 → 型号）</h2>
           <ListSearch value={presetSearch} placeholder="型号 / 品牌 / 编码" onChange={setPresetSearch} />
         </div>
-        <div className="flex flex-wrap gap-3 text-sm">
+        <div className="rp-filter flex flex-wrap gap-3 text-sm">
           <label>
             类型
             <select
-              className="mt-1 block border px-2 py-1"
+              className="rp-input mt-1 block"
               value={deviceType}
               onChange={(event) => {
                 setDeviceType(event.target.value)
@@ -279,7 +280,7 @@ export function RealphotosBatchClient() {
           <label>
             品牌
             <select
-              className="mt-1 block border px-2 py-1"
+              className="rp-input mt-1 block"
               value={brand}
               onChange={(event) => setBrand(event.target.value)}
             >
@@ -293,7 +294,7 @@ export function RealphotosBatchClient() {
           <label>
             型号
             <select
-              className="mt-1 block border px-2 py-1"
+              className="rp-input mt-1 block"
               value={presetCode}
               onChange={(event) => setPresetCode(event.target.value)}
             >
@@ -309,7 +310,11 @@ export function RealphotosBatchClient() {
           <p className="text-sm text-destructive">GPS 不可用，已禁止提交：{gpsGuard.blockReason}</p>
         ) : null}
         {!gpsSubmitBlocked && gpsSkipHint ? (
-          <p className="text-sm text-amber-700 dark:text-amber-400">将跳过 GPS：{gpsSkipHint}</p>
+          <p className="text-sm text-amber-700 dark:text-amber-400">
+            {gpsSkipHint.includes('不写入') || gpsSkipHint.includes('跳过')
+              ? gpsSkipHint
+              : `将跳过 GPS 写入：${gpsSkipHint}`}
+          </p>
         ) : null}
       </section>
       <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
@@ -329,11 +334,11 @@ export function RealphotosBatchClient() {
               onChange={(event) => void onFile(event.target.files?.[0] || null)}
             />
           </label>
-          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1" type="button" disabled={frozen} onClick={() => void uploadToLibrary()}>
+          <button className="rp-btn border px-3 py-1" type="button" disabled={frozen} onClick={() => void uploadToLibrary()}>
             上传并加入本批
           </button>
           <button
-            className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1"
+            className="rp-btn border px-3 py-1"
             type="button"
             onClick={() =>
               setLibrary((prev) => {
@@ -349,7 +354,7 @@ export function RealphotosBatchClient() {
             移除最后一张
           </button>
           <button
-            className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1"
+            className="rp-btn rp-btn-primary border px-3 py-1"
             type="button"
             disabled={frozen || gpsSubmitBlocked}
             onClick={() => void submitBatch()}
@@ -357,7 +362,7 @@ export function RealphotosBatchClient() {
             开始处理
           </button>
         </div>
-        <table className="w-full text-sm">
+        <table className="rp-table w-full text-sm">
           <thead>
             <tr>
               <th className="text-left">缩略图</th>
@@ -368,7 +373,7 @@ export function RealphotosBatchClient() {
           <tbody>
             {library.length === 0 ? (
               <tr>
-                <td colSpan={3}>还没有库内资源。不能提交空批。</td>
+                <td className="rp-empty" colSpan={3}>还没有库内资源。不能提交空批。</td>
               </tr>
             ) : (
               library.map((item, index) => (

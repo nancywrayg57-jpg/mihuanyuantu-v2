@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { RpPageHeader } from '@/components/realphotos/rp-page-header'
+import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch } from '@/lib/api'
 import { RECHARGE_CREDITS_BY_YUAN, RECHARGE_TIERS_YUAN } from '@/lib/realphotos-s1'
 
@@ -44,9 +46,13 @@ export default function RealphotosWalletPage() {
           }),
         },
       )
-      setMessage(`已提交充值单 ${data.id}，${data.creditPoints} 积分，公式 ${data.priceFormula}。等待订单客服确认。`)
+      const text = `已提交充值单 ${data.id}，${data.creditPoints} 积分，公式 ${data.priceFormula}。等待订单客服确认。`
+      setMessage(text)
+      toastTask(text, true)
     } catch (error: unknown) {
-      setMessage(error instanceof ApiError ? error.message : '提交失败')
+      const text = error instanceof ApiError ? error.message : '提交失败'
+      setMessage(text)
+      toastTask(text, false)
     }
   }
 
@@ -58,10 +64,10 @@ export default function RealphotosWalletPage() {
 
   return (
     <main className="space-y-6 p-6">
-      <h1 className="text-xl font-medium">积分与充值</h1>
+      <RpPageHeader title="积分与充值" description="查看余额、提交充值档位，并核对积分流水。" />
       <p className="text-sm text-muted-foreground">{message}</p>
       <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm">
-      <table className="w-full text-sm">
+      <table className="rp-table w-full text-sm">
         <thead>
           <tr>
             <th className="text-left">可用余额</th>
@@ -105,17 +111,17 @@ export default function RealphotosWalletPage() {
               onChange={(event) => setNote(event.target.value)}
             />
           </label>
-          <button className="rp-btn rounded-[10px] transition duration-150 hover:-translate-y-px hover:bg-accent hover:shadow-sm disabled:hover:translate-y-0 disabled:hover:shadow-none border px-3 py-1 text-sm" type="button" onClick={() => void createOrder()}>
+          <button className="rp-btn rp-btn-primary border px-3 py-1 text-sm" type="button" onClick={() => void createOrder()}>
             提交充值单
           </button>
         </div>
       </section>
       <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="rp-filter flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-medium">流水</h2>
           <ListSearch value={search} placeholder="流水 / 类型 / 账号" onChange={setSearch} />
         </div>
-        <table className="w-full text-sm">
+        <table className="rp-table w-full text-sm">
           <thead>
             <tr>
               <th className="text-left">流水</th>
