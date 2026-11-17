@@ -251,9 +251,9 @@ function AuthShell({
           <div className={styles.logoSection}>
             <div className={styles.logoGlow} />
             <div className={styles.logoText}>
-              {['A', 'O', 'J', 'U'].map((letter, index) => (
+              {branding.letters.map((letter, index) => (
                 <span
-                  key={letter}
+                  key={`${letter}-${index}`}
                   className={styles.logoLetter}
                   style={{ animationDelay: `${index * 0.15}s` }}
                 >
@@ -263,7 +263,7 @@ function AuthShell({
             </div>
           </div>
 
-          <div className={styles.subtitle}>Merchant Registration</div>
+          <div className={styles.subtitle}>Photo Authenticity Platform</div>
 
           <div className={styles.glassCard}>
             <div className={styles.glassCardInner}>
