@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { ApiError, apiFetch } from '@/lib/api'
+import { formatDateTimeShort } from '@/lib/realphotos-time'
 
 type InboxItem = {
   id: string
@@ -13,6 +14,8 @@ type InboxItem = {
   createdAt?: string | null
 }
 
+const PAGE_SIZE = 10
+
 export default function RealphotosMessagesPage() {
   const [items, setItems] = useState<InboxItem[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -20,6 +23,7 @@ export default function RealphotosMessagesPage() {
 
   const [scope, setScope] = useState('all')
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
 
   async function reload() {
     const data = await apiFetch<{ items: InboxItem[]; unreadCount?: number; scope?: string }>(
@@ -53,20 +57,28 @@ export default function RealphotosMessagesPage() {
     }
   }
 
-  async function resend(id: string) {
+  async function markUnread(id: string) {
     try {
-      await apiFetch(`/api/v1/realphotos/inbox/${id}/resend`, { method: 'POST' })
-      setMessage('已补发站内通知（不重跑任务、不重复扣费）')
+      await apiFetch(`/api/v1/realphotos/inbox/${id}/unread`, { method: 'POST' })
       await reload()
     } catch (error: unknown) {
-      setMessage(error instanceof ApiError ? error.message : '补发失败')
+      setMessage(error instanceof ApiError ? error.message : '标为未读失败')
     }
   }
 
-  const visibleItems = useMemo(
+  const filteredItems = useMemo(
     () => items.filter((item) => matchSearchText(search, item.id, item.title, item.body)),
     [items, search],
   )
+  const pageCount = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE))
+  const visibleItems = useMemo(
+    () => filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filteredItems, page],
+  )
+
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount)
+  }, [page, pageCount])
 
   return (
     <main className="space-y-6 p-6">
@@ -77,7 +89,7 @@ export default function RealphotosMessagesPage() {
         </button>
       </div>
       <p className="text-sm text-muted-foreground">
-        按接收账号 + 租户隔离；保留 30 天。无邮件/短信通道。
+        消息保留30天
         {scope === 'recharge_only' ? ' 订单客服视图：仅商家充值订单通知。' : ''}
       </p>
       <p className="text-sm">{message}</p>
@@ -104,15 +116,15 @@ export default function RealphotosMessagesPage() {
                 <td>{item.title}</td>
                 <td>{item.body}</td>
                 <td>{item.readAt ? '已读' : '未读'}</td>
-                <td>{item.createdAt || ''}</td>
+                <td>{formatDateTimeShort(item.createdAt)}</td>
                 <td className="space-x-2">
                   {!item.readAt ? (
                     <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => void markRead(item.id)}>
                       标为已读
                     </button>
                   ) : null}
-                  <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => void resend(item.id)}>
-                    补发
+                  <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => void markUnread(item.id)}>
+                    标为未读
                   </button>
                 </td>
               </tr>
@@ -120,6 +132,27 @@ export default function RealphotosMessagesPage() {
           )}
         </tbody>
       </table>
+      <div className="flex items-center gap-2 text-sm">
+        <button
+          className="rp-btn border px-2 py-1"
+          type="button"
+          disabled={page <= 1}
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+        >
+          上一页
+        </button>
+        <span>
+          第 {page} / {pageCount} 页 · 共 {filteredItems.length} 条 · 每页 {PAGE_SIZE}
+        </span>
+        <button
+          className="rp-btn border px-2 py-1"
+          type="button"
+          disabled={page >= pageCount}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          下一页
+        </button>
+      </div>
       </section>
     </main>
   )

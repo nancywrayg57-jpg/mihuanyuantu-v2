@@ -16,8 +16,9 @@ import {
   type PresetFieldDef,
 } from '@/lib/realphotos-preset-fields'
 import { optionsForPresetField } from '@/lib/realphotos-preset-options'
+import { formatDateTimeShort } from '@/lib/realphotos-time'
 
-const PRESET_PAGE_SIZE = 20
+const PRESET_PAGE_SIZE = 10
 
 type Preset = {
   code: string
@@ -733,7 +734,7 @@ export default function RealphotosPresetsPage() {
                 versions.map((row) => (
                   <tr key={`${row.presetCode}-${row.versionNo}`}>
                     <td className="border px-2 py-1">{row.versionNo}</td>
-                    <td className="border px-2 py-1">{row.createdAt || ''}</td>
+                    <td className="border px-2 py-1">{formatDateTimeShort(row.createdAt)}</td>
                     <td className="border px-2 py-1">
                       {String(
                         (row.snapshot.legacyParameters as Record<string, unknown> | undefined)?.name ||

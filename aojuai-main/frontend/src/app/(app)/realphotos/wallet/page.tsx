@@ -7,10 +7,18 @@ import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch } from '@/lib/api'
 import { ledgerEntryTypeLabel } from '@/lib/realphotos-labels'
+import { formatDateTimeShort } from '@/lib/realphotos-time'
 import { RECHARGE_CREDITS_BY_YUAN, RECHARGE_TIERS_YUAN } from '@/lib/realphotos-s1'
 
 type Wallet = { availableInteger?: string; reservedInteger?: string }
-type Ledger = { id: string; entryType: string; operatorUserId?: string | null; deltaAvailable: string }
+type Ledger = {
+  id: string
+  entryType: string
+  operatorUserId?: string | null
+  operatorDisplay?: string | null
+  deltaAvailable: string
+  createdAt?: string | null
+}
 type PageData = { list?: Ledger[] }
 
 export default function RealphotosWalletPage() {
@@ -24,7 +32,7 @@ export default function RealphotosWalletPage() {
   async function reload() {
     const data = await apiFetch<Wallet>('/api/v1/realphotos/wallet')
     setWallet(data)
-    const page = await apiFetch<PageData>('/api/v1/realphotos/wallet/ledger?currentPage=1&pageSize=20')
+    const page = await apiFetch<PageData>('/api/v1/realphotos/wallet/ledger?currentPage=1&pageSize=10')
     setLedger(page.list || [])
   }
 
@@ -139,6 +147,7 @@ export default function RealphotosWalletPage() {
               <th className="text-left">类型</th>
               <th className="text-left">可用变动</th>
               <th className="text-left">操作账号</th>
+              <th className="text-left">时间</th>
             </tr>
           </thead>
           <tbody>
@@ -147,7 +156,8 @@ export default function RealphotosWalletPage() {
                 <td>{row.id}</td>
                 <td>{ledgerEntryTypeLabel(row.entryType)}</td>
                 <td>{row.deltaAvailable}</td>
-                <td>{row.operatorUserId || ''}</td>
+                <td>{row.operatorDisplay || row.operatorUserId || ''}</td>
+                <td>{formatDateTimeShort(row.createdAt)}</td>
               </tr>
             ))}
           </tbody>

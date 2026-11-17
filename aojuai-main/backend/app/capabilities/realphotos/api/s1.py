@@ -682,6 +682,40 @@ async def mark_inbox_read(
     )
 
 
+@router.post("/inbox/{message_id}/unread")
+async def mark_inbox_unread(
+    message_id: int,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(
+        PermissionChecker([WALLET_READ, WORKSPACE_READ, ORDER_SUPPORT_READ, TECH_DESK_READ, ADMIN_READ])
+    ),
+) -> dict[str, Any]:
+    """2026-11-17: 消息中心按钮由「补发」改为「标为未读」。"""
+    service = RealphotosS1Service(db)
+    roles = await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    if _order_support_only(roles):
+        rows = await service.list_inbox(
+            tenant_id=int(tenant_ctx.tenant_id),
+            recipient_user_id=int(current_user.id),
+        )
+        target = next((row for row in rows if int(row.id) == int(message_id)), None)
+        if target is None or not is_recharge_inbox_event(target.event_key, target.title):
+            from app.core.exceptions import ForbiddenError
+
+            raise ForbiddenError(message="订单客服只能操作充值类通知")
+    row = await service.mark_inbox_unread(
+        tenant_id=int(tenant_ctx.tenant_id),
+        recipient_user_id=int(current_user.id),
+        message_id=int(message_id),
+    )
+    await db.commit()
+    return SuccessResponse(
+        data={"id": str(int(row.id)), "readAt": row.read_at.isoformat() if row.read_at else None}
+    )
+
+
 @router.post("/inbox/{message_id}/resend")
 async def resend_inbox(
     message_id: int,

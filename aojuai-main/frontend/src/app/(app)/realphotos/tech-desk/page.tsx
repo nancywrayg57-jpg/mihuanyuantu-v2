@@ -10,6 +10,7 @@ import {
   ticketStatusLabel,
   ticketTypeLabel,
 } from '@/lib/realphotos-labels'
+import { formatDateTimeShort } from '@/lib/realphotos-time'
 
 type Ticket = {
   id: number
@@ -540,7 +541,7 @@ export default function RealphotosTechDeskPage() {
               关联账号：{tenantLabel(detail)} / {accountLabel(detail)}
             </p>
             <p>原因：{detail.reason}</p>
-            <p>时间：{detail.createdAt || '（无）'}</p>
+            <p>时间：{formatDateTimeShort(detail.createdAt) || '（无）'}</p>
             {detail.resolvedAt ? (
               <p>
                 办结：{detail.resolvedAt} / {detail.resolutionOutcome} / {detail.resolutionNote}

@@ -24,6 +24,7 @@ import {
   presetDisplayName,
   taskStatusLabel,
 } from '@/lib/realphotos-labels'
+import { formatDateTimeShort } from '@/lib/realphotos-time'
 
 type Detection = {
   accepted?: boolean
@@ -724,7 +725,7 @@ export default function RealphotosTasksPage() {
                   <dt>预设名称</dt>
                   <dd>{presetDisplayName(detail)}</dd>
                   <dt>创建时间</dt>
-                  <dd>{detail.createdAt || '—'}</dd>
+                  <dd>{formatDateTimeShort(detail.createdAt) || '—'}</dd>
                   {detail.copiedFrom ? (
                     <>
                       <dt>复制自</dt>

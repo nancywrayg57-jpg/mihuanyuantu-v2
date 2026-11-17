@@ -16,7 +16,6 @@ import {
   Clock,
   Files,
   KeyRound,
-  LayoutDashboard,
   Languages,
   LogOut,
   Menu,
@@ -194,15 +193,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
   )
 
   const visibleGroups = useMemo<NavGroup[]>(() => {
-    const groups: NavGroup[] = [
-      {
-        id: 'overview',
-        label: t('system.layout.overview'),
-        icon: LayoutDashboard,
-        pinned: true,
-        items: [{ to: '/welcome', label: t('system.layout.home'), icon: LayoutDashboard }],
-      },
-    ]
+    // 2026-11-17: 删除「概览 / 首页」固定分组；导航只由后端菜单驱动。
+    const groups: NavGroup[] = []
 
     const demoLabel = t('system.layout.demo')
     for (const root of (menuRoutes || []).filter(isRouteVisible)) {
@@ -358,6 +350,28 @@ export function AppLayout({ children }: { children: ReactNode }) {
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
+                )
+              }
+
+              // 2026-11-17: 单页目的一级菜单直接渲染为按钮，不再套一层可折叠分组。
+              if (group.items.length === 1 && !group.pinned) {
+                const only = group.items[0]
+                return (
+                  <Link
+                    key={groupId}
+                    href={only.to}
+                    onClick={() => setMobileNavOpen(false)}
+                    title={tMenu(only.label)}
+                    className={cn(
+                      'flex h-8 items-center gap-2 rounded-md px-2 text-sm font-medium transition-colors',
+                      active
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
+                    )}
+                  >
+                    <GroupIcon className={cn('h-4 w-4 shrink-0', active && 'text-primary')} />
+                    <span className="truncate">{tMenu(only.label)}</span>
+                  </Link>
                 )
               }
 

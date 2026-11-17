@@ -5,9 +5,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { ApiError, apiFetch } from '@/lib/api'
+import { formatDateTimeShort } from '@/lib/realphotos-time'
 
 type LogRow = {
   id: number
+  createdAt?: string | null
   operatorUserId: number
   targetUserId: number
   tenantId: number
@@ -28,7 +30,7 @@ export default function RealphotosLogsPage() {
   const [message, setMessage] = useState('')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(20)
+  const [pageSize, setPageSize] = useState(10)
   const [total, setTotal] = useState(0)
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function RealphotosLogsPage() {
       .then((data) => {
         setItems(Array.isArray(data.items) ? data.items : [])
         setPage(Number(data.page) || page)
-        setPageSize(Number(data.pageSize) || 20)
+        setPageSize(Number(data.pageSize) || 10)
         setTotal(Number(data.total) || (Array.isArray(data.items) ? data.items.length : 0))
       })
       .catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '日志读取失败'))
@@ -76,7 +78,7 @@ export default function RealphotosLogsPage() {
         <table className="rp-table w-full border-collapse text-sm">
           <thead>
             <tr>
-              <th className="border px-2 py-1 text-left">时间序号</th>
+              <th className="border px-2 py-1 text-left">时间</th>
               <th className="border px-2 py-1 text-left">操作者</th>
               <th className="border px-2 py-1 text-left">目标</th>
               <th className="border px-2 py-1 text-left">租户</th>
@@ -88,7 +90,7 @@ export default function RealphotosLogsPage() {
           <tbody>
             {visibleItems.map((item) => (
               <tr key={item.id}>
-                <td className="border px-2 py-1">{item.id}</td>
+                <td className="border px-2 py-1">{formatDateTimeShort(item.createdAt) || `#${item.id}`}</td>
                 <td className="border px-2 py-1">
                   <div>{item.operatorDisplay || `用户 #${item.operatorUserId}`}</div>
                   <div className="text-xs text-muted-foreground">#{item.operatorUserId}</div>

@@ -30,7 +30,7 @@ type Asset = {
 }
 
 const UPLOAD_BATCH_MAX = 20
-const PAGE_SIZE = 20
+const PAGE_SIZE = 10
 
 export default function RealphotosLibraryPage() {
   const router = useRouter()

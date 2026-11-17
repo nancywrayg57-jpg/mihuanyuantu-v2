@@ -50,7 +50,7 @@ USER_PAGE_SIZE = 10
 TENANT_PAGE_SIZE = 20
 HELD_PAGE_SIZE = 20
 TICKET_PAGE_SIZE = 20
-LOG_PAGE_SIZE = 20
+LOG_PAGE_SIZE = 10
 GPS_MODES = {"none", "fixed", "random_by_scene"}
 # PRESET-BULK-IMPORT B1: stop injecting Honeybadger s1-* into merchant enabled list.
 INJECT_S1_CATALOG_INTO_ENABLED = False

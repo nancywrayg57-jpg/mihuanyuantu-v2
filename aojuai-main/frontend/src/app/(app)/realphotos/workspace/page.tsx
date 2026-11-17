@@ -1,9 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch } from '@/lib/api'
@@ -13,6 +12,7 @@ import {
   ticketStatusLabel,
   ticketTypeLabel,
 } from '@/lib/realphotos-labels'
+import { formatDateTimeShort } from '@/lib/realphotos-time'
 
 type WorkspacePayload = {
   viewKind?: 'merchant' | 'admin' | 'order_support' | 'tech_support'
@@ -100,7 +100,6 @@ export default function RealphotosWorkspacePage() {
   const [message, setMessage] = useState('')
   const [appealReason, setAppealReason] = useState('')
   const [myTickets, setMyTickets] = useState<Ticket[]>([])
-  const [search, setSearch] = useState('')
 
   useEffect(() => {
     void apiFetch<WorkspacePayload>('/api/v1/realphotos/workspace')
@@ -116,41 +115,17 @@ export default function RealphotosWorkspacePage() {
   }, [])
 
   const view = data?.viewKind || (data?.merchantCards ? 'merchant' : 'admin')
-  const filteredOrders = useMemo(
-    () =>
-      (data?.orderSupportDesk?.items || []).filter((item) =>
-        matchSearchText(search, item.id, item.tenantId, item.requesterUserId, item.tierYuan, item.creditPoints),
-      ),
-    [data, search],
-  )
-  const filteredTechTickets = useMemo(
-    () =>
-      (data?.techSupportDesk?.items || []).filter((item) =>
-        matchSearchText(
-          search,
-          item.id,
-          item.tenantId,
-          item.ownerAccountId,
-          item.ticketType,
-          ticketTypeLabel(item.ticketType),
-          item.reason,
-        ),
-      ),
-    [data, search],
-  )
-  const filteredHistory = useMemo(
-    () =>
-      (data?.recentHistory || []).filter((item) =>
-        matchSearchText(search, item.id, item.kind, item.status, taskStatusLabel(item.status), item.presetCode, item.mode),
-      ),
-    [data, search],
-  )
-  const filteredMyTickets = useMemo(
-    () =>
-      myTickets.filter((item) =>
-        matchSearchText(search, item.id, item.ticketType, ticketTypeLabel(item.ticketType), item.status, item.reason),
-      ),
-    [myTickets, search],
+  // 2026-11-17: 工作台删除搜索框；列表直接展示后端数据。最近历史按 10 条一页。
+  const filteredOrders = data?.orderSupportDesk?.items || []
+  const filteredTechTickets = data?.techSupportDesk?.items || []
+  const historyRows = data?.recentHistory || []
+  const filteredMyTickets = myTickets
+  const [historyPage, setHistoryPage] = useState(1)
+  const historyPageSize = 10
+  const historyPageCount = Math.max(1, Math.ceil(historyRows.length / historyPageSize))
+  const filteredHistory = historyRows.slice(
+    (historyPage - 1) * historyPageSize,
+    historyPage * historyPageSize,
   )
 
   async function createAppeal() {
@@ -183,9 +158,6 @@ export default function RealphotosWorkspacePage() {
   return (
     <main className="space-y-6 p-6">
       <RpPageHeader title="工作台" description={subtitle || '按角色查看待办与本账号概览'} />
-      <div className="rp-filter">
-        <ListSearch value={search} placeholder="本页列表关键词" onChange={setSearch} />
-      </div>
       {data?.preReviewFrozen && view === 'merchant' ? (
         <p className="text-sm text-destructive">
           账号已冻结：可查看历史与保留期内结果，不能从工作台发起新获取或处理。请到
@@ -301,7 +273,7 @@ export default function RealphotosWorkspacePage() {
                     <td>{item.requesterUserId}</td>
                     <td>{item.tierYuan} 元</td>
                     <td>{item.creditPoints}</td>
-                    <td>{item.createdAt || '空'}</td>
+                    <td>{formatDateTimeShort(item.createdAt) || '空'}</td>
                   </tr>
                 ))
               )}
@@ -385,12 +357,33 @@ export default function RealphotosWorkspacePage() {
                     <td>{item.kind === 'processing' ? '处理' : '生图'}</td>
                     <td>{item.id}</td>
                     <td>{taskStatusLabel(item.status)}</td>
-                    <td>{item.createdAt || '空'}</td>
+                    <td>{formatDateTimeShort(item.createdAt) || '空'}</td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
+          <div className="flex items-center gap-2 text-sm">
+            <button
+              className="rp-btn border px-2 py-1"
+              type="button"
+              disabled={historyPage <= 1}
+              onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
+            >
+              上一页
+            </button>
+            <span>
+              第 {historyPage} / {historyPageCount} 页 · 共 {historyRows.length} 条 · 每页 {historyPageSize}
+            </span>
+            <button
+              className="rp-btn border px-2 py-1"
+              type="button"
+              disabled={historyPage >= historyPageCount}
+              onClick={() => setHistoryPage((p) => p + 1)}
+            >
+              下一页
+            </button>
+          </div>
         </section>
       ) : null}
 

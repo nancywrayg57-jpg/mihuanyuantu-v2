@@ -662,6 +662,27 @@ class RealphotosS1Service:
             await self.db.flush()
         return row
 
+    async def mark_inbox_unread(
+        self, *, tenant_id: int, recipient_user_id: int, message_id: int
+    ) -> RealphotosInboxMessage:
+        """2026-11-17: 消息中心「标为未读」——只清 read_at，不重投递、不重跑任务。"""
+        row = (
+            await self.db.execute(
+                select(RealphotosInboxMessage).where(
+                    RealphotosInboxMessage.id == int(message_id),
+                    RealphotosInboxMessage.tenant_id == int(tenant_id),
+                    RealphotosInboxMessage.recipient_user_id == int(recipient_user_id),
+                    RealphotosInboxMessage.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if row is None:
+            raise NotFoundError(message="消息不存在")
+        if row.read_at is not None:
+            row.read_at = None
+            await self.db.flush()
+        return row
+
     async def mark_inbox_all_read(self, *, tenant_id: int, recipient_user_id: int) -> int:
         now = _utcnow()
         rows = await self.list_inbox(tenant_id=tenant_id, recipient_user_id=recipient_user_id)
