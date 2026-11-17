@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { toastTask } from '@/components/realphotos/surface'
-import { ApiError, apiFetch } from '@/lib/api'
+import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import {
   ticketStatusLabel,
   ticketTypeLabel,
