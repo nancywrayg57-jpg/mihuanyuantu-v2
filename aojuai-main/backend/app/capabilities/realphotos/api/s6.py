@@ -88,6 +88,7 @@ class DeleteBody(BaseModel):
 class TenantDeleteBody(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
+    tenant_id: int = Field(alias="tenantId")
     confirm_code: str = Field(alias="confirmCode")
 
 
@@ -186,7 +187,7 @@ async def release_held(
     payload = await RealphotosOpsService(db).release_held_credit(
         actor_role_codes=roles,
         operator_user_id=int(current_user.id),
-        tenant_id=int(body.tenant_id),
+        tenant_id=int(tenant_id),
         task_id=int(task_id),
         reason=body.reason,
     )
@@ -206,7 +207,7 @@ async def release_held_by_amount(
     payload = await RealphotosOpsService(db).release_held_credits_by_amount(
         actor_role_codes=roles,
         operator_user_id=int(current_user.id),
-        tenant_id=int(body.tenant_id),
+        tenant_id=int(tenant_id),
         amount=body.amount,
         reason=body.reason,
     )
@@ -226,7 +227,7 @@ async def unfreeze(
     payload = await RealphotosOpsService(db).unfreeze_account(
         actor_role_codes=roles,
         operator_user_id=int(current_user.id),
-        tenant_id=int(body.tenant_id),
+        tenant_id=int(tenant_id),
         user_id=int(body.user_id),
         reason=body.reason,
     )
@@ -340,13 +341,12 @@ async def list_tenants(
     return SuccessResponse(data=payload)
 
 
-@router.post("/managed-tenants/{tenant_id}/delete")
+@router.post("/managed-tenants/delete")
 async def delete_tenant(
-    tenant_id: int,
+    body: TenantDeleteBody,
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
-    body: TenantDeleteBody,
     _: None = Depends(PermissionChecker([TECH_DESK_READ])),
 ) -> dict[str, Any]:
     """2026-11-17：管理员删除租户；仅允许删除无业务数据的租户。"""
@@ -355,7 +355,7 @@ async def delete_tenant(
         actor_role_codes=roles,
         operator_user_id=int(current_user.id),
         operator_tenant_id=int(tenant_ctx.tenant_id),
-        tenant_id=int(tenant_id),
+        tenant_id=int(body.tenant_id),
         confirm_code=body.confirm_code,
     )
     await db.commit()
@@ -392,7 +392,7 @@ async def create_user(
     payload = await RealphotosOpsService(db).create_user(
         actor_role_codes=roles,
         operator_user_id=int(current_user.id),
-        tenant_id=int(body.tenant_id),
+        tenant_id=int(tenant_id),
         username=body.username,
         password=body.password,
         role_code=body.role_code,
@@ -413,7 +413,7 @@ async def adjust_credits(
     payload = await RealphotosOpsService(db).adjust_credits(
         actor_role_codes=roles,
         operator_user_id=int(current_user.id),
-        tenant_id=int(body.tenant_id),
+        tenant_id=int(tenant_id),
         user_id=int(body.user_id),
         delta=body.delta,
         reason=body.reason,
@@ -436,7 +436,7 @@ async def set_roles(
     payload = await RealphotosOpsService(db).set_roles(
         actor_role_codes=roles,
         operator_user_id=int(current_user.id),
-        tenant_id=int(body.tenant_id),
+        tenant_id=int(tenant_id),
         user_id=int(user_id),
         role_codes=body.role_codes,
     )
