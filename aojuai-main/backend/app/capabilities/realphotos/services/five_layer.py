@@ -1491,7 +1491,7 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
         command = [
             "exiftool",
             "-overwrite_original",
-            f"-DateTime={shot_text}",
+            f"-IFD0:ModifyDate={shot_text}",
             f"-DateTimeOriginal={shot_text}",
             f"-CreateDate={shot_text}",
             f"-SubSecTime={subsec}",
