@@ -19,7 +19,6 @@ from app.capabilities.realphotos.constants import DEVICE_TYPE_ALIASES, DEVICE_TY
 from app.capabilities.realphotos.models import (
     RealphotosAccountLog,
     RealphotosAsset,
-    RealphotosRechargeOrder,
     RealphotosAuthGuard,
     RealphotosContentReview,
     RealphotosCreditAccount,
@@ -33,6 +32,7 @@ from app.capabilities.realphotos.models import (
     RealphotosMerchantProfile,
     RealphotosPresetVersion,
     RealphotosPromptOptimization,
+    RealphotosRechargeOrder,
     RealphotosReviewStreak,
     RealphotosSupportTicket,
 )
@@ -531,6 +531,7 @@ class RealphotosOpsService:
     async def _asset_for_ticket_reason(self, ticket: RealphotosSupportTicket) -> RealphotosAsset:
         """从工单原因解析目标图片：支持「任务 #N」（租户内编号/历史全局 id）与「资产 #N」。"""
         import re as _re
+
         from sqlalchemy import text as _text
 
         match = _re.search(r"(任务|资产)\s*#(\d+)", str(ticket.reason or ""))

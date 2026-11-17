@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, Response, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 
@@ -187,7 +187,7 @@ async def release_held(
     payload = await RealphotosOpsService(db).release_held_credit(
         actor_role_codes=roles,
         operator_user_id=int(current_user.id),
-        tenant_id=int(tenant_id),
+        tenant_id=int(body.tenant_id),
         task_id=int(task_id),
         reason=body.reason,
     )
@@ -207,7 +207,7 @@ async def release_held_by_amount(
     payload = await RealphotosOpsService(db).release_held_credits_by_amount(
         actor_role_codes=roles,
         operator_user_id=int(current_user.id),
-        tenant_id=int(tenant_id),
+        tenant_id=int(body.tenant_id),
         amount=body.amount,
         reason=body.reason,
     )
@@ -227,7 +227,7 @@ async def unfreeze(
     payload = await RealphotosOpsService(db).unfreeze_account(
         actor_role_codes=roles,
         operator_user_id=int(current_user.id),
-        tenant_id=int(tenant_id),
+        tenant_id=int(body.tenant_id),
         user_id=int(body.user_id),
         reason=body.reason,
     )
@@ -267,7 +267,6 @@ async def ticket_thumbnail(
     _: None = Depends(PermissionChecker([TECH_DESK_READ])),
 ) -> Response:
     """2026-11-17：申诉工单关联图片的缩略图/大图。"""
-    from fastapi.responses import Response as _Response
 
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     data = await RealphotosOpsService(db).ticket_thumbnail(
@@ -275,7 +274,7 @@ async def ticket_thumbnail(
         ticket_id=int(ticket_id),
         width=max(64, min(int(thumb or 480), 2048)),
     )
-    return _Response(
+    return Response(
         content=data,
         media_type="image/jpeg",
         headers={"Cache-Control": "private, max-age=300"},
@@ -438,7 +437,7 @@ async def create_user(
     payload = await RealphotosOpsService(db).create_user(
         actor_role_codes=roles,
         operator_user_id=int(current_user.id),
-        tenant_id=int(tenant_id),
+        tenant_id=int(body.tenant_id),
         username=body.username,
         password=body.password,
         role_code=body.role_code,
@@ -459,7 +458,7 @@ async def adjust_credits(
     payload = await RealphotosOpsService(db).adjust_credits(
         actor_role_codes=roles,
         operator_user_id=int(current_user.id),
-        tenant_id=int(tenant_id),
+        tenant_id=int(body.tenant_id),
         user_id=int(body.user_id),
         delta=body.delta,
         reason=body.reason,
@@ -482,7 +481,7 @@ async def set_roles(
     payload = await RealphotosOpsService(db).set_roles(
         actor_role_codes=roles,
         operator_user_id=int(current_user.id),
-        tenant_id=int(tenant_id),
+        tenant_id=int(body.tenant_id),
         user_id=int(user_id),
         role_codes=body.role_codes,
     )
