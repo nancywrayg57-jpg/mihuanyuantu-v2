@@ -10,7 +10,7 @@ import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { RpSection } from '@/components/realphotos/rp-section'
 import { RpDialog, RpEmpty, RpFilterBar, RpPagination, RpStatus, RpTable, RpTh } from '@/components/realphotos/rp-table'
 import { rpSelectClass, toastTask } from '@/components/realphotos/surface'
-import { PRESET_FIELD_DEFS, presetFieldText } from '@/lib/realphotos-preset-fields'
+import { PRESET_FIELD_DEFS, type PresetFieldDef } from '@/lib/realphotos-preset-fields'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import {
   DETECTION_PASS_SCORE,
@@ -194,6 +194,15 @@ function DetectionReport({ detection }: { detection: Detection | null | undefine
   )
 }
 
+function presetFieldText(preset: Record<string, unknown>, field: PresetFieldDef): string {
+  const legacy = (preset.legacyParameters as Record<string, unknown> | undefined) || {}
+  if (field.column) {
+    const direct = preset[field.column]
+    if (direct !== undefined && direct !== null && String(direct).trim() !== '') return String(direct)
+  }
+  const raw = legacy[field.key]
+  return raw === undefined || raw === null ? '' : String(raw)
+}
 export default function RealphotosTasksPage() {
   const [tab, setTab] = useState<'processing' | 'generation'>('processing')
   const [procPage, setProcPage] = useState(1)
@@ -906,7 +915,7 @@ export default function RealphotosTasksPage() {
               ) : (
                 visibleGenItems.map((item) => (
                   <tr key={item.id}>
-                    <td>{item.taskNo ?? item.id}</td>
+                    <td>{item.id}</td>
                     <td>{generationModeLabel(item.mode)}</td>
                     <td>{item.quantity}</td>
                     <td>
