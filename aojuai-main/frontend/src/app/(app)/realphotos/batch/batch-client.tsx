@@ -56,6 +56,7 @@ export function RealphotosBatchClient() {
   const [library, setLibrary] = useState<PendingAsset[]>([])
   const [presetSearch, setPresetSearch] = useState('')
   const [presetDetailOpen, setPresetDetailOpen] = useState(false)
+  const [presetDetail, setPresetDetail] = useState<Preset | null>(null)
   const gatewayPreviewUrls = useRef<Set<string>>(new Set())
 
   useEffect(() => {
@@ -192,6 +193,27 @@ export function RealphotosBatchClient() {
     [presets, presetCode],
   )
   const gpsGuard = useMemo(() => gpsSubmitGuard(selectedPreset), [selectedPreset])
+
+  // 2026-11-17: 选中预设后拉取全量设备参数（列表接口只给精简字段）。
+  useEffect(() => {
+    if (!presetCode) {
+      setPresetDetail(null)
+      return
+    }
+    let cancelled = false
+    void apiFetch<Preset>(/api/v1/realphotos/presets/)
+      .then((data) => {
+        if (!cancelled) setPresetDetail(data)
+      })
+      .catch(() => {
+        if (!cancelled) setPresetDetail(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [presetCode])
+
+  const detailPreset = presetDetail && presetDetail.code === presetCode ? presetDetail : selectedPreset
   const gpsSubmitBlocked = gpsGuard.blocked
   const gpsSkipHint = gpsGuard.skipHint
   async function onFile(next: File | null) {
@@ -344,33 +366,33 @@ export function RealphotosBatchClient() {
               : `将跳过 GPS 写入：${gpsSkipHint}`}
           </p>
         ) : null}
-        {selectedPreset ? (
+        {detailPreset ? (
           <div className="rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
             <dl className="grid grid-cols-2 gap-x-4 gap-y-1 md:grid-cols-4">
               <div>
                 <dt className="text-muted-foreground">类型</dt>
-                <dd>{deviceTypeLabel(String(selectedPreset.deviceType || ''))}</dd>
+                <dd>{deviceTypeLabel(String(detailPreset.deviceType || ''))}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">品牌</dt>
-                <dd>{String(selectedPreset.brand || '—')}</dd>
+                <dd>{String(detailPreset.brand || '—')}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">型号</dt>
-                <dd>{String(selectedPreset.model || '—')}</dd>
+                <dd>{String(detailPreset.model || '—')}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">GPS</dt>
                 <dd>
-                  {String(selectedPreset.gpsMode || 'none')}
-                  {selectedPreset.gpsWillSkip ? '（跳过写入）' : ''}
+                  {String(detailPreset.gpsMode || 'none')}
+                  {detailPreset.gpsWillSkip ? '（跳过写入）' : ''}
                 </dd>
               </div>
             </dl>
             {presetDetailOpen ? (
               <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 border-t border-border/50 pt-2 md:grid-cols-4">
                 {PRESET_DETAIL_FIELDS.map((field) => {
-                  const text = presetFieldText(selectedPreset, field)
+                  const text = presetFieldText(detailPreset, field)
                   if (!text.trim()) return null
                   return (
                     <div key={field.key}>

@@ -835,6 +835,19 @@ class RealphotosOpsService:
         payload["copyrightPolicy"] = "admin_ledger_author_copyright_allowed_ip_geo_excluded"
         return payload
 
+    async def preset_detail_for_merchant(self, *, code: str) -> dict[str, Any]:
+        """2026-11-17: 批量原图页展示预设全部设备参数（商家只读、仅启用预设）。"""
+        row = await self._preset_row(code)
+        if row is None or row.deleted_at is not None or not bool(row.enabled):
+            raise BusinessError(message="预设不存在或未启用", code="NOT_FOUND")
+        snap = await self._latest_snapshot(code)
+        gps_config = dict(snap["gpsConfig"]) if isinstance(snap.get("gpsConfig"), dict) else None
+        legacy = snap.get("legacyParameters") if isinstance(snap.get("legacyParameters"), dict) else {}
+        display_name = str(legacy.get("name") or "").strip()
+        payload = self._preset_dict(row, gps_config=gps_config, name=display_name or None)
+        payload["legacyParameters"] = dict(legacy)
+        return payload
+
     async def list_enabled_presets(self) -> list[dict]:
         from app.capabilities.realphotos.services.gps_write import gps_writability
 

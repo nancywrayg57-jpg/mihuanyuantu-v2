@@ -176,6 +176,21 @@ async def list_presets(
     return SuccessResponse(data={"items": items, "enabledCount": len(items)})
 
 
+@router.get("/presets/{code}")
+async def get_preset_detail(
+    code: str,
+    db: DBSession,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    _: None = Depends(PermissionChecker([WALLET_READ, WORKSPACE_READ, ADMIN_READ])),
+) -> dict[str, Any]:
+    """2026-11-17: 单个启用预设的全部设备参数（批量原图页「展开全部」用）。"""
+    from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
+
+    data = await RealphotosOpsService(db).preset_detail_for_merchant(code=code)
+    return SuccessResponse(data=data)
+
+
 @router.post("/assets")
 async def upload_asset(
     current_user: CurrentUser,
