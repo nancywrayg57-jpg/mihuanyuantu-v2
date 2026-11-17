@@ -813,28 +813,28 @@ export default function RealphotosTasksPage() {
                   ) : null}
                 </dl>
               </RpSection>
-              <RpSection title="图片申诉" tone="basic">
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">
-                    对本次结果有疑问可提交申诉，技术客服在「工单管理」处理；不自动重跑任务、不重复扣费。
-                  </p>
-                  <textarea
-                    className="rp-input w-full"
-                    rows={2}
-                    placeholder="申诉原因（例如：检测分数与实际不符 / 原图细节异常）"
-                    value={appealReason}
-                    onChange={(event) => setAppealReason(event.target.value)}
-                  />
-                  <button
-                    className="rp-btn"
-                    type="button"
-                    disabled={appealBusy}
-                    onClick={() => void createAppeal(String(detail.id))}
-                  >
-                    {appealBusy ? '提交中…' : '提交申诉'}
-                  </button>
-                </div>
-              </RpSection>
+              {/* 2026-11-17：仅冻结/锁定（积分 held）的任务可申诉；正常通过或已释放的失败不显示 */}
+              {String(detail.creditDisposition || '').startsWith('held') ? (
+                <RpSection title="图片申诉" tone="basic">
+                  <div className="space-y-2">
+                    <textarea
+                      className="rp-input w-full"
+                      rows={2}
+                      placeholder="申诉原因"
+                      value={appealReason}
+                      onChange={(event) => setAppealReason(event.target.value)}
+                    />
+                    <button
+                      className="rp-btn"
+                      type="button"
+                      disabled={appealBusy}
+                      onClick={() => void createAppeal(String(detail.id))}
+                    >
+                      {appealBusy ? '提交中…' : '提交申诉'}
+                    </button>
+                  </div>
+                </RpSection>
+              ) : null}
             </RpDialog>
           ) : null}
         </section>
