@@ -187,3 +187,54 @@ def resolve_gps(*, preset: dict[str, Any], seed: int) -> dict[str, Any]:
             "reason": "",
         }
     return {"action": "fail", "mode": mode, "reason": f"未知 gpsMode={mode}"}
+
+# 2026-11-17：任务详情展示用——把场景坐标盒映射到可读地名。
+_SCENE_PLACES: dict[str, str] = {
+    "landscape": "美国加州·山地",
+    "urban": "上海·城区",
+    "portrait": "杭州·城区",
+    "food": "北京·城区",
+    "sports": "美国洛杉矶·城区",
+    "macro": "香港·城区",
+    "beach": "美国夏威夷檀香山·海滨",
+    "mountain": "中国西藏·珠峰地区",
+    "street": "上海·街区",
+}
+
+
+def describe_gps(plan: dict[str, Any]) -> dict[str, Any]:
+    """Turn a resolve_gps plan into display fields for the task detail dialog."""
+    action = str(plan.get("action") or "")
+    mode = str(plan.get("mode") or "none")
+    rule = str(plan.get("sceneRule") or "")
+    place = _SCENE_PLACES.get(rule, _scene_label_zh(rule) if rule else "")
+    if action == "write":
+        lat = float(plan.get("latitude"))
+        lon = float(plan.get("longitude"))
+        alt = float(plan.get("altitude"))
+        return {
+            "action": action,
+            "mode": mode,
+            "scene": rule,
+            "place": place,
+            "latitude": round(lat, 6),
+            "longitude": round(lon, 6),
+            "altitude": round(alt, 1),
+            "latitudeText": f"{lat:.6f}°",
+            "longitudeText": f"{lon:.6f}°",
+            "altitudeText": f"{alt:.1f} m",
+            "reason": "",
+        }
+    return {
+        "action": action or "skip",
+        "mode": mode,
+        "scene": rule,
+        "place": place,
+        "latitude": None,
+        "longitude": None,
+        "altitude": None,
+        "latitudeText": "",
+        "longitudeText": "",
+        "altitudeText": "",
+        "reason": str(plan.get("reason") or "未写入 GPS"),
+    }
