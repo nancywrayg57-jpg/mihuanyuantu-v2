@@ -68,8 +68,17 @@ client intended to send too large body: 49061271 bytes  POST /api/v1/realphotos/
 
 ## 5. 批量图片处理（≥50 张）
 
-- 提交：50 条任务（同一预设），全部 `SUBMITTED` → 由 process worker 顺序消费；
-- 结果统计见文末「最终统计」（含交付/失败/预审失败/技术失败）。
+提交 50 条任务（同一预设，素材为 50 张本地上传图），由 process worker 顺序消费。实测结果（15:28 之后创建的任务，含后续重试/重处理共 51 条）：
+
+| 结果 | 数量 | 占比 |
+| --- | --- | --- |
+| 已交付 DELIVERED | 44 | 86.3% |
+| 检测未通过 detection_not_passed | 3 | 5.9% |
+| 预审失败 pre_review | 4 | 7.8% |
+| **合计** | **51** | 100% |
+
+- 单任务耗时约 1.5–3 分钟（含 5 层处理 + Gemini 检测），50 张总耗时约 70 分钟；
+- 全部任务最终进入终态，无残留 `SUBMITTED`。
 
 ## 6. 图片申诉（商家 → 技术客服）
 
@@ -130,3 +139,4 @@ client intended to send too large body: 49061271 bytes  POST /api/v1/realphotos/
 1. **JSON 导入必填 `name`**：只给 `url` 会报「缺少 name」，但页面提示未说明，容易误用。
 2. **上传耗时受网络影响大**：单张 ~3 MB 时约 6–9 秒/张；51 张需 ~7 分钟（分批后不会失败，但慢）。
 3. **任务处理吞吐**：单 worker 顺序处理，50 张约需 60–90 分钟；批量场景建议评估并发度。
+4. **（缺陷）自动重做遇到资源缺失会卡死**：对一条技术失败任务执行 `retry` 后，若其 asset 已被清理，worker 认领时报 `NotFoundError: 资源不存在`，日志出现 `task_failed`，但**任务状态仍停留在 SUBMITTED、执行 job 停留在 running**（attempts=0，未被回收），只能人工修数。建议：重试前校验 asset 是否存在；worker 异常路径确保 task → FAILED、job → failed 并提交事务。本次端测已把该测试任务恢复为 FAILED（原 failure_class=GEMINI_TECHNICAL）并终结其 job。
