@@ -166,9 +166,9 @@ export default function RealphotosUsersPage() {
     if (!deleteOpen) return
     setDeleteBusy(true)
     try {
-      await apiFetch(`/api/v1/realphotos/managed-tenants/${deleteOpen.tenantId}/delete`, {
+      await apiFetch('/api/v1/realphotos/managed-tenants/delete', {
         method: 'POST',
-        body: JSON.stringify({ confirmCode: tenantConfirm.trim() }),
+        body: JSON.stringify({ tenantId: deleteOpen.tenantId, confirmCode: tenantConfirm.trim() }),
       })
       setMessage(`已删除租户「${deleteOpen.tenantName || deleteOpen.tenantCode}」`)
       setDeleteOpen(null)
