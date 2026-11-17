@@ -837,6 +837,40 @@ class RealphotosS1Service:
         return task
 
     async def execute_queued(self, job: RealphotosExecutionJob) -> RealphotosImageTask:
+        """执行排队任务；任何未预期异常都必须让任务落终态，避免卡在 SUBMITTED。"""
+        try:
+            return await self._execute_queued(job)
+        except Exception as exc:  # noqa: BLE001 - 兜底：任务不能停在运行态
+            await self._terminalize_unexpected(job=job, exc=exc)
+            raise
+
+    async def _terminalize_unexpected(
+        self, *, job: RealphotosExecutionJob, exc: Exception
+    ) -> None:
+        """2026-11-17 修复：worker 异常（如原图被清理）时把任务判为技术失败并提交。"""
+        task_id = int((job.payload or {}).get("task_id") or 0)
+        try:
+            await self.db.rollback()
+            task = await self._task(tenant_id=int(job.tenant_id), task_id=task_id)
+        except Exception:  # noqa: BLE001 - 任务本身不可读时无从落态
+            return
+        if task.status in {TASK_DELIVERED, TASK_FAILED, TASK_PRE_REVIEW_FAILED}:
+            await self.db.commit()
+            return
+        task.status = TASK_FAILED
+        task.failure_class = "technical"
+        task.credit_disposition = "held_until_tech_support"
+        try:
+            await self._notify(
+                task,
+                title="技术异常",
+                body=f"处理过程中发生未预期错误（{type(exc).__name__}），任务已失败，积分保持冻结待技术客服处理。",
+            )
+        except Exception:  # noqa: BLE001 - 通知失败不阻断落态
+            pass
+        await self.db.commit()
+
+    async def _execute_queued(self, job: RealphotosExecutionJob) -> RealphotosImageTask:
         task_id = int((job.payload or {}).get("task_id") or 0)
         task = await self._task(tenant_id=int(job.tenant_id), task_id=task_id)
         if task.status in {TASK_DELIVERED, TASK_FAILED, TASK_PRE_REVIEW_FAILED}:
@@ -1345,6 +1379,8 @@ class RealphotosS1Service:
         )
         if task.failure_class not in _RETRYABLE_FAILURES:
             raise BusinessError(message="只有技术失败可以沿用原任务重试", code="RETRY_REJECTED")
+        # 2026-11-17：原图可能已被清理；缺失时不得把任务重置为 SUBMITTED（否则会卡死）。
+        await self._require_asset(task)
         # C1: historical fixture technical must not re-fire for merchant retry.
         if str(task.detection_mode or "") == DETECT_TECHNICAL:
             task.detection_mode = DETECT_GEMINI
@@ -1985,6 +2021,24 @@ class RealphotosS1Service:
         if row is None:
             raise NotFoundError(message="任务不存在")
         return row
+
+    async def _require_asset(self, task: RealphotosImageTask) -> RealphotosAsset:
+        """2026-11-17：重试/重处理前确认原图仍存在，避免 worker 认领后 NotFound 卡死。"""
+        asset = (
+            await self.db.execute(
+                select(RealphotosAsset).where(
+                    RealphotosAsset.id == int(task.asset_id),
+                    RealphotosAsset.tenant_id == int(task.tenant_id),
+                    RealphotosAsset.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if asset is None:
+            raise BusinessError(
+                message="原图已不存在（可能已过期清理），无法重试或重处理，请重新上传",
+                code="RETRY_ASSET_MISSING",
+            )
+        return asset
 
     async def _task_by_idempotency(self, *, tenant_id: int, idempotency_key: str) -> RealphotosImageTask | None:
         return (
