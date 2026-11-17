@@ -57,6 +57,9 @@ export default function RealphotosUsersPage() {
   const [accountsLoading, setAccountsLoading] = useState(false)
 
   const [createOpen, setCreateOpen] = useState<TenantRow | null>(null)
+  const [deleteOpen, setDeleteOpen] = useState<TenantRow | null>(null)
+  const [tenantConfirm, setTenantConfirm] = useState('')
+  const [deleteBusy, setDeleteBusy] = useState(false)
   const [newUsername, setNewUsername] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [newRole, setNewRole] = useState<string>('rp_merchant')
@@ -159,8 +162,26 @@ export default function RealphotosUsersPage() {
     }
   }
 
-  async function openCreate(row: TenantRow) {
-    setCreateOpen(row)
+  async function deleteTenantRow() {
+    if (!deleteOpen) return
+    setDeleteBusy(true)
+    try {
+      await apiFetch(`/api/v1/realphotos/managed-tenants/${deleteOpen.tenantId}/delete`, {
+        method: 'POST',
+        body: JSON.stringify({ confirmCode: tenantConfirm.trim() }),
+      })
+      setMessage(`已删除租户「${deleteOpen.tenantName || deleteOpen.tenantCode}」`)
+      setDeleteOpen(null)
+      setTenantConfirm('')
+      await loadTenants()
+    } catch (error: unknown) {
+      setMessage(error instanceof ApiError ? error.message : '删除租户失败')
+    } finally {
+      setDeleteBusy(false)
+    }
+  }
+
+  async function openCreate(row: TenantRow) {    setCreateOpen(row)
     setNewUsername('')
     setNewPassword('')
     setNewRole('rp_merchant')
@@ -341,6 +362,17 @@ export default function RealphotosUsersPage() {
                     >
                       操作
                     </button>
+                    <button
+                      className="rp-btn rp-btn-sm rp-btn-danger"
+                      type="button"
+                      onClick={() => {
+                        setDeleteOpen(item)
+                        setTenantConfirm('')
+                        setMessage('')
+                      }}
+                    >
+                      删除租户
+                    </button>
                   </td>
                 </tr>
               ))
@@ -480,6 +512,50 @@ export default function RealphotosUsersPage() {
             >
               创建
             </button>
+          </div>
+        </div>
+      ) : null}
+
+      {deleteOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setDeleteOpen(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="删除租户"
+        >
+          <div
+            className="rp-card w-full max-w-md space-y-3 p-4 text-sm"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-medium">删除租户 · {tenantLabel(deleteOpen)}</h2>
+              <button className="rp-btn rp-btn-sm" type="button" onClick={() => setDeleteOpen(null)}>
+                关闭
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              删除后该租户不再出现在列表中，且无法恢复。仅允许删除没有账号、图片、任务、充值单、工单且余额为零的租户。
+            </p>
+            <input
+              className="rp-input w-full"
+              placeholder="输入租户编码或名称确认"
+              value={tenantConfirm}
+              onChange={(e) => setTenantConfirm(e.target.value)}
+            />
+            <div className="flex justify-end gap-2">
+              <button className="rp-btn rp-btn-sm" type="button" onClick={() => setDeleteOpen(null)}>
+                取消
+              </button>
+              <button
+                className="rp-btn rp-btn-sm rp-btn-danger"
+                type="button"
+                disabled={deleteBusy}
+                onClick={() => void deleteTenantRow()}
+              >
+                {deleteBusy ? '删除中…' : '确认删除'}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

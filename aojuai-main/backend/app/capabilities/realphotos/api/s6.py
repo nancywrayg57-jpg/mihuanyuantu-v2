@@ -85,6 +85,12 @@ class DeleteBody(BaseModel):
     confirm_username: str = Field(alias="confirmUsername")
 
 
+class TenantDeleteBody(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    confirm_code: str = Field(alias="confirmCode")
+
+
 class PresetBody(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
@@ -331,6 +337,28 @@ async def list_tenants(
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     payload = await RealphotosOpsService(db).list_tenants(actor_role_codes=roles, page=page)
+    return SuccessResponse(data=payload)
+
+
+@router.post("/managed-tenants/{tenant_id}/delete")
+async def delete_tenant(
+    tenant_id: int,
+    body: TenantDeleteBody,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+) -> dict[str, Any]:
+    """2026-11-17：管理员删除租户；仅允许删除无业务数据的租户。"""
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosOpsService(db).delete_tenant(
+        actor_role_codes=roles,
+        operator_user_id=int(current_user.id),
+        operator_tenant_id=int(tenant_ctx.tenant_id),
+        tenant_id=int(tenant_id),
+        confirm_code=body.confirm_code,
+    )
+    await db.commit()
     return SuccessResponse(data=payload)
 
 

@@ -18,6 +18,7 @@ from app.capabilities.realphotos.constants import DEVICE_TYPE_ALIASES, DEVICE_TY
 from app.capabilities.realphotos.models import (
     RealphotosAccountLog,
     RealphotosAsset,
+    RealphotosRechargeOrder,
     RealphotosAuthGuard,
     RealphotosContentReview,
     RealphotosCreditAccount,
@@ -39,6 +40,7 @@ from app.capabilities.realphotos.services.credit_service import RealphotosCredit
 from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
 from app.capabilities.realphotos.services.s1_upload import inspect_upload
 from app.core.exceptions import BusinessError, ForbiddenError
+from app.core.logger import get_logger
 from app.core.security import hash_password
 from app.domain.auth.models import Tenant
 from app.domain.roles.models import Role
@@ -54,7 +56,11 @@ LOG_PAGE_SIZE = 10
 GPS_MODES = {"none", "fixed", "random_by_scene"}
 # PRESET-BULK-IMPORT B1: stop injecting Honeybadger s1-* into merchant enabled list.
 INJECT_S1_CATALOG_INTO_ENABLED = False
+logger = get_logger(__name__)
 PROTECTED_USERNAME = "rp_admin"
+# 2026-11-17：平台默认租户不可删除
+PROTECTED_TENANT_IDS = frozenset({1})
+PROTECTED_TENANT_CODES = frozenset({"default"})
 PLACEHOLDER_BRAND_BLOCKLIST = {"honeybadger", "runtimecam", "bizcam"}
 ACCOUNT_LOG_ACTION_ZH = {
     "create": "创建账号",
@@ -1304,6 +1310,102 @@ class RealphotosOpsService:
             reason="",
         )
         return {"deleted": True}
+
+    async def delete_tenant(
+        self,
+        *,
+        actor_role_codes: set[str],
+        operator_user_id: int,
+        operator_tenant_id: int,
+        tenant_id: int,
+        confirm_code: str,
+    ) -> dict[str, Any]:
+        """2026-11-17：管理员删除租户（仅允许删除无业务数据的租户）。"""
+        if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
+            raise ForbiddenError(message="只有平台管理员可以删除租户")
+        tenant = (
+            await self.db.execute(
+                select(Tenant).where(
+                    Tenant.id == int(tenant_id), Tenant.deleted_at.is_(None)
+                )
+            )
+        ).scalar_one_or_none()
+        if tenant is None:
+            raise BusinessError(message="租户不存在", code="NOT_FOUND")
+        if int(tenant.id) in PROTECTED_TENANT_IDS or str(tenant.code or "") in PROTECTED_TENANT_CODES:
+            raise ForbiddenError(message="平台默认租户不可删除")
+        if int(tenant.id) == int(operator_tenant_id):
+            raise ForbiddenError(message="不能删除当前登录账号所属租户")
+        if str(confirm_code or "").strip() not in {str(tenant.code or ""), str(tenant.name or "")}:
+            raise BusinessError(message="须输入租户编码或名称确认删除", code="INPUT_INVALID")
+
+        async def _count(model: Any, *where: Any) -> int:
+            return int(
+                (
+                    await self.db.execute(
+                        select(func.count()).select_from(model).where(*where)
+                    )
+                ).scalar()
+                or 0
+            )
+
+        counts = {
+            "users": await _count(User, User.tenant_id == int(tenant.id), User.deleted_at.is_(None)),
+            "assets": await _count(RealphotosAsset, RealphotosAsset.tenant_id == int(tenant.id), RealphotosAsset.deleted_at.is_(None)),
+            "tasks": await _count(RealphotosImageTask, RealphotosImageTask.tenant_id == int(tenant.id), RealphotosImageTask.deleted_at.is_(None)),
+            "rechargeOrders": await _count(RealphotosRechargeOrder, RealphotosRechargeOrder.tenant_id == int(tenant.id), RealphotosRechargeOrder.deleted_at.is_(None)),
+            "tickets": await _count(RealphotosSupportTicket, RealphotosSupportTicket.tenant_id == int(tenant.id), RealphotosSupportTicket.deleted_at.is_(None)),
+        }
+        account = (
+            await self.db.execute(
+                select(RealphotosCreditAccount).where(
+                    RealphotosCreditAccount.tenant_id == int(tenant.id)
+                )
+            )
+        ).scalar_one_or_none()
+        balance_reserved = int(getattr(account, "reserved_integer", 0) or 0) if account else 0
+        balance_available = int(getattr(account, "available_integer", 0) or 0) if account else 0
+        if any(int(v) for v in counts.values()) or balance_available or balance_reserved:
+            raise BusinessError(
+                message=(
+                    "租户下仍有数据，无法删除："
+                    f"账号 {counts['users']}、图片 {counts['assets']}、任务 {counts['tasks']}、"
+                    f"充值单 {counts['rechargeOrders']}、工单 {counts['tickets']}、"
+                    f"余额 {balance_available}（冻结 {balance_reserved}）。请先清理后再删除。"
+                ),
+                code="TENANT_NOT_EMPTY",
+                details={**counts, "availableInteger": balance_available, "reservedInteger": balance_reserved},
+            )
+
+        tenant.deleted_at = datetime.now(UTC)
+        await self.db.execute(
+            Role.__table__.update()
+            .where(Role.tenant_id == int(tenant.id), Role.deleted_at.is_(None))
+            .values(deleted_at=datetime.now(UTC))
+        )
+        # 菜单/授权是纯配置，随租户一并清掉，避免遗留孤儿行。
+        from sqlalchemy import text as _sql_text
+
+        await self.db.execute(
+            _sql_text("DELETE FROM role_menus WHERE tenant_id = :tenant_id"),
+            {"tenant_id": int(tenant.id)},
+        )
+        await self.db.execute(
+            _sql_text("DELETE FROM menus WHERE tenant_id = :tenant_id"),
+            {"tenant_id": int(tenant.id)},
+        )
+        await self.db.flush()
+        logger.info(
+            "realphotos_tenant_deleted",
+            tenant_id=int(tenant.id),
+            tenant_code=str(tenant.code or ""),
+            operator_user_id=int(operator_user_id),
+        )
+        return {
+            "tenantId": str(int(tenant.id)),
+            "tenantCode": str(tenant.code or ""),
+            "deleted": True,
+        }
 
     async def list_tenants(self, *, actor_role_codes: set[str], page: int = 1) -> dict[str, Any]:
         self._require_tech_or_admin(actor_role_codes)
