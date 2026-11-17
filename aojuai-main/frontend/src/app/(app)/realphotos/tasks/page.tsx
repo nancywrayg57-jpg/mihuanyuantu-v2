@@ -24,6 +24,7 @@ import {
   taskStatusLabel,
 } from '@/lib/realphotos-labels'
 import { formatDateTimeShort } from '@/lib/realphotos-time'
+import { ticketStatusLabel, ticketTypeLabel } from '@/lib/realphotos-labels'
 
 type Detection = {
   accepted?: boolean
