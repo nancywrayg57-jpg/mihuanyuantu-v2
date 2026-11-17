@@ -27,17 +27,6 @@ type Ticket = {
   resolutionNote?: string
 }
 
-type ImageLockItem = {
-  id: number
-  tenantId: number
-  tenantName?: string | null
-  ownerAccountId: number
-  username?: string | null
-  reason: string
-  imageIdentity: string
-  createdAt?: string | null
-}
-
 type HeldTenantItem = {
   tenantId: number
   tenantName?: string | null
@@ -74,9 +63,7 @@ export default function RealphotosTechDeskPage() {
   const [resolveNote, setResolveNote] = useState('')
   const [resolveOutcome, setResolveOutcome] = useState('accepted')
   // 2026-11-17：办结时可选择解除该任务图片的锁定（FR-006）
-  const [unlockTaskNo, setUnlockTaskNo] = useState('')
-  // 2026-11-17：图片锁定不自动建工单，技术客服在此直接查看并解锁
-  const [locks, setLocks] = useState<ImageLockItem[]>([])
+  const [unlockOnResolve, setUnlockOnResolve] = useState(true)
   // 2026-11-17：申诉工单展示关联图片缩略图，点击看大图
   const [thumbUrl, setThumbUrl] = useState('')
   const [largeUrl, setLargeUrl] = useState('')
@@ -136,25 +123,6 @@ export default function RealphotosTechDeskPage() {
     setCanAppeal(true)
   }
 
-  async function loadLocks() {
-    try {
-      const data = await apiFetch<{ items?: ImageLockItem[] }>('/api/v1/realphotos/image-locks?page=1')
-      setLocks(Array.isArray(data?.items) ? data.items : [])
-    } catch {
-      setLocks([])
-    }
-  }
-
-  async function unlockLock(id: number) {
-    try {
-      await apiFetch(`/api/v1/realphotos/image-locks/${id}/unlock`, { method: 'POST' })
-      toastTask('已解除该图片锁定', true)
-      await loadLocks()
-    } catch (error: unknown) {
-      toastTask(error instanceof ApiError ? error.message : '解锁失败', false)
-    }
-  }
-
   useEffect(() => {
     if (!detail || detail.ticketType !== 'image_appeal') {
       setThumbUrl('')
@@ -178,6 +146,24 @@ export default function RealphotosTechDeskPage() {
     }
   }, [detail])
 
+  function parseTaskNo(reason: string | null | undefined): number | undefined {
+    const match = /#(\d+)/.exec(String(reason || ''))
+    return match ? Number(match[1]) : undefined
+  }
+
+  async function unlockTicketImage() {
+    if (!detail) return
+    try {
+      const res = await apiFetch<{ unlocked?: number }>(
+        `/api/v1/realphotos/support-tickets/${detail.id}/unlock`,
+        { method: 'POST' },
+      )
+      toastTask(res?.unlocked ? `已解除图片锁定（${res.unlocked} 条）` : '该图片已解锁', true)
+    } catch (error: unknown) {
+      toastTask(error instanceof ApiError ? error.message : '解锁失败', false)
+    }
+  }
+
   async function openLarge() {
     if (!detail) return
     try {
@@ -194,7 +180,6 @@ export default function RealphotosTechDeskPage() {
   }
 
   useEffect(() => {
-    void loadLocks().catch(() => undefined)
     void loadDesk().catch(() => {
       setCanUnfreeze(false)
       void loadMine(1).catch((error: unknown) =>
@@ -260,7 +245,6 @@ export default function RealphotosTechDeskPage() {
     setDetail(item)
     setResolveNote('')
     setResolveOutcome('accepted')
-    setUnlockTaskNo('')
     setReason('')
   }
 
@@ -330,7 +314,7 @@ export default function RealphotosTechDeskPage() {
         body: JSON.stringify({
           outcome: resolveOutcome,
           note: resolveNote,
-          ...(unlockTaskNo.trim() ? { unlockTaskId: Number(unlockTaskNo.trim()) } : {}),
+          ...(detail && unlockOnResolve ? { unlockTaskId: parseTaskNo(detail.reason) } : {}),
         }),
       })
       const unlock = (updated as unknown as { imageUnlock?: { unlocked?: number } }).imageUnlock
@@ -494,51 +478,6 @@ export default function RealphotosTechDeskPage() {
         </section>
       ) : null}
 
-      {canUnfreeze ? (
-        <section className="rp-card p-4 space-y-2">
-          <h2 className="text-sm font-medium">图片锁定（{locks.length}）</h2>
-          <p className="text-xs text-muted-foreground">
-            同一张图二次内容审核失败会被自动锁定，锁定不会生成工单；可在此直接解锁。
-          </p>
-          <table className="rp-table">
-            <thead>
-              <tr>
-                <th className="text-left">租户</th>
-                <th className="text-left">账号</th>
-                <th className="text-left">原因</th>
-                <th className="text-left">图片指纹</th>
-                <th className="text-left">时间</th>
-                <th className="text-left">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {locks.length === 0 ? (
-                <tr>
-                  <td className="rp-empty" colSpan={6}>
-                    当前没有锁定的图片
-                  </td>
-                </tr>
-              ) : (
-                locks.map((lock) => (
-                  <tr key={lock.id}>
-                    <td>{lock.tenantName || `租户 ${lock.tenantId}`}</td>
-                    <td>{lock.username || '—'}</td>
-                    <td>{lock.reason === 'second_content_failure' ? '二次内容审核失败' : lock.reason}</td>
-                    <td className="font-mono text-xs">{lock.imageIdentity}…</td>
-                    <td>{formatDateTimeShort(lock.createdAt) || '—'}</td>
-                    <td>
-                      <button className="rp-btn rp-btn-sm" type="button" onClick={() => void unlockLock(lock.id)}>
-                        解锁
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </section>
-      ) : null}
-
       {canAppeal && !canUnfreeze ? (
         <section className="rp-card p-4 space-y-2">
           <h2 className="text-sm font-medium">创建图片申诉</h2>
@@ -675,6 +614,13 @@ export default function RealphotosTechDeskPage() {
             {detail.ticketType === 'image_appeal' ? (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">关联图片</span>
+                <button
+                  className="rp-btn rp-btn-sm"
+                  type="button"
+                  onClick={() => void unlockTicketImage()}
+                >
+                  解锁图片
+                </button>
                 {thumbUrl ? (
                   <button type="button" className="block" onClick={() => void openLarge()}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -708,17 +654,14 @@ export default function RealphotosTechDeskPage() {
                   value={resolveNote}
                   onChange={(event) => setResolveNote(event.target.value)}
                 />
-                <div className="flex flex-wrap items-center gap-2">
+                <label className="flex items-center gap-2 text-xs text-muted-foreground">
                   <input
-                    className="rp-input w-40"
-                    placeholder="解除锁定：任务编号"
-                    value={unlockTaskNo}
-                    onChange={(event) => setUnlockTaskNo(event.target.value)}
+                    type="checkbox"
+                    checked={unlockOnResolve}
+                    onChange={(event) => setUnlockOnResolve(event.target.checked)}
                   />
-                  <span className="text-xs text-muted-foreground">
-                    填任务编号则办结后解除该图锁定；留空仅办结工单。
-                  </span>
-                </div>
+                  办结同时解除该图片锁定
+                </label>
                 <button
                   className="rp-btn ml-2"
                   type="button"
