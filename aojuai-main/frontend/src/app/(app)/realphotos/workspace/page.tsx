@@ -180,17 +180,14 @@ export default function RealphotosWorkspacePage() {
           <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
             <div>进行中任务</div>
             <div className="text-lg">{cell(data.cards.activeTasks)}</div>
-            <div className="text-muted-foreground">本账号处理中</div>
           </article>
           <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
             <div>本月已完成</div>
             <div className="text-lg">{cell(data.cards.monthDelivered)}</div>
-            <div className="text-muted-foreground">已交付真实计数</div>
           </article>
           <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
             <div>未读消息</div>
             <div className="text-lg">{cell(data.cards.unreadMessages)}</div>
-            <div className="text-muted-foreground">本账号收件箱</div>
           </article>
         </section>
       ) : null}
@@ -332,7 +329,7 @@ export default function RealphotosWorkspacePage() {
       {view === 'merchant' ? (
         <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium">最近历史（本账号）</h2>
+            <h2 className="text-sm font-medium">最近历史</h2>
             <Link className="text-sm underline" href="/realphotos/tasks">
               全部任务
             </Link>
@@ -389,8 +386,7 @@ export default function RealphotosWorkspacePage() {
 
       {view === 'merchant' ? (
         <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
-          <h2 className="text-sm font-medium">图片申诉（本租户）</h2>
-          <p className="text-xs text-muted-foreground">可查看/创建申诉；无解冻入口。</p>
+          <h2 className="text-sm font-medium">图片申诉</h2>
           <div className="flex flex-wrap gap-2 text-sm">
             <input
               className="w-full max-w-md border px-2 py-1"

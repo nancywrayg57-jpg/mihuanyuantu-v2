@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { RpDialog } from '@/components/realphotos/rp-table'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { ApiError, apiFetch } from '@/lib/api'
 
@@ -28,6 +29,7 @@ export default function RealphotosPromptsPage() {
   const [page, setPage] = useState(1)
   const [roleHint, setRoleHint] = useState('')
   const [search, setSearch] = useState('')
+  const [createOpen, setCreateOpen] = useState(false)
 
   async function reload() {
     const data = await apiFetch<{ items: Template[] }>('/api/v1/realphotos/prompt-templates')
@@ -70,6 +72,10 @@ export default function RealphotosPromptsPage() {
         }),
       })
       setMessage('已保存模板。选用不扣积分。优化主路径在生图表单。')
+      setCreateOpen(false)
+      setName('')
+      setPrompt('')
+      setNegative('')
       await reload()
     } catch (error: unknown) {
       setMessage(error instanceof ApiError ? error.message : '保存失败')
@@ -81,42 +87,10 @@ export default function RealphotosPromptsPage() {
       <RpPageHeader title="AI 提示词模板" />
       <p className="text-sm">{message}</p>
       <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
-        <h2 className="text-sm font-medium">新建</h2>
-        <label className="block text-sm">
-          名称
-          <input className="rp-input mt-1 block w-full max-w-md" value={name} onChange={(event) => setName(event.target.value)} />
-        </label>
-        <label className="block text-sm">
-          适用模式
-          <select className="rp-input mt-1 block" value={mode} onChange={(event) => setMode(event.target.value)}>
-            <option value="general">通用</option>
-            <option value="text_to_image">文生图</option>
-            <option value="image_to_image">图生图</option>
-          </select>
-        </label>
-        {isAdmin ? (
-          <label className="block text-sm">
-            范围
-            <select className="rp-input mt-1 block" value={scope} onChange={(event) => setScope(event.target.value)}>
-              <option value="tenant">租户</option>
-              <option value="platform">平台</option>
-            </select>
-          </label>
-        ) : null}
-        <label className="block text-sm">
-          正向提示词
-          <textarea className="rp-input mt-1 block w-full max-w-md" rows={2} value={prompt} onChange={(event) => setPrompt(event.target.value)} />
-        </label>
-        <label className="block text-sm">
-          负向提示词
-          <textarea className="rp-input mt-1 block w-full max-w-md" rows={2} value={negative} onChange={(event) => setNegative(event.target.value)} />
-        </label>
-        <button className="rp-btn border px-3 py-1 text-sm" type="button" onClick={() => void save()}>
-          保存模板
-        </button>
-      </section>
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
         <div className="rp-filter flex flex-wrap items-center gap-3 text-sm">
+          <button className="rp-btn rp-btn-primary border px-3 py-1" type="button" onClick={() => setCreateOpen(true)}>
+            新建模板
+          </button>
           <ListSearch
             value={search}
             placeholder="名称 / 模式 / 提示词"
@@ -164,6 +138,56 @@ export default function RealphotosPromptsPage() {
           </tbody>
         </table>
       </section>
+      {createOpen ? (
+        <RpDialog title="新建模板" label="新建模板" onClose={() => setCreateOpen(false)}>
+          <label className="block text-sm">
+            名称
+            <input
+              className="rp-input mt-1 block w-full"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </label>
+          <label className="block text-sm">
+            适用模式
+            <select className="rp-input mt-1 block" value={mode} onChange={(event) => setMode(event.target.value)}>
+              <option value="general">通用</option>
+              <option value="text_to_image">文生图</option>
+              <option value="image_to_image">图生图</option>
+            </select>
+          </label>
+          {isAdmin ? (
+            <label className="block text-sm">
+              范围
+              <select className="rp-input mt-1 block" value={scope} onChange={(event) => setScope(event.target.value)}>
+                <option value="tenant">租户</option>
+                <option value="platform">平台</option>
+              </select>
+            </label>
+          ) : null}
+          <label className="block text-sm">
+            正向提示词
+            <textarea
+              className="rp-input mt-1 block w-full"
+              rows={3}
+              value={prompt}
+              onChange={(event) => setPrompt(event.target.value)}
+            />
+          </label>
+          <label className="block text-sm">
+            负向提示词
+            <textarea
+              className="rp-input mt-1 block w-full"
+              rows={3}
+              value={negative}
+              onChange={(event) => setNegative(event.target.value)}
+            />
+          </label>
+          <button className="rp-btn border px-3 py-1 text-sm" type="button" onClick={() => void save()}>
+            保存模板
+          </button>
+        </RpDialog>
+      ) : null}
     </main>
   )
 }

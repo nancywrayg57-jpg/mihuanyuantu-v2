@@ -20,7 +20,6 @@ import {
   detectionNotPassedExplanation,
   failureClassLabelForTask,
   generationModeLabel,
-  gpsModeLabel,
   presetDisplayName,
   taskStatusLabel,
 } from '@/lib/realphotos-labels'
@@ -158,12 +157,16 @@ function DetectionReport({ detection }: { detection: Detection | null | undefine
         ))}
       </div>
       <dl className="rp-kv">
-        <dt>模型结果</dt>
-        <dd>{boolPassLabel(detection.passed)}</dd>
+        <dt>模型检测</dt>
+        <dd className={detection.passed ? 'text-emerald-600' : 'text-destructive'}>
+          {boolPassLabel(detection.passed)}
+        </dd>
         {detection.accepted !== undefined ? (
           <>
-            <dt>平台接受</dt>
-            <dd>{boolPassLabel(detection.accepted)}</dd>
+            <dt>平台检测</dt>
+            <dd className={detection.accepted ? 'text-emerald-600' : 'text-destructive'}>
+              {boolPassLabel(detection.accepted)}
+            </dd>
           </>
         ) : null}
         <dt>检测器</dt>
@@ -718,7 +721,10 @@ export default function RealphotosTasksPage() {
               label={`处理任务 ${detail.id} 详情`}
               onClose={() => setDetail(null)}
             >
-              <RpSection title="基本" tone="basic">
+              <RpSection title="检测报告" tone="report">
+                <DetectionReport detection={detail.detection} />
+              </RpSection>
+              <RpSection title="基本信息" tone="basic">
                 <dl className="rp-kv">
                   <dt>状态</dt>
                   <dd>{taskStatusLabel(detail.status)}</dd>
@@ -732,11 +738,7 @@ export default function RealphotosTasksPage() {
                       <dd>{detail.copiedFrom}</dd>
                     </>
                   ) : null}
-                </dl>
-              </RpSection>
-              <RpSection title="积分" tone="credit">
-                <dl className="rp-kv">
-                  <dt>处置</dt>
+                  <dt>积分处置</dt>
                   <dd>{creditDispositionLabel(detail.creditDisposition)}</dd>
                   {detail.billingMode ? (
                     <>
@@ -745,64 +747,6 @@ export default function RealphotosTasksPage() {
                     </>
                   ) : null}
                 </dl>
-              </RpSection>
-              <RpSection title="失败" tone="failure">
-                <dl className="rp-kv">
-                  <dt>失败原因</dt>
-                  <dd>{failureClassLabelForTask(detail.failureClass, detail.detectionMode)}</dd>
-                  {detail.detectionMode ? (
-                    <>
-                      <dt>检测模式</dt>
-                      <dd>
-                        {detail.detectionMode === 'technical' ? '历史联调替身（已停用）' : detail.detectionMode}
-                      </dd>
-                    </>
-                  ) : null}
-                  {detail.failureMessage ? (
-                    <>
-                      <dt>详情</dt>
-                      <dd>
-                        {detail.failureTitle ? `${detail.failureTitle} — ` : ''}
-                        {detail.failureMessage}
-                      </dd>
-                    </>
-                  ) : null}
-                </dl>
-              </RpSection>
-              {detail.gpsWrite ? (
-                <RpSection title="EXIF / GPS" tone="gps">
-                  <dl className="rp-kv">
-                    <dt>GPS 模式</dt>
-                    <dd>
-                      {detail.gpsWrite.gpsMode ? gpsModeLabel(String(detail.gpsWrite.gpsMode)) : '—'}
-                    </dd>
-                    <dt>是否写入</dt>
-                    <dd>{detail.gpsWrite.written ? '是' : '否'}</dd>
-                    <dt>GPS 原因</dt>
-                    <dd>{detail.gpsWrite.reason || '—'}</dd>
-                    {detail.gpsWrite.actualGps ? (
-                      <>
-                        <dt>实际坐标</dt>
-                        <dd>
-                          {detail.gpsWrite.actualGps.latitude ?? '—'}, {detail.gpsWrite.actualGps.longitude ?? '—'}
-                          ，海拔 {detail.gpsWrite.actualGps.altitude ?? '—'}
-                        </dd>
-                      </>
-                    ) : null}
-                  </dl>
-                  {detail.gpsWrite.failedTags && detail.gpsWrite.failedTags.length > 0 ? (
-                    <ul className="list-inside list-disc">
-                      {detail.gpsWrite.failedTags.map((row) => (
-                        <li key={`${row.tag}-${row.reason}`}>
-                          失败标签 {row.tag || '—'}: {row.reason || '回读失败'}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </RpSection>
-              ) : null}
-              <RpSection title="检测报告" tone="report">
-                <DetectionReport detection={detail.detection} />
               </RpSection>
             </RpDialog>
           ) : null}

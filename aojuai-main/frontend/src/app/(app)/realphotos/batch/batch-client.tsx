@@ -21,7 +21,40 @@ type Preset = {
   gpsWillSkip?: boolean
   gpsWritableReason?: string
   gpsMode?: string
+  [key: string]: unknown
 }
+
+// 2026-11-17: 预设详情展示用中文标签；未知键原样展示。
+const PRESET_FIELD_LABELS: Record<string, string> = {
+  iso: 'ISO',
+  shutter: '快门',
+  aperture: '光圈',
+  focalLength: '焦距',
+  focalLengthEquiv: '等效焦距',
+  lensModel: '镜头',
+  lensMake: '镜头厂商',
+  makerNote: '厂商注释',
+  software: '软件',
+  whiteBalance: '白平衡',
+  exposureMode: '曝光模式',
+  exposureCompensation: '曝光补偿',
+  meteringMode: '测光模式',
+  colorSpace: '色彩空间',
+  colorDepth: '位深',
+  sensorType: '传感器',
+  sensorSize: '画幅',
+  imageWidth: '像素宽',
+  imageHeight: '像素高',
+  imageFormat: '格式',
+  aiPositivePrompt: '正向提示词',
+  aiNegativePrompt: '负向提示词',
+  aiStrength: 'AI 强度',
+  description: '描述',
+  sceneType: '场景',
+  source: '来源',
+}
+
+const PRESET_DEFAULT_KEYS = ['deviceType', 'brand', 'model', 'gpsMode', 'code']
 
 type PendingAsset = { id: string; previewUrl: string }
 
@@ -36,6 +69,7 @@ export function RealphotosBatchClient() {
   const [frozen, setFrozen] = useState(false)
   const [library, setLibrary] = useState<PendingAsset[]>([])
   const [presetSearch, setPresetSearch] = useState('')
+  const [presetDetailOpen, setPresetDetailOpen] = useState(false)
   const gatewayPreviewUrls = useRef<Set<string>>(new Set())
 
   useEffect(() => {
@@ -324,15 +358,61 @@ export function RealphotosBatchClient() {
               : `将跳过 GPS 写入：${gpsSkipHint}`}
           </p>
         ) : null}
+        {selectedPreset ? (
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-1 md:grid-cols-4">
+              <div>
+                <dt className="text-muted-foreground">类型</dt>
+                <dd>{deviceTypeLabel(String(selectedPreset.deviceType || ''))}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">品牌</dt>
+                <dd>{String(selectedPreset.brand || '—')}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">型号</dt>
+                <dd>{String(selectedPreset.model || '—')}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">GPS</dt>
+                <dd>
+                  {String(selectedPreset.gpsMode || 'none')}
+                  {selectedPreset.gpsWillSkip ? '（跳过写入）' : ''}
+                </dd>
+              </div>
+            </dl>
+            {presetDetailOpen ? (
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 border-t border-border/50 pt-2 md:grid-cols-4">
+                {Object.entries(selectedPreset)
+                  .filter(([key, value]) => {
+                    if (PRESET_DEFAULT_KEYS.includes(key)) return false
+                    if (key === 'gpsWritable' || key === 'gpsWillSkip' || key === 'gpsWritableReason') return false
+                    return ['string', 'number', 'boolean'].includes(typeof value) && String(value ?? '').trim() !== ''
+                  })
+                  .map(([key, value]) => (
+                    <div key={key}>
+                      <dt className="text-muted-foreground">{PRESET_FIELD_LABELS[key] || key}</dt>
+                      <dd className="break-all">{typeof value === 'boolean' ? (value ? '是' : '否') : String(value)}</dd>
+                    </div>
+                  ))}
+              </dl>
+            ) : null}
+            <button
+              className="rp-btn border mt-2 px-2 py-0.5 text-xs"
+              type="button"
+              onClick={() => setPresetDetailOpen((prev) => !prev)}
+            >
+              {presetDetailOpen ? '收起' : '展开全部'}
+            </button>
+          </div>
+        ) : null}
       </section>
       <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
-        <h2 className="text-sm font-medium">待处理图片（库内资源）</h2>
-        <p className="text-sm text-muted-foreground">
-          <Link className="underline" href="/realphotos/library">
-            打开图片资源勾选
-          </Link>
-        </p>
+        <h2 className="text-sm font-medium">待处理图片</h2>
         <div className="flex flex-wrap items-end gap-3 text-sm">
+          <Link className="rp-btn border px-3 py-1" href="/realphotos/library">
+            勾选图片
+          </Link>
           <label>
             本地辅助入库
             <input
