@@ -36,7 +36,9 @@ export default function RealphotosWalletPage() {
   async function reload() {
     const data = await apiFetch<Wallet>('/api/v1/realphotos/wallet')
     setWallet(data)
-    const page = await apiFetch<PageData>(/api/v1/realphotos/wallet/ledger?currentPage=&pageSize=)
+    const page = await apiFetch<PageData>(
+      `/api/v1/realphotos/wallet/ledger?currentPage=${ledgerPage}&pageSize=${LEDGER_PAGE_SIZE}`,
+    )
     setLedger(page.list || [])
     setLedgerTotal(Number(page.total || 0))
   }
