@@ -136,6 +136,12 @@ async def _enrich_task_detail(service, *, tenant_id: int, task) -> dict[str, Any
     else:
         payload["failureMessage"] = None
         payload["failureTitle"] = None
+    try:
+        lock_state = await service.image_lock_state(tenant_id=int(tenant_id), task=task)
+    except Exception:  # noqa: BLE001 - 锁定查询失败不影响详情
+        lock_state = {"locked": False, "reason": ""}
+    payload["imageLocked"] = bool(lock_state.get("locked"))
+    payload["imageLockReason"] = str(lock_state.get("reason") or "")
     payload["createdAt"] = task.created_at.isoformat() if getattr(task, "created_at", None) else None
     # R5: compact score glance for detection_not_passed list rows (no billing change).
     detection = payload.get("detection")

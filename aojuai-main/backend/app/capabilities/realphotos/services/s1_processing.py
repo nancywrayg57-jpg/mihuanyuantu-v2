@@ -2022,6 +2022,24 @@ class RealphotosS1Service:
             raise NotFoundError(message="任务不存在")
         return row
 
+    async def image_lock_state(
+        self, *, tenant_id: int, task: RealphotosImageTask
+    ) -> dict[str, Any]:
+        """2026-11-17：任务对应图片是否被锁定（按像素身份），供详情页控制申诉入口。"""
+        asset = await self._asset(tenant_id=tenant_id, asset_id=int(task.asset_id))
+        if asset.deleted_at is not None:
+            return {"locked": False, "reason": ""}
+        handle = get_storage_adapter().open_read(asset.object_key)
+        try:
+            data = handle.read()
+        finally:
+            handle.close()
+        return await RealphotosOpsService(self.db).image_lock_state(
+            tenant_id=int(tenant_id),
+            owner_account_id=int(task.owner_account_id),
+            data=data,
+        )
+
     async def _require_asset(self, task: RealphotosImageTask) -> RealphotosAsset:
         """2026-11-17：重试/重处理前确认原图仍存在，避免 worker 认领后 NotFound 卡死。"""
         asset = (

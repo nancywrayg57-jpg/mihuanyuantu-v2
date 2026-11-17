@@ -48,6 +48,8 @@ type ProcessingTask = {
   presetSnapshot?: Record<string, unknown> | null
   outputObjectKey?: string | null
   creditDisposition?: string | null
+  imageLocked?: boolean
+  imageLockReason?: string
   failureClass?: string | null
   failureMessage?: string | null
   failureTitle?: string | null
@@ -813,8 +815,8 @@ export default function RealphotosTasksPage() {
                   ) : null}
                 </dl>
               </RpSection>
-              {/* 2026-11-17：仅冻结/锁定（积分 held）的任务可申诉；正常通过或已释放的失败不显示 */}
-              {String(detail.creditDisposition || '').startsWith('held') ? (
+              {/* 2026-11-17：仅图片被锁定（FR-006 图片锁定）的任务可申诉 */}
+              {detail.imageLocked === true ? (
                 <RpSection title="图片申诉" tone="basic">
                   <div className="space-y-2">
                     <textarea

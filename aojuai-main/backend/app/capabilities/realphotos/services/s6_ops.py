@@ -151,6 +151,29 @@ class RealphotosOpsService:
         if profile is not None and bool(profile.pre_review_frozen):
             raise BusinessError(message="账号已因预审冻结，不能新建任务", code="ACCOUNT_FROZEN")
 
+    async def image_lock_state(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        data: bytes,
+    ) -> dict[str, Any]:
+        """2026-11-17：只读查询该像素是否被锁定（任务详情决定是否显示申诉入口）。"""
+        identity = pixel_identity(data)
+        row = (
+            await self.db.execute(
+                select(RealphotosImageLock).where(
+                    RealphotosImageLock.tenant_id == int(tenant_id),
+                    RealphotosImageLock.owner_account_id == int(owner_account_id),
+                    RealphotosImageLock.image_identity == identity,
+                    RealphotosImageLock.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if row is None:
+            return {"locked": False, "reason": ""}
+        return {"locked": True, "reason": str(row.reason or "")}
+
     async def assert_image_unlocked(
         self,
         *,
