@@ -101,3 +101,11 @@ ExifIFD:LightSource, ExifIFD:ExposureProgram, ExifIFD:Flash*, ExifIFD:MakerNote
 - 导入渠道：**已停用**（`SERVICE_NOT_CONFIGURED`），Base URL 为种子默认值，临时站不再生效。
 - 其余四个职责（generation / prompt_review / prompt_opt / final_detection）保持 2026-11-17 的 `gemini-2.5-flash` 配置。
 - 检测消耗的积分：导入不计费（`creditsCharged=0`），未产生额外扣费。
+
+---
+
+## 补充修复（2026-11-17）
+
+| 问题 | 原因 | 修复 | 验证 |
+| --- | --- | --- | --- |
+| 图片资源「来源」列对导入图片显示「未知来源」 | 导入资产 `origin_kind=url_import`，但 `originKindLabel` 只映射了 local_upload / text_to_image / image_to_image | 增加 `url_import → URL导入`（并兼容 `url-api` / `url_api` 历史写法），资源页来源筛选同步增加该选项 | Playwright：列表显示「URL导入」、全文无「未知来源」、下拉含该项 |
