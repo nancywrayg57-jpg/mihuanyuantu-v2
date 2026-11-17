@@ -1497,10 +1497,9 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
             f"-SubSecTime={subsec}",
             f"-SubSecTimeOriginal={subsec}",
             f"-SubSecTimeDigitized={subsec}",
-            "-Orientation=1",
-            "-XResolution=72",
-            "-YResolution=72",
-            "-ResolutionUnit=2",
+            "-IFD0:XResolution#=72",
+            "-IFD0:YResolution#=72",
+            "-IFD0:ResolutionUnit#=2",
             "-YCbCrPositioning=2",
             "-ExifVersion=0230",
             "-FlashpixVersion=0100",
@@ -1656,7 +1655,6 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
     # 2026-11-17（P0）：骨架标签做软校验（只告警，不改任务终态）。
     skeleton_expected: dict[str, object] = {
         "DateTimeOriginal": shot_text,
-        "Orientation": 1,
         "ImageUniqueID": unique_id,
     }
     if actual_width and actual_height:
