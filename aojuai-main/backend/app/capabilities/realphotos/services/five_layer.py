@@ -13,7 +13,9 @@ import logging
 import math
 import subprocess
 import tempfile
+import uuid
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -1470,9 +1472,40 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
     with tempfile.TemporaryDirectory(prefix="rp-s2-") as folder:
         path = Path(folder) / "result.jpg"
         path.write_bytes(jpeg)
+        # 2026-11-17（P0）：补相机 JPEG 的确定性骨架。只写文件自身能证明的值，
+        # 不写任何枚举默认值（P2：预设没有的参数一律不写）。
+        shot_at = datetime.now()
+        shot_text = shot_at.strftime("%Y:%m:%d %H:%M:%S")
+        subsec = f"{shot_at.microsecond // 10000:02d}"
+        actual_width = actual_height = 0
+        thumbnail_path: Path | None = Path(folder) / "thumb.jpg"
+        try:
+            with Image.open(io.BytesIO(jpeg)) as probe:
+                actual_width, actual_height = probe.size
+                thumb = probe.convert("RGB")
+                thumb.thumbnail((160, 120))
+                thumb.save(thumbnail_path, format="JPEG", quality=70)
+        except Exception:  # pragma: no cover - 源图由上游解码保证
+            thumbnail_path = None
+        unique_id = uuid.uuid4().hex.upper()[:32]
         command = [
             "exiftool",
             "-overwrite_original",
+            f"-DateTime={shot_text}",
+            f"-DateTimeOriginal={shot_text}",
+            f"-CreateDate={shot_text}",
+            f"-SubSecTime={subsec}",
+            f"-SubSecTimeOriginal={subsec}",
+            f"-SubSecTimeDigitized={subsec}",
+            "-Orientation=1",
+            "-XResolution=72",
+            "-YResolution=72",
+            "-ResolutionUnit=2",
+            "-YCbCrPositioning=2",
+            "-ExifVersion=0230",
+            "-FlashpixVersion=0100",
+            "-ComponentsConfiguration=1 2 3 0",
+            f"-ImageUniqueID={unique_id}",
             f"-Make={requested['Make']}",
             f"-Model={requested['Model']}",
             f"-ISO={requested['ISO']}",
@@ -1484,6 +1517,13 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
             "-GPS:all=",
             "-MakerNote=",
         ]
+        if actual_width and actual_height:
+            # 用真实输出像素，绝不使用预设里的 image_width/height（避免自相矛盾）。
+            command.extend(
+                [f"-ExifImageWidth={actual_width}", f"-ExifImageHeight={actual_height}"]
+            )
+        if thumbnail_path is not None:
+            command.append(f"-ThumbnailImage<={thumbnail_path}")
         if write_aperture_value:
             command.append(f"-ApertureValue={av:.6f}")
         for tag, value in optional:
@@ -1538,6 +1578,11 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
             "-GPSLongitude#",
             "-GPSAltitude#",
             "-MakerNote",
+            "-DateTimeOriginal",
+            "-Orientation#",
+            "-ExifImageWidth#",
+            "-ExifImageHeight#",
+            "-ImageUniqueID",
         ]
         for tag, _value in optional:
             # Numeric enums were written with Tag#=N; read Tag# so PrintConv
@@ -1608,6 +1653,24 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
             )
         if field["verification_status"] == "failed" and field["tag"] not in {"GPSLatitude", "MakerNote"}:
             raise BusinessError(message=f"{field['tag']} 回读与预设不一致", code="EXIF_WRITE_FAILED")
+    # 2026-11-17（P0）：骨架标签做软校验（只告警，不改任务终态）。
+    skeleton_expected: dict[str, object] = {
+        "DateTimeOriginal": shot_text,
+        "Orientation": 1,
+        "ImageUniqueID": unique_id,
+    }
+    if actual_width and actual_height:
+        skeleton_expected["ExifImageWidth"] = actual_width
+        skeleton_expected["ExifImageHeight"] = actual_height
+    for skeleton_tag, expected in skeleton_expected.items():
+        got = row.get(skeleton_tag)
+        if str(got) != str(expected):
+            _LOG.warning(
+                "exif_skeleton_mismatch tag=%s expected=%s got=%s",
+                skeleton_tag,
+                expected,
+                got,
+            )
     if not final.startswith(b"\xff\xd8\xff"):
         raise BusinessError(message="最终文件不是 JPEG", code="OUTPUT_CONSTRAINT_UNSATISFIED")
     return final, fields
