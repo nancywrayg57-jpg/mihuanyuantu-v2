@@ -156,3 +156,54 @@ ThumbnailImage: 1715 bytes (IFD1)
 - 实际像素 3072×4096 与 `ExifImageWidth/Height` 一致；
 - 缺省参数抽样（Keywords/Category/Subject/Rating/UserComment）仍为 absent；
 - 骨架软校验日志：修复后**无新增** mismatch（历史 8 条均为已移除的 Orientation 期望）。
+
+---
+
+## P1 实施：参数归一化 + 两个标准标签（2026-11-17，已上线）
+
+按管理员确认执行 **P1a + P1b，不做 P1c**；不新增 `writtenParams` 快照。
+
+### P1a 归一化（写入前吸附到真机档位）
+
+| 输入 | 输出 | 说明 |
+| --- | --- | --- |
+| `ISO 57` | `64` | 按 log2 距离吸附到标准 ISO 序列（50…102400） |
+| `ISO 500` | `500` | 已是标准档，不变 |
+| `30s` / `15s` | `30` / `15` | 去掉 `s` 后缀，保证 `ExposureTime` 合法 |
+| `0.5` | `1/2` | 小于 1 秒统一成 `1/N` |
+| `1/2000` | `1/2000` | 保持原样 |
+| `f/1.37` | `1.4` | 吸附到 1/3 档光圈序列 |
+| `83mm` | `85` | 吸附到常见焦段序列 |
+
+- 归一化后的值同时用于**写入**与**回读校验**（`requested` 用归一值），因此不会出现“校验不一致”误报。
+- 现有 405 条预设的 ISO/光圈/焦距**全部已是标准值**（扫描结果 0 条异常），所以今天不会改变任何输出；价值是防止后续管理员录入非标准值。仅 10 条长曝光预设的 `30s/15s/10s/20s` 会被规范化。
+
+### P1b 新增两个标签（仅当预设带值）
+
+| 预设字段 | EXIF 标签 | 抽样覆盖 | 样例 |
+| --- | --- | --- | --- |
+| `exposure_compensation` | `ExposureCompensation`（EV，数值写） | 12 / 25 | `0.7` → `+0.7` |
+| `focus_distance` | `SubjectDistance`（米，数值写） | 12 / 25 | `4.8` → `4.8 m` |
+
+两个标签都加入 `_NUMERIC_EXIF_TAGS`（写 `-Tag#=`）并使用数值近似校验；预设无值则不写（P2）。
+
+### P1c 明确不做
+
+`description`（25/25 预设都有值，内容是中文场景文案）→ **不写** `ImageDescription`，避免交付图里出现营销描述。现状只写预设的 `image_description` 字段（有值时）。
+
+### 生产验证（task 15，预设 `legacy-legacy-online-713`）
+
+预设：ISO 500 / 1/500 / f/2.5 / 85mm / EV +0.7 / 焦距 4.8m
+
+```
+[ExifIFD] ISO                  : 500
+[ExifIFD] Exposure Time        : 1/500
+[ExifIFD] F Number             : 2.5
+[ExifIFD] Focal Length         : 85.0 mm
+[ExifIFD] Exposure Compensation: +0.7
+[ExifIFD] Subject Distance     : 4.8 m
+[ExifIFD] Shutter Speed Value  : 9        (APEX = log2(500) ≈ 8.97)
+[ExifIFD] Aperture Value       : 2.6      (APEX = 2·log2(2.5) ≈ 2.64)
+```
+
+骨架标签（P0）与“缺省不写”规则同时复核通过。
