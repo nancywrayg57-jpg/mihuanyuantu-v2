@@ -308,7 +308,7 @@ async def test_held_credits_aggregate_and_release_by_amount_fifo(db):
     first = await _make_held_task(ctx, db, key="s6-held-fifo-1")
     second = await _make_held_task(ctx, db, key="s6-held-fifo-2")
     listed = await ctx["ops"].list_held_credit_tasks(actor_role_codes={ROLE_TECH_SUPPORT})
-    assert listed["pageSize"] == 20
+    assert listed["pageSize"] == 10  # 2026-11-17：技术客服列表统一 10 条/页
     assert listed["total"] == 1
     assert len(listed["items"]) == 1
     agg = listed["items"][0]
@@ -411,7 +411,7 @@ async def test_held_list_includes_tasks_without_reservation(db):
     await db.delete(orphan_res)
     await db.flush()
     listed = await ctx["ops"].list_held_credit_tasks(actor_role_codes={ROLE_TECH_SUPPORT})
-    assert listed["pageSize"] == 20
+    assert listed["pageSize"] == 10  # 2026-11-17：技术客服列表统一 10 条/页
     assert any(int(row["taskId"]) == int(orphan.id) for row in listed["tasks"])
     agg = next(row for row in listed["items"] if int(row["tenantId"]) == int(ctx["tenant"]))
     assert int(agg["taskCount"]) >= 1
@@ -519,7 +519,7 @@ async def test_user_admin_log_preset_and_metrics(db):
     logs = await ctx["ops"].list_logs(actor_role_codes={ROLE_ADMIN})
     assert users["pageSize"] == 10
     assert all("tenantId" in item and "roleCodes" in item for item in users["items"])
-    assert logs["pageSize"] == 20
+    assert logs["pageSize"] == 10  # 2026-11-17：账号日志统一 10 条/页
     dumped = json.dumps(logs["items"], ensure_ascii=False)
     assert "S6User@abc" not in dumped
     assert "S6Reset@abc" not in dumped
