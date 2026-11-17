@@ -353,6 +353,7 @@ export default function RealphotosLibraryPage() {
             <option value="local_upload">本地上传</option>
             <option value="text_to_image">文生图</option>
             <option value="image_to_image">图生图</option>
+            <option value="url_import">URL导入</option>
           </select>
         </label>
         <span>

@@ -14,9 +14,14 @@ export function originKindLabel(kind: string | null | undefined): string {
     local_upload: '本地上传',
     text_to_image: '文生图',
     image_to_image: '图生图',
+    // 2026-11-17: URL/JSON 导入入库的资产（历史上也出现过 url-api 写法）
+    url_import: 'URL导入',
+    'url-api': 'URL导入',
+    url_api: 'URL导入',
   }
   return map[value] || unknown('来源', value)
 }
+
 
 export function generationModeLabel(mode: string | null | undefined): string {
   return originKindLabel(mode)
