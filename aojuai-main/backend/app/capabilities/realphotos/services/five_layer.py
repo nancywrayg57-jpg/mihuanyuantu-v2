@@ -1180,6 +1180,79 @@ def _f_number(aperture: str) -> float:
     return float(str(aperture).strip().removeprefix("f/").removeprefix("F/"))
 
 
+# 2026-11-17（P1a）：真机可能出现的档位。过界值吸附到最近档，避免“不可能值”。
+_STANDARD_ISO: tuple[int, ...] = (
+    50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800,
+    1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000,
+    10000, 12800, 16000, 20000, 25600, 32000, 40000, 51200, 64000, 80000, 102400,
+)
+_STANDARD_FSTOPS: tuple[float, ...] = (
+    1.0, 1.1, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.5, 2.8, 3.2, 3.5, 4.0, 4.5,
+    5.0, 5.6, 6.3, 7.1, 8.0, 9.0, 10.0, 11.0, 13.0, 14.0, 16.0, 18.0, 20.0, 22.0,
+)
+_COMMON_FOCAL: tuple[float, ...] = (
+    8, 10, 12, 14, 15, 16, 17, 18, 20, 21, 24, 28, 35, 40, 50, 55,
+    58, 60, 70, 75, 80, 85, 90, 100, 105, 120, 135, 150, 180, 200,
+    210, 240, 300, 400, 500, 600, 800, 1000,
+)
+
+
+def _nearest_by_log2(value: float, candidates: tuple[float, ...]) -> float:
+    return min(candidates, key=lambda item: abs(math.log2(value) - math.log2(item)))
+
+
+def normalize_iso_text(text: str) -> str:
+    try:
+        value = float(str(text).strip())
+    except (TypeError, ValueError):
+        return str(text)
+    if value <= 0:
+        return str(text)
+    return str(int(_nearest_by_log2(value, _STANDARD_ISO)))
+
+
+def normalize_shutter_text(text: str) -> str:
+    """``30s`` → ``30``；``0.5`` → ``1/2``；``1/125`` 原样保留。"""
+    raw = str(text).strip()
+    if not raw:
+        return raw
+    cleaned = raw[:-1].strip() if raw.lower().endswith("s") and "/" not in raw else raw
+    if "/" in cleaned:
+        head, _, tail = cleaned.partition("/")
+        try:
+            if float(head) > 0 and float(tail) > 0:
+                return cleaned
+        except ValueError:
+            return raw
+        return raw
+    try:
+        seconds = float(cleaned)
+    except ValueError:
+        return raw
+    if seconds <= 0:
+        return raw
+    if seconds >= 1:
+        return str(int(round(seconds)))
+    return f"1/{int(round(1 / seconds))}"
+
+
+def normalize_fstop(value: float) -> float:
+    if value <= 0:
+        return value
+    return _nearest_by_log2(float(value), _STANDARD_FSTOPS)
+
+
+def normalize_focal_text(text: str, *, fallback: str) -> str:
+    cleaned = str(text).strip().lower().removesuffix("mm").strip()
+    try:
+        value = float(cleaned)
+    except ValueError:
+        return str(fallback)
+    if value <= 0:
+        return str(fallback)
+    return f"{_nearest_by_log2(value, _COMMON_FOCAL):g}"
+
+
 _EXIF_REQUIRED: tuple[tuple[str, str], ...] = (
     ("brand", "品牌"),
     ("model", "型号"),
@@ -1206,6 +1279,8 @@ _NUMERIC_EXIF_TAGS = frozenset(
         "MaxApertureValue",
         "FocalPlaneXResolution",
         "FocalPlaneYResolution",
+        "ExposureCompensation",
+        "SubjectDistance",
     }
 )
 
@@ -1402,6 +1477,22 @@ def optional_exif_assignments(preset: dict) -> list[tuple[str, str]]:
         if code is not None:
             add("SceneCaptureType", code)
 
+    # 2026-11-17（P1b）：两个真机常见标签，仅当预设带值时才写。
+    exposure_comp = _param(preset, "exposure_compensation")
+    if exposure_comp is not None:
+        try:
+            add("ExposureCompensation", f"{float(str(exposure_comp).strip()):.2f}")
+        except ValueError:
+            pass
+
+    focus_distance = _param(preset, "focus_distance")
+    if focus_distance is not None:
+        try:
+            meters = str(focus_distance).strip().lower().removesuffix("m").strip()
+            add("SubjectDistance", f"{float(meters):.3f}")
+        except ValueError:
+            pass
+
     color_space = _param(preset, "color_space")
     if color_space is not None:
         # Core path still writes ColorSpace=sRGB as encode default; optional override only
@@ -1450,8 +1541,13 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
     focal = str(preset.get("focalLength") or "")
     if not iso or not shutter or not aperture or not focal:
         raise BusinessError(message="预设缺少曝光字段", code="EXIF_WRITE_FAILED")
+    # 2026-11-17（P1a）：归一化到真机可能出现的档位，避免 f/1.37、ISO 57、"30s" 这类值。
+    iso = normalize_iso_text(iso)
+    shutter = normalize_shutter_text(shutter)
+    f_number = normalize_fstop(_f_number(aperture))
+    focal = normalize_focal_text(focal, fallback=focal)
+    aperture = f"{f_number:g}"
     tv = apex_shutter_value(shutter_seconds(shutter))
-    f_number = _f_number(aperture)
     av = apex_aperture_value(f_number)
     requested = {
         "Make": brand,
@@ -1678,7 +1774,7 @@ def _verified_optional(tag: str, requested: str, read_back: object) -> dict:
     """Verify an optional tag that was intentionally written (non-empty source only)."""
     actual = "" if read_back is None else str(read_back)
     head = actual.split()[0] if actual.split() else actual
-    if tag in {"MaxApertureValue", "FocalPlaneXResolution", "FocalPlaneYResolution", "FocalLengthIn35mmFormat"}:
+    if tag in {"MaxApertureValue", "FocalPlaneXResolution", "FocalPlaneYResolution", "FocalLengthIn35mmFormat", "ExposureCompensation", "SubjectDistance"}:
         ok = _close(head, requested) if head else False
     elif tag == "WhiteBalance":
         lowered = actual.strip().lower()
