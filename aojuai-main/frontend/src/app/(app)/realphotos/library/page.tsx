@@ -45,7 +45,7 @@ export default function RealphotosLibraryPage() {
   const [thumbs, setThumbs] = useState<Record<string, string>>({})
   const [preview, setPreview] = useState<{ id: string; url: string; fullUrl?: string; loading?: boolean } | null>(null)
   // 2026-11-17：被锁定的图片在资源列表直接申诉（任务详情不再提供入口）
-  const [appealTarget, setAppealTarget] = useState<AssetItem | null>(null)
+  const [appealTarget, setAppealTarget] = useState<Asset | null>(null)
   const [appealText, setAppealText] = useState('')
   const [appealNote, setAppealNote] = useState('')
   const [appealBusy, setAppealBusy] = useState(false)
