@@ -74,3 +74,24 @@
 4. 可选：把 `ImageDescription` 纳入映射（预设 `image_description` 有值时写）。
 
 > 以上 1、2 均可复现验证：改完后重跑一张任务，用 `exiftool -G1 -n` 检查 `ExifIFD:Flash` 与 `ExifIFD:ExposureProgram` 是否出现。
+
+---
+
+## 六、修复与复验（2026-11-17，commit `411200f`）
+
+| 问题 | 处理 |
+| --- | --- |
+| Flash 落到 XMP | 写入改为 `-EXIF:Flash#=<code>` |
+| ExposureProgram 缺映射 | 映射表补 `program ae / program / creative / action / portrait / landscape` 与中文别名 |
+| MakerNote 伪造 | 对齐旧版 exiftool 路径：**不再写**（exiftool 报 `EXIF:MakerNote isn't writable`，文本只能落到 XMP）；预设置的 `makerNote` 保留为档案字段，校验状态记为 `skipped` |
+
+**复验（task 77，新管线输出）**
+
+```
+ExifIFD:Flash             = 0          ← 已进 EXIF（此前仅 XMP-exif:FlashMode）
+ExifIFD:ExposureProgram   = 2          ← Program AE 已映射
+MakerNote                 = 不写（EXIF 与 XMP 均无）
+IFD0:ModifyDate / DateTimeOriginal / ImageUniqueID / ThumbnailImage / ResolutionUnit = present
+```
+
+结论：当前管线的 EXIF 写入已覆盖「身份 + 曝光核心 + 枚举（测光/白平衡/光源/曝光程序/闪光）+ 骨架 + 缩略图 + GPS」；MakerNote 按旧版口径不伪造。
