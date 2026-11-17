@@ -353,79 +353,32 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 )
               }
 
-              // 2026-11-17: 单页目的一级菜单直接渲染为按钮，不再套一层可折叠分组。
-              if (group.items.length === 1 && !group.pinned) {
-                const only = group.items[0]
-                return (
-                  <Link
-                    key={groupId}
-                    href={only.to}
-                    onClick={() => setMobileNavOpen(false)}
-                    title={tMenu(only.label)}
-                    className={cn(
-                      'flex h-8 items-center gap-2 rounded-md px-2 text-sm font-medium transition-colors',
-                      active
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-                    )}
-                  >
-                    <GroupIcon className={cn('h-4 w-4 shrink-0', active && 'text-primary')} />
-                    <span className="truncate">{tMenu(only.label)}</span>
-                  </Link>
-                )
-              }
-
+              // 2026-11-17: 全站导航不再有二级菜单——每项都直接渲染为一级按钮。
               return (
-                <div key={groupId} className="border-b border-border/40 pb-1.5 last:border-0 last:pb-0">
-                  <button
-                    type="button"
-                    disabled={!canToggle}
-                    onClick={() => setExpandedGroupId(expanded ? null : groupId)}
-                    className={cn(
-                      'flex h-8 w-full items-center gap-2 rounded-md px-2 text-sm font-semibold text-foreground/85 transition-colors',
-                      active && 'text-foreground',
-                      canToggle ? 'hover:bg-muted/60' : 'cursor-default',
-                    )}
-                  >
-                    <GroupIcon className={cn('h-4 w-4 shrink-0 text-muted-foreground', active && 'text-primary')} />
-                    <span className="truncate">{tMenu(group.label)}</span>
-                    {canToggle ? (
-                      <ChevronRight
+                <div key={groupId} className="space-y-0.5">
+                  {group.items.map((item) => {
+                    const itemActive = isNavItemActive(item.to)
+                    return (
+                      <Link
+                        key={item.to}
+                        href={item.to}
+                        onClick={() => setMobileNavOpen(false)}
                         className={cn(
-                          'ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform',
-                          collapsed ? 'rotate-0' : 'rotate-90',
+                          'relative flex h-8 items-center gap-2 rounded-md px-2 text-sm font-medium transition-colors',
+                          itemActive
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                         )}
-                      />
-                    ) : null}
-                  </button>
-                  {!collapsed ? (
-                    <div className="mt-0.5 space-y-0.5">
-                      {group.items.map((item) => {
-                        const itemActive = isNavItemActive(item.to)
-                        return (
-                          <Link
-                            key={item.to}
-                            href={item.to}
-                            onClick={() => setMobileNavOpen(false)}
-                            className={cn(
-                              'relative flex h-8 items-center gap-2 rounded-md pl-4 pr-2 text-sm font-medium transition-colors',
-                              itemActive
-                                ? 'bg-primary/10 text-primary'
-                                : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-                            )}
-                          >
-                            {itemActive ? (
-                              <span className="absolute left-1 top-1/2 h-3.5 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
-                            ) : null}
-                            {item.icon ? (
-                              <item.icon className={cn('h-4 w-4 shrink-0', !itemActive && 'text-muted-foreground/80')} />
-                            ) : null}
-                            <span className="truncate">{tMenu(item.label)}</span>
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  ) : null}
+                      >
+                        {item.icon ? (
+                          <item.icon className={cn('h-4 w-4 shrink-0', !itemActive && 'text-muted-foreground/80')} />
+                        ) : (
+                          <PanelTop className={cn('h-4 w-4 shrink-0', !itemActive && 'text-muted-foreground/80')} />
+                        )}
+                        <span className="truncate">{tMenu(item.label)}</span>
+                      </Link>
+                    )
+                  })}
                 </div>
               )
             })}

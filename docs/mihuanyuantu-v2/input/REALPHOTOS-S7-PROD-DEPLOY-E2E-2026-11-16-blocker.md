@@ -142,6 +142,18 @@ sh /root/蜜獾原图-v2/shared/06_nginx.sh
 
 → 代理**可以搭**，但必须落在**允许地区、独立于个人工作站**的载体上：云主机 / Cloudflare Worker / 管理员指定主机。
 
+### 3.7 状态更新（2026-11-16 23:53 起已解除）
+
+本阻塞已在后续会话中按 **Xray + 管理员提供的 vmess 节点** 变体解除：
+
+- 生产机新增 `gemini-egress-proxy.service`（Xray 26.11.9 → vmess 节点，本地 `127.0.0.1:7890`），`09_proxy.sh` 把该本地代理注入四个应用单元；
+- 检测真外呼恢复，`REALPHOTOS_S7_PROD_E2E_PASS` 已达成（task 4：`gemini-3.1-pro-preview` 52 分；2026-11-17 切 `gemini-2.5-flash` 后 task 5：60 分）；
+- 公网入口已切到应用，不再回滚占位。
+
+**遗留风险 R7**：该 vmess 节点来自第三方订阅，节点名标注到期 **2026-12-06**；到期前须替换为自有载体。替换时本文件 §3.3（tinyproxy）与 §3.5（Cloudflare Worker，代码已入库 `scripts/ops/gemini-egress-worker.js`）**仍然适用**，接线方式同为「`09_proxy.sh apply <local-proxy>`」或「改 `final_detection` 合同 `base_url`」。
+
+> §3.6 的结论只针对"用个人工作站充当出口"这一种做法，不否定上述两条替换路径。
+
 ## 4. 已就绪、可随时续作
 
 - 应用已部署并在 `current` 指向 `3ed1088`，五个 systemd 单元 enabled（当前 active，公网入口已回滚占位）。
