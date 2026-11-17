@@ -1,7 +1,5 @@
 """Menu / permission declaration for realphotos (aligned to PRD §5 + ticket IA-PAGE)."""
 
-from dataclasses import replace
-
 from app.domain.menus.reconciler import MenuDeclaration, MenuNodeSpec, RoleGrantSpec
 
 from .permissions import (
@@ -348,7 +346,7 @@ _DECLARED = MenuDeclaration(
 # 2026-11-17: 去掉「蜜獾原图」一级目录，各业务页直接作为一级导航按钮。
 # 菜单键不变，角色授权因此不受影响；同步（capability sync）会把父节点从库里回收。
 ACCESS = MenuDeclaration(
-    roots=tuple(replace(node, children=()) for node in _DECLARED.roots[0].children),
+    roots=tuple(_DECLARED.roots[0].children),
     roles=_DECLARED.roles,
 )
 
