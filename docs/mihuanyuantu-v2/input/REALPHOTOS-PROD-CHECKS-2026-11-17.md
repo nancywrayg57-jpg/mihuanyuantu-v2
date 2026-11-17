@@ -207,3 +207,25 @@ ThumbnailImage: 1715 bytes (IFD1)
 ```
 
 骨架标签（P0）与“缺省不写”规则同时复核通过。
+
+---
+
+## 缩略图性能修复 + 申诉迁移 + 全站样式套用（2026-11-17）
+
+### 缩略图
+
+- 原因：资源库用 `/gateway/objects/<原始key>` 拉**原图**（2.7–10.9 MB），串行加载且 `Cache-Control: no-store`。
+- 实测（修复前）：单张 6.49 / 7.12 / 7.00 秒，一页 10 行约 60–70 秒。
+- 修复：网关新增 `?thumb=<px>`（Pillow LANCZOS → JPEG q75 → `.thumbs/<sha1>-<w>.jpg` 磁盘缓存，`private, max-age=86400`）；前端改拉 160px、并发 4、`loading="lazy"`。
+- 实测（修复后 10 张）：冷启动 1.49 秒、命中缓存 0.59 秒、平均 4.5 KB（最大 6.1 KB）。
+
+### 图片申诉迁移（方案 A）
+
+- 工作台移除「图片申诉」卡片（保留最近历史）。
+- 任务详情新增「图片申诉」区块：填写原因 → 创建 `image_appeal` 工单（原因前缀 `任务 #<id>：`）。
+- 任务详情页顶部新增「我的申诉（N）」折叠列表。
+
+### 全站样式套用
+
+- 22 个 `realphotos` 页面统一为 P0/P1 规范：卡片 `rp-card`、按钮 `rp-btn`/`rp-btn-sm`、表格 `rp-table`、输入 `rp-input`、弹窗 `rp-dialog`。
+- 清理了 0 处遗留的 `rounded-xl border border-border bg-card`、`border px-2 py-1` 写法。
