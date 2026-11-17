@@ -1352,6 +1352,16 @@ def _exposure_program_code(mode: str) -> int | None:
         "aperture priority": 3,
         "shutter priority": 4,
         "normal program": 2,
+        # 2026-11-17：补齐机型常见写法（Program AE 等），否则该标签整批不写。
+        "program ae": 2,
+        "program": 2,
+        "creative": 5,
+        "action": 6,
+        "portrait": 7,
+        "landscape": 8,
+        "深度优先": 3,
+        "快门优先": 4,
+        "程序自动": 2,
     }
     return mapping.get(mode.strip().lower())
 
@@ -1623,13 +1633,16 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
             command.append(f"-ApertureValue={av:.6f}")
         for tag, value in optional:
             # Only non-empty optional params reach here; never emit `-Tag=` blanks.
-            if tag in _NUMERIC_EXIF_TAGS:
+            if tag == "Flash":
+                # 2026-11-17：不加 EXIF 组限定会落到 XMP-exif:FlashMode，EXIF IFD 里没有 Flash。
+                command.append(f"-EXIF:Flash#={value}")
+            elif tag in _NUMERIC_EXIF_TAGS:
                 command.append(f"-{tag}#={value}")
             else:
                 command.append(f"-{tag}={value}")
-        if maker_note:
-            # PRODUCT-GAP A7：管理员 2026-11-07 授权写入；必须可回读，失败不静默。
-            command.append(f"-MakerNote={maker_note}")
+        # 2026-11-17：MakerNote 是厂商私有二进制块，exiftool 无法凭空创建
+        # （-EXIF:MakerNote 会报 "isn't writable"，文本只能落到 XMP-exif）。
+        # 对齐旧版 exiftool 写入路径：不写 MakerNote，预设置里的 makerNote 仅作档案字段。
         if gps_plan.get("action") == "write":
             lat = float(gps_plan["latitude"])
             lon = float(gps_plan["longitude"])
@@ -1714,15 +1727,15 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
     fields.append(_gps_field(gps_plan, row))
     maker_read = str(row.get("MakerNote") or "")
     if maker_note:
-        maker_ok = maker_note in maker_read or maker_read.strip() == maker_note
+        # 2026-11-17：不再伪造 MakerNote；记录为 skipped，避免误判失败。
         fields.append(
             {
                 "tag": "MakerNote",
                 "requested": maker_note,
-                "written": maker_note,
+                "written": "",
                 "read_back": maker_read,
-                "verification_status": "verified" if maker_ok else "failed",
-                "reason": "" if maker_ok else "MakerNote 回读与请求不一致",
+                "verification_status": "skipped",
+                "reason": "MakerNote 不写入（exiftool 无法创建厂商私有块）",
             }
         )
     else:
