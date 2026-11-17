@@ -96,7 +96,7 @@ async def read_object(
     tenant_ctx: TenantCtx,
     current_user: CurrentUser,
     db: DBSession,
-    thumb: int | None = Query(default=None, ge=32, le=512),
+    thumb: int | None = Query(default=None, ge=32, le=2048),
     _: None = Depends(PermissionChecker([GATEWAY_READ])),
 ) -> Response:
     """鉴权后读取；`?thumb=<px>` 返回缩放缓存图，否则流式返回原对象。"""
