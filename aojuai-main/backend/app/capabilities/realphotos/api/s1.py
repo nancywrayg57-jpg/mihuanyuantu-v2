@@ -165,6 +165,15 @@ async def _enrich_task_detail(
     else:
         payload["failureMessage"] = None
         payload["failureTitle"] = None
+    # 2026-11-17：任务详情展示实际 GPS（按该任务 seed 解析，与写入 EXIF 的值一致）
+    try:
+        from app.capabilities.realphotos.services.gps_write import describe_gps, resolve_gps
+
+        plan = resolve_gps(preset=dict(payload.get("presetSnapshot") or {}), seed=int(task.id))
+        payload["gps"] = describe_gps(plan)
+    except Exception:  # noqa: BLE001 - GPS 解析失败不影响详情
+        payload["gps"] = None
+
     if include_lock:
         try:
             lock_state = await service.image_lock_state(tenant_id=int(tenant_id), task=task)

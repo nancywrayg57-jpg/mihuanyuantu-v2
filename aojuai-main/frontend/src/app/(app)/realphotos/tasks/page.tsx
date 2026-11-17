@@ -48,6 +48,16 @@ type ProcessingTask = {
   presetCode?: string
   presetSnapshot?: Record<string, unknown> | null
   taskNo?: number | null
+  gps?: {
+    action: string
+    mode: string
+    scene?: string
+    place?: string
+    latitudeText?: string
+    longitudeText?: string
+    altitudeText?: string
+    reason?: string
+  } | null
   outputObjectKey?: string | null
   creditDisposition?: string | null
   imageLocked?: boolean
@@ -799,6 +809,31 @@ export default function RealphotosTasksPage() {
                       <dd>{detail.billingMode}</dd>
                     </>
                   ) : null}
+                  <dt>GPS 定位</dt>
+                  <dd>
+                    {detail.gps && detail.gps.action === 'write' ? (
+                      <div className="space-y-1 text-xs">
+                        <div>
+                          <span className="text-muted-foreground">实际定位：</span>
+                          {detail.gps.place || '—'}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">纬度：</span>
+                          {detail.gps.latitudeText || '—'}
+                          <span className="ml-3 text-muted-foreground">经度：</span>
+                          {detail.gps.longitudeText || '—'}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">高度：</span>
+                          {detail.gps.altitudeText || '—'}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">
+                        {detail.gps?.reason || '未写入 GPS'}
+                      </span>
+                    )}
+                  </dd>
                   <dt>设备参数</dt>
                   <dd>
                     {/* 2026-11-17：默认收起，点击查看全部（与批量原图页的预设展示一致） */}
