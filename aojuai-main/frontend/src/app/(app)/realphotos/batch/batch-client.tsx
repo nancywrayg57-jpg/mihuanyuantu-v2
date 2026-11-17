@@ -201,7 +201,9 @@ export function RealphotosBatchClient() {
       return
     }
     let cancelled = false
-    void apiFetch<Preset>(/api/v1/realphotos/presets/)
+    void apiFetch<Preset>(
+      `/api/v1/realphotos/presets/${encodeURIComponent(presetCode)}`,
+    )
       .then((data) => {
         if (!cancelled) setPresetDetail(data)
       })
