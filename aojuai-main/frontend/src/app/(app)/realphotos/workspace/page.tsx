@@ -171,23 +171,23 @@ export default function RealphotosWorkspacePage() {
       {data?.showTaskChainBanner ? <p className="text-sm">一条任务链</p> : null}
 
       {view === 'merchant' && data?.cards ? (
-        <section className="grid max-w-4xl grid-cols-2 gap-3 text-sm md:grid-cols-4">
-          <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
-            <div>可用积分</div>
-            <div className="text-lg">{cell(data.cards.availableInteger)}</div>
-            <div className="text-muted-foreground">冻结 {cell(data.cards.reservedInteger)}</div>
+        <section className="grid max-w-5xl grid-cols-2 gap-3 md:grid-cols-4">
+          <article className="rp-stat">
+            <div className="rp-stat-label">可用积分</div>
+            <div className="rp-stat-value">{cell(data.cards.availableInteger)}</div>
+            <div className="rp-stat-hint">冻结 {cell(data.cards.reservedInteger)}</div>
           </article>
-          <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
-            <div>进行中任务</div>
-            <div className="text-lg">{cell(data.cards.activeTasks)}</div>
+          <article className="rp-stat">
+            <div className="rp-stat-label">进行中任务</div>
+            <div className="rp-stat-value">{cell(data.cards.activeTasks)}</div>
           </article>
-          <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
-            <div>本月已完成</div>
-            <div className="text-lg">{cell(data.cards.monthDelivered)}</div>
+          <article className="rp-stat">
+            <div className="rp-stat-label">本月已完成</div>
+            <div className="rp-stat-value">{cell(data.cards.monthDelivered)}</div>
           </article>
-          <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
-            <div>未读消息</div>
-            <div className="text-lg">{cell(data.cards.unreadMessages)}</div>
+          <article className="rp-stat">
+            <div className="rp-stat-label">未读消息</div>
+            <div className="rp-stat-value">{cell(data.cards.unreadMessages)}</div>
           </article>
         </section>
       ) : null}

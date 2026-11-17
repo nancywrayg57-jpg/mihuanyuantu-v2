@@ -281,8 +281,8 @@ export default function RealphotosLibraryPage() {
         }}
       />
 
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 flex flex-wrap items-center gap-2 text-sm">
-        <span className="font-medium">添加图片：</span>
+      <section className="rp-card flex flex-wrap items-center gap-2 p-3 text-sm">
+        <span className="rp-stat-label">添加图片</span>
         {frozen ? (
           <span className="border px-2 py-1 opacity-50">URL 导入（已冻结）</span>
         ) : (
@@ -315,21 +315,19 @@ export default function RealphotosLibraryPage() {
             图生图
           </Link>
         )}
-      </section>
-
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 flex flex-wrap gap-2 text-sm">
-        <button className="rp-btn rp-btn-primary border px-2 py-1" type="button" onClick={() => goProcess()}>
+        <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+        <button className="rp-btn rp-btn-primary rp-btn-sm" type="button" onClick={() => goProcess()}>
           去处理（已选 {selectedIds.length}）
         </button>
-        <button className="rp-btn border px-2 py-1" type="button" onClick={() => void downloadSelected()}>
+        <button className="rp-btn rp-btn-sm" type="button" onClick={() => void downloadSelected()}>
           批量下载
         </button>
-        <button className="rp-btn rp-btn-danger border px-2 py-1" type="button" onClick={() => void removeSelected()}>
+        <button className="rp-btn rp-btn-danger rp-btn-sm" type="button" onClick={() => void removeSelected()}>
           批量删除
         </button>
       </section>
 
-      <section className="rp-filter rp-card rounded-xl border border-border bg-card shadow-sm p-4 flex flex-wrap items-center gap-3 text-sm">
+      <section className="rp-card rp-filter flex flex-wrap items-center gap-3 p-3 text-sm">
         <label>
           搜索
           <input
@@ -376,6 +374,7 @@ export default function RealphotosLibraryPage() {
           下一页
         </button>
       </section>
+      <section className="rp-card overflow-hidden">
       <table className="rp-table w-full text-sm">
         <thead>
           <tr>
@@ -453,6 +452,7 @@ export default function RealphotosLibraryPage() {
           )}
         </tbody>
       </table>
+      </section>
       {preview ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6" onClick={() => setPreview(null)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -78,9 +78,13 @@ export async function generateMetadata(): Promise<Metadata> {
       fallbackDescription: 'AOJUAI enterprise intelligence workspace',
     }),
     icons: {
-      icon: '/favicon.ico',
-      shortcut: '/favicon.ico',
-      apple: '/favicon.ico',
+      // 2026-11-17：纯图形 logo 作为站点图标；保留 ico 兜底老浏览器
+      icon: [
+        { url: '/brand/logo-mark.svg', type: 'image/svg+xml' },
+        { url: '/favicon.ico', sizes: 'any' },
+      ],
+      shortcut: '/brand/logo-mark.svg',
+      apple: '/brand/logo-mark.svg',
     },
   }
 }

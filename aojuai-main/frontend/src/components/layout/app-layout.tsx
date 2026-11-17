@@ -75,7 +75,8 @@ type NavGroup = {
   items: NavItem[]
 }
 
-const BRAND_LOGO_SRC = '/logo.svg'
+// 2026-11-17：右上角品牌 logo 使用「带文字」版本（原有文字保留）
+const BRAND_LOGO_SRC = '/brand/logo-with-text.svg'
 const DEFAULT_USER_AVATAR_SRC = '/avatar-ai.svg'
 
 function resolveSessionDisplayName(session: { nickname?: string; username?: string } | null | undefined, fallback: string) {
@@ -266,7 +267,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             )}
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-background/80">
-              <img src={BRAND_LOGO_SRC} alt={branding.title} className="h-7 w-7" />
+              <img src={BRAND_LOGO_SRC} alt={branding.title} className="h-9 w-9 rounded-md object-cover" />
             </span>
             {!compact ? <span className="truncate font-semibold tracking-tight">{branding.title}</span> : null}
           </Link>
