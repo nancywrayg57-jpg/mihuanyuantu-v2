@@ -98,18 +98,12 @@ type Ticket = {
 export default function RealphotosWorkspacePage() {
   const [data, setData] = useState<WorkspacePayload | null>(null)
   const [message, setMessage] = useState('')
-  const [appealReason, setAppealReason] = useState('')
-  const [myTickets, setMyTickets] = useState<Ticket[]>([])
 
   useEffect(() => {
     void apiFetch<WorkspacePayload>('/api/v1/realphotos/workspace')
       .then((payload) => {
         setData(payload)
-        if (payload.merchantCards) {
-          void apiFetch<{ items: Ticket[] }>('/api/v1/realphotos/my-support-tickets')
-            .then((rows) => setMyTickets(rows.items || []))
-            .catch(() => undefined)
-        }
+
       })
       .catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '工作台读取失败'))
   }, [])
@@ -119,7 +113,6 @@ export default function RealphotosWorkspacePage() {
   const filteredOrders = data?.orderSupportDesk?.items || []
   const filteredTechTickets = data?.techSupportDesk?.items || []
   const historyRows = data?.recentHistory || []
-  const filteredMyTickets = myTickets
   const [historyPage, setHistoryPage] = useState(1)
   const historyPageSize = 10
   const historyPageCount = Math.max(1, Math.ceil(historyRows.length / historyPageSize))
@@ -127,24 +120,6 @@ export default function RealphotosWorkspacePage() {
     (historyPage - 1) * historyPageSize,
     historyPage * historyPageSize,
   )
-
-  async function createAppeal() {
-    try {
-      await apiFetch('/api/v1/realphotos/support-tickets', {
-        method: 'POST',
-        body: JSON.stringify({ ticketType: 'image_appeal', reason: appealReason }),
-      })
-      setMessage('已创建图片申诉')
-      toastTask('已创建图片申诉', true)
-      setAppealReason('')
-      const rows = await apiFetch<{ items: Ticket[] }>('/api/v1/realphotos/my-support-tickets')
-      setMyTickets(rows.items || [])
-    } catch (error: unknown) {
-      const text = error instanceof ApiError ? error.message : '申诉创建失败'
-      setMessage(text)
-      toastTask(text, false)
-    }
-  }
 
   const subtitle =
     view === 'admin'
@@ -193,43 +168,43 @@ export default function RealphotosWorkspacePage() {
       ) : null}
 
       {view === 'admin' && data?.opsMetrics ? (
-        <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm">
+        <section className="rp-card p-4 shadow-sm">
           <h2 className="mb-2 text-sm font-medium">运营指标</h2>
-          <table className="rp-table w-full max-w-3xl border-collapse text-sm">
+          <table className="rp-table max-w-3xl border-collapse text-sm">
             <tbody>
               <tr>
-                <th className="border px-2 py-1 text-left">可用余额</th>
-                <td className="border px-2 py-1">{cell(data.opsMetrics.availableInteger)}</td>
+                <th className="text-left">可用余额</th>
+                <td>{cell(data.opsMetrics.availableInteger)}</td>
               </tr>
               <tr>
-                <th className="border px-2 py-1 text-left">冻结中</th>
-                <td className="border px-2 py-1">{cell(data.opsMetrics.reservedInteger)}</td>
+                <th className="text-left">冻结中</th>
+                <td>{cell(data.opsMetrics.reservedInteger)}</td>
               </tr>
               <tr>
-                <th className="border px-2 py-1 text-left">队列</th>
-                <td className="border px-2 py-1">{cell(data.opsMetrics.queueDepth)}</td>
+                <th className="text-left">队列</th>
+                <td>{cell(data.opsMetrics.queueDepth)}</td>
               </tr>
               <tr>
-                <th className="border px-2 py-1 text-left">失败率</th>
-                <td className="border px-2 py-1">{formatRate(data.opsMetrics.failureRate)}</td>
+                <th className="text-left">失败率</th>
+                <td>{formatRate(data.opsMetrics.failureRate)}</td>
               </tr>
               <tr>
-                <th className="border px-2 py-1 text-left">检测通过率</th>
-                <td className="border px-2 py-1">{formatRate(data.opsMetrics.detectionPassRate)}</td>
+                <th className="text-left">检测通过率</th>
+                <td>{formatRate(data.opsMetrics.detectionPassRate)}</td>
               </tr>
               <tr>
-                <th className="border px-2 py-1 text-left">成本</th>
-                <td className="border px-2 py-1">
+                <th className="text-left">成本</th>
+                <td>
                   {costCell(data.opsMetrics.cost, data.opsMetrics.costReason)}
                 </td>
               </tr>
               <tr>
-                <th className="border px-2 py-1 text-left">模型调用量</th>
-                <td className="border px-2 py-1">{cell(data.opsMetrics.modelCalls)}</td>
+                <th className="text-left">模型调用量</th>
+                <td>{cell(data.opsMetrics.modelCalls)}</td>
               </tr>
               <tr>
-                <th className="border px-2 py-1 text-left">存储字节</th>
-                <td className="border px-2 py-1">{cell(data.opsMetrics.storageBytes)}</td>
+                <th className="text-left">存储字节</th>
+                <td>{cell(data.opsMetrics.storageBytes)}</td>
               </tr>
             </tbody>
           </table>
@@ -237,7 +212,7 @@ export default function RealphotosWorkspacePage() {
       ) : null}
 
       {view === 'order_support' && data?.orderSupportDesk ? (
-        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
+        <section className="rp-card space-y-3 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-medium">
               待处理充值单 · {data.orderSupportDesk.pendingRechargeOrders}
@@ -246,7 +221,7 @@ export default function RealphotosWorkspacePage() {
               打开充值确认
             </Link>
           </div>
-          <table className="rp-table w-full text-sm">
+          <table className="rp-table">
             <thead>
               <tr>
                 <th className="text-left">单号</th>
@@ -280,7 +255,7 @@ export default function RealphotosWorkspacePage() {
       ) : null}
 
       {view === 'tech_support' && data?.techSupportDesk ? (
-        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
+        <section className="rp-card space-y-3 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-medium">待处理工单 · {data.techSupportDesk.openTickets}</h2>
             <Link className="text-sm underline" href="/realphotos/tech-desk">
@@ -295,7 +270,7 @@ export default function RealphotosWorkspacePage() {
                   .map(([k, v]) => `${k}=${v}`)
                   .join(' · ')}
           </p>
-          <table className="rp-table w-full text-sm">
+          <table className="rp-table">
             <thead>
               <tr>
                 <th className="text-left">编号</th>
@@ -326,106 +301,7 @@ export default function RealphotosWorkspacePage() {
         </section>
       ) : null}
 
-      {view === 'merchant' ? (
-        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium">最近历史</h2>
-            <Link className="text-sm underline" href="/realphotos/tasks">
-              全部任务
-            </Link>
-          </div>
-          <table className="rp-table w-full text-sm">
-            <thead>
-              <tr>
-                <th className="text-left">类型</th>
-                <th className="text-left">编号</th>
-                <th className="text-left">状态</th>
-                <th className="text-left">时间</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredHistory.length === 0 ? (
-                <tr>
-                  <td className="rp-empty" colSpan={4}>暂无本账号历史</td>
-                </tr>
-              ) : (
-                filteredHistory.map((item) => (
-                  <tr key={`${item.kind}-${item.id}`}>
-                    <td>{item.kind === 'processing' ? '处理' : '生图'}</td>
-                    <td>{item.id}</td>
-                    <td>{taskStatusLabel(item.status)}</td>
-                    <td>{formatDateTimeShort(item.createdAt) || '空'}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-          <div className="flex items-center gap-2 text-sm">
-            <button
-              className="rp-btn border px-2 py-1"
-              type="button"
-              disabled={historyPage <= 1}
-              onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
-            >
-              上一页
-            </button>
-            <span>
-              第 {historyPage} / {historyPageCount} 页 · 共 {historyRows.length} 条 · 每页 {historyPageSize}
-            </span>
-            <button
-              className="rp-btn border px-2 py-1"
-              type="button"
-              disabled={historyPage >= historyPageCount}
-              onClick={() => setHistoryPage((p) => p + 1)}
-            >
-              下一页
-            </button>
-          </div>
-        </section>
-      ) : null}
 
-      {view === 'merchant' ? (
-        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
-          <h2 className="text-sm font-medium">图片申诉</h2>
-          <div className="flex flex-wrap gap-2 text-sm">
-            <input
-              className="w-full max-w-md border px-2 py-1"
-              placeholder="申诉原因"
-              value={appealReason}
-              onChange={(event) => setAppealReason(event.target.value)}
-            />
-            <button className="rp-btn border px-3 py-1" type="button" onClick={() => void createAppeal()}>
-              创建申诉
-            </button>
-          </div>
-          <table className="rp-table w-full text-sm">
-            <thead>
-              <tr>
-                <th className="text-left">编号</th>
-                <th className="text-left">类型</th>
-                <th className="text-left">状态</th>
-                <th className="text-left">原因</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredMyTickets.length === 0 ? (
-                <tr>
-                  <td colSpan={4}>尚无本账号工单</td>
-                </tr>
-              ) : (
-                filteredMyTickets.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.id}</td>
-                    <td>{ticketTypeLabel(item.ticketType)}</td>
-                    <td>{ticketStatusLabel(item.status)}</td>
-                    <td>{item.reason}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </section>
-      ) : null}
     </main>
   )
 }

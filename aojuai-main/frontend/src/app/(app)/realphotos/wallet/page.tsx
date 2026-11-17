@@ -92,8 +92,8 @@ export default function RealphotosWalletPage() {
     <main className="space-y-6 p-6">
       <RpPageHeader title="积分与充值" />
       <p className="text-sm text-muted-foreground">{message}</p>
-      <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm">
-      <table className="rp-table w-full text-sm">
+      <section className="rp-card p-4 shadow-sm">
+      <table className="rp-table">
         <thead>
           <tr>
             <th className="text-left">可用余额</th>
@@ -112,13 +112,13 @@ export default function RealphotosWalletPage() {
         </tbody>
       </table>
       </section>
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
+      <section className="rp-card space-y-3 p-4">
         <h2 className="text-sm font-medium">充值档位</h2>
         <div className="flex flex-wrap items-end gap-3">
           <label className="text-sm">
             档位（元）
             <select
-              className="mt-1 block border px-2 py-1 text-sm"
+              className="rp-input mt-1 block"
               value={tier}
               onChange={(event) => setTier(Number(event.target.value))}
             >
@@ -132,22 +132,22 @@ export default function RealphotosWalletPage() {
           <label className="text-sm">
             凭证备注
             <input
-              className="mt-1 block border px-2 py-1 text-sm"
+              className="rp-input mt-1 block"
               value={note}
               onChange={(event) => setNote(event.target.value)}
             />
           </label>
-          <button className="rp-btn rp-btn-primary border px-3 py-1 text-sm" type="button" onClick={() => void createOrder()}>
+          <button className="rp-btn rp-btn-primary text-sm" type="button" onClick={() => void createOrder()}>
             提交充值单
           </button>
         </div>
       </section>
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
+      <section className="rp-card space-y-3 p-4">
         <div className="rp-filter flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-medium">流水</h2>
           <ListSearch value={search} placeholder="流水 / 类型 / 账号" onChange={setSearch} />
         </div>
-        <table className="rp-table w-full text-sm">
+        <table className="rp-table">
           <thead>
             <tr>
               <th className="text-left">流水</th>
@@ -171,7 +171,7 @@ export default function RealphotosWalletPage() {
         </table>
         <div className="flex items-center gap-2 text-sm">
           <button
-            className="rp-btn border px-2 py-1"
+            className="rp-btn rp-btn-sm"
             type="button"
             disabled={ledgerPage <= 1}
             onClick={() => setLedgerPage((p) => Math.max(1, p - 1))}
@@ -182,7 +182,7 @@ export default function RealphotosWalletPage() {
             第 {ledgerPage} / {Math.max(1, Math.ceil(ledgerTotal / LEDGER_PAGE_SIZE))} 页 · 共 {ledgerTotal} 条 · 每页 {LEDGER_PAGE_SIZE}
           </span>
           <button
-            className="rp-btn border px-2 py-1"
+            className="rp-btn rp-btn-sm"
             type="button"
             disabled={ledgerPage >= Math.max(1, Math.ceil(ledgerTotal / LEDGER_PAGE_SIZE))}
             onClick={() => setLedgerPage((p) => p + 1)}

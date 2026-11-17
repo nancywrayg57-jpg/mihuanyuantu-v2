@@ -306,7 +306,7 @@ export function RealphotosBatchClient() {
         <p className="text-sm text-destructive">账号已冻结：可查看历史，不能提交新处理。</p>
       ) : null}
       <p className="text-sm">{notice}</p>
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
+      <section className="rp-card space-y-3 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-medium">设备预设（类型 → 品牌 → 型号）</h2>
           <ListSearch value={presetSearch} placeholder="型号 / 品牌 / 编码" onChange={setPresetSearch} />
@@ -415,10 +415,10 @@ export function RealphotosBatchClient() {
           </div>
         ) : null}
       </section>
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
+      <section className="rp-card space-y-3 p-4">
         <h2 className="text-sm font-medium">待处理图片</h2>
         <div className="flex flex-wrap items-end gap-3 text-sm">
-          <Link className="rp-btn border px-3 py-1" href="/realphotos/library">
+          <Link className="rp-btn" href="/realphotos/library">
             勾选图片
           </Link>
           <label>
@@ -430,11 +430,11 @@ export function RealphotosBatchClient() {
               onChange={(event) => void onFile(event.target.files?.[0] || null)}
             />
           </label>
-          <button className="rp-btn border px-3 py-1" type="button" disabled={frozen} onClick={() => void uploadToLibrary()}>
+          <button className="rp-btn" type="button" disabled={frozen} onClick={() => void uploadToLibrary()}>
             上传并加入本批
           </button>
           <button
-            className="rp-btn border px-3 py-1"
+            className="rp-btn"
             type="button"
             onClick={() =>
               setLibrary((prev) => {
@@ -450,7 +450,7 @@ export function RealphotosBatchClient() {
             移除最后一张
           </button>
           <button
-            className="rp-btn rp-btn-primary border px-3 py-1"
+            className="rp-btn rp-btn-primary"
             type="button"
             disabled={frozen || gpsSubmitBlocked}
             onClick={() => void submitBatch()}
@@ -458,7 +458,7 @@ export function RealphotosBatchClient() {
             开始处理
           </button>
         </div>
-        <table className="rp-table w-full text-sm">
+        <table className="rp-table">
           <thead>
             <tr>
               <th className="text-left">缩略图</th>

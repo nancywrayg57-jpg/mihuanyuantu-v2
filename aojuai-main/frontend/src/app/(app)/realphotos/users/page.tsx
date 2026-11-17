@@ -293,49 +293,49 @@ export default function RealphotosUsersPage() {
         <ListSearch value={search} placeholder="租户名 / 编码 / 编号" onChange={setSearch} />
       </div>
 
-      <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
-        <table className="rp-table w-full border-collapse text-sm">
+      <section className="rp-card p-4 shadow-sm space-y-3">
+        <table className="rp-table">
           <thead>
             <tr>
-              <th className="border px-2 py-1 text-left">租户编号</th>
-              <th className="border px-2 py-1 text-left">租户</th>
-              <th className="border px-2 py-1 text-left">账号数</th>
-              <th className="border px-2 py-1 text-left">操作</th>
+              <th className="text-left">租户编号</th>
+              <th className="text-left">租户</th>
+              <th className="text-left">账号数</th>
+              <th className="text-left">操作</th>
             </tr>
           </thead>
           <tbody>
             {visibleTenants.length === 0 ? (
               <tr>
-                <td className="rp-empty border px-2 py-2 text-muted-foreground" colSpan={4}>
+                <td className="rp-empty" colSpan={4}>
                   {loading ? '加载中…' : message || '暂无租户'}
                 </td>
               </tr>
             ) : (
               visibleTenants.map((item) => (
                 <tr key={item.tenantId}>
-                  <td className="border px-2 py-1">{item.tenantId}</td>
-                  <td className="border px-2 py-1">
+                  <td>{item.tenantId}</td>
+                  <td>
                     <div>{item.tenantName || '—'}</div>
                     <div className="text-xs text-muted-foreground">{item.tenantCode || '—'}</div>
                   </td>
-                  <td className="border px-2 py-1">{item.accountCount}</td>
-                  <td className="border px-2 py-1 space-x-1 whitespace-nowrap">
+                  <td>{item.accountCount}</td>
+                  <td className="space-x-1 whitespace-nowrap">
                     <button
-                      className="rp-btn border px-2 py-0.5"
+                      className="rp-btn rp-btn-sm"
                       type="button"
                       onClick={() => void openAccounts(item)}
                     >
                       查看账号
                     </button>
                     <button
-                      className="rp-btn border px-2 py-0.5"
+                      className="rp-btn rp-btn-sm"
                       type="button"
                       onClick={() => void openCreate(item)}
                     >
                       创建账号
                     </button>
                     <button
-                      className="rp-btn border px-2 py-0.5"
+                      className="rp-btn rp-btn-sm"
                       type="button"
                       onClick={() => void openOp(item)}
                     >
@@ -349,7 +349,7 @@ export default function RealphotosUsersPage() {
         </table>
         <div className="flex items-center gap-2 text-sm">
           <button
-            className="rp-btn border px-2 py-1"
+            className="rp-btn rp-btn-sm"
             type="button"
             disabled={page <= 1 || loading}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -360,7 +360,7 @@ export default function RealphotosUsersPage() {
             第 {page} / {pageCount} 页 · 共 {total} 条
           </span>
           <button
-            className="rp-btn border px-2 py-1"
+            className="rp-btn rp-btn-sm"
             type="button"
             disabled={page >= pageCount || loading}
             onClick={() => setPage((p) => p + 1)}
@@ -379,13 +379,13 @@ export default function RealphotosUsersPage() {
           aria-label="查看账号"
         >
           <div
-            className="flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-border bg-card text-sm shadow"
+            className="rp-dialog flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden border bg-card text-sm"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
               <h2 className="text-sm font-medium">账号列表 · {tenantLabel(accountsOpen)}</h2>
               <button
-                className="rp-btn border px-2 py-0.5"
+                className="rp-btn rp-btn-sm"
                 type="button"
                 onClick={() => setAccountsOpen(null)}
               >
@@ -396,29 +396,29 @@ export default function RealphotosUsersPage() {
               {accountsLoading ? (
                 <p className="text-muted-foreground">加载中…</p>
               ) : (
-                <table className="rp-table w-full border-collapse text-sm">
+                <table className="rp-table">
                   <thead>
                     <tr>
-                      <th className="border px-2 py-1 text-left">编号</th>
-                      <th className="border px-2 py-1 text-left">登录名</th>
-                      <th className="border px-2 py-1 text-left">状态</th>
-                      <th className="border px-2 py-1 text-left">角色</th>
+                      <th className="text-left">编号</th>
+                      <th className="text-left">登录名</th>
+                      <th className="text-left">状态</th>
+                      <th className="text-left">角色</th>
                     </tr>
                   </thead>
                   <tbody>
                     {accounts.length === 0 ? (
                       <tr>
-                        <td className="border px-2 py-2 text-muted-foreground" colSpan={4}>
+                        <td className="rp-empty text-muted-foreground" colSpan={4}>
                           该租户暂无账号
                         </td>
                       </tr>
                     ) : (
                       accounts.map((item) => (
                         <tr key={item.id}>
-                          <td className="border px-2 py-1">{item.id}</td>
-                          <td className="border px-2 py-1">{item.username}</td>
-                          <td className="border px-2 py-1">{statusLabel(item.status)}</td>
-                          <td className="border px-2 py-1">{(item.roleCodes || []).join(', ') || '—'}</td>
+                          <td>{item.id}</td>
+                          <td>{item.username}</td>
+                          <td>{statusLabel(item.status)}</td>
+                          <td>{(item.roleCodes || []).join(', ') || '—'}</td>
                         </tr>
                       ))
                     )}
@@ -439,13 +439,13 @@ export default function RealphotosUsersPage() {
           aria-label="创建账号"
         >
           <div
-            className="w-full max-w-md space-y-3 rounded-xl border border-border bg-card p-4 text-sm shadow"
+            className="rp-card w-full max-w-md space-y-3 p-4 text-sm"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-medium">创建账号 · {tenantLabel(createOpen)}</h2>
               <button
-                className="rp-btn border px-2 py-0.5"
+                className="rp-btn rp-btn-sm"
                 type="button"
                 onClick={() => setCreateOpen(null)}
               >
@@ -454,19 +454,19 @@ export default function RealphotosUsersPage() {
             </div>
             <p className="text-xs text-muted-foreground">租户编号 {createOpen.tenantId}（已锁定，不可改）</p>
             <input
-              className="w-full border px-2 py-1"
+              className="rp-input w-full"
               placeholder="登录名"
               value={newUsername}
               onChange={(e) => setNewUsername(e.target.value)}
             />
             <input
-              className="w-full border px-2 py-1"
+              className="rp-input w-full"
               type="password"
               placeholder="初始密码"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
-            <select className="w-full border px-2 py-1" value={newRole} onChange={(e) => setNewRole(e.target.value)}>
+            <select className="rp-input w-full" value={newRole} onChange={(e) => setNewRole(e.target.value)}>
               {ROLE_OPTIONS.map((role) => (
                 <option key={role} value={role}>
                   {role}
@@ -474,7 +474,7 @@ export default function RealphotosUsersPage() {
               ))}
             </select>
             <button
-              className="rp-btn border px-3 py-1"
+              className="rp-btn"
               type="button"
               onClick={() => void createUser()}
             >
@@ -493,13 +493,13 @@ export default function RealphotosUsersPage() {
           aria-label="账号操作"
         >
           <div
-            className="w-full max-w-lg space-y-3 rounded-xl border border-border bg-card p-4 text-sm shadow"
+            className="rp-card w-full max-w-lg space-y-3 p-4 text-sm"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-medium">操作 · {tenantLabel(opOpen)}</h2>
               <button
-                className="rp-btn border px-2 py-0.5"
+                className="rp-btn rp-btn-sm"
                 type="button"
                 onClick={() => setOpOpen(null)}
               >
@@ -510,7 +510,7 @@ export default function RealphotosUsersPage() {
             <label className="block space-y-1">
               <span className="text-xs text-muted-foreground">操作类型</span>
               <select
-                className="w-full border px-2 py-1"
+                className="rp-input w-full"
                 value={opType}
                 onChange={(e) => setOpType(e.target.value as OpType)}
               >
@@ -525,7 +525,7 @@ export default function RealphotosUsersPage() {
             <label className="block space-y-1">
               <span className="text-xs text-muted-foreground">目标账号</span>
               <select
-                className="w-full border px-2 py-1"
+                className="rp-input w-full"
                 value={opUserId}
                 disabled={opLoading}
                 onChange={(e) => {
@@ -545,13 +545,13 @@ export default function RealphotosUsersPage() {
             {opType === 'credits' ? (
               <div className="space-y-2">
                 <input
-                  className="w-full border px-2 py-1"
+                  className="rp-input w-full"
                   placeholder="整数Δ（可负）"
                   value={creditDelta}
                   onChange={(e) => setCreditDelta(e.target.value)}
                 />
                 <input
-                  className="w-full border px-2 py-1"
+                  className="rp-input w-full"
                   placeholder="原因（必填）"
                   value={creditReason}
                   onChange={(e) => setCreditReason(e.target.value)}
@@ -561,7 +561,7 @@ export default function RealphotosUsersPage() {
 
             {opType === 'roles' ? (
               <input
-                className="w-full border px-2 py-1"
+                className="rp-input w-full"
                 placeholder="roleCodes 逗号分隔"
                 value={roleCodes}
                 onChange={(e) => setRoleCodes(e.target.value)}
@@ -571,14 +571,14 @@ export default function RealphotosUsersPage() {
             {opType === 'password' ? (
               <div className="space-y-2">
                 <input
-                  className="w-full border px-2 py-1"
+                  className="rp-input w-full"
                   type="password"
                   placeholder="新密码"
                   value={pwd1}
                   onChange={(e) => setPwd1(e.target.value)}
                 />
                 <input
-                  className="w-full border px-2 py-1"
+                  className="rp-input w-full"
                   type="password"
                   placeholder="确认密码"
                   value={pwd2}
@@ -594,7 +594,7 @@ export default function RealphotosUsersPage() {
                   {selectedOpAccount ? `：${selectedOpAccount.username}` : ''}
                 </p>
                 <input
-                  className="w-full border px-2 py-1"
+                  className="rp-input w-full"
                   placeholder="确认登录名"
                   value={deleteConfirm}
                   onChange={(e) => setDeleteConfirm(e.target.value)}
@@ -603,7 +603,7 @@ export default function RealphotosUsersPage() {
             ) : null}
 
             <button
-              className="rp-btn border px-3 py-1"
+              className="rp-btn"
               type="button"
               onClick={() => void submitOp()}
             >

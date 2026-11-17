@@ -84,7 +84,7 @@ export default function RealphotosMessagesPage() {
     <main className="space-y-6 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-medium">消息中心</h1>
-        <button className="rp-btn border px-3 py-1 text-sm" type="button" onClick={() => void markAll()}>
+        <button className="rp-btn text-sm" type="button" onClick={() => void markAll()}>
           全部已读（未读 {unreadCount}）
         </button>
       </div>
@@ -93,9 +93,9 @@ export default function RealphotosMessagesPage() {
         {scope === 'recharge_only' ? ' 订单客服视图：仅商家充值订单通知。' : ''}
       </p>
       <p className="text-sm">{message}</p>
-      <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
+      <section className="rp-card p-4 shadow-sm space-y-3">
       <ListSearch value={search} placeholder="标题 / 正文" onChange={setSearch} />
-      <table className="rp-table w-full text-sm">
+      <table className="rp-table">
         <thead>
           <tr>
             <th className="text-left">标题</th>
@@ -119,11 +119,11 @@ export default function RealphotosMessagesPage() {
                 <td>{formatDateTimeShort(item.createdAt)}</td>
                 <td className="space-x-2">
                   {!item.readAt ? (
-                    <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => void markRead(item.id)}>
+                    <button className="rp-btn rp-btn-sm" type="button" onClick={() => void markRead(item.id)}>
                       标为已读
                     </button>
                   ) : null}
-                  <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => void markUnread(item.id)}>
+                  <button className="rp-btn rp-btn-sm" type="button" onClick={() => void markUnread(item.id)}>
                     标为未读
                   </button>
                 </td>
@@ -134,7 +134,7 @@ export default function RealphotosMessagesPage() {
       </table>
       <div className="flex items-center gap-2 text-sm">
         <button
-          className="rp-btn border px-2 py-1"
+          className="rp-btn rp-btn-sm"
           type="button"
           disabled={page <= 1}
           onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -145,7 +145,7 @@ export default function RealphotosMessagesPage() {
           第 {page} / {pageCount} 页 · 共 {filteredItems.length} 条 · 每页 {PAGE_SIZE}
         </span>
         <button
-          className="rp-btn border px-2 py-1"
+          className="rp-btn rp-btn-sm"
           type="button"
           disabled={page >= pageCount}
           onClick={() => setPage((p) => p + 1)}

@@ -86,9 +86,9 @@ export default function RealphotosPromptsPage() {
     <main className="space-y-6 p-6">
       <RpPageHeader title="AI 提示词模板" />
       <p className="text-sm">{message}</p>
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
+      <section className="rp-card space-y-3 p-4">
         <div className="rp-filter flex flex-wrap items-center gap-3 text-sm">
-          <button className="rp-btn rp-btn-primary border px-3 py-1" type="button" onClick={() => setCreateOpen(true)}>
+          <button className="rp-btn rp-btn-primary" type="button" onClick={() => setCreateOpen(true)}>
             新建模板
           </button>
           <ListSearch
@@ -102,14 +102,14 @@ export default function RealphotosPromptsPage() {
           <span>
             第 {page} / {pageCount} 页 · 共 {filteredItems.length}
           </span>
-          <button className="rp-btn border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+          <button className="rp-btn rp-btn-sm" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
             上一页
           </button>
-          <button className="rp-btn border px-2 py-1" type="button" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>
+          <button className="rp-btn rp-btn-sm" type="button" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>
             下一页
           </button>
         </div>
-        <table className="rp-table w-full text-sm">
+        <table className="rp-table">
           <thead>
             <tr>
               <th className="text-left">名称</th>
@@ -183,7 +183,7 @@ export default function RealphotosPromptsPage() {
               onChange={(event) => setNegative(event.target.value)}
             />
           </label>
-          <button className="rp-btn border px-3 py-1 text-sm" type="button" onClick={() => void save()}>
+          <button className="rp-btn text-sm" type="button" onClick={() => void save()}>
             保存模板
           </button>
         </RpDialog>

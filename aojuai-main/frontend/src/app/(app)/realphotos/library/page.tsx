@@ -77,21 +77,25 @@ export default function RealphotosLibraryPage() {
     const created: string[] = []
     async function loadThumbs() {
       setThumbs({})
-      for (const item of items) {
-        if (cancelled) return
-        if (!item.objectKey) continue
-        try {
-          const blob = await apiFetchBlob(
-            `/api/v1/realphotos/gateway/objects/${item.objectKey.split('/').map(encodeURIComponent).join('/')}`,
-          )
-          if (cancelled) return
-          const url = URL.createObjectURL(blob)
-          created.push(url)
-          setThumbs((prev) => ({ ...prev, [item.id]: url }))
-        } catch {
-          // 网关鉴权失败时保留占位
+      // 2026-11-17：改拉 160px 缩略图（服务端缓存），并发 4，避免串行下载原图。
+      const queue = items.filter((row) => Boolean(row.objectKey))
+      const worker = async () => {
+        for (;;) {
+          const item = queue.shift()
+          if (!item || cancelled || !item.objectKey) return
+          try {
+            const path = item.objectKey.split('/').map(encodeURIComponent).join('/')
+            const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${path}?thumb=160`)
+            if (cancelled) return
+            const url = URL.createObjectURL(blob)
+            created.push(url)
+            setThumbs((prev) => ({ ...prev, [item.id]: url }))
+          } catch {
+            // 网关鉴权失败时保留占位
+          }
         }
       }
+      await Promise.all(Array.from({ length: Math.min(4, queue.length) }, () => worker()))
     }
     void loadThumbs()
     return () => {
@@ -284,17 +288,17 @@ export default function RealphotosLibraryPage() {
       <section className="rp-card flex flex-wrap items-center gap-2 p-3 text-sm">
         <span className="rp-stat-label">添加图片</span>
         {frozen ? (
-          <span className="border px-2 py-1 opacity-50">URL 导入（已冻结）</span>
+          <span className="rp-btn rp-btn-sm pointer-events-none opacity-50">URL 导入（已冻结）</span>
         ) : (
-          <Link className="rp-btn border px-2 py-1" href="/realphotos/imports">
+          <Link className="rp-btn rp-btn-sm" href="/realphotos/imports">
             URL 导入
           </Link>
         )}
         {frozen ? (
-          <span className="border px-2 py-1 opacity-50">本地上传（已冻结）</span>
+          <span className="rp-btn rp-btn-sm pointer-events-none opacity-50">本地上传（已冻结）</span>
         ) : (
           <button
-            className="rp-btn border px-2 py-1"
+            className="rp-btn rp-btn-sm"
             type="button"
             onClick={() => fileInputRef.current?.click()}
           >
@@ -302,16 +306,16 @@ export default function RealphotosLibraryPage() {
           </button>
         )}
         {frozen ? (
-          <span className="border px-2 py-1 opacity-50">文生图（已冻结）</span>
+          <span className="rp-btn rp-btn-sm pointer-events-none opacity-50">文生图（已冻结）</span>
         ) : (
-          <Link className="rp-btn border px-2 py-1" href="/realphotos/generate?mode=text_to_image">
+          <Link className="rp-btn rp-btn-sm" href="/realphotos/generate?mode=text_to_image">
             文生图
           </Link>
         )}
         {frozen ? (
-          <span className="border px-2 py-1 opacity-50">图生图（已冻结）</span>
+          <span className="rp-btn rp-btn-sm pointer-events-none opacity-50">图生图（已冻结）</span>
         ) : (
-          <Link className="rp-btn border px-2 py-1" href="/realphotos/generate?mode=image_to_image">
+          <Link className="rp-btn rp-btn-sm" href="/realphotos/generate?mode=image_to_image">
             图生图
           </Link>
         )}
@@ -358,7 +362,7 @@ export default function RealphotosLibraryPage() {
           第 {page} / {pageCount} 页 · 共 {total} 条 · 已选 {selectedIds.length} 张
         </span>
         <button
-          className="rp-btn border px-2 py-1"
+          className="rp-btn rp-btn-sm"
           type="button"
           disabled={page <= 1}
           onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -366,7 +370,7 @@ export default function RealphotosLibraryPage() {
           上一页
         </button>
         <button
-          className="rp-btn border px-2 py-1"
+          className="rp-btn rp-btn-sm"
           type="button"
           disabled={page >= pageCount}
           onClick={() => setPage((p) => p + 1)}
@@ -375,7 +379,7 @@ export default function RealphotosLibraryPage() {
         </button>
       </section>
       <section className="rp-card overflow-hidden">
-      <table className="rp-table w-full text-sm">
+      <table className="rp-table">
         <thead>
           <tr>
             <th className="text-left">
@@ -426,7 +430,7 @@ export default function RealphotosLibraryPage() {
                       onClick={() => setPreview({ id: item.id, url: thumbs[item.id] })}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={thumbs[item.id]} alt="" className="h-10 w-10 object-cover border" />
+                      <img src={thumbs[item.id]} alt="" loading="lazy" decoding="async" className="h-10 w-10 rounded border object-cover" />
                     </button>
                   ) : (
                     <span className="inline-block h-10 w-10 border text-center leading-10 text-xs">图</span>
@@ -440,10 +444,10 @@ export default function RealphotosLibraryPage() {
                 </td>
                 <td>{formatByteSizeMb(item.byteSize)}</td>
                 <td className="space-x-2">
-                  <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => void downloadOne(item)}>
+                  <button className="rp-btn rp-btn-sm" type="button" onClick={() => void downloadOne(item)}>
                     下载
                   </button>
-                  <button className="rp-btn rp-btn-sm rp-btn-danger border px-2 py-0.5" type="button" onClick={() => void removeOne(item.id)}>
+                  <button className="rp-btn rp-btn-sm rp-btn-danger" type="button" onClick={() => void removeOne(item.id)}>
                     删除
                   </button>
                 </td>

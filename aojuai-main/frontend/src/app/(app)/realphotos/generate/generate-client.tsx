@@ -227,11 +227,11 @@ export function RealphotosGenerateClient() {
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">生图入库</h1>
       <p className="text-sm">{message}</p>
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
+      <section className="rp-card space-y-3 p-4">
         <h2 className="text-sm font-medium">选用 AI 提示词模板</h2>
         <div className="flex flex-wrap gap-2 text-sm">
           <ListSearch value={templateSearch} placeholder="模板名称 / 提示词" onChange={setTemplateSearch} />
-          <select className="border px-2 py-1" value={templateId} onChange={(event) => setTemplateId(event.target.value)}>
+          <select className="rp-input" value={templateId} onChange={(event) => setTemplateId(event.target.value)}>
             <option value="">选择模板</option>
             {filteredTemplates.map((item) => (
               <option key={item.id} value={item.id}>
@@ -239,12 +239,12 @@ export function RealphotosGenerateClient() {
               </option>
             ))}
           </select>
-          <button className="rp-btn border px-3 py-1" type="button" onClick={applyTemplate}>
+          <button className="rp-btn" type="button" onClick={applyTemplate}>
             选用
           </button>
         </div>
       </section>
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
+      <section className="rp-card space-y-3 p-4">
         <h2 className="text-sm font-medium">提交</h2>
         <label className="block text-sm">
           模式
@@ -267,7 +267,7 @@ export function RealphotosGenerateClient() {
         <label className="block text-sm">
           正向提示词
           <textarea
-            className="mt-1 block w-full max-w-xl border px-2 py-1"
+            className="rp-input mt-1 block w-full max-w-xl"
             rows={3}
             value={prompt}
             onChange={(event) => {
@@ -279,7 +279,7 @@ export function RealphotosGenerateClient() {
         <label className="block text-sm">
           负向提示词
           <textarea
-            className="mt-1 block w-full max-w-xl border px-2 py-1"
+            className="rp-input mt-1 block w-full max-w-xl"
             rows={2}
             value={negative}
             onChange={(event) => setNegative(event.target.value)}
@@ -288,16 +288,16 @@ export function RealphotosGenerateClient() {
         <div className="flex flex-wrap gap-3 text-sm">
           <label>
             宽
-            <input className="ml-1 border px-2 py-1 w-24" value={width} onChange={(e) => setWidth(e.target.value)} />
+            <input className="rp-input ml-1 w-24" value={width} onChange={(e) => setWidth(e.target.value)} />
           </label>
           <label>
             高
-            <input className="ml-1 border px-2 py-1 w-24" value={height} onChange={(e) => setHeight(e.target.value)} />
+            <input className="rp-input ml-1 w-24" value={height} onChange={(e) => setHeight(e.target.value)} />
           </label>
           <label className={seedSupported ? '' : 'text-neutral-500'} data-testid="generation-seed">
             {seedSupported ? '可选种子' : '可选种子（当前模型不支持）'}
             <input
-              className="ml-1 w-40 border px-2 py-1 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500 disabled:opacity-70"
+              className="rp-input ml-1 w-40 disabled:cursor-not-allowed disabled:opacity-60"
               value={seedSupported ? seed : ''}
               disabled={!seedSupported}
               aria-disabled={!seedSupported}
@@ -314,11 +314,11 @@ export function RealphotosGenerateClient() {
         {lastSizes ? <p className="text-xs text-muted-foreground">{lastSizes}</p> : null}
         <div className="space-y-2 text-sm">
           <div className="flex flex-wrap gap-2">
-            <button className="rp-btn border px-3 py-1" type="button" onClick={() => void optimize()}>
+            <button className="rp-btn" type="button" onClick={() => void optimize()}>
               提示词优化
             </button>
             <button
-              className="rp-btn border px-3 py-1 disabled:opacity-40"
+              className="rp-btn disabled:opacity-40"
               type="button"
               disabled={!optId || !optimizedText}
               onClick={() => void confirmOpt()}
@@ -336,7 +336,7 @@ export function RealphotosGenerateClient() {
             </div>
           ) : null}
         </div>
-        <button className="rp-btn border px-3 py-1 text-sm" type="button" onClick={() => void submit()}>
+        <button className="rp-btn text-sm" type="button" onClick={() => void submit()}>
           提交生图
         </button>
       </section>

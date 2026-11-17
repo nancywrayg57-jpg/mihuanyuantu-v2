@@ -73,41 +73,41 @@ export default function RealphotosLogsPage() {
     <main className="space-y-4 p-6">
       <RpPageHeader title="系统日志" />
       <p className="text-sm">{message}</p>
-      <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
+      <section className="rp-card p-4 shadow-sm space-y-3">
         <ListSearch value={search} placeholder="操作者 / 目标 / 动作 / 原因" onChange={setSearch} />
-        <table className="rp-table w-full border-collapse text-sm">
+        <table className="rp-table">
           <thead>
             <tr>
-              <th className="border px-2 py-1 text-left">时间</th>
-              <th className="border px-2 py-1 text-left">操作者</th>
-              <th className="border px-2 py-1 text-left">目标</th>
-              <th className="border px-2 py-1 text-left">租户</th>
-              <th className="border px-2 py-1 text-left">动作</th>
-              <th className="border px-2 py-1 text-left">原因</th>
-              <th className="border px-2 py-1 text-left">结果</th>
+              <th className="text-left">时间</th>
+              <th className="text-left">操作者</th>
+              <th className="text-left">目标</th>
+              <th className="text-left">租户</th>
+              <th className="text-left">动作</th>
+              <th className="text-left">原因</th>
+              <th className="text-left">结果</th>
             </tr>
           </thead>
           <tbody>
             {visibleItems.map((item) => (
               <tr key={item.id}>
-                <td className="border px-2 py-1">{formatDateTimeShort(item.createdAt) || `#${item.id}`}</td>
-                <td className="border px-2 py-1">
+                <td>{formatDateTimeShort(item.createdAt) || `#${item.id}`}</td>
+                <td>
                   <div>{item.operatorDisplay || `用户 #${item.operatorUserId}`}</div>
                   <div className="text-xs text-muted-foreground">#{item.operatorUserId}</div>
                 </td>
-                <td className="border px-2 py-1">
+                <td>
                   <div>{item.targetDisplay || `用户 #${item.targetUserId}`}</div>
                   <div className="text-xs text-muted-foreground">#{item.targetUserId}</div>
                 </td>
-                <td className="border px-2 py-1">
+                <td>
                   <div>{item.tenantDisplay || `租户 #${item.tenantId}`}</div>
                   <div className="text-xs text-muted-foreground">#{item.tenantId}</div>
                 </td>
-                <td className="border px-2 py-1" title={item.action}>
+                <td title={item.action}>
                   {item.actionLabel || item.action}
                 </td>
-                <td className="border px-2 py-1">{item.reason}</td>
-                <td className="border px-2 py-1" title={item.result}>
+                <td>{item.reason}</td>
+                <td title={item.result}>
                   {item.resultLabel || item.result}
                 </td>
               </tr>
@@ -116,7 +116,7 @@ export default function RealphotosLogsPage() {
         </table>
         <div className="flex items-center gap-2 text-sm">
           <button
-            className="rp-btn border px-2 py-1"
+            className="rp-btn rp-btn-sm"
             type="button"
             disabled={page <= 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -127,7 +127,7 @@ export default function RealphotosLogsPage() {
             第 {page} / {pageCount} 页 · 共 {total} 条 · 每页 {pageSize}
           </span>
           <button
-            className="rp-btn border px-2 py-1"
+            className="rp-btn rp-btn-sm"
             type="button"
             disabled={page >= pageCount}
             onClick={() => setPage((p) => p + 1)}

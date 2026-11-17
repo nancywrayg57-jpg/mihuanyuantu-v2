@@ -91,7 +91,7 @@ export default function RealphotosOrderSupportPage() {
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">订单客服</h1>
       <p className="text-sm text-muted-foreground">{message}</p>
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
+      <section className="rp-card space-y-3 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-medium">充值单</h2>
           <ListSearch value={search} placeholder="单号 / 租户 / 凭证" onChange={setSearch} />
@@ -99,12 +99,12 @@ export default function RealphotosOrderSupportPage() {
         <label className="block text-sm">
           拒单原因
           <input
-            className="mt-1 block w-full max-w-md border px-2 py-1 text-sm"
+            className="rp-input mt-1 block w-full max-w-md"
             value={reason}
             onChange={(event) => setReason(event.target.value)}
           />
         </label>
-        <table className="rp-table w-full text-sm">
+        <table className="rp-table">
           <thead>
             <tr>
               <th className="text-left">订单</th>
@@ -131,10 +131,10 @@ export default function RealphotosOrderSupportPage() {
                   <td>{order.voucherNote}</td>
                   <td>{taskStatusLabel(order.status)}</td>
                   <td className="space-x-2">
-                    <button className="rp-btn border px-2 py-1" type="button" onClick={() => void confirm(order.id)}>
+                    <button className="rp-btn rp-btn-sm" type="button" onClick={() => void confirm(order.id)}>
                       确认到账
                     </button>
-                    <button className="rp-btn border px-2 py-1" type="button" onClick={() => void reject(order.id)}>
+                    <button className="rp-btn rp-btn-sm" type="button" onClick={() => void reject(order.id)}>
                       拒单
                     </button>
                   </td>

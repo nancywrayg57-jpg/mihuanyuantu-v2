@@ -389,7 +389,7 @@ export default function RealphotosPresetsPage() {
         <div key={field.key} className="min-w-[10rem] flex-1">
           {label}
           <select
-            className="w-full border px-2 py-1 text-sm"
+            className="rp-input w-full"
             value={value}
             onChange={(event) => onChange(event.target.value)}
           >
@@ -407,7 +407,7 @@ export default function RealphotosPresetsPage() {
         <div key={field.key} className="w-full">
           {label}
           <textarea
-            className="w-full border px-2 py-1 text-sm"
+            className="rp-input w-full"
             rows={3}
             value={value}
             onChange={(event) => onChange(event.target.value)}
@@ -419,7 +419,7 @@ export default function RealphotosPresetsPage() {
       <div key={field.key} className="min-w-[10rem] flex-1">
         {label}
         <input
-          className="w-full border px-2 py-1 text-sm"
+          className="rp-input w-full"
           value={value}
           onChange={(event) => onChange(event.target.value)}
         />
@@ -484,9 +484,9 @@ export default function RealphotosPresetsPage() {
       <RpPageHeader title="设备预设" description="按类型、品牌与型号维护处理预设。" />
       <p className="text-sm">{message}</p>
 
-      <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
+      <section className="rp-card p-4 shadow-sm space-y-3">
       <div className="rp-filter flex flex-wrap items-center gap-3 text-sm">
-        <button className="rp-btn border px-3 py-1" type="button" onClick={openCreate}>
+        <button className="rp-btn" type="button" onClick={openCreate}>
           新增预设
         </button>
         <ListSearch
@@ -500,11 +500,11 @@ export default function RealphotosPresetsPage() {
         <span>
           第 {page} / {pageCount} 页 · 每页 {PRESET_PAGE_SIZE} 条 · 共 {filteredItems.length} 条
         </span>
-        <button className="rp-btn border px-2 py-1" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+        <button className="rp-btn rp-btn-sm" type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
           上一页
         </button>
         <button
-          className="rp-btn border px-2 py-1"
+          className="rp-btn rp-btn-sm"
           type="button"
           disabled={page >= pageCount}
           onClick={() => setPage((p) => p + 1)}
@@ -513,49 +513,49 @@ export default function RealphotosPresetsPage() {
         </button>
       </div>
 
-      <table className="rp-table w-full border-collapse text-sm">
+      <table className="rp-table">
         <thead>
           <tr>
-            <th className="border px-2 py-1 text-left">预设名称</th>
-            <th className="border px-2 py-1 text-left">类型</th>
-            <th className="border px-2 py-1 text-left">品牌</th>
-            <th className="border px-2 py-1 text-left">型号</th>
-            <th className="border px-2 py-1 text-left">GPS</th>
-            <th className="border px-2 py-1 text-left">状态</th>
-            <th className="border px-2 py-1 text-left">操作</th>
+            <th className="text-left">预设名称</th>
+            <th className="text-left">类型</th>
+            <th className="text-left">品牌</th>
+            <th className="text-left">型号</th>
+            <th className="text-left">GPS</th>
+            <th className="text-left">状态</th>
+            <th className="text-left">操作</th>
           </tr>
         </thead>
         <tbody>
           {pageItems.length === 0 ? (
             <tr>
-              <td className="rp-empty border px-2 py-1" colSpan={7}>
+              <td className="rp-empty" colSpan={7}>
                 暂无预设
               </td>
             </tr>
           ) : (
             pageItems.map((item) => (
               <tr key={item.code}>
-                <td className="border px-2 py-1">{presetDisplayName(item)}</td>
-                <td className="border px-2 py-1">{deviceTypeLabel(item.deviceType)}</td>
-                <td className="border px-2 py-1">{item.brand}</td>
-                <td className="border px-2 py-1">{item.model}</td>
-                <td className="border px-2 py-1">{gpsModeLabel(item.gpsMode)}</td>
-                <td className="border px-2 py-1">{item.enabled ? '启用' : '停用'}</td>
-                <td className="border px-2 py-1 space-x-1">
-                  <button className="rp-btn border px-2 py-1" type="button" onClick={() => void openDetail(item)}>
+                <td>{presetDisplayName(item)}</td>
+                <td>{deviceTypeLabel(item.deviceType)}</td>
+                <td>{item.brand}</td>
+                <td>{item.model}</td>
+                <td>{gpsModeLabel(item.gpsMode)}</td>
+                <td>{item.enabled ? '启用' : '停用'}</td>
+                <td className="space-x-1">
+                  <button className="rp-btn rp-btn-sm" type="button" onClick={() => void openDetail(item)}>
                     查看详情
                   </button>
-                  <button className="rp-btn border px-2 py-1" type="button" onClick={() => void openEdit(item)}>
+                  <button className="rp-btn rp-btn-sm" type="button" onClick={() => void openEdit(item)}>
                     编辑
                   </button>
                   <button
-                    className="rp-btn border px-2 py-1"
+                    className="rp-btn rp-btn-sm"
                     type="button"
                     onClick={() => void setEnabled(item.code, !item.enabled)}
                   >
                     {item.enabled ? '停用' : '启用'}
                   </button>
-                  <button className="rp-btn border px-2 py-1" type="button" onClick={() => void loadVersions(item.code)}>
+                  <button className="rp-btn rp-btn-sm" type="button" onClick={() => void loadVersions(item.code)}>
                     版本
                   </button>
                 </td>
@@ -575,12 +575,12 @@ export default function RealphotosPresetsPage() {
           aria-label={formMode === 'create' ? '新增预设' : '编辑预设'}
         >
           <div
-            className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-border bg-card text-sm shadow"
+            className="rp-dialog flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden border bg-card text-sm"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
               <h2 className="text-sm font-medium">{formMode === 'create' ? '新增预设' : '编辑预设'}</h2>
-              <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => setFormOpen(false)}>
+              <button className="rp-btn rp-btn-sm" type="button" onClick={() => setFormOpen(false)}>
                 关闭
               </button>
             </div>
@@ -588,7 +588,7 @@ export default function RealphotosPresetsPage() {
               {PRESET_FORM_TABS.map((tab) => (
                 <button
                   key={tab.id}
-                  className={`rp-btn border px-3 py-1 whitespace-nowrap ${formTab === tab.id ? 'bg-muted font-medium' : ''}`}
+                  className={`rp-btn whitespace-nowrap ${formTab === tab.id ? 'bg-muted font-medium' : ''}`}
                   type="button"
                   data-preset-form-tab={tab.id}
                   onClick={() => setFormTab(tab.id)}
@@ -607,7 +607,7 @@ export default function RealphotosPresetsPage() {
                       <div className="min-w-[8rem] flex-1">
                         <label className="mb-1 block text-xs text-muted-foreground">{GPS_COORD_LABELS.latitude}</label>
                         <input
-                          className="w-full border px-2 py-1 text-sm"
+                          className="rp-input w-full"
                           value={form.lat}
                           onChange={(event) => patchForm('lat', event.target.value)}
                         />
@@ -615,7 +615,7 @@ export default function RealphotosPresetsPage() {
                       <div className="min-w-[8rem] flex-1">
                         <label className="mb-1 block text-xs text-muted-foreground">{GPS_COORD_LABELS.longitude}</label>
                         <input
-                          className="w-full border px-2 py-1 text-sm"
+                          className="rp-input w-full"
                           value={form.lng}
                           onChange={(event) => patchForm('lng', event.target.value)}
                         />
@@ -623,7 +623,7 @@ export default function RealphotosPresetsPage() {
                       <div className="min-w-[8rem] flex-1">
                         <label className="mb-1 block text-xs text-muted-foreground">{GPS_COORD_LABELS.altitude}</label>
                         <input
-                          className="w-full border px-2 py-1 text-sm"
+                          className="rp-input w-full"
                           value={form.altitude}
                           onChange={(event) => patchForm('altitude', event.target.value)}
                         />
@@ -634,7 +634,7 @@ export default function RealphotosPresetsPage() {
                     <div>
                       <label className="mb-1 block text-xs text-muted-foreground">场景规则</label>
                       <select
-                        className="w-full border px-2 py-1 text-sm"
+                        className="rp-input w-full"
                         value={form.sceneRule}
                         onChange={(event) => patchForm('sceneRule', event.target.value)}
                       >
@@ -650,7 +650,7 @@ export default function RealphotosPresetsPage() {
               ) : null}
             </div>
             <div className="border-t px-4 py-3">
-              <button className="rp-btn border px-3 py-1 text-sm" type="button" onClick={() => void savePreset()}>
+              <button className="rp-btn text-sm" type="button" onClick={() => void savePreset()}>
                 保存并生成版本快照
               </button>
             </div>
@@ -667,12 +667,12 @@ export default function RealphotosPresetsPage() {
           aria-label={`预设 ${presetDisplayName(detail)} 详情`}
         >
           <div
-            className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-border bg-card text-sm shadow"
+            className="rp-dialog flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden border bg-card text-sm"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
               <strong>预设详情 · {presetDisplayName(detail)}</strong>
-              <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => setDetail(null)}>
+              <button className="rp-btn rp-btn-sm" type="button" onClick={() => setDetail(null)}>
                 关闭
               </button>
             </div>
@@ -680,7 +680,7 @@ export default function RealphotosPresetsPage() {
               {PRESET_FORM_TABS.map((tab) => (
                 <button
                   key={tab.id}
-                  className={`rp-btn border px-3 py-1 whitespace-nowrap ${detailTab === tab.id ? 'bg-muted font-medium' : ''}`}
+                  className={`rp-btn whitespace-nowrap ${detailTab === tab.id ? 'bg-muted font-medium' : ''}`}
                   type="button"
                   onClick={() => setDetailTab(tab.id)}
                 >
@@ -695,7 +695,7 @@ export default function RealphotosPresetsPage() {
               ) : null}
               {detailTab === 'exif' ? renderGpsDetail(detail) : null}
               <button
-                className="rp-btn border px-2 py-1"
+                className="rp-btn rp-btn-sm"
                 type="button"
                 onClick={() => {
                   setDetail(null)
@@ -710,32 +710,32 @@ export default function RealphotosPresetsPage() {
       ) : null}
 
       {versionCode ? (
-        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
+        <section className="rp-card p-4 space-y-2">
           <h2 className="text-sm font-medium">
             版本快照 ·{' '}
             {presetDisplayName(items.find((item) => item.code === versionCode) || { code: versionCode })}
           </h2>
-          <table className="rp-table w-full border-collapse text-sm">
+          <table className="rp-table">
             <thead>
               <tr>
-                <th className="border px-2 py-1 text-left">版本</th>
-                <th className="border px-2 py-1 text-left">时间</th>
-                <th className="border px-2 py-1 text-left">快照摘要</th>
+                <th className="text-left">版本</th>
+                <th className="text-left">时间</th>
+                <th className="text-left">快照摘要</th>
               </tr>
             </thead>
             <tbody>
               {versions.length === 0 ? (
                 <tr>
-                  <td className="border px-2 py-1" colSpan={3}>
+                  <td colSpan={3}>
                     尚无版本
                   </td>
                 </tr>
               ) : (
                 versions.map((row) => (
                   <tr key={`${row.presetCode}-${row.versionNo}`}>
-                    <td className="border px-2 py-1">{row.versionNo}</td>
-                    <td className="border px-2 py-1">{formatDateTimeShort(row.createdAt)}</td>
-                    <td className="border px-2 py-1">
+                    <td>{row.versionNo}</td>
+                    <td>{formatDateTimeShort(row.createdAt)}</td>
+                    <td>
                       {String(
                         (row.snapshot.legacyParameters as Record<string, unknown> | undefined)?.name ||
                           `${String(row.snapshot.brand || '')}/${String(row.snapshot.model || '')}`,

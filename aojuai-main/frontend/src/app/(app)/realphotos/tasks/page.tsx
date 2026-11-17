@@ -200,6 +200,12 @@ export default function RealphotosTasksPage() {
   const [genTotal, setGenTotal] = useState(0)
   const [genItems, setGenItems] = useState<GenerationTask[]>([])
   const [checked, setChecked] = useState<Record<string, boolean>>({})
+  // 2026-11-17：图片申诉从工作台迁到任务详情（管理员确认方案 A）
+  const [myTickets, setMyTickets] = useState<
+    Array<{ id: string; ticketType: string; status: string; reason: string; createdAt?: string | null }>
+  >([])
+  const [appealReason, setAppealReason] = useState('')
+  const [appealBusy, setAppealBusy] = useState(false)
   const [detail, setDetail] = useState<ProcessingTask | null>(null)
   const [genDetail, setGenDetail] = useState<GenerationTask | null>(null)
   const [notice, setNotice] = useState('')
@@ -241,6 +247,35 @@ export default function RealphotosTasksPage() {
       .then((data) => setUnreadHint(Number(data.unreadCount || 0)))
       .catch(() => undefined)
   }, [])
+
+  useEffect(() => {
+    void apiFetch<{ items: typeof myTickets }>('/api/v1/realphotos/my-support-tickets')
+      .then((data) => setMyTickets(data.items || []))
+      .catch(() => undefined)
+  }, [])
+
+  async function createAppeal(taskId: string) {
+    const reason = appealReason.trim()
+    if (!reason) {
+      setNotice('请填写申诉原因')
+      return
+    }
+    setAppealBusy(true)
+    try {
+      await apiFetch('/api/v1/realphotos/support-tickets', {
+        method: 'POST',
+        body: JSON.stringify({ ticketType: 'image_appeal', reason: `任务 #${taskId}：${reason}` }),
+      })
+      setAppealReason('')
+      const rows = await apiFetch<{ items: typeof myTickets }>('/api/v1/realphotos/my-support-tickets')
+      setMyTickets(rows.items || [])
+      setNotice('已提交申诉，技术客服会在工单管理中处理')
+    } catch (error: unknown) {
+      setNotice(error instanceof ApiError ? error.message : '申诉提交失败')
+    } finally {
+      setAppealBusy(false)
+    }
+  }
 
   useEffect(() => {
     if (tab !== 'processing') return
@@ -588,7 +623,36 @@ export default function RealphotosTasksPage() {
       </div>
 
       {tab === 'processing' ? (
-        <section className="rp-card space-y-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+        <section className="rp-card space-y-3 p-4">
+          {myTickets.length > 0 ? (
+            <details className="rp-card p-3 text-sm">
+              <summary className="cursor-pointer font-medium">我的申诉（{myTickets.length}）</summary>
+              <table className="rp-table mt-2 w-full">
+                <thead>
+                  <tr>
+                    <th className="text-left">编号</th>
+                    <th className="text-left">类型</th>
+                    <th className="text-left">状态</th>
+                    <th className="text-left">原因</th>
+                    <th className="text-left">时间</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {myTickets.slice(0, 10).map((row) => (
+                    <tr key={row.id}>
+                      <td>{row.id}</td>
+                      <td>{ticketTypeLabel(row.ticketType)}</td>
+                      <td>{ticketStatusLabel(row.status)}</td>
+                      <td className="max-w-md truncate" title={row.reason}>
+                        {row.reason}
+                      </td>
+                      <td>{formatDateTimeShort(row.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </details>
+          ) : null}
           <RpFilterBar>
             <RpField label="状态">
               <select
@@ -748,11 +812,33 @@ export default function RealphotosTasksPage() {
                   ) : null}
                 </dl>
               </RpSection>
+              <RpSection title="图片申诉" tone="basic">
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    对本次结果有疑问可提交申诉，技术客服在「工单管理」处理；不自动重跑任务、不重复扣费。
+                  </p>
+                  <textarea
+                    className="rp-input w-full"
+                    rows={2}
+                    placeholder="申诉原因（例如：检测分数与实际不符 / 原图细节异常）"
+                    value={appealReason}
+                    onChange={(event) => setAppealReason(event.target.value)}
+                  />
+                  <button
+                    className="rp-btn"
+                    type="button"
+                    disabled={appealBusy}
+                    onClick={() => void createAppeal(String(detail.id))}
+                  >
+                    {appealBusy ? '提交中…' : '提交申诉'}
+                  </button>
+                </div>
+              </RpSection>
             </RpDialog>
           ) : null}
         </section>
       ) : (
-        <section className="rp-card space-y-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+        <section className="rp-card space-y-3 p-4">
           <RpFilterBar>
             <RpField label="模式">
               <select
