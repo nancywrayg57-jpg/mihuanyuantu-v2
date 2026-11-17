@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { toast } from 'sonner'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch } from '@/lib/api'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
@@ -32,6 +33,8 @@ export function RealphotosGenerateClient() {
   const [negative, setNegative] = useState('')
   const [reference, setReference] = useState<File | null>(null)
   const [message, setMessage] = useState('')
+  // 2026-11-17：提交生图立即给出反馈（生图耗时较长，不能让用户以为没点到）
+  const [submitting, setSubmitting] = useState(false)
   const [templates, setTemplates] = useState<Template[]>([])
   const [templateId, setTemplateId] = useState('')
   const [optId, setOptId] = useState<string | null>(null)
@@ -167,6 +170,8 @@ export function RealphotosGenerateClient() {
       toastTask(text, false)
       return
     }
+    setSubmitting(true)
+    const loadingToast = toast.loading('正在提交生图，请稍候…')
     const seedField = seedSupported && seed.trim() ? seed.trim() : ''
     const fields = {
       mode,
@@ -215,11 +220,13 @@ export function RealphotosGenerateClient() {
             : '未填写种子（未发送）'
       const text = `已入库。生图不会自动进入处理。${sizeNote}。${submittedSeedNote}`
       setMessage(text)
-      toastTask(text, true)
+      toast.success(text, { id: loadingToast })
     } catch (error: unknown) {
       const text = error instanceof ApiError ? error.message : '提交失败'
       setMessage(text)
-      toastTask(text, false)
+      toast.error(text, { id: loadingToast })
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -342,8 +349,13 @@ export function RealphotosGenerateClient() {
           ) : null}
         </div>
         <div className="flex justify-end border-t pt-3">
-          <button className="rp-btn rp-btn-primary rp-btn-lg" type="button" onClick={() => void submit()}>
-            提交生图
+          <button
+            className="rp-btn rp-btn-primary rp-btn-lg"
+            type="button"
+            disabled={submitting}
+            onClick={() => void submit()}
+          >
+            {submitting ? '提交中…' : '提交生图'}
           </button>
         </div>
       </section>
