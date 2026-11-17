@@ -47,6 +47,11 @@ s7_prod_deploy_2026_11_16:
     messages: note 消息保留30天; 补发 -> 标为未读 (POST /inbox/{id}/unread)
     workspace: search box removed
     verify: playwright DOM checks fail_count=0
+  ui_revision_2026_11_17_b:
+    commit: f9a5c94
+    scope: [workspace labels, task-detail sections, prompts dialog, imports note, batch pick button, preset detail]
+    build_id: V1FDJ934Zi5HhJyTz6GGv
+    verify: playwright DOM 19 checks fail_count=0
   evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-e2e.txt
   closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md
   blocker: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md
