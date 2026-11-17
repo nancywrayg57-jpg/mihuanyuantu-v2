@@ -248,15 +248,23 @@ export default function RealphotosLibraryPage() {
       let uploaded = 0
       for (let start = 0; start < files.length; start += UPLOAD_CHUNK) {
         const chunk = files.slice(start, start + UPLOAD_CHUNK)
-        const body = new FormData()
-        if (chunk.length === 1) {
-          body.set('file', chunk[0])
-          await apiFetch('/api/v1/realphotos/assets', { method: 'POST', body })
-        } else {
-          for (const file of chunk) {
-            body.append('files', file)
+        const send = async () => {
+          const body = new FormData()
+          if (chunk.length === 1) {
+            body.set('file', chunk[0])
+            await apiFetch('/api/v1/realphotos/assets', { method: 'POST', body })
+          } else {
+            for (const file of chunk) {
+              body.append('files', file)
+            }
+            await apiFetch('/api/v1/realphotos/assets/batch', { method: 'POST', body })
           }
-          await apiFetch('/api/v1/realphotos/assets/batch', { method: 'POST', body })
+        }
+        // 弱网下大文件偶发连接中断，整批重试一次再判定失败。
+        try {
+          await send()
+        } catch {
+          await send()
         }
         uploaded += chunk.length
       }

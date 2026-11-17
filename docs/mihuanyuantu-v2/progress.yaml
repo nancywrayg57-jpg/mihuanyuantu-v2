@@ -59,6 +59,11 @@ s7_prod_deploy_2026_11_16:
     channel_edit: PUT /provider-contracts/{duty} (modelId/purpose/baseUrl) + 修改 dialog
     import_channel: disabled (SERVICE_NOT_CONFIGURED); temp host not in use
     checks_report: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-CHECKS-2026-11-17.md
+  e2e_full_2026_11_17:
+    report: docs/mihuanyuantu-v2/input/REALPHOTOS-E2E-REPORT-2026-11-17.md
+    upload_413: nginx 25m -> 200m + chunked upload (5/req) + specific 413 message
+    roles: rp_admin / rp_merchant_a1 / rp_order_support / rp_tech_support
+    restored: import channel disabled + base 47.85.47.252, detection gemini-2.5-flash
   evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-e2e.txt
   closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md
   blocker: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md
