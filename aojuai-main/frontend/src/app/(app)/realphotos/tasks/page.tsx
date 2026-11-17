@@ -268,7 +268,7 @@ export default function RealphotosTasksPage() {
       .catch(() => undefined)
   }, [])
 
-  async function createAppeal(taskId: string) {
+  async function createAppeal(taskId: string, displayNo?: number | string) {
     const reason = appealReason.trim()
     if (!reason) {
       setNotice('请填写申诉原因')
@@ -278,7 +278,7 @@ export default function RealphotosTasksPage() {
     try {
       await apiFetch('/api/v1/realphotos/support-tickets', {
         method: 'POST',
-        body: JSON.stringify({ ticketType: 'image_appeal', reason: `任务 #${taskId}：${reason}` }),
+        body: JSON.stringify({ ticketType: 'image_appeal', reason: `任务 #${displayNo}：${reason}` }),
       })
       setAppealReason('')
       const rows = await apiFetch<{ items: typeof myTickets }>('/api/v1/realphotos/my-support-tickets')
@@ -861,7 +861,7 @@ export default function RealphotosTasksPage() {
                       className="rp-btn"
                       type="button"
                       disabled={appealBusy}
-                      onClick={() => void createAppeal(String(detail.id))}
+                      onClick={() => void createAppeal(String(detail.id), detail.taskNo ?? detail.id)}
                     >
                       {appealBusy ? '提交中…' : '提交申诉'}
                     </button>

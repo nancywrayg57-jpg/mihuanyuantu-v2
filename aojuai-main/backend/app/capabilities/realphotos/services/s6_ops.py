@@ -496,16 +496,29 @@ class RealphotosOpsService:
         """按任务号解除图片锁定：像素身份一致的锁记录全部软删。"""
         if task_id is None:
             return {"requested": False}
-        task = (
+        # 任务编号按租户内序号解释（与列表/详情展示一致），不是全局主键。
+        from sqlalchemy import text as _text
+
+        row = (
             await self.db.execute(
-                select(RealphotosImageTask).where(
-                    RealphotosImageTask.id == int(task_id),
-                    RealphotosImageTask.tenant_id == int(ticket.tenant_id),
-                    RealphotosImageTask.owner_account_id == int(ticket.owner_account_id),
-                    RealphotosImageTask.deleted_at.is_(None),
-                )
+                _text(
+                    "select id from ("
+                    "  select id, row_number() over (order by id) as seq"
+                    "  from cap_realphotos_image_tasks"
+                    "  where tenant_id = :tenant_id and owner_account_id = :owner_id"
+                    "    and deleted_at is null"
+                    ") x where seq = :seq"
+                ),
+                {
+                    "tenant_id": int(ticket.tenant_id),
+                    "owner_id": int(ticket.owner_account_id),
+                    "seq": int(task_id),
+                },
             )
-        ).scalar_one_or_none()
+        ).first()
+        task = (
+            await self.db.get(RealphotosImageTask, int(row[0])) if row is not None else None
+        )
         if task is None:
             raise BusinessError(
                 message="关联任务不存在或不属于该工单租户/账号",
