@@ -143,3 +143,10 @@
 - Switched `final_detection` to `gemini-2.5-flash` through the admin contract API (`POST /provider-contracts`, `{duty, modelId}` only - omitted fields keep existing provider/baseUrl/enabled), then synced `GEMINI_MODEL` in `backend/.env` and restarted api/process. Verified with a real task: `detector=gemini-2.5-flash`, `total_score=60`.
 - `gemini-2.5-pro` is rejected by Google for new users ("no longer available to new users") - probe before switching.
 - Incident + lesson: never rewrite `.env` with PowerShell `Set-Content -NoNewline`; it collapsed 44 lines into one, so pydantic fell back to defaults. Repair path: rebuild from authoritative sources (`shared/db_password.txt`, `shared/proxy_secret.txt`, duty-secrets json, JWT from the wreckage by 64-hex match) and verify with a DB-backed endpoint (`POST /auth/challenges` -> 200), not just `/health`.
+
+### Nav/UI revision (2026-11-17)
+
+- Menus are DB-driven: `access.py` declares them, `python -m scripts.capability sync` reconciles the `menus` table per tenant. To remove a parent folder, hoist children to `roots` but **keep their own nested permission nodes** (`menu_type=2`, `is_visible=false`) - dropping them makes `sync` fail with "unknown menu keys". Old parent rows stay behind as childless nodes; soft-delete them explicitly.
+- The sidebar used to render every root as a collapsible group header plus children. Rendering only leaf links (no headers/chevron) is what "no second-level menus" means in practice.
+- Lesson: never build a JS template literal through PowerShell string replacement; `${...}` is interpolated away and the build fails with "Unknown regular expression flags". Use the edit tool for code with `${}`.
+- Playwright visual/DOM verification works well here: log in through the API, copy the `aoju_access_token` cookie into the browser context, then assert on `inner_text` and screenshots.

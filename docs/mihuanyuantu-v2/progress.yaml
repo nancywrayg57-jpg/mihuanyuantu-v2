@@ -37,6 +37,16 @@ s7_prod_deploy_2026_11_16:
     T7_PR_PASS: true
     REALPHOTOS_S7_PROD_E2E_PASS: true
   final_detection_model: gemini-2.5-flash (2026-11-17 switch; task5 detector verified)
+  ui_revision_2026_11_17:
+    branch: cursor/s7-prod-deploy-9973
+    deploy_commits: [5e01cb1, 791e9f4, 79c1621, 29e833e, 703701c]
+    nav: flat (no root 蜜獾原图, no 概览/首页, no second-level menus)
+    lists: 10 per page; time format YYYY-MM-DD HH:mm
+    ledger: operator shows username + role
+    logs: real timestamp column (pageSize 10)
+    messages: note 消息保留30天; 补发 -> 标为未读 (POST /inbox/{id}/unread)
+    workspace: search box removed
+    verify: playwright DOM checks fail_count=0
   evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-e2e.txt
   closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md
   blocker: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md
