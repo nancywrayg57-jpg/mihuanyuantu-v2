@@ -99,18 +99,23 @@ export default function RealphotosImportsPage() {
       </section>
       <section className="rp-card space-y-3 p-4">
         <h2 className="text-sm font-medium">上传 JSON 文件</h2>
-        <input
-          className="block text-sm disabled:opacity-50"
-          type="file"
-          accept="application/json,.json"
-          disabled={frozen}
-          onChange={(event) => {
-            const file = event.target.files?.[0] ?? null
-            setFileName(file?.name || '')
-            void submitFile(file)
-          }}
-        />
-        {fileName ? <p className="text-xs text-muted-foreground">{fileName}</p> : null}
+        <div className="flex flex-wrap items-center gap-2">
+          <label className={`rp-btn rp-btn-sm ${frozen ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}>
+            选择 JSON 文件
+            <input
+              className="sr-only"
+              type="file"
+              accept="application/json,.json"
+              disabled={frozen}
+              onChange={(event) => {
+                const file = event.target.files?.[0] ?? null
+                setFileName(file?.name || '')
+                void submitFile(file)
+              }}
+            />
+          </label>
+          <span className="text-xs text-muted-foreground">{fileName || '未选择文件'}</span>
+        </div>
       </section>
     </main>
   )

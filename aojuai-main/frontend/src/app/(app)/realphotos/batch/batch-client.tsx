@@ -417,19 +417,26 @@ export function RealphotosBatchClient() {
       </section>
       <section className="rp-card space-y-3 p-4">
         <h2 className="text-sm font-medium">待处理图片</h2>
-        <div className="flex flex-wrap items-end gap-3 text-sm">
+        <div className="flex flex-wrap items-center gap-3 text-sm">
           <Link className="rp-btn" href="/realphotos/library">
             勾选图片
           </Link>
-          <label>
-            本地辅助入库
-            <input
-              className="mt-1 block"
-              type="file"
-              accept="image/jpeg,image/png,.jpg,.jpeg,.png"
-              onChange={(event) => void onFile(event.target.files?.[0] || null)}
-            />
-          </label>
+          {/* 2026-11-17：原生 file 控件改为统一按钮样式 */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">本地辅助入库</span>
+            <label className="rp-btn cursor-pointer">
+              选择文件
+              <input
+                className="sr-only"
+                type="file"
+                accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+                onChange={(event) => void onFile(event.target.files?.[0] || null)}
+              />
+            </label>
+            <span className="max-w-[12rem] truncate text-xs text-muted-foreground">
+              {file?.name || '未选择文件'}
+            </span>
+          </div>
           <button className="rp-btn" type="button" disabled={frozen} onClick={() => void uploadToLibrary()}>
             上传并加入本批
           </button>

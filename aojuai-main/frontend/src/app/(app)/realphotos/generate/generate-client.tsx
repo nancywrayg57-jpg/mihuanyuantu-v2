@@ -254,15 +254,23 @@ export function RealphotosGenerateClient() {
           </select>
         </label>
         {mode === 'image_to_image' ? (
-          <label className="block text-sm">
-            参考图
-            <input
-              className="mt-1 block text-sm"
-              type="file"
-              accept="image/jpeg,image/png,.jpg,.jpeg,.png"
-              onChange={(event) => void onReference(event.target.files?.[0] || null)}
-            />
-          </label>
+          <div className="block text-sm">
+            <span className="mb-1 block">参考图</span>
+            <div className="flex items-center gap-2">
+              <label className="rp-btn rp-btn-sm cursor-pointer">
+                选择文件
+                <input
+                  className="sr-only"
+                  type="file"
+                  accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+                  onChange={(event) => void onReference(event.target.files?.[0] || null)}
+                />
+              </label>
+              <span className="max-w-[14rem] truncate text-xs text-muted-foreground">
+                {reference?.name || '未选择文件'}
+              </span>
+            </div>
+          </div>
         ) : null}
         <label className="block text-sm">
           正向提示词
