@@ -111,34 +111,29 @@ export default function RealphotosWorkspacePage() {
 
   const subtitle =
     view === 'admin'
-      ? ''
+      ? '平台运营概览：队列、失败率与成本'
       : view === 'order_support'
-        ? '待处理充值单'
+        ? '待确认的充值单，确认后积分即时到账'
         : view === 'tech_support'
-          ? '待处理工单'
-          : '本账号概览与最近历史'
+          ? '待处理工单，处理结果会通知商家'
+          : '查看积分、任务与近期处理结果；处理新图从「批量原图」开始'
 
   return (
     <main className="space-y-6 p-6">
       <RpPageHeader title="工作台" description={subtitle || '按角色查看待办与本账号概览'} />
       {data?.preReviewFrozen && view === 'merchant' ? (
-        <p className="text-sm text-destructive">
-          账号已冻结：可查看历史与保留期内结果，不能从工作台发起新获取或处理。请到
-          <Link className="mx-1 underline" href="/realphotos/batch">
-            批量原图
-          </Link>
-          会看到同样拒绝。
+        <p className="rp-card border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+          账号处于预审冻结：目前只能查看历史与保留期内的结果，解冻后可继续上传与处理。
         </p>
       ) : null}
       <p className="text-sm">{message}</p>
-      {data?.showTaskChainBanner ? <p className="text-sm">一条任务链</p> : null}
 
       {view === 'merchant' && data?.cards ? (
         <section className="grid max-w-5xl grid-cols-2 gap-3 md:grid-cols-4">
           <article className="rp-stat">
             <div className="rp-stat-label">可用积分</div>
             <div className="rp-stat-value">{cell(data.cards.availableInteger)}</div>
-            <div className="rp-stat-hint">冻结 {cell(data.cards.reservedInteger)}</div>
+            <div className="rp-stat-hint">处理中冻结 {cell(data.cards.reservedInteger)} 分</div>
           </article>
           <article className="rp-stat">
             <div className="rp-stat-label">进行中任务</div>
@@ -151,7 +146,29 @@ export default function RealphotosWorkspacePage() {
           <article className="rp-stat">
             <div className="rp-stat-label">未读消息</div>
             <div className="rp-stat-value">{cell(data.cards.unreadMessages)}</div>
+            <div className="rp-stat-hint">保留 30 天</div>
           </article>
+        </section>
+      ) : null}
+
+      {view === 'merchant' && historyRows.length === 0 ? (
+        <section className="rp-card border-primary/25 bg-primary/5 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-1">
+              <h2 className="text-sm font-semibold text-foreground">三步完成第一张原图</h2>
+              <p className="text-xs text-muted-foreground">
+                ① 上传或导入图片 · ② 选择设备预设 · ③ 提交处理并等待检测结果
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link className="rp-btn rp-btn-primary rp-btn-sm" href="/realphotos/batch">
+                开始处理
+              </Link>
+              <Link className="rp-btn rp-btn-sm" href="/realphotos/library">
+                查看图片资源
+              </Link>
+            </div>
+          </div>
         </section>
       ) : null}
 
@@ -196,6 +213,9 @@ export default function RealphotosWorkspacePage() {
               </tr>
             </tbody>
           </table>
+          <p className="mt-2 text-xs text-muted-foreground">
+            队列含预审与检测；失败率按近 24 小时统计。
+          </p>
         </section>
       ) : null}
 
@@ -223,7 +243,7 @@ export default function RealphotosWorkspacePage() {
             <tbody>
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td className="rp-empty" colSpan={6}>暂无待处理充值单</td>
+                  <td className="rp-empty" colSpan={6}>当前没有待确认的充值单。商家提交充值申请后会出现在这里。</td>
                 </tr>
               ) : (
                 filteredOrders.map((item) => (
@@ -233,7 +253,7 @@ export default function RealphotosWorkspacePage() {
                     <td>{item.requesterUserId}</td>
                     <td>{item.tierYuan} 元</td>
                     <td>{item.creditPoints}</td>
-                    <td>{formatDateTimeShort(item.createdAt) || '空'}</td>
+                    <td>{formatDateTimeShort(item.createdAt) || '—'}</td>
                   </tr>
                 ))
               )}
@@ -271,7 +291,7 @@ export default function RealphotosWorkspacePage() {
             <tbody>
               {filteredTechTickets.length === 0 ? (
                 <tr>
-                  <td className="rp-empty" colSpan={5}>暂无待处理工单</td>
+                  <td className="rp-empty" colSpan={5}>当前没有待处理工单。商家提交图片申诉后会进入这里。</td>
                 </tr>
               ) : (
                 filteredTechTickets.map((item) => (
@@ -309,7 +329,7 @@ export default function RealphotosWorkspacePage() {
             <tbody>
               {filteredHistory.length === 0 ? (
                 <tr>
-                  <td className="rp-empty" colSpan={4}>暂无本账号历史</td>
+                  <td className="rp-empty" colSpan={4}>还没有处理记录。上传或导入图片后，这里会显示每次处理的状态与时间。</td>
                 </tr>
               ) : (
                 filteredHistory.map((item) => (
@@ -317,7 +337,7 @@ export default function RealphotosWorkspacePage() {
                     <td>{item.kind === 'processing' ? '处理' : '生图'}</td>
                     <td>{item.id}</td>
                     <td>{taskStatusLabel(item.status)}</td>
-                    <td>{formatDateTimeShort(item.createdAt) || '空'}</td>
+                    <td>{formatDateTimeShort(item.createdAt) || '—'}</td>
                   </tr>
                 ))
               )}
@@ -333,7 +353,7 @@ export default function RealphotosWorkspacePage() {
               上一页
             </button>
             <span>
-              第 {historyPage} / {historyPageCount} 页 · 共 {historyRows.length} 条 · 每页 {historyPageSize}
+              第 {historyPage} / {historyPageCount} 页 · 共 {historyRows.length} 条
             </span>
             <button
               className="rp-btn border px-2 py-1"
