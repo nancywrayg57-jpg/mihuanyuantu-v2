@@ -19,7 +19,9 @@ type Ledger = {
   deltaAvailable: string
   createdAt?: string | null
 }
-type PageData = { list?: Ledger[] }
+type PageData = { list?: Ledger[]; total?: number; currentPage?: number; pageSize?: number }
+
+const LEDGER_PAGE_SIZE = 10
 
 export default function RealphotosWalletPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null)
@@ -28,19 +30,22 @@ export default function RealphotosWalletPage() {
   const [note, setNote] = useState('线下凭证')
   const [message, setMessage] = useState('')
   const [search, setSearch] = useState('')
+  const [ledgerPage, setLedgerPage] = useState(1)
+  const [ledgerTotal, setLedgerTotal] = useState(0)
 
   async function reload() {
     const data = await apiFetch<Wallet>('/api/v1/realphotos/wallet')
     setWallet(data)
-    const page = await apiFetch<PageData>('/api/v1/realphotos/wallet/ledger?currentPage=1&pageSize=10')
+    const page = await apiFetch<PageData>(/api/v1/realphotos/wallet/ledger?currentPage=&pageSize=)
     setLedger(page.list || [])
+    setLedgerTotal(Number(page.total || 0))
   }
 
   useEffect(() => {
     void reload().catch((error: unknown) =>
       setMessage(error instanceof ApiError ? error.message : '钱包加载失败'),
     )
-  }, [])
+  }, [ledgerPage])
 
   async function createOrder() {
     try {
@@ -162,6 +167,27 @@ export default function RealphotosWalletPage() {
             ))}
           </tbody>
         </table>
+        <div className="flex items-center gap-2 text-sm">
+          <button
+            className="rp-btn border px-2 py-1"
+            type="button"
+            disabled={ledgerPage <= 1}
+            onClick={() => setLedgerPage((p) => Math.max(1, p - 1))}
+          >
+            上一页
+          </button>
+          <span>
+            第 {ledgerPage} / {Math.max(1, Math.ceil(ledgerTotal / LEDGER_PAGE_SIZE))} 页 · 共 {ledgerTotal} 条 · 每页 {LEDGER_PAGE_SIZE}
+          </span>
+          <button
+            className="rp-btn border px-2 py-1"
+            type="button"
+            disabled={ledgerPage >= Math.max(1, Math.ceil(ledgerTotal / LEDGER_PAGE_SIZE))}
+            onClick={() => setLedgerPage((p) => p + 1)}
+          >
+            下一页
+          </button>
+        </div>
       </section>
     </main>
   )
