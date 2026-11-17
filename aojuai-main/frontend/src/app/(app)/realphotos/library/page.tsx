@@ -44,6 +44,11 @@ export default function RealphotosLibraryPage() {
   const [selected, setSelected] = useState<Record<string, true>>({})
   const [thumbs, setThumbs] = useState<Record<string, string>>({})
   const [preview, setPreview] = useState<{ id: string; url: string; fullUrl?: string; loading?: boolean } | null>(null)
+  // 2026-11-17：被锁定的图片在资源列表直接申诉（任务详情不再提供入口）
+  const [appealTarget, setAppealTarget] = useState<AssetItem | null>(null)
+  const [appealText, setAppealText] = useState('')
+  const [appealNote, setAppealNote] = useState('')
+  const [appealBusy, setAppealBusy] = useState(false)
   const [frozen, setFrozen] = useState(false)
   const downloadUsedNames = useRef(new Map<string, number>())
 
@@ -244,6 +249,33 @@ export default function RealphotosLibraryPage() {
       report('去处理最多 10 张，已截取前 10 张', true)
     }
     router.push(`/realphotos/batch?assetIds=${ids.join(',')}`)
+  }
+
+  async function submitAppeal() {
+    if (!appealTarget) return
+    const text = appealText.trim()
+    if (!text) {
+      setAppealNote('请填写申诉原因')
+      return
+    }
+    setAppealBusy(true)
+    try {
+      await apiFetch('/api/v1/realphotos/support-tickets', {
+        method: 'POST',
+        body: JSON.stringify({
+          ticketType: 'image_appeal',
+          reason: `资产 #${appealTarget.id}：${text}`,
+        }),
+      })
+      setAppealTarget(null)
+      setAppealText('')
+      setAppealNote('')
+      toastTask('申诉已提交', true)
+    } catch (error: unknown) {
+      setAppealNote(error instanceof ApiError ? error.message : '申诉提交失败')
+    } finally {
+      setAppealBusy(false)
+    }
   }
 
   async function onLocalUpload(fileList: FileList | null) {
@@ -474,12 +506,25 @@ export default function RealphotosLibraryPage() {
                 </td>
                 <td>{item.displayName || `${item.originKind}_${item.id}`}</td>
                 <td>{originKindLabel(item.originKind)}</td>
-                <td>{item.locked ? '图片锁定' : '可用'}</td>
+                <td>{item.locked ? '已锁定' : '可用'}</td>
                 <td>
                   {item.width}×{item.height}
                 </td>
                 <td>{formatByteSizeMb(item.byteSize)}</td>
                 <td className="space-x-2">
+                  {item.locked ? (
+                    <button
+                      className="rp-btn rp-btn-sm rp-btn-primary"
+                      type="button"
+                      onClick={() => {
+                        setAppealTarget(item)
+                        setAppealText('')
+                        setAppealNote('')
+                      }}
+                    >
+                      申诉
+                    </button>
+                  ) : null}
                   <button className="rp-btn rp-btn-sm" type="button" onClick={() => void downloadOne(item)}>
                     下载
                   </button>
@@ -524,6 +569,48 @@ export default function RealphotosLibraryPage() {
               正在加载大图…
             </span>
           ) : null}
+        </div>
+      ) : null}
+      {appealTarget ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setAppealTarget(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="图片申诉"
+        >
+          <div className="rp-card w-full max-w-md space-y-3 p-4 text-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-medium">图片申诉 · {appealTarget.displayName || appealTarget.id}</h2>
+              <button className="rp-btn rp-btn-sm" type="button" onClick={() => setAppealTarget(null)}>
+                关闭
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              该图片已被锁定，申诉后由技术客服核实并决定是否解锁。
+            </p>
+            <textarea
+              className="rp-input w-full"
+              rows={3}
+              placeholder="申诉原因"
+              value={appealText}
+              onChange={(e) => setAppealText(e.target.value)}
+            />
+            {appealNote ? <p className="text-xs text-destructive">{appealNote}</p> : null}
+            <div className="flex justify-end gap-2">
+              <button className="rp-btn rp-btn-sm" type="button" onClick={() => setAppealTarget(null)}>
+                取消
+              </button>
+              <button
+                className="rp-btn rp-btn-sm rp-btn-primary"
+                type="button"
+                disabled={appealBusy}
+                onClick={() => void submitAppeal()}
+              >
+                {appealBusy ? '提交中…' : '提交申诉'}
+              </button>
+            </div>
+          </div>
         </div>
       ) : null}
     </main>

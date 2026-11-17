@@ -218,8 +218,6 @@ export default function RealphotosTasksPage() {
   const [myTickets, setMyTickets] = useState<
     Array<{ id: string; ticketType: string; status: string; reason: string; createdAt?: string | null }>
   >([])
-  const [appealReason, setAppealReason] = useState('')
-  const [appealBusy, setAppealBusy] = useState(false)
   const [detail, setDetail] = useState<ProcessingTask | null>(null)
   const [genDetail, setGenDetail] = useState<GenerationTask | null>(null)
   const [notice, setNotice] = useState('')
@@ -267,30 +265,6 @@ export default function RealphotosTasksPage() {
       .then((data) => setMyTickets(data.items || []))
       .catch(() => undefined)
   }, [])
-
-  async function createAppeal(taskId: string, displayNo?: number | string) {
-    const reason = appealReason.trim()
-    if (!reason) {
-      setNotice('请填写申诉原因')
-      return
-    }
-    setAppealBusy(true)
-    try {
-      await apiFetch('/api/v1/realphotos/support-tickets', {
-        method: 'POST',
-        body: JSON.stringify({ ticketType: 'image_appeal', reason: `任务 #${displayNo}：${reason}` }),
-      })
-      setAppealReason('')
-      const rows = await apiFetch<{ items: typeof myTickets }>('/api/v1/realphotos/my-support-tickets')
-      setMyTickets(rows.items || [])
-      setNotice('已提交申诉，技术客服会在工单管理中处理')
-      toastTask('申诉已提交', true)
-    } catch (error: unknown) {
-      setNotice(error instanceof ApiError ? error.message : '申诉提交失败')
-    } finally {
-      setAppealBusy(false)
-    }
-  }
 
   useEffect(() => {
     if (tab !== 'processing') return
@@ -846,28 +820,6 @@ export default function RealphotosTasksPage() {
                   </dd>
                 </dl>
               </RpSection>
-              {/* 2026-11-17：仅图片被锁定（FR-006 图片锁定）的任务可申诉 */}
-              {detail.imageLocked === true ? (
-                <RpSection title="图片申诉" tone="basic">
-                  <div className="space-y-2">
-                    <textarea
-                      className="rp-input w-full"
-                      rows={2}
-                      placeholder="申诉原因"
-                      value={appealReason}
-                      onChange={(event) => setAppealReason(event.target.value)}
-                    />
-                    <button
-                      className="rp-btn"
-                      type="button"
-                      disabled={appealBusy}
-                      onClick={() => void createAppeal(String(detail.id), detail.taskNo ?? detail.id)}
-                    >
-                      {appealBusy ? '提交中…' : '提交申诉'}
-                    </button>
-                  </div>
-                </RpSection>
-              ) : null}
             </RpDialog>
           ) : null}
         </section>

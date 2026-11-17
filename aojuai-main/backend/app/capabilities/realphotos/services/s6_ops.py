@@ -489,54 +489,12 @@ class RealphotosOpsService:
     async def ticket_thumbnail(
         self, *, actor_role_codes: set[str], ticket_id: int, width: int = 480
     ) -> bytes:
-        """2026-11-17：申诉工单关联任务的图片缩略图（从申诉原因中的「任务 #N」定位）。"""
+        """2026-11-17：申诉工单目标图片的缩略图（支持 任务 #N 与 资产 #N）。"""
         self._require_tech_or_admin(actor_role_codes)
         row = await self.db.get(RealphotosSupportTicket, int(ticket_id))
         if row is None or row.deleted_at is not None:
             raise BusinessError(message="工单不存在", code="NOT_FOUND")
-        import re as _re
-        from sqlalchemy import text as _text
-
-        match = _re.search(r"#(\d+)", str(row.reason or ""))
-        if match is None:
-            raise BusinessError(message="该工单未关联任务编号", code="NOT_FOUND")
-        task_row = (
-            await self.db.execute(
-                _text(
-                    "select id from ("
-                    "  select id, row_number() over (order by id) as seq"
-                    "  from cap_realphotos_image_tasks"
-                    "  where tenant_id = :tenant_id and owner_account_id = :owner_id"
-                    "    and deleted_at is null"
-                    ") x where seq = :seq"
-                ),
-                {
-                    "tenant_id": int(row.tenant_id),
-                    "owner_id": int(row.owner_account_id),
-                    "seq": int(match.group(1)),
-                },
-            )
-        ).first()
-        if task_row is None:
-            # 兼容历史工单：编号当时写的是全局 id，按同租户/同账号再试一次。
-            legacy = (
-                await self.db.execute(
-                    select(RealphotosImageTask).where(
-                        RealphotosImageTask.id == int(match.group(1)),
-                        RealphotosImageTask.tenant_id == int(row.tenant_id),
-                        RealphotosImageTask.owner_account_id == int(row.owner_account_id),
-                        RealphotosImageTask.deleted_at.is_(None),
-                    )
-                )
-            ).scalar_one_or_none()
-            if legacy is None:
-                raise BusinessError(message="工单关联的任务不存在", code="NOT_FOUND")
-            task = legacy
-        else:
-            task = await self.db.get(RealphotosImageTask, int(task_row[0]))
-        asset = await self.db.get(RealphotosAsset, int(task.asset_id)) if task else None
-        if asset is None or asset.deleted_at is not None:
-            raise BusinessError(message="该任务的原图已不存在", code="NOT_FOUND")
+        asset = await self._asset_for_ticket_reason(row)
         handle = get_storage_adapter().open_read(asset.object_key)
         try:
             data = handle.read()
@@ -570,20 +528,30 @@ class RealphotosOpsService:
             task_id=int(match.group(1)),
         )
 
-    async def _maybe_unlock_image(
-        self,
-        *,
-        ticket: RealphotosSupportTicket,
-        operator_user_id: int,
-        task_id: int | None,
-    ) -> dict[str, Any]:
-        """按任务号解除图片锁定：像素身份一致的锁记录全部软删。"""
-        if task_id is None:
-            return {"requested": False}
-        # 任务编号按租户内序号解释（与列表/详情展示一致），不是全局主键。
+    async def _asset_for_ticket_reason(self, ticket: RealphotosSupportTicket) -> RealphotosAsset:
+        """从工单原因解析目标图片：支持「任务 #N」（租户内编号/历史全局 id）与「资产 #N」。"""
+        import re as _re
         from sqlalchemy import text as _text
 
-        row = (
+        match = _re.search(r"(任务|资产)\s*#(\d+)", str(ticket.reason or ""))
+        if match is None:
+            raise BusinessError(message="该工单未关联任务或资产编号", code="NOT_FOUND")
+        kind, raw = match.group(1), int(match.group(2))
+        if kind == "资产":
+            asset = (
+                await self.db.execute(
+                    select(RealphotosAsset).where(
+                        RealphotosAsset.id == raw,
+                        RealphotosAsset.tenant_id == int(ticket.tenant_id),
+                        RealphotosAsset.owner_account_id == int(ticket.owner_account_id),
+                        RealphotosAsset.deleted_at.is_(None),
+                    )
+                )
+            ).scalar_one_or_none()
+            if asset is None:
+                raise BusinessError(message="工单关联的图片不存在", code="NOT_FOUND")
+            return asset
+        task_row = (
             await self.db.execute(
                 _text(
                     "select id from ("
@@ -596,19 +564,18 @@ class RealphotosOpsService:
                 {
                     "tenant_id": int(ticket.tenant_id),
                     "owner_id": int(ticket.owner_account_id),
-                    "seq": int(task_id),
+                    "seq": raw,
                 },
             )
         ).first()
-        task = (
-            await self.db.get(RealphotosImageTask, int(row[0])) if row is not None else None
-        )
+        task = None
+        if task_row is not None:
+            task = await self.db.get(RealphotosImageTask, int(task_row[0]))
         if task is None:
-            # 兼容历史工单：编号为全局 id 时按同租户/同账号回退查询。
             task = (
                 await self.db.execute(
                     select(RealphotosImageTask).where(
-                        RealphotosImageTask.id == int(task_id),
+                        RealphotosImageTask.id == raw,
                         RealphotosImageTask.tenant_id == int(ticket.tenant_id),
                         RealphotosImageTask.owner_account_id == int(ticket.owner_account_id),
                         RealphotosImageTask.deleted_at.is_(None),
@@ -616,13 +583,23 @@ class RealphotosOpsService:
                 )
             ).scalar_one_or_none()
         if task is None:
-            raise BusinessError(
-                message="关联任务不存在或不属于该工单租户/账号",
-                code="NOT_FOUND",
-            )
+            raise BusinessError(message="工单关联的任务不存在", code="NOT_FOUND")
         asset = await self.db.get(RealphotosAsset, int(task.asset_id))
         if asset is None or asset.deleted_at is not None:
-            raise BusinessError(message="该任务的原图已不存在，无法解锁", code="NOT_FOUND")
+            raise BusinessError(message="该任务的原图已不存在", code="NOT_FOUND")
+        return asset
+
+    async def _maybe_unlock_image(
+        self,
+        *,
+        ticket: RealphotosSupportTicket,
+        operator_user_id: int,
+        task_id: int | None,
+    ) -> dict[str, Any]:
+        """按工单目标图片解除锁定（任务 #N 或 资产 #N）。"""
+        if task_id is None:
+            return {"requested": False}
+        asset = await self._asset_for_ticket_reason(ticket)
         handle = get_storage_adapter().open_read(asset.object_key)
         try:
             data = handle.read()
@@ -646,13 +623,13 @@ class RealphotosOpsService:
         logger.info(
             "realphotos_image_unlocked",
             ticket_id=int(ticket.id),
-            task_id=int(task_id),
+            asset_id=int(asset.id),
             operator_user_id=int(operator_user_id),
             unlocked=int(len(rows)),
         )
         return {
             "requested": True,
-            "taskId": str(int(task_id)),
+            "assetId": str(int(asset.id)),
             "unlocked": int(len(rows)),
             "alreadyUnlocked": len(rows) == 0,
         }
