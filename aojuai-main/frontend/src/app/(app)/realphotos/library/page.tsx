@@ -243,18 +243,24 @@ export default function RealphotosLibraryPage() {
       }
     }
     try {
-      if (files.length === 1) {
+      // 2026-11-17：分批上传（每批 5 张），避免单次请求体超过网关体积限制触发 413。
+      const UPLOAD_CHUNK = 5
+      let uploaded = 0
+      for (let start = 0; start < files.length; start += UPLOAD_CHUNK) {
+        const chunk = files.slice(start, start + UPLOAD_CHUNK)
         const body = new FormData()
-        body.set('file', files[0])
-        await apiFetch('/api/v1/realphotos/assets', { method: 'POST', body })
-      } else {
-        const body = new FormData()
-        for (const file of files) {
-          body.append('files', file)
+        if (chunk.length === 1) {
+          body.set('file', chunk[0])
+          await apiFetch('/api/v1/realphotos/assets', { method: 'POST', body })
+        } else {
+          for (const file of chunk) {
+            body.append('files', file)
+          }
+          await apiFetch('/api/v1/realphotos/assets/batch', { method: 'POST', body })
         }
-        await apiFetch('/api/v1/realphotos/assets/batch', { method: 'POST', body })
+        uploaded += chunk.length
       }
-      report(`本地上传已入库 ${files.length} 张`, true)
+      report(`本地上传已入库 ${uploaded} 张`, true)
       setPage(1)
       await reload()
     } catch (error: unknown) {
