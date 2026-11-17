@@ -4,14 +4,9 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
-import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch } from '@/lib/api'
 import { formatRate } from '@/lib/format-rate'
-import {
-  taskStatusLabel,
-  ticketStatusLabel,
-  ticketTypeLabel,
-} from '@/lib/realphotos-labels'
+import { ticketTypeLabel } from '@/lib/realphotos-labels'
 import { formatDateTimeShort } from '@/lib/realphotos-time'
 
 type WorkspacePayload = {
@@ -87,13 +82,6 @@ function costCell(cost: number | null | undefined, reason: string | null | undef
   return '暂无数据'
 }
 
-type Ticket = {
-  id: number
-  ticketType: string
-  status: string
-  reason: string
-  createdAt?: string | null
-}
 
 export default function RealphotosWorkspacePage() {
   const [data, setData] = useState<WorkspacePayload | null>(null)
