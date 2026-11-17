@@ -638,7 +638,7 @@ export default function RealphotosTechDeskPage() {
             ) : null}
             {canUnfreeze && detail.status === 'open' && detail.ticketType === 'image_appeal' ? (
               <div className="space-y-2 border-t pt-2">
-                <p className="font-medium">标记已处理（办结 ≠ 解锁图片）</p>
+                <p className="font-medium">标记已处理（可同时解锁图片）</p>
                 <select
                   className="rp-input"
                   value={resolveOutcome}
