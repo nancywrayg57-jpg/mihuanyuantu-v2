@@ -77,6 +77,10 @@ export default function RealphotosTechDeskPage() {
   const [unlockTaskNo, setUnlockTaskNo] = useState('')
   // 2026-11-17：图片锁定不自动建工单，技术客服在此直接查看并解锁
   const [locks, setLocks] = useState<ImageLockItem[]>([])
+  // 2026-11-17：申诉工单展示关联图片缩略图，点击看大图
+  const [thumbUrl, setThumbUrl] = useState('')
+  const [largeUrl, setLargeUrl] = useState('')
+  const [previewOpen, setPreviewOpen] = useState(false)
   const [heldDrafts, setHeldDrafts] = useState<Record<number, { amount: string; reason: string }>>({})
   const [message, setMessage] = useState('')
   const [ticketType, setTicketType] = useState('all')
@@ -132,8 +136,7 @@ export default function RealphotosTechDeskPage() {
     setCanAppeal(true)
   }
 
-  useEffect(() => {
-    async function loadLocks() {
+  async function loadLocks() {
     try {
       const data = await apiFetch<{ items?: ImageLockItem[] }>('/api/v1/realphotos/image-locks?page=1')
       setLocks(Array.isArray(data?.items) ? data.items : [])
@@ -151,8 +154,48 @@ export default function RealphotosTechDeskPage() {
       toastTask(error instanceof ApiError ? error.message : '解锁失败', false)
     }
   }
-  void loadLocks().catch(() => undefined)
-  void loadDesk().catch(() => {
+
+  useEffect(() => {
+    if (!detail || detail.ticketType !== 'image_appeal') {
+      setThumbUrl('')
+      return
+    }
+    let revoked = ''
+    let cancelled = false
+    void (async () => {
+      try {
+        const blob = await apiFetchBlob(`/api/v1/realphotos/support-tickets/${detail.id}/thumbnail?thumb=480`)
+        if (cancelled) return
+        revoked = URL.createObjectURL(blob)
+        setThumbUrl(revoked)
+      } catch {
+        if (!cancelled) setThumbUrl('')
+      }
+    })()
+    return () => {
+      cancelled = true
+      if (revoked) URL.revokeObjectURL(revoked)
+    }
+  }, [detail])
+
+  async function openLarge() {
+    if (!detail) return
+    try {
+      const blob = await apiFetchBlob(`/api/v1/realphotos/support-tickets/${detail.id}/thumbnail?thumb=1600`)
+      const url = URL.createObjectURL(blob)
+      setLargeUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev)
+        return url
+      })
+      setPreviewOpen(true)
+    } catch (error: unknown) {
+      toastTask(error instanceof ApiError ? error.message : '大图加载失败', false)
+    }
+  }
+
+  useEffect(() => {
+    void loadLocks().catch(() => undefined)
+    void loadDesk().catch(() => {
       setCanUnfreeze(false)
       void loadMine(1).catch((error: unknown) =>
         setMessage(error instanceof ApiError ? error.message : '工单读取失败'),
@@ -629,6 +672,19 @@ export default function RealphotosTechDeskPage() {
             </p>
             <p>原因：{detail.reason}</p>
             <p>时间：{formatDateTimeShort(detail.createdAt) || '（无）'}</p>
+            {detail.ticketType === 'image_appeal' ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">关联图片</span>
+                {thumbUrl ? (
+                  <button type="button" className="block" onClick={() => void openLarge()}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={thumbUrl} alt="关联图片缩略图" className="h-24 w-24 rounded border object-cover" />
+                  </button>
+                ) : (
+                  <span className="text-xs text-muted-foreground">（无可用图片）</span>
+                )}
+              </div>
+            ) : null}
             {detail.resolvedAt ? (
               <p>
                 办结：{detail.resolvedAt} / {detail.resolutionOutcome} / {detail.resolutionNote}
@@ -694,6 +750,30 @@ export default function RealphotosTechDeskPage() {
               </div>
             ) : null}
           </div>
+        </div>
+      ) : null}
+      {previewOpen && largeUrl ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setPreviewOpen(false)}
+        >
+          <button
+            className="absolute right-4 top-4 rp-btn rp-btn-sm bg-white/90"
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              setPreviewOpen(false)
+            }}
+          >
+            关闭
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={largeUrl}
+            alt="关联图片大图"
+            className="max-h-[92vh] max-w-[92vw] rounded bg-white object-contain shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          />
         </div>
       ) : null}
     </main>

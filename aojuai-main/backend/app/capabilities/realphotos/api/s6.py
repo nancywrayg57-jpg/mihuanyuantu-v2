@@ -257,6 +257,31 @@ async def list_tickets(
     return SuccessResponse(data=payload)
 
 
+@router.get("/support-tickets/{ticket_id}/thumbnail")
+async def ticket_thumbnail(
+    ticket_id: int,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    thumb: int = 480,
+    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+) -> Response:
+    """2026-11-17：申诉工单关联图片的缩略图/大图。"""
+    from fastapi.responses import Response as _Response
+
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    data = await RealphotosOpsService(db).ticket_thumbnail(
+        actor_role_codes=roles,
+        ticket_id=int(ticket_id),
+        width=max(64, min(int(thumb or 480), 2048)),
+    )
+    return _Response(
+        content=data,
+        media_type="image/jpeg",
+        headers={"Cache-Control": "private, max-age=300"},
+    )
+
+
 @router.get("/image-locks")
 async def list_image_locks(
     current_user: CurrentUser,

@@ -486,6 +486,55 @@ class RealphotosOpsService:
         payload["imageUnlock"] = unlocked
         return payload
 
+    async def ticket_thumbnail(
+        self, *, actor_role_codes: set[str], ticket_id: int, width: int = 480
+    ) -> bytes:
+        """2026-11-17：申诉工单关联任务的图片缩略图（从申诉原因中的「任务 #N」定位）。"""
+        self._require_tech_or_admin(actor_role_codes)
+        row = await self.db.get(RealphotosSupportTicket, int(ticket_id))
+        if row is None or row.deleted_at is not None:
+            raise BusinessError(message="工单不存在", code="NOT_FOUND")
+        import re as _re
+        from sqlalchemy import text as _text
+
+        match = _re.search(r"#(\d+)", str(row.reason or ""))
+        if match is None:
+            raise BusinessError(message="该工单未关联任务编号", code="NOT_FOUND")
+        task_row = (
+            await self.db.execute(
+                _text(
+                    "select id from ("
+                    "  select id, row_number() over (order by id) as seq"
+                    "  from cap_realphotos_image_tasks"
+                    "  where tenant_id = :tenant_id and owner_account_id = :owner_id"
+                    "    and deleted_at is null"
+                    ") x where seq = :seq"
+                ),
+                {
+                    "tenant_id": int(row.tenant_id),
+                    "owner_id": int(row.owner_account_id),
+                    "seq": int(match.group(1)),
+                },
+            )
+        ).first()
+        if task_row is None:
+            raise BusinessError(message="工单关联的任务不存在", code="NOT_FOUND")
+        task = await self.db.get(RealphotosImageTask, int(task_row[0]))
+        asset = await self.db.get(RealphotosAsset, int(task.asset_id)) if task else None
+        if asset is None or asset.deleted_at is not None:
+            raise BusinessError(message="该任务的原图已不存在", code="NOT_FOUND")
+        handle = get_storage_adapter().open_read(asset.object_key)
+        try:
+            data = handle.read()
+        finally:
+            handle.close()
+        with Image.open(io.BytesIO(data)) as image:
+            rgb = image.convert("RGB")
+            rgb.thumbnail((int(width), int(width)))
+            out = io.BytesIO()
+            rgb.save(out, format="JPEG", quality=80)
+            return out.getvalue()
+
     async def list_image_locks(self, *, actor_role_codes: set[str], page: int = 1) -> dict[str, Any]:
         """2026-11-17：技术客服查看当前被锁定的图片（锁定不会自动建工单）。"""
         self._require_tech_or_admin(actor_role_codes)
