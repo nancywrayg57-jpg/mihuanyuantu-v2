@@ -110,7 +110,6 @@ export function RegisterClient() {
         <div className="grid gap-1">
           <div className={styles.formEyebrow}>REGISTER</div>
           <div className={styles.formTitle}>{t('system.auth.registerAccount')}</div>
-          <div className={styles.formSubtitle}>{t('system.auth.registerMerchantHint')}</div>
         </div>
 
         <div className="grid gap-3">
