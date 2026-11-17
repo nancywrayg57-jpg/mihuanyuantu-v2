@@ -61,6 +61,11 @@ s7_prod_deploy_2026_11_16:
     checks_report: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-CHECKS-2026-11-17.md
   e2e_full_2026_11_17:
     report: docs/mihuanyuantu-v2/input/REALPHOTOS-E2E-REPORT-2026-11-17.md
+  prelaunch_2026_11_17:
+    release: 90e5ad1
+    build_id: InQPFm3W-gnIE-YvWJqsM
+    login_cleanup: demo accounts removed; product tags/hero/footer rewritten; register hint removed
+    checklist: docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-CHECKLIST-2026-11-17.md
     upload_413: nginx 25m -> 200m + chunked upload (5/req) + specific 413 message
     roles: rp_admin / rp_merchant_a1 / rp_order_support / rp_tech_support
     restored: import channel disabled + base 47.85.47.252, detection gemini-2.5-flash
