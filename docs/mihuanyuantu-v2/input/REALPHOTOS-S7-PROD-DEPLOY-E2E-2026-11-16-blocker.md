@@ -118,6 +118,30 @@ sh /root/蜜獾原图-v2/shared/06_nginx.sh
 
 → 真实代理地址一到，`apply` 即可生效，无需再改代码或单元文件。
 
+### 3.5 无云主机时的替代：Cloudflare Worker 出口（代码已备好）
+
+如果没有可用的 SG/JP 小机器，可用免费 Worker 承担同一职责，且**不需要改应用代码**：
+
+- 代码：`scripts/ops/gemini-egress-worker.js`（只放行 `POST /v1beta/models/<model>:generateContent`；用 Gemini Key 的 SHA-256 白名单校验调用方；不转发任意 URL）。
+- 部署：`wrangler secret put ALLOWED_KEY_SHA256`（填 Key 的 sha256 十六进制）→ `wrangler deploy`。
+- 接线二选一：
+  1. 管理端「模型 API」把 `final_detection` 合同 `base_url` 改成 `https://<worker>.workers.dev/v1beta`（无需重启）；或
+  2. `.env` 设 `GEMINI_API_BASE=https://<worker>.workers.dev/v1beta` 并重启 API/worker。
+- 验证：商家提交一张 → 轮询到 `DELIVERED` 且 `detector` 为 `gemini-*`。
+
+> 需要管理员的 Cloudflare 账号授权（API Token，或由管理员执行 `wrangler deploy`）。Worker 出口地区由 Cloudflare 决定，必须先实测一次 `generateContent` 通过再切流。
+
+### 3.6 为什么本会话不能"凭空"搭出一个可用代理
+
+| 前提 | 现状 |
+| --- | --- |
+| 一台允许地区、有公网入口的主机 | 无（无云账号/采购权限；旧测试机 `47.239.81.27` 从生产机与本机两侧均不可达） |
+| 把本机当出口 | 工作站无公网 IP，只能靠 SSH 反向隧道；且其 Clash Verge 为 `mode: direct`（无上游节点），本机自身也没有可用境外出口 |
+| 免费隧道（ngrok/cloudflared 等） | 出口仍是本机网络，且会把代理暴露到公网，不宜承载模型 Key |
+| 生产可用性 | 把付费产品的检测挂在个人工作站 + 个人机场订阅上不可接受 |
+
+→ 代理**可以搭**，但必须落在**允许地区、独立于个人工作站**的载体上：云主机 / Cloudflare Worker / 管理员指定主机。
+
 ## 4. 已就绪、可随时续作
 
 - 应用已部署并在 `current` 指向 `3ed1088`，五个 systemd 单元 enabled（当前 active，公网入口已回滚占位）。
