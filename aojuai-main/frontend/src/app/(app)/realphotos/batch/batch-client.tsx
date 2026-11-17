@@ -10,6 +10,7 @@ import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { gpsSubmitGuard } from '@/lib/realphotos-gps-submit'
 import { deviceTypeLabel } from '@/lib/realphotos-labels'
+import { PRESET_FIELD_DEFS, type PresetFieldDef } from '@/lib/realphotos-preset-fields'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
 
 type Preset = {
@@ -24,37 +25,22 @@ type Preset = {
   [key: string]: unknown
 }
 
-// 2026-11-17: 预设详情展示用中文标签；未知键原样展示。
-const PRESET_FIELD_LABELS: Record<string, string> = {
-  iso: 'ISO',
-  shutter: '快门',
-  aperture: '光圈',
-  focalLength: '焦距',
-  focalLengthEquiv: '等效焦距',
-  lensModel: '镜头',
-  lensMake: '镜头厂商',
-  makerNote: '厂商注释',
-  software: '软件',
-  whiteBalance: '白平衡',
-  exposureMode: '曝光模式',
-  exposureCompensation: '曝光补偿',
-  meteringMode: '测光模式',
-  colorSpace: '色彩空间',
-  colorDepth: '位深',
-  sensorType: '传感器',
-  sensorSize: '画幅',
-  imageWidth: '像素宽',
-  imageHeight: '像素高',
-  imageFormat: '格式',
-  aiPositivePrompt: '正向提示词',
-  aiNegativePrompt: '负向提示词',
-  aiStrength: 'AI 强度',
-  description: '描述',
-  sceneType: '场景',
-  source: '来源',
+
+/** 2026-11-17: 预设参数取值，规则与「设备预设」页一致（列字段优先，其次 legacyParameters）。 */
+function presetFieldText(preset: Record<string, unknown>, field: PresetFieldDef): string {
+  const legacy = (preset.legacyParameters as Record<string, unknown> | undefined) || {}
+  if (field.column) {
+    const direct = preset[field.column]
+    if (direct !== undefined && direct !== null && String(direct).trim() !== '') return String(direct)
+  }
+  const raw = legacy[field.key]
+  return raw === undefined || raw === null ? '' : String(raw)
 }
 
-const PRESET_DEFAULT_KEYS = ['deviceType', 'brand', 'model', 'gpsMode', 'code']
+/** 展开时展示除两份提示词外的全部设备参数。 */
+const PRESET_DETAIL_FIELDS = PRESET_FIELD_DEFS.filter(
+  (field) => field.column !== 'aiPositivePrompt' && field.column !== 'aiNegativePrompt',
+)
 
 type PendingAsset = { id: string; previewUrl: string }
 
@@ -383,18 +369,16 @@ export function RealphotosBatchClient() {
             </dl>
             {presetDetailOpen ? (
               <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 border-t border-border/50 pt-2 md:grid-cols-4">
-                {Object.entries(selectedPreset)
-                  .filter(([key, value]) => {
-                    if (PRESET_DEFAULT_KEYS.includes(key)) return false
-                    if (key === 'gpsWritable' || key === 'gpsWillSkip' || key === 'gpsWritableReason') return false
-                    return ['string', 'number', 'boolean'].includes(typeof value) && String(value ?? '').trim() !== ''
-                  })
-                  .map(([key, value]) => (
-                    <div key={key}>
-                      <dt className="text-muted-foreground">{PRESET_FIELD_LABELS[key] || key}</dt>
-                      <dd className="break-all">{typeof value === 'boolean' ? (value ? '是' : '否') : String(value)}</dd>
+                {PRESET_DETAIL_FIELDS.map((field) => {
+                  const text = presetFieldText(selectedPreset, field)
+                  if (!text.trim()) return null
+                  return (
+                    <div key={field.key}>
+                      <dt className="text-muted-foreground">{field.label}</dt>
+                      <dd className="break-all">{text}</dd>
                     </div>
-                  ))}
+                  )
+                })}
               </dl>
             ) : null}
             <button

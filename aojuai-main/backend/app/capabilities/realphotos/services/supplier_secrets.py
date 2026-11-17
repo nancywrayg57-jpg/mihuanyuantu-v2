@@ -365,6 +365,19 @@ def clear_duty_secret(duty: str) -> None:
         _write_store(store)
 
 
+def move_duty_credentials(old_duty: str, new_duty: str) -> None:
+    """2026-11-17: 管理员改「用途」时把该用途的密钥条目整体迁移到新用途。"""
+    old_label = str(old_duty or "").strip()
+    new_label = str(new_duty or "").strip()
+    if old_label not in _DUTIES or new_label not in _DUTIES or old_label == new_label:
+        raise ValueError("unsupported duty move")
+    store = _load_store()
+    if old_label not in store:
+        return
+    store[new_label] = store.pop(old_label)
+    _write_store(store)
+
+
 def has_duty_secret(duty: str) -> bool:
     return bool(read_duty_secret(duty))
 

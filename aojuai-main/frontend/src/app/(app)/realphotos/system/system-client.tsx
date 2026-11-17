@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
+import { RpDialog } from '@/components/realphotos/rp-table'
 import { ApiError, apiFetch } from '@/lib/api'
 
 import { DetectionPassScoreCard } from './detection-pass-score-card'
@@ -130,6 +131,11 @@ export function RealphotosSystemClient() {
   const [apiKey, setApiKey] = useState('')
   const [saving, setSaving] = useState(false)
   const [channelSearch, setChannelSearch] = useState('')
+  // 2026-11-17: 已登记渠道「修改」弹窗
+  const [editing, setEditing] = useState<Contract | null>(null)
+  const [editModelId, setEditModelId] = useState('')
+  const [editPurpose, setEditPurpose] = useState('')
+  const [editBaseUrl, setEditBaseUrl] = useState('')
   const replaceModelRef = useRef(false)
   const modelIdRef = useRef(modelId)
   modelIdRef.current = modelId
@@ -370,6 +376,38 @@ export function RealphotosSystemClient() {
       await loadContracts()
     } catch (error: unknown) {
       setMessage(error instanceof ApiError ? error.message : '保存失败')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function updateContract() {
+    if (!editing) return
+    const targetModel = editModelId.trim()
+    const targetBase = editBaseUrl.trim()
+    if (!targetModel) {
+      setMessage('请填写模型版本')
+      return
+    }
+    if (!targetBase) {
+      setMessage('请填写 Base URL')
+      return
+    }
+    setSaving(true)
+    try {
+      await apiFetch(`/api/v1/realphotos/provider-contracts/${encodeURIComponent(editing.duty)}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          modelId: targetModel,
+          purpose: editPurpose,
+          baseUrl: targetBase,
+        }),
+      })
+      setMessage('渠道已更新，新配置立即对全站生效。')
+      setEditing(null)
+      await loadContracts()
+    } catch (error: unknown) {
+      setMessage(error instanceof ApiError ? error.message : '修改失败')
     } finally {
       setSaving(false)
     }
@@ -635,6 +673,18 @@ export function RealphotosSystemClient() {
                         <td className="border px-2 py-1">{item.enabled ? '已启用' : '已停用'}</td>
                         <td className="border px-2 py-1">平台</td>
                         <td className="border px-2 py-1">
+                          <button
+                            className="rp-btn mr-2 border px-2 py-0.5"
+                            type="button"
+                            onClick={() => {
+                              setEditing(item)
+                              setEditModelId(item.modelId || '')
+                              setEditPurpose(item.duty)
+                              setEditBaseUrl(item.baseUrl || '')
+                            }}
+                          >
+                            修改
+                          </button>
                           <button className="rp-btn mr-2 border px-2 py-0.5" type="button" onClick={() => void toggleEnabled(item)}>
                             {item.enabled ? '停用' : '启用'}
                           </button>
@@ -655,6 +705,51 @@ export function RealphotosSystemClient() {
                 </table>
               </div>
         </section>
+      ) : null}
+      {editing ? (
+        <RpDialog title={`修改渠道 · ${editing.provider}`} label="修改渠道" onClose={() => setEditing(null)}>
+          <label className="block text-sm">
+            模型版本
+            <input
+              className="rp-input mt-1 block w-full"
+              value={editModelId}
+              onChange={(event) => setEditModelId(event.target.value)}
+            />
+          </label>
+          <label className="block text-sm">
+            用途
+            <select
+              className="rp-input mt-1 block w-full"
+              value={editPurpose}
+              onChange={(event) => setEditPurpose(event.target.value)}
+            >
+              {PURPOSES.map((item) => (
+                <option key={item.duty} value={item.duty}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block text-sm">
+            Base URL
+            <input
+              className="rp-input mt-1 block w-full"
+              value={editBaseUrl}
+              onChange={(event) => setEditBaseUrl(event.target.value)}
+            />
+          </label>
+          {editPurpose !== editing.duty ? (
+            <p className="text-xs text-amber-700">改用途会把该渠道的密钥条目一并迁移到新用途；目标用途不能已有渠道。</p>
+          ) : null}
+          <button
+            className="rp-btn border px-3 py-1 text-sm disabled:opacity-50"
+            type="button"
+            disabled={saving}
+            onClick={() => void updateContract()}
+          >
+            保存
+          </button>
+        </RpDialog>
       ) : null}
     </main>
   )

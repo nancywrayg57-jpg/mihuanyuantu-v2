@@ -38,6 +38,16 @@ class EnabledBody(BaseModel):
     credential_id: str | None = Field(default=None, alias="credentialId")
 
 
+class UpdateContractBody(BaseModel):
+    """2026-11-17: 已登记渠道「修改」——模型版本 / 用途 / Base URL。"""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    model_id: str | None = Field(default=None, alias="modelId")
+    purpose: str | None = None
+    base_url: str | None = Field(default=None, alias="baseUrl")
+
+
 class ProbeBody(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
@@ -103,6 +113,31 @@ async def save_contract(
         base_url=body.base_url,
         api_key=body.api_key,
         enabled=body.enabled,
+        actor_user_id=int(current_user.id),
+    )
+    await db.commit()
+    return SuccessResponse(data=payload)
+
+
+@router.put("/provider-contracts/{duty}")
+async def update_contract(
+    duty: str,
+    body: UpdateContractBody,
+    request: Request,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
+) -> dict[str, Any]:
+    """2026-11-17: 修改已登记渠道的模型版本 / 用途 / Base URL，保存后全站按新合同生效。"""
+    _reject_key_auth(request)
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosSupplierConfigService(db).update_fields(
+        actor_role_codes=roles,
+        duty=duty,
+        model_id=body.model_id,
+        new_duty=body.purpose,
+        base_url=body.base_url,
         actor_user_id=int(current_user.id),
     )
     await db.commit()

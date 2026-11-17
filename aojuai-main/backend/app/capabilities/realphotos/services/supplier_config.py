@@ -576,6 +576,66 @@ class RealphotosSupplierConfigService:
         )
         return after
 
+    async def update_fields(
+        self,
+        *,
+        actor_role_codes: set[str],
+        duty: str,
+        model_id: str | None = None,
+        new_duty: str | None = None,
+        base_url: str | None = None,
+        actor_user_id: int | None = None,
+    ) -> dict[str, Any]:
+        """2026-11-17: 已登记渠道的「修改」——只改模型版本 / 用途 / Base URL，不动 Key。"""
+        self._admin(actor_role_codes)
+        label = purpose_to_duty(duty)
+        await self.ensure()
+        row = await self._row(label)
+        if row is None:
+            raise BusinessError(message="职责不存在", code="NOT_FOUND")
+
+        target = purpose_to_duty(new_duty) if str(new_duty or "").strip() else label
+        if target not in _ADMIN_DUTIES:
+            raise BusinessError(message="职责不存在", code="NOT_FOUND")
+        if target != label:
+            if await self._row(target) is not None:
+                raise BusinessError(
+                    message="目标用途已有登记渠道，请直接修改该用途",
+                    code="INPUT_INVALID",
+                )
+            from app.capabilities.realphotos.services.supplier_secrets import move_duty_credentials
+
+            move_duty_credentials(label, target)
+            row.duty = target
+
+        if model_id is not None and str(model_id).strip():
+            row.model_id = str(model_id).strip()
+        if base_url is not None and str(base_url).strip():
+            row.base_url = _validate_base_url(str(base_url))
+        caps = dict(row.capabilities or {})
+        caps["adminManaged"] = True
+        caps["pollingEnabled"] = False
+        row.capabilities = caps
+        row.config_version = _next_config_version()
+        await self.db.flush()
+        await self.db.refresh(row)
+        after = _public(row)
+        sync_enabled_credential_meta(
+            str(row.duty),
+            provider=str(after.get("provider") or ""),
+            model_id=str(after.get("modelId") or ""),
+            base_url=str(after.get("baseUrl") or ""),
+        )
+        _LOG.info(
+            "provider_contract_updated actor=%s duty=%s newDuty=%s modelId=%s baseUrl=%s",
+            actor_user_id,
+            label,
+            target,
+            after.get("modelId"),
+            after.get("baseUrl"),
+        )
+        return after
+
     async def set_enabled(
         self,
         *,
