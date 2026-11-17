@@ -9,7 +9,6 @@ import {
   BookOpen,
   Copy,
   Cpu,
-  ChevronRight,
   CalendarDays,
   Building2,
   Coins,
@@ -149,7 +148,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   // 手风琴互斥：undefined = 跟随当前路由所在分组，null = 全部收起
-  const [expandedGroupId, setExpandedGroupId] = useState<string | null | undefined>(undefined)
   const [hideDemoMenus, setHideDemoMenus] = useState(false)
   const { locale, setLocale, t, tMenu } = useLocale()
   const sessionDisplayName = resolveSessionDisplayName(session, t('system.layout.accountFallback'))
@@ -295,12 +293,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             {visibleGroups.map((group) => {
               const groupId = group.id
               const GroupIcon = group.icon || PanelTop
-              const pinned = Boolean(group.pinned)
               const active = group.items.some((item) => isNavItemActive(item.to))
-              // 手风琴互斥：未做选择时跟随当前路由所在分组；pinned 分组常开
-              const expanded = pinned ? true : expandedGroupId === undefined ? active : expandedGroupId === groupId
-              const collapsed = !expanded
-              const canToggle = !pinned
 
               if (compact) {
                 // 收起态：分组变为飞出菜单，二级直接可达
