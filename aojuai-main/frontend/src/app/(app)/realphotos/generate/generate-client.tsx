@@ -302,22 +302,19 @@ export function RealphotosGenerateClient() {
             高
             <input className="rp-input ml-1 w-24" value={height} onChange={(e) => setHeight(e.target.value)} />
           </label>
-          <label className={seedSupported ? '' : 'text-neutral-500'} data-testid="generation-seed">
-            {seedSupported ? '可选种子' : '可选种子（当前模型不支持）'}
-            <input
-              className="rp-input ml-1 w-40 disabled:cursor-not-allowed disabled:opacity-60"
-              value={seedSupported ? seed : ''}
-              disabled={!seedSupported}
-              aria-disabled={!seedSupported}
-              data-seed-supported={seedSupported ? 'true' : 'false'}
-              onChange={(e) => {
-                if (seedSupported) setSeed(e.target.value)
-              }}
-              placeholder={seedSupported ? '留空则不传' : '不可填写'}
-              title={seedNote}
-            />
-          </label>
-          {!seedSupported ? <span className="text-xs text-neutral-500">{seedNote}</span> : null}
+          {seedSupported ? (
+            <label data-testid="generation-seed">
+              可选种子
+              <input
+                className="rp-input ml-1 w-40"
+                value={seed}
+                data-seed-supported="true"
+                onChange={(e) => setSeed(e.target.value)}
+                placeholder="留空则不传"
+                title={seedNote}
+              />
+            </label>
+          ) : null}
         </div>
         {lastSizes ? <p className="text-xs text-muted-foreground">{lastSizes}</p> : null}
         <div className="space-y-2 text-sm">
@@ -344,9 +341,11 @@ export function RealphotosGenerateClient() {
             </div>
           ) : null}
         </div>
-        <button className="rp-btn text-sm" type="button" onClick={() => void submit()}>
-          提交生图
-        </button>
+        <div className="flex justify-end border-t pt-3">
+          <button className="rp-btn rp-btn-primary rp-btn-lg" type="button" onClick={() => void submit()}>
+            提交生图
+          </button>
+        </div>
       </section>
     </main>
   )
