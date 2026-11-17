@@ -240,6 +240,8 @@ class TicketResolveBody(BaseModel):
 
     outcome: str
     note: str
+    # 2026-11-17：可选，按任务号解除图片锁定
+    unlock_task_id: int | None = Field(default=None, alias="unlockTaskId")
 
 
 @router.get("/support-tickets")
@@ -271,6 +273,7 @@ async def resolve_ticket(
         ticket_id=int(ticket_id),
         outcome=body.outcome,
         note=body.note,
+        unlock_task_id=body.unlock_task_id,
     )
     await db.commit()
     return SuccessResponse(data=payload)

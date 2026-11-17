@@ -62,6 +62,8 @@ export default function RealphotosTechDeskPage() {
   const [appealReason, setAppealReason] = useState('')
   const [resolveNote, setResolveNote] = useState('')
   const [resolveOutcome, setResolveOutcome] = useState('accepted')
+  // 2026-11-17：办结时可选择解除该任务图片的锁定（FR-006）
+  const [unlockTaskNo, setUnlockTaskNo] = useState('')
   const [heldDrafts, setHeldDrafts] = useState<Record<number, { amount: string; reason: string }>>({})
   const [message, setMessage] = useState('')
   const [ticketType, setTicketType] = useState('all')
@@ -183,6 +185,7 @@ export default function RealphotosTechDeskPage() {
     setDetail(item)
     setResolveNote('')
     setResolveOutcome('accepted')
+    setUnlockTaskNo('')
     setReason('')
   }
 
@@ -249,9 +252,16 @@ export default function RealphotosTechDeskPage() {
     try {
       const updated = await apiFetch<Ticket>(`/api/v1/realphotos/support-tickets/${detail.id}/resolve`, {
         method: 'POST',
-        body: JSON.stringify({ outcome: resolveOutcome, note: resolveNote }),
+        body: JSON.stringify({
+          outcome: resolveOutcome,
+          note: resolveNote,
+          ...(unlockTaskNo.trim() ? { unlockTaskId: Number(unlockTaskNo.trim()) } : {}),
+        }),
       })
-      const text = `工单 ${updated.id} 已办结（${updated.resolutionOutcome}）；办结不等于解锁图片`
+      const unlock = (updated as unknown as { imageUnlock?: { unlocked?: number } }).imageUnlock
+      const text = unlock?.unlocked
+        ? `工单 ${updated.id} 已办结，并解除图片锁定（${unlock.unlocked} 条）`
+        : `工单 ${updated.id} 已办结（${updated.resolutionOutcome}）`
       setMessage(text)
       toastTask(text, true)
       closeHandle()
@@ -565,6 +575,17 @@ export default function RealphotosTechDeskPage() {
                   value={resolveNote}
                   onChange={(event) => setResolveNote(event.target.value)}
                 />
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    className="rp-input w-40"
+                    placeholder="解除锁定：任务编号"
+                    value={unlockTaskNo}
+                    onChange={(event) => setUnlockTaskNo(event.target.value)}
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    填任务编号则办结后解除该图锁定；留空仅办结工单。
+                  </span>
+                </div>
                 <button
                   className="rp-btn ml-2"
                   type="button"

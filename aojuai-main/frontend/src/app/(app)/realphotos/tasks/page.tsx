@@ -10,6 +10,7 @@ import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { RpSection } from '@/components/realphotos/rp-section'
 import { RpDialog, RpEmpty, RpFilterBar, RpPagination, RpStatus, RpTable, RpTh } from '@/components/realphotos/rp-table'
 import { rpSelectClass, toastTask } from '@/components/realphotos/surface'
+import { PRESET_FIELD_DEFS, presetFieldText } from '@/lib/realphotos-preset-fields'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import {
   DETECTION_PASS_SCORE,
@@ -46,6 +47,7 @@ type ProcessingTask = {
   status: string
   presetCode?: string
   presetSnapshot?: Record<string, unknown> | null
+  taskNo?: number | null
   outputObjectKey?: string | null
   creditDisposition?: string | null
   imageLocked?: boolean
@@ -273,6 +275,7 @@ export default function RealphotosTasksPage() {
       const rows = await apiFetch<{ items: typeof myTickets }>('/api/v1/realphotos/my-support-tickets')
       setMyTickets(rows.items || [])
       setNotice('已提交申诉，技术客服会在工单管理中处理')
+      toastTask('申诉已提交', true)
     } catch (error: unknown) {
       setNotice(error instanceof ApiError ? error.message : '申诉提交失败')
     } finally {
@@ -742,7 +745,7 @@ export default function RealphotosTasksPage() {
                         <span className="inline-block h-10 w-10" aria-hidden />
                       )}
                     </td>
-                    <td>{item.id}</td>
+                    <td>{item.taskNo ?? item.id}</td>
                     <td>
                       <RpStatus tone={statusTone(item.status)}>{taskStatusLabel(item.status)}</RpStatus>
                     </td>
@@ -784,8 +787,8 @@ export default function RealphotosTasksPage() {
           {downloadNote ? <p className="text-sm">{downloadNote}</p> : null}
           {detail ? (
             <RpDialog
-              title={`处理任务 ${detail.id}`}
-              label={`处理任务 ${detail.id} 详情`}
+              title={`处理任务 ${detail.taskNo ?? detail.id}`}
+              label={`处理任务 ${detail.taskNo ?? detail.id} 详情`}
               onClose={() => setDetail(null)}
             >
               <RpSection title="检测报告" tone="report">
@@ -813,6 +816,25 @@ export default function RealphotosTasksPage() {
                       <dd>{detail.billingMode}</dd>
                     </>
                   ) : null}
+                  <dt>设备参数</dt>
+                  <dd>
+                    {/* 2026-11-17：默认收起，点击查看全部（与批量原图页的预设展示一致） */}
+                    <details className="space-y-2">
+                      <summary className="cursor-pointer text-primary">查看全部参数</summary>
+                      <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
+                        {PRESET_FIELD_DEFS.map((field) => {
+                          const text = presetFieldText(detail.presetSnapshot || {}, field)
+                          if (!text) return null
+                          return (
+                            <div key={field.key} className="flex gap-2 text-xs">
+                              <dt className="w-24 shrink-0 text-muted-foreground">{field.label}</dt>
+                              <dd className="break-all">{text}</dd>
+                            </div>
+                          )
+                        })}
+                      </dl>
+                    </details>
+                  </dd>
                 </dl>
               </RpSection>
               {/* 2026-11-17：仅图片被锁定（FR-006 图片锁定）的任务可申诉 */}
@@ -884,7 +906,7 @@ export default function RealphotosTasksPage() {
               ) : (
                 visibleGenItems.map((item) => (
                   <tr key={item.id}>
-                    <td>{item.id}</td>
+                    <td>{item.taskNo ?? item.id}</td>
                     <td>{generationModeLabel(item.mode)}</td>
                     <td>{item.quantity}</td>
                     <td>

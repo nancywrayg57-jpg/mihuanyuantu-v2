@@ -220,7 +220,7 @@ export function RealphotosGenerateClient() {
             : '未填写种子（未发送）'
       const text = `已入库。生图不会自动进入处理。${sizeNote}。${submittedSeedNote}`
       setMessage(text)
-      toast.success(text, { id: loadingToast })
+      toast.success('生图成功', { id: loadingToast })
     } catch (error: unknown) {
       const text = error instanceof ApiError ? error.message : '提交失败'
       setMessage(text)

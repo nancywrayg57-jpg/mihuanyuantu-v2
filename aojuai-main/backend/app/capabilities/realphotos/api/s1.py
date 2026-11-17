@@ -94,12 +94,13 @@ async def _role_codes(db: DBSession, user_id: int, tenant_id: int) -> set[str]:
     return {str(code) for (code,) in rows}
 
 
-def _task_payload(task) -> dict[str, Any]:
+def _task_payload(task, task_no: int | None = None) -> dict[str, Any]:
     mode = str(getattr(task, "pre_review_mode", "") or "")
     # Audit label: pass on task = fixture_test_only (admin/copy); live; never silent fixture for customers.
     audit = "fixture_test_only" if mode == "pass" else (mode or "unconfigured")
     return {
         "id": str(int(task.id)),
+        "taskNo": int(task_no) if task_no is not None else None,
         "tenantId": str(int(task.tenant_id)),
         "ownerAccountId": str(int(task.owner_account_id)),
         "assetId": str(int(task.asset_id)),
@@ -119,8 +120,36 @@ def _task_payload(task) -> dict[str, Any]:
     }
 
 
-async def _enrich_task_detail(service, *, tenant_id: int, task) -> dict[str, Any]:
-    payload = _task_payload(task)
+async def _tenant_task_no_map(db, *, tenant_id: int, task_ids: list[int]) -> dict[int, int]:
+    """2026-11-17：租户内任务编号（各租户从 1 开始，互不串号）。"""
+    if not task_ids:
+        return {}
+    from sqlalchemy import text as _text
+
+    rows = (
+        await db.execute(
+            _text(
+                "select id, seq from ("
+                "  select id, row_number() over (order by id) as seq"
+                "  from cap_realphotos_image_tasks"
+                "  where tenant_id = :tenant_id and deleted_at is null"
+                ") x where id = any(:ids)"
+            ),
+            {"tenant_id": int(tenant_id), "ids": [int(x) for x in task_ids]},
+        )
+    ).all()
+    return {int(i): int(s) for i, s in rows}
+
+
+async def _enrich_task_detail(
+    service,
+    *,
+    tenant_id: int,
+    task,
+    task_no: int | None = None,
+    include_lock: bool = True,
+) -> dict[str, Any]:
+    payload = _task_payload(task, task_no=task_no)
     payload["detection"] = await service.detection_payload(
         tenant_id=int(tenant_id), task_id=int(task.id)
     )
@@ -136,12 +165,13 @@ async def _enrich_task_detail(service, *, tenant_id: int, task) -> dict[str, Any
     else:
         payload["failureMessage"] = None
         payload["failureTitle"] = None
-    try:
-        lock_state = await service.image_lock_state(tenant_id=int(tenant_id), task=task)
-    except Exception:  # noqa: BLE001 - 锁定查询失败不影响详情
-        lock_state = {"locked": False, "reason": ""}
-    payload["imageLocked"] = bool(lock_state.get("locked"))
-    payload["imageLockReason"] = str(lock_state.get("reason") or "")
+    if include_lock:
+        try:
+            lock_state = await service.image_lock_state(tenant_id=int(tenant_id), task=task)
+        except Exception:  # noqa: BLE001 - 锁定查询失败不影响详情
+            lock_state = {"locked": False, "reason": ""}
+        payload["imageLocked"] = bool(lock_state.get("locked"))
+        payload["imageLockReason"] = str(lock_state.get("reason") or "")
     payload["createdAt"] = task.created_at.isoformat() if getattr(task, "created_at", None) else None
     # R5: compact score glance for detection_not_passed list rows (no billing change).
     detection = payload.get("detection")
@@ -419,10 +449,18 @@ async def list_processing_tasks(
         status=status,
     )
     payloads = []
+    no_map = await _tenant_task_no_map(
+        db, tenant_id=int(tenant_ctx.tenant_id), task_ids=[int(t.id) for t in rows]
+    )
     for task in rows:
         payloads.append(
             await _enrich_task_detail(
-                service, tenant_id=int(tenant_ctx.tenant_id), task=task
+                service,
+                tenant_id=int(tenant_ctx.tenant_id),
+                task=task,
+                task_no=no_map.get(int(task.id)),
+                # 列表不解码原图判断锁定，避免整页变慢；详情才计算。
+                include_lock=False,
             )
         )
     return SuccessResponse(
@@ -490,8 +528,14 @@ async def get_task(
         task_id=int(task_id),
         owner_account_id=int(current_user.id),
     )
+    no_map = await _tenant_task_no_map(
+        db, tenant_id=int(tenant_ctx.tenant_id), task_ids=[int(task.id)]
+    )
     payload = await _enrich_task_detail(
-        service, tenant_id=int(tenant_ctx.tenant_id), task=task
+        service,
+        tenant_id=int(tenant_ctx.tenant_id),
+        task=task,
+        task_no=no_map.get(int(task.id)),
     )
     return SuccessResponse(data=payload)
 

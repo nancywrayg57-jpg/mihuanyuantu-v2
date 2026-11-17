@@ -14,6 +14,7 @@ from PIL import Image
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.capabilities.realphotos.adapters.storage import get_storage_adapter
 from app.capabilities.realphotos.constants import DEVICE_TYPE_ALIASES, DEVICE_TYPES
 from app.capabilities.realphotos.models import (
     RealphotosAccountLog,
@@ -439,8 +440,12 @@ class RealphotosOpsService:
         ticket_id: int,
         outcome: str,
         note: str,
+        unlock_task_id: int | None = None,
     ) -> dict[str, Any]:
-        """Close image_appeal (or other non-freeze) tickets. Does not unlock images."""
+        """Close image_appeal (or other non-freeze) tickets.
+
+        2026-11-17：办结时可按任务号解除图片锁定（FR-006），原先明确不解锁。
+        """
         from datetime import UTC, datetime
 
         self._require_tech_or_admin(actor_role_codes)
@@ -466,15 +471,82 @@ class RealphotosOpsService:
         row.resolution_note = text
         row.resolution_outcome = result
         await self.db.flush()
+        unlocked = await self._maybe_unlock_image(
+            ticket=row, operator_user_id=int(operator_user_id), task_id=unlock_task_id
+        )
         tenants, users = await self._tenant_user_name_maps(
             tenant_ids={int(row.tenant_id)},
             user_ids={int(row.owner_account_id)},
         )
-        return self._ticket_dict(
+        payload = self._ticket_dict(
             row,
             tenant_name=tenants.get(int(row.tenant_id)),
             username=users.get(int(row.owner_account_id)),
         )
+        payload["imageUnlock"] = unlocked
+        return payload
+
+    async def _maybe_unlock_image(
+        self,
+        *,
+        ticket: RealphotosSupportTicket,
+        operator_user_id: int,
+        task_id: int | None,
+    ) -> dict[str, Any]:
+        """按任务号解除图片锁定：像素身份一致的锁记录全部软删。"""
+        if task_id is None:
+            return {"requested": False}
+        task = (
+            await self.db.execute(
+                select(RealphotosImageTask).where(
+                    RealphotosImageTask.id == int(task_id),
+                    RealphotosImageTask.tenant_id == int(ticket.tenant_id),
+                    RealphotosImageTask.owner_account_id == int(ticket.owner_account_id),
+                    RealphotosImageTask.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if task is None:
+            raise BusinessError(
+                message="关联任务不存在或不属于该工单租户/账号",
+                code="NOT_FOUND",
+            )
+        asset = await self.db.get(RealphotosAsset, int(task.asset_id))
+        if asset is None or asset.deleted_at is not None:
+            raise BusinessError(message="该任务的原图已不存在，无法解锁", code="NOT_FOUND")
+        handle = get_storage_adapter().open_read(asset.object_key)
+        try:
+            data = handle.read()
+        finally:
+            handle.close()
+        identity = pixel_identity(data)
+        rows = (
+            await self.db.execute(
+                select(RealphotosImageLock).where(
+                    RealphotosImageLock.tenant_id == int(ticket.tenant_id),
+                    RealphotosImageLock.owner_account_id == int(ticket.owner_account_id),
+                    RealphotosImageLock.image_identity == identity,
+                    RealphotosImageLock.deleted_at.is_(None),
+                )
+            )
+        ).scalars().all()
+        now = datetime.now(UTC)
+        for lock in rows:
+            lock.deleted_at = now
+        await self.db.flush()
+        logger.info(
+            "realphotos_image_unlocked",
+            ticket_id=int(ticket.id),
+            task_id=int(task_id),
+            operator_user_id=int(operator_user_id),
+            unlocked=int(len(rows)),
+        )
+        return {
+            "requested": True,
+            "taskId": str(int(task_id)),
+            "unlocked": int(len(rows)),
+            "alreadyUnlocked": len(rows) == 0,
+        }
 
     @staticmethod
     def _ticket_dict(
