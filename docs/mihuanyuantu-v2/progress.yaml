@@ -52,6 +52,13 @@ s7_prod_deploy_2026_11_16:
     scope: [workspace labels, task-detail sections, prompts dialog, imports note, batch pick button, preset detail]
     build_id: V1FDJ934Zi5HhJyTz6GGv
     verify: playwright DOM 19 checks fail_count=0
+  ui_revision_2026_11_17_c:
+    commits: [505a942, 831283b, 011af0c]
+    build_id: T5pwVCHxxm3eMVL7HqGXO
+    preset_full_params: GET /realphotos/presets/{code} -> 55 params; batch panel renders 41 dt fields (prompts excluded)
+    channel_edit: PUT /provider-contracts/{duty} (modelId/purpose/baseUrl) + 修改 dialog
+    import_channel: disabled (SERVICE_NOT_CONFIGURED); temp host not in use
+    checks_report: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-CHECKS-2026-11-17.md
   evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-e2e.txt
   closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md
   blocker: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md
