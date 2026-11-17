@@ -518,8 +518,22 @@ class RealphotosOpsService:
             )
         ).first()
         if task_row is None:
-            raise BusinessError(message="工单关联的任务不存在", code="NOT_FOUND")
-        task = await self.db.get(RealphotosImageTask, int(task_row[0]))
+            # 兼容历史工单：编号当时写的是全局 id，按同租户/同账号再试一次。
+            legacy = (
+                await self.db.execute(
+                    select(RealphotosImageTask).where(
+                        RealphotosImageTask.id == int(match.group(1)),
+                        RealphotosImageTask.tenant_id == int(row.tenant_id),
+                        RealphotosImageTask.owner_account_id == int(row.owner_account_id),
+                        RealphotosImageTask.deleted_at.is_(None),
+                    )
+                )
+            ).scalar_one_or_none()
+            if legacy is None:
+                raise BusinessError(message="工单关联的任务不存在", code="NOT_FOUND")
+            task = legacy
+        else:
+            task = await self.db.get(RealphotosImageTask, int(task_row[0]))
         asset = await self.db.get(RealphotosAsset, int(task.asset_id)) if task else None
         if asset is None or asset.deleted_at is not None:
             raise BusinessError(message="该任务的原图已不存在", code="NOT_FOUND")
@@ -623,6 +637,18 @@ class RealphotosOpsService:
         task = (
             await self.db.get(RealphotosImageTask, int(row[0])) if row is not None else None
         )
+        if task is None:
+            # 兼容历史工单：编号为全局 id 时按同租户/同账号回退查询。
+            task = (
+                await self.db.execute(
+                    select(RealphotosImageTask).where(
+                        RealphotosImageTask.id == int(task_id),
+                        RealphotosImageTask.tenant_id == int(ticket.tenant_id),
+                        RealphotosImageTask.owner_account_id == int(ticket.owner_account_id),
+                        RealphotosImageTask.deleted_at.is_(None),
+                    )
+                )
+            ).scalar_one_or_none()
         if task is None:
             raise BusinessError(
                 message="关联任务不存在或不属于该工单租户/账号",
