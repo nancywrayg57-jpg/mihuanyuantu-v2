@@ -17,6 +17,7 @@ import { useSiteBranding } from '@/hooks/useSiteBranding'
 import { useTheme } from '@/hooks/useTheme'
 import { useT } from '@/lib/i18n'
 import { sanitizeNextPath } from '@/lib/sanitize-next-path'
+import { REALPHOTOS_HOME, isRealphotosSession } from '@/lib/realphotos-session'
 
 import styles from './login.module.css'
 
@@ -27,10 +28,14 @@ export function LoginClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  const explicitNext = searchParams.get('next')
   const nextPath = useMemo(
-    () => sanitizeNextPath(searchParams.get('next'), '/welcome'),
-    [searchParams],
+    () => sanitizeNextPath(explicitNext, '/welcome'),
+    [explicitNext],
   )
+  // 未显式指定 next 时，蜜獾原图账号直接进入业务工作台。
+  const landingFor = (sessionLike: unknown) =>
+    !explicitNext && isRealphotosSession(sessionLike as never) ? REALPHOTOS_HOME : nextPath
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -67,7 +72,7 @@ export function LoginClient() {
   useEffect(() => {
     if (!session) return
     router.replace(
-      session.mustCompleteProfile ? '/personal/profile-required' : nextPath,
+      session.mustCompleteProfile ? '/personal/profile-required' : landingFor(session),
     )
   }, [nextPath, router, session])
 
@@ -97,7 +102,7 @@ export function LoginClient() {
           )
           setSession(nextSession)
           toast.success(t('system.auth.loginSuccess'))
-          router.replace(nextSession.mustCompleteProfile ? '/personal/profile-required' : nextPath)
+          router.replace(nextSession.mustCompleteProfile ? '/personal/profile-required' : landingFor(nextSession))
         } catch (err) {
           const message = err instanceof Error ? err.message : t('system.auth.loginFailed')
           setError(message)
