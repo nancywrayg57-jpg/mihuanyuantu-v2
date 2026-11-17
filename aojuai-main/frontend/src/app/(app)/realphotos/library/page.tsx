@@ -43,7 +43,7 @@ export default function RealphotosLibraryPage() {
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<Record<string, true>>({})
   const [thumbs, setThumbs] = useState<Record<string, string>>({})
-  const [preview, setPreview] = useState<{ id: string; url: string } | null>(null)
+  const [preview, setPreview] = useState<{ id: string; url: string; fullUrl?: string; loading?: boolean } | null>(null)
   const [frozen, setFrozen] = useState(false)
   const downloadUsedNames = useRef(new Map<string, number>())
 
@@ -71,6 +71,28 @@ export default function RealphotosLibraryPage() {
   useEffect(() => {
     void reload().catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '资源加载失败'))
   }, [reload])
+
+  // 2026-11-17：放大查看先展示缩略图，再拉 1600px 大图，避免只放大 160px 小图。
+  async function openPreview(item: { id: string; objectKey?: string | null }) {
+    const placeholder = thumbs[item.id]
+    setPreview({ id: item.id, url: placeholder || '', loading: Boolean(item.objectKey) })
+    if (!item.objectKey) return
+    const path = item.objectKey.split('/').map(encodeURIComponent).join('/')
+    try {
+      const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${path}?thumb=1600`)
+      const url = URL.createObjectURL(blob)
+      setPreview((prev) => {
+        if (!prev || prev.id !== item.id) {
+          URL.revokeObjectURL(url)
+          return prev
+        }
+        if (prev.fullUrl) URL.revokeObjectURL(prev.fullUrl)
+        return { ...prev, fullUrl: url, loading: false }
+      })
+    } catch {
+      setPreview((prev) => (prev && prev.id === item.id ? { ...prev, loading: false } : prev))
+    }
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -441,7 +463,7 @@ export default function RealphotosLibraryPage() {
                     <button
                       type="button"
                       className="block"
-                      onClick={() => setPreview({ id: item.id, url: thumbs[item.id] })}
+                      onClick={() => void openPreview(item)}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={thumbs[item.id]} alt="" loading="lazy" decoding="async" className="h-10 w-10 rounded border object-cover" />
@@ -472,9 +494,36 @@ export default function RealphotosLibraryPage() {
       </table>
       </section>
       {preview ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6" onClick={() => setPreview(null)}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => {
+            if (preview.fullUrl) URL.revokeObjectURL(preview.fullUrl)
+            setPreview(null)
+          }}
+        >
+          <button
+            className="absolute right-4 top-4 rp-btn rp-btn-sm bg-white/90"
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              if (preview.fullUrl) URL.revokeObjectURL(preview.fullUrl)
+              setPreview(null)
+            }}
+          >
+            关闭
+          </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview.url} alt={`资源 ${preview.id}`} className="max-h-full max-w-full border bg-white" />
+          <img
+            src={preview.fullUrl || preview.url}
+            alt={`资源 ${preview.id}`}
+            className="max-h-[92vh] max-w-[92vw] rounded bg-white object-contain shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          />
+          {preview.loading ? (
+            <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded bg-black/60 px-3 py-1 text-xs text-white">
+              正在加载大图…
+            </span>
+          ) : null}
         </div>
       ) : null}
     </main>
