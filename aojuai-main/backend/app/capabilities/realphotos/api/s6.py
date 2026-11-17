@@ -343,10 +343,10 @@ async def list_tenants(
 @router.post("/managed-tenants/{tenant_id}/delete")
 async def delete_tenant(
     tenant_id: int,
-    body: TenantDeleteBody,
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
+    body: TenantDeleteBody,
     _: None = Depends(PermissionChecker([TECH_DESK_READ])),
 ) -> dict[str, Any]:
     """2026-11-17：管理员删除租户；仅允许删除无业务数据的租户。"""
