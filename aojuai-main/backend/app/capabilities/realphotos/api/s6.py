@@ -257,6 +257,37 @@ async def list_tickets(
     return SuccessResponse(data=payload)
 
 
+@router.get("/image-locks")
+async def list_image_locks(
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    page: int = 1,
+    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosOpsService(db).list_image_locks(actor_role_codes=roles, page=page)
+    return SuccessResponse(data=payload)
+
+
+@router.post("/image-locks/{lock_id}/unlock")
+async def unlock_image_lock(
+    lock_id: int,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosOpsService(db).unlock_image_lock(
+        actor_role_codes=roles,
+        operator_user_id=int(current_user.id),
+        lock_id=int(lock_id),
+    )
+    await db.commit()
+    return SuccessResponse(data=payload)
+
+
 @router.post("/support-tickets/{ticket_id}/resolve")
 async def resolve_ticket(
     ticket_id: int,

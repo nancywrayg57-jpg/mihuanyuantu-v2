@@ -27,6 +27,17 @@ type Ticket = {
   resolutionNote?: string
 }
 
+type ImageLockItem = {
+  id: number
+  tenantId: number
+  tenantName?: string | null
+  ownerAccountId: number
+  username?: string | null
+  reason: string
+  imageIdentity: string
+  createdAt?: string | null
+}
+
 type HeldTenantItem = {
   tenantId: number
   tenantName?: string | null
@@ -64,6 +75,8 @@ export default function RealphotosTechDeskPage() {
   const [resolveOutcome, setResolveOutcome] = useState('accepted')
   // 2026-11-17：办结时可选择解除该任务图片的锁定（FR-006）
   const [unlockTaskNo, setUnlockTaskNo] = useState('')
+  // 2026-11-17：图片锁定不自动建工单，技术客服在此直接查看并解锁
+  const [locks, setLocks] = useState<ImageLockItem[]>([])
   const [heldDrafts, setHeldDrafts] = useState<Record<number, { amount: string; reason: string }>>({})
   const [message, setMessage] = useState('')
   const [ticketType, setTicketType] = useState('all')
@@ -120,7 +133,26 @@ export default function RealphotosTechDeskPage() {
   }
 
   useEffect(() => {
-    void loadDesk().catch(() => {
+    async function loadLocks() {
+    try {
+      const data = await apiFetch<{ items?: ImageLockItem[] }>('/api/v1/realphotos/image-locks?page=1')
+      setLocks(Array.isArray(data?.items) ? data.items : [])
+    } catch {
+      setLocks([])
+    }
+  }
+
+  async function unlockLock(id: number) {
+    try {
+      await apiFetch(`/api/v1/realphotos/image-locks/${id}/unlock`, { method: 'POST' })
+      toastTask('已解除该图片锁定', true)
+      await loadLocks()
+    } catch (error: unknown) {
+      toastTask(error instanceof ApiError ? error.message : '解锁失败', false)
+    }
+  }
+  void loadLocks().catch(() => undefined)
+  void loadDesk().catch(() => {
       setCanUnfreeze(false)
       void loadMine(1).catch((error: unknown) =>
         setMessage(error instanceof ApiError ? error.message : '工单读取失败'),
@@ -416,6 +448,51 @@ export default function RealphotosTechDeskPage() {
               下一页
             </button>
           </div>
+        </section>
+      ) : null}
+
+      {canUnfreeze ? (
+        <section className="rp-card p-4 space-y-2">
+          <h2 className="text-sm font-medium">图片锁定（{locks.length}）</h2>
+          <p className="text-xs text-muted-foreground">
+            同一张图二次内容审核失败会被自动锁定，锁定不会生成工单；可在此直接解锁。
+          </p>
+          <table className="rp-table">
+            <thead>
+              <tr>
+                <th className="text-left">租户</th>
+                <th className="text-left">账号</th>
+                <th className="text-left">原因</th>
+                <th className="text-left">图片指纹</th>
+                <th className="text-left">时间</th>
+                <th className="text-left">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {locks.length === 0 ? (
+                <tr>
+                  <td className="rp-empty" colSpan={6}>
+                    当前没有锁定的图片
+                  </td>
+                </tr>
+              ) : (
+                locks.map((lock) => (
+                  <tr key={lock.id}>
+                    <td>{lock.tenantName || `租户 ${lock.tenantId}`}</td>
+                    <td>{lock.username || '—'}</td>
+                    <td>{lock.reason === 'second_content_failure' ? '二次内容审核失败' : lock.reason}</td>
+                    <td className="font-mono text-xs">{lock.imageIdentity}…</td>
+                    <td>{formatDateTimeShort(lock.createdAt) || '—'}</td>
+                    <td>
+                      <button className="rp-btn rp-btn-sm" type="button" onClick={() => void unlockLock(lock.id)}>
+                        解锁
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </section>
       ) : null}
 

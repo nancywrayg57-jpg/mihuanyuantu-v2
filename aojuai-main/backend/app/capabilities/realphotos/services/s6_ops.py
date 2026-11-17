@@ -486,6 +486,61 @@ class RealphotosOpsService:
         payload["imageUnlock"] = unlocked
         return payload
 
+    async def list_image_locks(self, *, actor_role_codes: set[str], page: int = 1) -> dict[str, Any]:
+        """2026-11-17：技术客服查看当前被锁定的图片（锁定不会自动建工单）。"""
+        self._require_tech_or_admin(actor_role_codes)
+        size = TICKET_PAGE_SIZE
+        index = max(int(page), 1)
+        rows = (
+            await self.db.execute(
+                select(RealphotosImageLock)
+                .where(RealphotosImageLock.deleted_at.is_(None))
+                .order_by(RealphotosImageLock.id.desc())
+            )
+        ).scalars().all()
+        start = (index - 1) * size
+        page_rows = list(rows)[start : start + size]
+        tenants, users = await self._tenant_user_name_maps(
+            tenant_ids={int(r.tenant_id) for r in page_rows},
+            user_ids={int(r.owner_account_id) for r in page_rows},
+        )
+        return {
+            "page": index,
+            "pageSize": size,
+            "total": len(rows),
+            "items": [
+                {
+                    "id": int(r.id),
+                    "tenantId": int(r.tenant_id),
+                    "tenantName": tenants.get(int(r.tenant_id)),
+                    "ownerAccountId": int(r.owner_account_id),
+                    "username": users.get(int(r.owner_account_id)),
+                    "reason": str(r.reason or ""),
+                    "imageIdentity": str(r.image_identity or "")[:16],
+                    "createdAt": r.created_at.isoformat() if r.created_at else None,
+                }
+                for r in page_rows
+            ],
+        }
+
+    async def unlock_image_lock(
+        self, *, actor_role_codes: set[str], operator_user_id: int, lock_id: int
+    ) -> dict[str, Any]:
+        """按锁定记录 ID 解锁（技术客服直接操作，不必走工单）。"""
+        self._require_tech_or_admin(actor_role_codes)
+        row = await self.db.get(RealphotosImageLock, int(lock_id))
+        if row is None or row.deleted_at is not None:
+            raise BusinessError(message="锁定记录不存在或已解锁", code="NOT_FOUND")
+        row.deleted_at = datetime.now(UTC)
+        await self.db.flush()
+        logger.info(
+            "realphotos_image_unlocked_direct",
+            lock_id=int(lock_id),
+            tenant_id=int(row.tenant_id),
+            operator_user_id=int(operator_user_id),
+        )
+        return {"id": int(lock_id), "unlocked": True}
+
     async def _maybe_unlock_image(
         self,
         *,
