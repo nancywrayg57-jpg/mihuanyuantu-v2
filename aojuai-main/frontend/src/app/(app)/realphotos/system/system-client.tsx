@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
+import { RpDialog } from '@/components/realphotos/rp-table'
 import { ApiError, apiFetch } from '@/lib/api'
 
 import { DetectionPassScoreCard } from './detection-pass-score-card'
@@ -130,6 +131,11 @@ export function RealphotosSystemClient() {
   const [apiKey, setApiKey] = useState('')
   const [saving, setSaving] = useState(false)
   const [channelSearch, setChannelSearch] = useState('')
+  // 2026-11-17: 已登记渠道「修改」弹窗
+  const [editing, setEditing] = useState<Contract | null>(null)
+  const [editModelId, setEditModelId] = useState('')
+  const [editPurpose, setEditPurpose] = useState('')
+  const [editBaseUrl, setEditBaseUrl] = useState('')
   const replaceModelRef = useRef(false)
   const modelIdRef = useRef(modelId)
   modelIdRef.current = modelId
@@ -375,6 +381,38 @@ export function RealphotosSystemClient() {
     }
   }
 
+  async function updateContract() {
+    if (!editing) return
+    const targetModel = editModelId.trim()
+    const targetBase = editBaseUrl.trim()
+    if (!targetModel) {
+      setMessage('请填写模型版本')
+      return
+    }
+    if (!targetBase) {
+      setMessage('请填写 Base URL')
+      return
+    }
+    setSaving(true)
+    try {
+      await apiFetch(`/api/v1/realphotos/provider-contracts/${encodeURIComponent(editing.duty)}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          modelId: targetModel,
+          purpose: editPurpose,
+          baseUrl: targetBase,
+        }),
+      })
+      setMessage('渠道已更新，新配置立即对全站生效。')
+      setEditing(null)
+      await loadContracts()
+    } catch (error: unknown) {
+      setMessage(error instanceof ApiError ? error.message : '修改失败')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function toggleEnabled(item: Contract) {
     try {
       await apiFetch('/api/v1/realphotos/provider-contracts/enabled', {
@@ -408,12 +446,12 @@ export function RealphotosSystemClient() {
       <RpPageHeader title="系统管理" />
       <p className="text-sm">{message}</p>
       <div className="flex flex-wrap gap-2 text-sm">
-        <button className={`rp-btn border px-3 py-1 ${tab === 'redo' ? 'bg-muted' : ''}`} type="button" onClick={() => setTab('redo')}>
+        <button className={`rp-btn ${tab === 'redo' ? 'bg-muted' : ''}`} type="button" onClick={() => setTab('redo')}>
           自动重做
         </button>
         {canManageModels ? (
           <button
-            className={`rp-btn border px-3 py-1 ${tab === 'models' ? 'bg-muted' : ''}`}
+            className={`rp-btn ${tab === 'models' ? 'bg-muted' : ''}`}
             type="button"
             onClick={() => setTab('models')}
           >
@@ -422,7 +460,7 @@ export function RealphotosSystemClient() {
         ) : null}
         {canManageBaseline ? (
           <button
-            className={`rp-btn border px-3 py-1 ${tab === 'baseline' ? 'bg-muted' : ''}`}
+            className={`rp-btn ${tab === 'baseline' ? 'bg-muted' : ''}`}
             type="button"
             onClick={() => setTab('baseline')}
           >
@@ -434,7 +472,7 @@ export function RealphotosSystemClient() {
       {tab === 'baseline' && canManageBaseline ? <DetectionPassScoreCard /> : null}
 
       {tab === 'redo' ? (
-        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3 text-sm">
+        <section className="rp-card space-y-3 p-4 text-sm">
           {isTechOnly ? (
             <p className="text-muted-foreground">技术客服只读，不可改写。</p>
           ) : null}
@@ -472,7 +510,7 @@ export function RealphotosSystemClient() {
             />
           </label>
           <button
-            className="rp-btn border px-3 py-1 disabled:opacity-50"
+            className="rp-btn disabled:opacity-50"
             type="button"
             disabled={!canEditRedo}
             onClick={() => void saveRedo()}
@@ -484,13 +522,13 @@ export function RealphotosSystemClient() {
 
       {tab === 'models' && canManageModels ? (
         <section className="space-y-5 text-sm">
-              <div className="rp-card rounded-xl border border-border bg-card shadow-sm space-y-3 p-4">
+              <div className="rp-card space-y-3 p-4">
                 <h2 className="font-medium">大模型 API Key 配置与管理</h2>
                 <div className="grid gap-3 md:grid-cols-2">
                   <label className="block">
                     提供商
                     <select
-                      className="mt-1 w-full border px-2 py-1"
+                      className="rp-input mt-1 w-full"
                       value={providerChoice}
                       onChange={(event) => onProviderChange(event.target.value)}
                     >
@@ -505,7 +543,7 @@ export function RealphotosSystemClient() {
                     <label className="block">
                       自定义提供商
                       <input
-                        className="mt-1 w-full border px-2 py-1"
+                        className="rp-input mt-1 w-full"
                         value={providerCustom}
                         onChange={(event) => setProviderCustom(event.target.value)}
                       />
@@ -515,14 +553,14 @@ export function RealphotosSystemClient() {
                     模型版本
                     {providerChoice === '其他' && shownModels.length === 0 ? (
                       <input
-                        className="mt-1 w-full border px-2 py-1"
+                        className="rp-input mt-1 w-full"
                         value={modelId}
                         onChange={(event) => setModelId(event.target.value)}
                         placeholder="填写模型 ID"
                       />
                     ) : (
                       <select
-                        className="mt-1 w-full border px-2 py-1"
+                        className="rp-input mt-1 w-full"
                         value={shownModels.includes(modelId) ? modelId : shownModels[0] || ''}
                         onChange={(event) => setModelId(event.target.value)}
                       >
@@ -538,7 +576,7 @@ export function RealphotosSystemClient() {
                   <label className="block">
                     用途
                     <select
-                      className="mt-1 w-full border px-2 py-1"
+                      className="rp-input mt-1 w-full"
                       value={duty}
                       onChange={(event) => setDuty(event.target.value)}
                     >
@@ -552,7 +590,7 @@ export function RealphotosSystemClient() {
                   <label className="block md:col-span-2">
                     Base URL
                     <input
-                      className="mt-1 w-full border px-2 py-1"
+                      className="rp-input mt-1 w-full"
                       value={baseUrl}
                       onChange={(event) => setBaseUrl(event.target.value)}
                     />
@@ -566,7 +604,7 @@ export function RealphotosSystemClient() {
                     <label className="block md:col-span-2">
                       API Key
                       <input
-                        className="mt-1 w-full border px-2 py-1"
+                        className="rp-input mt-1 w-full"
                         type="password"
                         autoComplete="off"
                         value={apiKey}
@@ -577,7 +615,7 @@ export function RealphotosSystemClient() {
                   )}
                 </div>
                 <button
-                  className="rp-btn border px-3 py-1 disabled:opacity-50"
+                  className="rp-btn disabled:opacity-50"
                   type="button"
                   disabled={saving}
                   onClick={() => void saveModel()}
@@ -586,32 +624,32 @@ export function RealphotosSystemClient() {
                 </button>
               </div>
 
-              <div className="rp-card rounded-xl border border-border bg-card shadow-sm space-y-2 p-4">
+              <div className="rp-card space-y-2 p-4">
                 <div className="rp-filter flex flex-wrap items-center justify-between gap-3">
                   <h2 className="font-medium">已登记渠道</h2>
                   <ListSearch value={channelSearch} placeholder="提供商 / 模型 / 用途" onChange={setChannelSearch} />
                 </div>
-                <table className="rp-table w-full border-collapse text-sm">
+                <table className="rp-table">
                   <thead>
                     <tr>
-                      <th className="border px-2 py-1 text-left">渠道 / 模型 / Base URL</th>
-                      <th className="border px-2 py-1 text-left">用途</th>
-                      <th className="border px-2 py-1 text-left">Keys</th>
-                      <th className="border px-2 py-1 text-left">状态</th>
-                      <th className="border px-2 py-1 text-left">范围</th>
-                      <th className="border px-2 py-1 text-left">操作</th>
+                      <th className="text-left">渠道 / 模型 / Base URL</th>
+                      <th className="text-left">用途</th>
+                      <th className="text-left">Keys</th>
+                      <th className="text-left">状态</th>
+                      <th className="text-left">范围</th>
+                      <th className="text-left">操作</th>
                     </tr>
                   </thead>
                   <tbody>
                     {editableContracts.map((item) => (
                       <tr key={item.duty}>
-                        <td className="border px-2 py-1">
+                        <td>
                           <div className="font-medium">{item.provider}</div>
                           <div className="text-muted-foreground">{item.modelId || '空'}</div>
                           <div className="break-all text-muted-foreground">{item.baseUrl || '—'}</div>
                         </td>
-                        <td className="border px-2 py-1">{item.purpose || purposeLabel(item.duty)}</td>
-                        <td className="border px-2 py-1 font-mono text-xs">
+                        <td>{item.purpose || purposeLabel(item.duty)}</td>
+                        <td className="font-mono text-xs">
                           {item.duty === 'import' ? (
                             <span className="font-sans text-muted-foreground">无需鉴权</span>
                           ) : (item.credentials || []).length > 0 ? (
@@ -632,13 +670,25 @@ export function RealphotosSystemClient() {
                             item.keyPrefix || item.masked || (item.hasSecret ? '已配置' : '未配置')
                           )}
                         </td>
-                        <td className="border px-2 py-1">{item.enabled ? '已启用' : '已停用'}</td>
-                        <td className="border px-2 py-1">平台</td>
-                        <td className="border px-2 py-1">
-                          <button className="rp-btn mr-2 border px-2 py-0.5" type="button" onClick={() => void toggleEnabled(item)}>
+                        <td>{item.enabled ? '已启用' : '已停用'}</td>
+                        <td>平台</td>
+                        <td>
+                          <button
+                            className="rp-btn rp-btn-sm mr-2"
+                            type="button"
+                            onClick={() => {
+                              setEditing(item)
+                              setEditModelId(item.modelId || '')
+                              setEditPurpose(item.duty)
+                              setEditBaseUrl(item.baseUrl || '')
+                            }}
+                          >
+                            修改
+                          </button>
+                          <button className="rp-btn rp-btn-sm mr-2" type="button" onClick={() => void toggleEnabled(item)}>
                             {item.enabled ? '停用' : '启用'}
                           </button>
-                          <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => void deleteContract(item)}>
+                          <button className="rp-btn rp-btn-sm" type="button" onClick={() => void deleteContract(item)}>
                             删除
                           </button>
                         </td>
@@ -646,7 +696,7 @@ export function RealphotosSystemClient() {
                     ))}
                     {editableContracts.length === 0 ? (
                       <tr>
-                        <td className="rp-empty border px-2 py-2 text-muted-foreground" colSpan={6}>
+                        <td className="rp-empty" colSpan={6}>
                           暂无渠道，请先保存配置。
                         </td>
                       </tr>
@@ -655,6 +705,51 @@ export function RealphotosSystemClient() {
                 </table>
               </div>
         </section>
+      ) : null}
+      {editing ? (
+        <RpDialog title={`修改渠道 · ${editing.provider}`} label="修改渠道" onClose={() => setEditing(null)}>
+          <label className="block text-sm">
+            模型版本
+            <input
+              className="rp-input mt-1 block w-full"
+              value={editModelId}
+              onChange={(event) => setEditModelId(event.target.value)}
+            />
+          </label>
+          <label className="block text-sm">
+            用途
+            <select
+              className="rp-input mt-1 block w-full"
+              value={editPurpose}
+              onChange={(event) => setEditPurpose(event.target.value)}
+            >
+              {PURPOSES.map((item) => (
+                <option key={item.duty} value={item.duty}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block text-sm">
+            Base URL
+            <input
+              className="rp-input mt-1 block w-full"
+              value={editBaseUrl}
+              onChange={(event) => setEditBaseUrl(event.target.value)}
+            />
+          </label>
+          {editPurpose !== editing.duty ? (
+            <p className="text-xs text-amber-700">改用途会把该渠道的密钥条目一并迁移到新用途；目标用途不能已有渠道。</p>
+          ) : null}
+          <button
+            className="rp-btn text-sm disabled:opacity-50"
+            type="button"
+            disabled={saving}
+            onClick={() => void updateContract()}
+          >
+            保存
+          </button>
+        </RpDialog>
       ) : null}
     </main>
   )

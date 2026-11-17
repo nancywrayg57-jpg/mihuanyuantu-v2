@@ -94,12 +94,13 @@ async def _role_codes(db: DBSession, user_id: int, tenant_id: int) -> set[str]:
     return {str(code) for (code,) in rows}
 
 
-def _task_payload(task) -> dict[str, Any]:
+def _task_payload(task, task_no: int | None = None) -> dict[str, Any]:
     mode = str(getattr(task, "pre_review_mode", "") or "")
     # Audit label: pass on task = fixture_test_only (admin/copy); live; never silent fixture for customers.
     audit = "fixture_test_only" if mode == "pass" else (mode or "unconfigured")
     return {
         "id": str(int(task.id)),
+        "taskNo": int(task_no) if task_no is not None else None,
         "tenantId": str(int(task.tenant_id)),
         "ownerAccountId": str(int(task.owner_account_id)),
         "assetId": str(int(task.asset_id)),
@@ -119,8 +120,36 @@ def _task_payload(task) -> dict[str, Any]:
     }
 
 
-async def _enrich_task_detail(service, *, tenant_id: int, task) -> dict[str, Any]:
-    payload = _task_payload(task)
+async def _tenant_task_no_map(db, *, tenant_id: int, task_ids: list[int]) -> dict[int, int]:
+    """2026-11-17：租户内任务编号（各租户从 1 开始，互不串号）。"""
+    if not task_ids:
+        return {}
+    from sqlalchemy import text as _text
+
+    rows = (
+        await db.execute(
+            _text(
+                "select id, seq from ("
+                "  select id, row_number() over (order by id) as seq"
+                "  from cap_realphotos_image_tasks"
+                "  where tenant_id = :tenant_id and deleted_at is null"
+                ") x where id = any(:ids)"
+            ),
+            {"tenant_id": int(tenant_id), "ids": [int(x) for x in task_ids]},
+        )
+    ).all()
+    return {int(i): int(s) for i, s in rows}
+
+
+async def _enrich_task_detail(
+    service,
+    *,
+    tenant_id: int,
+    task,
+    task_no: int | None = None,
+    include_lock: bool = True,
+) -> dict[str, Any]:
+    payload = _task_payload(task, task_no=task_no)
     payload["detection"] = await service.detection_payload(
         tenant_id=int(tenant_id), task_id=int(task.id)
     )
@@ -136,6 +165,13 @@ async def _enrich_task_detail(service, *, tenant_id: int, task) -> dict[str, Any
     else:
         payload["failureMessage"] = None
         payload["failureTitle"] = None
+    if include_lock:
+        try:
+            lock_state = await service.image_lock_state(tenant_id=int(tenant_id), task=task)
+        except Exception:  # noqa: BLE001 - 锁定查询失败不影响详情
+            lock_state = {"locked": False, "reason": ""}
+        payload["imageLocked"] = bool(lock_state.get("locked"))
+        payload["imageLockReason"] = str(lock_state.get("reason") or "")
     payload["createdAt"] = task.created_at.isoformat() if getattr(task, "created_at", None) else None
     # R5: compact score glance for detection_not_passed list rows (no billing change).
     detection = payload.get("detection")
@@ -174,6 +210,21 @@ async def list_presets(
 
     items = await RealphotosOpsService(db).list_enabled_presets()
     return SuccessResponse(data={"items": items, "enabledCount": len(items)})
+
+
+@router.get("/presets/{code}")
+async def get_preset_detail(
+    code: str,
+    db: DBSession,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    _: None = Depends(PermissionChecker([WALLET_READ, WORKSPACE_READ, ADMIN_READ])),
+) -> dict[str, Any]:
+    """2026-11-17: 单个启用预设的全部设备参数（批量原图页「展开全部」用）。"""
+    from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
+
+    data = await RealphotosOpsService(db).preset_detail_for_merchant(code=code)
+    return SuccessResponse(data=data)
 
 
 @router.post("/assets")
@@ -398,10 +449,18 @@ async def list_processing_tasks(
         status=status,
     )
     payloads = []
+    no_map = await _tenant_task_no_map(
+        db, tenant_id=int(tenant_ctx.tenant_id), task_ids=[int(t.id) for t in rows]
+    )
     for task in rows:
         payloads.append(
             await _enrich_task_detail(
-                service, tenant_id=int(tenant_ctx.tenant_id), task=task
+                service,
+                tenant_id=int(tenant_ctx.tenant_id),
+                task=task,
+                task_no=no_map.get(int(task.id)),
+                # 列表不解码原图判断锁定，避免整页变慢；详情才计算。
+                include_lock=False,
             )
         )
     return SuccessResponse(
@@ -469,8 +528,14 @@ async def get_task(
         task_id=int(task_id),
         owner_account_id=int(current_user.id),
     )
+    no_map = await _tenant_task_no_map(
+        db, tenant_id=int(tenant_ctx.tenant_id), task_ids=[int(task.id)]
+    )
     payload = await _enrich_task_detail(
-        service, tenant_id=int(tenant_ctx.tenant_id), task=task
+        service,
+        tenant_id=int(tenant_ctx.tenant_id),
+        task=task,
+        task_no=no_map.get(int(task.id)),
     )
     return SuccessResponse(data=payload)
 
@@ -672,6 +737,40 @@ async def mark_inbox_read(
 
             raise ForbiddenError(message="订单客服只能操作充值类通知")
     row = await service.mark_inbox_read(
+        tenant_id=int(tenant_ctx.tenant_id),
+        recipient_user_id=int(current_user.id),
+        message_id=int(message_id),
+    )
+    await db.commit()
+    return SuccessResponse(
+        data={"id": str(int(row.id)), "readAt": row.read_at.isoformat() if row.read_at else None}
+    )
+
+
+@router.post("/inbox/{message_id}/unread")
+async def mark_inbox_unread(
+    message_id: int,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(
+        PermissionChecker([WALLET_READ, WORKSPACE_READ, ORDER_SUPPORT_READ, TECH_DESK_READ, ADMIN_READ])
+    ),
+) -> dict[str, Any]:
+    """2026-11-17: 消息中心按钮由「补发」改为「标为未读」。"""
+    service = RealphotosS1Service(db)
+    roles = await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    if _order_support_only(roles):
+        rows = await service.list_inbox(
+            tenant_id=int(tenant_ctx.tenant_id),
+            recipient_user_id=int(current_user.id),
+        )
+        target = next((row for row in rows if int(row.id) == int(message_id)), None)
+        if target is None or not is_recharge_inbox_event(target.event_key, target.title):
+            from app.core.exceptions import ForbiddenError
+
+            raise ForbiddenError(message="订单客服只能操作充值类通知")
+    row = await service.mark_inbox_unread(
         tenant_id=int(tenant_ctx.tenant_id),
         recipient_user_id=int(current_user.id),
         message_id=int(message_id),

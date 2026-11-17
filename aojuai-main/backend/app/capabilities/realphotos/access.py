@@ -18,7 +18,7 @@ from .permissions import (
     WORKSPACE_READ,
 )
 
-ACCESS = MenuDeclaration(
+_DECLARED = MenuDeclaration(
     roots=(
         MenuNodeSpec(
             key="realphotos",
@@ -341,6 +341,13 @@ ACCESS = MenuDeclaration(
             ),
         ),
     ),
+)
+
+# 2026-11-17: 去掉「蜜獾原图」一级目录，各业务页直接作为一级导航按钮。
+# 菜单键不变，角色授权因此不受影响；同步（capability sync）会把父节点从库里回收。
+ACCESS = MenuDeclaration(
+    roots=tuple(_DECLARED.roots[0].children),
+    roles=_DECLARED.roles,
 )
 
 __all__ = ["ACCESS"]

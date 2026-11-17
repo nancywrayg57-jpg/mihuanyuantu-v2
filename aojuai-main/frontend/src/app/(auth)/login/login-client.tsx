@@ -7,18 +7,17 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Moon, Sun } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { fetchLoginChallenge, loginByPassword, type LoginChallenge } from '@/lib/auth-api'
-import { demoAccounts } from '@/lib/demo-accounts'
 import { NeuralBackground } from '@/components/login/neural-background'
 import { useAuth } from '@/hooks/useAuth'
 import { useSiteBranding } from '@/hooks/useSiteBranding'
 import { useTheme } from '@/hooks/useTheme'
 import { useT } from '@/lib/i18n'
 import { sanitizeNextPath } from '@/lib/sanitize-next-path'
+import { REALPHOTOS_HOME, isRealphotosSession } from '@/lib/realphotos-session'
 
 import styles from './login.module.css'
 
@@ -29,10 +28,14 @@ export function LoginClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  const explicitNext = searchParams.get('next')
   const nextPath = useMemo(
-    () => sanitizeNextPath(searchParams.get('next'), '/welcome'),
-    [searchParams],
+    () => sanitizeNextPath(explicitNext, '/welcome'),
+    [explicitNext],
   )
+  // 未显式指定 next 时，蜜獾原图账号直接进入业务工作台。
+  const landingFor = (sessionLike: unknown) =>
+    !explicitNext && isRealphotosSession(sessionLike as never) ? REALPHOTOS_HOME : nextPath
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -69,15 +72,10 @@ export function LoginClient() {
   useEffect(() => {
     if (!session) return
     router.replace(
-      session.mustCompleteProfile ? '/personal/profile-required' : nextPath,
+      session.mustCompleteProfile ? '/personal/profile-required' : landingFor(session),
     )
   }, [nextPath, router, session])
 
-  const fillDemoAccount = (account: { username: string; password: string }) => {
-    setUsername(account.username)
-    setPassword(account.password)
-    void refreshChallenge()
-  }
 
   if (session) return null
 
@@ -104,7 +102,7 @@ export function LoginClient() {
           )
           setSession(nextSession)
           toast.success(t('system.auth.loginSuccess'))
-          router.replace(nextSession.mustCompleteProfile ? '/personal/profile-required' : nextPath)
+          router.replace(nextSession.mustCompleteProfile ? '/personal/profile-required' : landingFor(nextSession))
         } catch (err) {
           const message = err instanceof Error ? err.message : t('system.auth.loginFailed')
           setError(message)
@@ -176,21 +174,7 @@ export function LoginClient() {
           <Link href="/register">{t('auth.register')}</Link>
         </Button>
 
-        <div className="space-y-2 pt-1">
-          <div className="text-xs text-muted-foreground">{t('system.auth.loginDemoAccounts')}</div>
-          <div className="flex flex-wrap gap-2">
-            {demoAccounts.map((account) => (
-              <Badge
-                key={account.username}
-                variant="outline"
-                className="cursor-pointer hover:bg-accent"
-                onClick={() => fillDemoAccount(account)}
-              >
-                {t(account.labelKey)}: {account.username}
-              </Badge>
-            ))}
-          </div>
-        </div>
+
       </div>
     </LoginShell>
   )
@@ -211,14 +195,7 @@ function LoginShell({
 }) {
   const t = useT()
   const branding = useSiteBranding()
-  const techTags = [
-    'NEURAL NETWORKS',
-    'GENERATIVE AI',
-    'DEEP LEARNING',
-    'COGNITIVE COMPUTING',
-    'LLM',
-    'TRANSFORMER',
-  ]
+  const techTags = ['电商原图', '相机参数还原', 'EXIF 写入', '真实性检测', '批量处理', '业务 API']
 
   return (
     <div className={styles.loginPage}>
@@ -264,7 +241,7 @@ function LoginShell({
             </div>
           </div>
 
-          <div className={styles.subtitle}>Artificial Intelligence Frontier</div>
+          <div className={styles.subtitle}>Photo Authenticity Platform</div>
 
           <div className={styles.glassCard}>
             <div className={styles.glassCardInner}>
@@ -280,10 +257,10 @@ function LoginShell({
               </div>
             </div>
             <div className={styles.glassCardFooter}>
-              <span>System Status: Optimal</span>
+              <span>系统状态：正常</span>
               <span className={styles.statusIndicator}>
                 <span className={styles.statusDot} />
-                Live Connected
+                服务在线
               </span>
             </div>
           </div>

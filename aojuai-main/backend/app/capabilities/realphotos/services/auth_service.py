@@ -177,6 +177,15 @@ class RealphotosAuthService:
                 description=description,
             )
         await RealphotosCreditService(self.db).get_or_create_account(tenant_id=int(tenant.id))
+        # 2026-11-17 修复：新租户必须同步初始化蜜獾原图菜单与角色授权，
+        # 否则登录后拿不到 /menus/routes，前端会回落到平台默认壳。
+        from app.capabilities.realphotos.seed import provision as _provision_menus
+
+        await _provision_menus(
+            self.db,
+            tenant_id=int(tenant.id),
+            role_id_overrides={str(code): int(role.id) for code, role in roles.items()},  # type: ignore[attr-defined]
+        )
 
         merchant_role = roles[ROLE_MERCHANT]
         user = User(

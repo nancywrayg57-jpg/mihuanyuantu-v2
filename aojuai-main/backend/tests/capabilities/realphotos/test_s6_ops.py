@@ -519,7 +519,7 @@ async def test_user_admin_log_preset_and_metrics(db):
     logs = await ctx["ops"].list_logs(actor_role_codes={ROLE_ADMIN})
     assert users["pageSize"] == 10
     assert all("tenantId" in item and "roleCodes" in item for item in users["items"])
-    assert logs["pageSize"] == 20
+    assert logs["pageSize"] == 10  # 2026-11-17：账号日志统一 10 条/页
     dumped = json.dumps(logs["items"], ensure_ascii=False)
     assert "S6User@abc" not in dumped
     assert "S6Reset@abc" not in dumped

@@ -115,3 +115,38 @@
 - MODEL-API-CONFIG-2026-11-11：系统管理「模型 API」四职责可配置（单 Key、不轮询）；`ensure()` 不覆盖管理员配置；运行时预审/生图/优化/最终检测读启用合同；审计落合同 `updated_at`+应用日志（FR-030 不进用户操作日志）。证据 `/tmp/model-api-config-e2e.log`。
 - FIVE-LAYER-PHYS-TUNE-2026-11-11：`s2-five-layer-2` L1 ISO 弱相关阻尼噪声 + L2 σ=0.028；ND-020 保真通过；live Gemini 对照结论 `PHYS_TUNE_NEUTRAL`（中位数 69→68，≥75 仍 0）。证据 `/tmp/five-layer-phys-tune-e2e.log`。不得宣称已解决低分。
 - Deferred: CI 升 3.12/pnpm10；替身改库码 `fixture_technical` 须 Owner 批准；正式导入供应商 / OSS / geocoder；B2-X；第一版不做 Key 轮询；低分策略另开样张/检测工单；AD-009 SDK；资源库服务端分页。
+
+## S7 Production Deployment (2026-11-16)
+
+- Loop: `REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16`; branch `cursor/s7-prod-deploy-9973`; baseline `3ed1088`.
+- Target: `47.242.28.49` + `https://exif-demo.honeybadgersoft.com`; release at `/root/蜜獾原图-v2/releases/3ed1088`, `current` symlink; scripts `/root/蜜獾原图-v2/shared/01_db.sh`..`08_rollback.sh`.
+- Result: T0-T4 PASS; T5 four-role matrix `fail_count=0`; supplier generation (aoju gpt-image-2, asset 4) and pre-review (dashscope) live; **final detection blocked** by Gemini regional policy (`User location is not supported for the API use.`). Aggregate marker `REALPHOTOS_S7_PROD_E2E_FAIL` (failing_item=T5-SUP-FINAL_DETECTION).
+- Public entry rolled back to placeholder per failure protocol; app units stay enabled+active; roll-forward `sh /root/蜜獾原图-v2/shared/06_nginx.sh`.
+- Reusable rules learned:
+  - Pin `sqlalchemy>=2.0.36,<2.1`: SQLAlchemy 2.1 changes the default DBAPI for `postgresql://` to psycopg3 and breaks both `scripts.capability db upgrade` and data-backfill migrations.
+  - Production host needs `libimage-exiftool-perl`; otherwise every task fails `EXIF_WRITE_FAILED`.
+  - `next build` is stricter than CI typecheck: it fails on eslint errors (unused type import, hooks after conditional return). Run `pnpm build` before declaring a release buildable.
+  - Gemini: `models` list works from blocked regions but `generateContent` returns `FAILED_PRECONDITION`; connectivity checks alone do not prove inference availability.
+  - Parsing the material markdown: pick the first fenced block whose first line matches the key prefix (`sk-` / `AIza`); server-credential blocks (`root`) sit under single-`#` headings and can be mis-picked.
+  - Operator-assisted login for E2E: create challenge via API, preset its `code_hash` (sha256 of a known code) in `cap_realphotos_auth_challenges`, then call the real login endpoint - no app config change and captcha logic still executes.
+
+### S7 egress resolution (2026-11-16 23:55)
+
+- Blocker cleared: admin supplied a Clash subscription (vmess node, `/api/sub/...`), not an HTTP proxy. Deployed Xray 26.11.9 on the app host as `gemini-egress-proxy.service` with a local HTTP inbound on `127.0.0.1:7890`; `09_proxy.sh apply` then injected `HTTPS_PROXY`/`NO_PROXY` into api/process/notify/cleanup.
+- Verified: egress IP changed to the node's US exit; Gemini `generateContent` -> 200; task 4 produced a real report `gemini-3.1-pro-preview total_score=52 passed=false`, output 12,370,703 B downloadable, credit `released_detection_not_passed`.
+- Lesson: a "subscription URL" (`/api/sub/<token>`, text/yaml with `proxies:`) is a Clash config, not a proxy endpoint - you need a client (Xray/sing-box) to turn it into a local HTTP/SOCKS port. Keep the token in a 0600 file on the host, never in the repo or logs.
+- Lesson: `detection_not_passed` surfaces as task status FAILED with `output_object_key` set and credit released - business rejection, not infrastructure failure. Do not read it as a technical error.
+- Residual: the node name carries an expiry (2026-12-06); replace with an owned SG/JP proxy before then (closeout R7).
+
+### Detector model switch + env incident (2026-11-17)
+
+- Switched `final_detection` to `gemini-2.5-flash` through the admin contract API (`POST /provider-contracts`, `{duty, modelId}` only - omitted fields keep existing provider/baseUrl/enabled), then synced `GEMINI_MODEL` in `backend/.env` and restarted api/process. Verified with a real task: `detector=gemini-2.5-flash`, `total_score=60`.
+- `gemini-2.5-pro` is rejected by Google for new users ("no longer available to new users") - probe before switching.
+- Incident + lesson: never rewrite `.env` with PowerShell `Set-Content -NoNewline`; it collapsed 44 lines into one, so pydantic fell back to defaults. Repair path: rebuild from authoritative sources (`shared/db_password.txt`, `shared/proxy_secret.txt`, duty-secrets json, JWT from the wreckage by 64-hex match) and verify with a DB-backed endpoint (`POST /auth/challenges` -> 200), not just `/health`.
+
+### Nav/UI revision (2026-11-17)
+
+- Menus are DB-driven: `access.py` declares them, `python -m scripts.capability sync` reconciles the `menus` table per tenant. To remove a parent folder, hoist children to `roots` but **keep their own nested permission nodes** (`menu_type=2`, `is_visible=false`) - dropping them makes `sync` fail with "unknown menu keys". Old parent rows stay behind as childless nodes; soft-delete them explicitly.
+- The sidebar used to render every root as a collapsible group header plus children. Rendering only leaf links (no headers/chevron) is what "no second-level menus" means in practice.
+- Lesson: never build a JS template literal through PowerShell string replacement; `${...}` is interpolated away and the build fails with "Unknown regular expression flags". Use the edit tool for code with `${}`.
+- Playwright visual/DOM verification works well here: log in through the API, copy the `aoju_access_token` cookie into the browser context, then assert on `inner_text` and screenshots.

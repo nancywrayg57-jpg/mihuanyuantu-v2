@@ -145,7 +145,7 @@
 - **有依赖则不可抢跑**。
 - **S0–S6 自主推进**；**S7 须管理员确认**。
 - 每阶段退出必须有可重复验证证据，并回写 AidevOps 与 `checkpoint.md` §0。
-- **清单硬规则**：每个阶段开工前，本文件须已写明该阶段的 `tasks` / `exit_evidence` / `forbidden`（任务 / 退出证据 / 禁止项）。当前 **S0、S1、S2、S3、S4、S5、S6** 清单已齐；S4 已有开发机 PostgreSQL 证据。**S5 已授权并开始实现，退出证据未齐，不得标完成**。**S6 已由管理员 2026-11-06 授权，并在 `cursor/s6-ops-9973` 实现；退出证据见 `/tmp/s6-pg-e2e.log`。S5 仍不标完成。不得开 S7。** S7 清单仍缺。**开任一阶段前必须先补齐该阶段清单，缺一禁止开工**。清单正文以本文件为准；`progress.yaml` / `02-delivery.yaml` 只镜像完成状态与 `next_action`。条目只写 ID 与短句，行为冲突仍听 PRD。
+- **清单硬规则**：每个阶段开工前，本文件须已写明该阶段的 `tasks` / `exit_evidence` / `forbidden`（任务 / 退出证据 / 禁止项）。当前 **S0、S1、S2、S3、S4、S5、S6** 清单已齐；S4 已有开发机 PostgreSQL 证据。**S5 已授权并开始实现，退出证据未齐，不得标完成**。**S6 已由管理员 2026-11-06 授权，并在 `cursor/s6-ops-9973` 实现；退出证据见 `/tmp/s6-pg-e2e.log`。S5 仍不标完成。不得开 S7。** 2026-11-16 管理员以工单 `REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16` 授权开 S7，**S7 清单已写入 §10.9**。**开任一阶段前必须先补齐该阶段清单，缺一禁止开工**。清单正文以本文件为准；`progress.yaml` / `02-delivery.yaml` 只镜像完成状态与 `next_action`。条目只写 ID 与短句，行为冲突仍听 PRD。
 - **里程碑端测硬规则**：每个里程碑（S0–S7 各阶段）在勾满 `exit_evidence` 后，须在主验证环境（开发机；Cloud 不能替代的项须在开发机补验）完成**端到端测试**，覆盖本阶段用户可见主路径，并留下可复查证据（命令输出、日志路径或浏览器核对记录，写入 `/opt/cursor/artifacts` 或开发机约定目录，并回写 `checkpoint.md` §0 / `progress.yaml`）。**端测确认无误前，不得标该阶段完成，也不得进入下一阶段开发**。单元测试、规则替身单测、文档齐全均不能替代端测。有限并行阶段亦同：依赖阶段未端测通过，不得开工依赖它的实现。
 
 | ID | 阶段 | 内容要点 | 依赖 | 可并行对象 |
@@ -444,6 +444,51 @@
 - 禁止把预审夹具写成供应商已接通、对外「检测通过」或生产收费已开放。
 
 管理员 2026-11-06 另行说明 S6 已结束。`/tmp/s6-pg-e2e.log` 已有 `S6_PG_E2E_PASS`。`s6_exited` 不靠重跑 S6 改写。随后的供应商合同补测不是 S7，证据在 `/tmp/supplier-live-e2e.log`：文生图 `gpt-image-2` 返回 `b64_json`，请求 1024×768、实图 1536×1024，未改请求尺寸；提示词优化响应 model ID 为 `deepseek-flash`；处理预审响应为 uncertain，图生图参考图预审拒绝，均未扣处理积分；导入仍是 `SERVICE_NOT_CONFIGURED`。本机出口在美国加利福尼亚，不是最终中国大陆节点。`production_billing=false`。S7 清单仍未写，不得开工。
+
+### 10.9 S7 · 上线与生产部署
+
+依据：阶段表「按物料与架构完成 TLS/发布/回滚/监控等；部署到生产服务器」；工单 `REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16`（管理员桌面工单即 S7 授权载体）；架构 §11；物料清单 §2.2 / §2.4 / §5；上线门槛见本文件 §11。前置：S0–S6 主体与预发四角色端测已合入 `origin/main`（预发证据 PR #65）。
+
+**已确认决策（勿再请示）**
+
+- T01 = **B**：生产库与应用**同机自建 PostgreSQL**，管理员接受单点残余风险；库名 `realphotos_prod`、账号最小权限、仅 `127.0.0.1` 监听。
+- T03 = **正式供应商**：使用已合入的 API 型 URL 导入（`duty=import`，`GET {base}/api/images/<file>`），基址由管理端配置；未取得探测证据前不得宣称「供应商已接通」。
+- 收费：`production_billing=**false**`（保持关闭）。改为可收费须管理员在 T6 单独显式勾选，本阶段不得自行置 true。
+- 生产目标仅 `47.242.28.49` + `https://exif-demo.honeybadgersoft.com`；旧测试机 `47.239.81.27` 不是 v2 生产。
+
+**tasks**
+
+| ID | 任务 | 验证要点 |
+|---|---|---|
+| T-S7-01 | 生产基础设施：主机/磁盘/无 Swap 告警；TLS 与 `certbot.timer`；同机 PostgreSQL 库与最小权限账号；LocalDisk 三个子目录；运行时（Python 3.12 / Node 22 / pnpm） | 库可连、目录可写、TLS 200、迁移可执行 |
+| T-S7-02 | 配置与密钥注入：`.env`（权限 600）、duty secrets 四岗、模型 Key、`AOJ_PROXY_SHARED_SECRET`、会话 Cookie 与 HTTPS 域匹配、`REALPHOTOS_STORAGE_ROOT` 指向生产 LocalDisk | 进程能读到密钥；四岗 `present=true` 且**不打印明文**；仓库无新密钥文件 |
+| T-S7-03 | 发布：检出 `main` 发布 SHA、后端 venv + 迁移到 head、前端 production build、systemd（API / Web / worker）、Nginx 从占位切流 | 公网 HTTPS 可开登录页；无 `PROXY_BASE_URL_MISSING`；worker active；保占位站与上一 release 可回滚 |
+| T-S7-04 | 发布后冒烟：存储 `exists` 抽样、网关读通、`/auth/challenges` 200、可用账号登录 | 无空盘/缺密钥导致的基础设施失败 |
+| T-S7-05 | 生产四角色端测：商家 / 订单客服 / 技术客服 / 管理员主路径 + 生产特有项（HTTPS、公网网关、生产库、duty secrets、真供应商抽样） | `T5_M_PASS` `T5_O_PASS` `T5_T_PASS` `T5_A_PASS` → `T5_PROD_E2E_PASS` |
+| T-S7-06 | 上线门槛终核与收费开关 | §11 三项逐条核对；T01–T03 关闭或书面接受；收费保持 `false` |
+| T-S7-07 | 文档、CI、PR、Tag | 证据入库；`secret_scan`/ruff/pytest/tsc 绿；Collaborator 推 PR；仅 Owner 审合与打 Tag |
+
+**exit_evidence**（全部勾选且生产端测通过才可标 S7 完成）
+
+- [ ] 生产机同机 PostgreSQL 可连，迁移 head 对账通过；账号非超级用户、仅本机监听；无 Swap 与磁盘余量已记入日志（不写密钥）。
+- [ ] `https://exif-demo.honeybadgersoft.com` 由占位页切换为可登录的 realphotos 应用；`certbot.timer` 仍启用且续期不受影响。
+- [ ] `.env` 与 duty secrets 以 600 权限驻留保密路径，四岗 `present=true`；日志/PR/仓库无明文密钥（`scripts/ci/secret_scan.sh` 绿）。
+- [ ] LocalDisk 根为物料约定路径，网关抽样可读；响应中无裸磁盘路径。
+- [ ] worker 处于 active，任务可从排队到终态。
+- [ ] 生产域名上四角色主路径端测均有 `T5_<ROLE>_PASS`；汇总 `REALPHOTOS_S7_PROD_E2E_PASS` 写入 `/tmp/realphotos-s7-prod-e2e.log`。
+- [ ] 回滚预案可执行：Nginx 指回 `/var/www/exif-demo` 占位、停应用单元、保留上一 release 目录。
+- [ ] `production_billing=false` 未被改动；未对外宣称「检测通过」或已可收费。
+- [ ] 证据已入库并回写 `progress.yaml`、`checkpoint.md` §0、`handoff.md`；PR 由 Collaborator 开、Owner 审合，**作者未自合**。
+
+**forbidden**
+
+- 未勾满 `exit_evidence` 或生产端测未通过时，不得标 S7 完成，不得对外宣称上线可收费。
+- 禁止把 Cloud / SQLite / fixture 结果、`deploy-stub.yml` 打印的部署意图当作生产端测或已部署证据。
+- 禁止把密钥、口令、真实 `.env` 写入仓库、PR、日志或本文件；日志只写 `present=true` / HTTP 码。
+- 禁止清空生产业务数据「修好」演示；禁止为演示批量伪造客户业务数据。
+- 禁止修改默认 `PASS_SCORE`、开 OSS 必选、生成 ZIP 交付、暴露 LocalDisk 裸路径。
+- 禁止作者自评自合、禁止在 `main` 上直接开发、禁止 Collaborator 打 Tag 或改分支保护。
+- 禁止在管理员未显式勾选前把 `production_billing` 置 true。
 
 ## 11. 上线门槛与部署（S7）
 

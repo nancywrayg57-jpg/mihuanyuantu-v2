@@ -13,7 +13,9 @@ import logging
 import math
 import subprocess
 import tempfile
+import uuid
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -1178,6 +1180,79 @@ def _f_number(aperture: str) -> float:
     return float(str(aperture).strip().removeprefix("f/").removeprefix("F/"))
 
 
+# 2026-11-17（P1a）：真机可能出现的档位。过界值吸附到最近档，避免“不可能值”。
+_STANDARD_ISO: tuple[int, ...] = (
+    50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800,
+    1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000,
+    10000, 12800, 16000, 20000, 25600, 32000, 40000, 51200, 64000, 80000, 102400,
+)
+_STANDARD_FSTOPS: tuple[float, ...] = (
+    1.0, 1.1, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.5, 2.8, 3.2, 3.5, 4.0, 4.5,
+    5.0, 5.6, 6.3, 7.1, 8.0, 9.0, 10.0, 11.0, 13.0, 14.0, 16.0, 18.0, 20.0, 22.0,
+)
+_COMMON_FOCAL: tuple[float, ...] = (
+    8, 10, 12, 14, 15, 16, 17, 18, 20, 21, 24, 28, 35, 40, 50, 55,
+    58, 60, 70, 75, 80, 85, 90, 100, 105, 120, 135, 150, 180, 200,
+    210, 240, 300, 400, 500, 600, 800, 1000,
+)
+
+
+def _nearest_by_log2(value: float, candidates: tuple[float, ...]) -> float:
+    return min(candidates, key=lambda item: abs(math.log2(value) - math.log2(item)))
+
+
+def normalize_iso_text(text: str) -> str:
+    try:
+        value = float(str(text).strip())
+    except (TypeError, ValueError):
+        return str(text)
+    if value <= 0:
+        return str(text)
+    return str(int(_nearest_by_log2(value, _STANDARD_ISO)))
+
+
+def normalize_shutter_text(text: str) -> str:
+    """``30s`` → ``30``；``0.5`` → ``1/2``；``1/125`` 原样保留。"""
+    raw = str(text).strip()
+    if not raw:
+        return raw
+    cleaned = raw[:-1].strip() if raw.lower().endswith("s") and "/" not in raw else raw
+    if "/" in cleaned:
+        head, _, tail = cleaned.partition("/")
+        try:
+            if float(head) > 0 and float(tail) > 0:
+                return cleaned
+        except ValueError:
+            return raw
+        return raw
+    try:
+        seconds = float(cleaned)
+    except ValueError:
+        return raw
+    if seconds <= 0:
+        return raw
+    if seconds >= 1:
+        return str(int(round(seconds)))
+    return f"1/{int(round(1 / seconds))}"
+
+
+def normalize_fstop(value: float) -> float:
+    if value <= 0:
+        return value
+    return _nearest_by_log2(float(value), _STANDARD_FSTOPS)
+
+
+def normalize_focal_text(text: str, *, fallback: str) -> str:
+    cleaned = str(text).strip().lower().removesuffix("mm").strip()
+    try:
+        value = float(cleaned)
+    except ValueError:
+        return str(fallback)
+    if value <= 0:
+        return str(fallback)
+    return f"{_nearest_by_log2(value, _COMMON_FOCAL):g}"
+
+
 _EXIF_REQUIRED: tuple[tuple[str, str], ...] = (
     ("brand", "品牌"),
     ("model", "型号"),
@@ -1204,6 +1279,8 @@ _NUMERIC_EXIF_TAGS = frozenset(
         "MaxApertureValue",
         "FocalPlaneXResolution",
         "FocalPlaneYResolution",
+        "ExposureCompensation",
+        "SubjectDistance",
     }
 )
 
@@ -1275,6 +1352,16 @@ def _exposure_program_code(mode: str) -> int | None:
         "aperture priority": 3,
         "shutter priority": 4,
         "normal program": 2,
+        # 2026-11-17：补齐机型常见写法（Program AE 等），否则该标签整批不写。
+        "program ae": 2,
+        "program": 2,
+        "creative": 5,
+        "action": 6,
+        "portrait": 7,
+        "landscape": 8,
+        "深度优先": 3,
+        "快门优先": 4,
+        "程序自动": 2,
     }
     return mapping.get(mode.strip().lower())
 
@@ -1400,6 +1487,22 @@ def optional_exif_assignments(preset: dict) -> list[tuple[str, str]]:
         if code is not None:
             add("SceneCaptureType", code)
 
+    # 2026-11-17（P1b）：两个真机常见标签，仅当预设带值时才写。
+    exposure_comp = _param(preset, "exposure_compensation")
+    if exposure_comp is not None:
+        try:
+            add("ExposureCompensation", f"{float(str(exposure_comp).strip()):.2f}")
+        except ValueError:
+            pass
+
+    focus_distance = _param(preset, "focus_distance")
+    if focus_distance is not None:
+        try:
+            meters = str(focus_distance).strip().lower().removesuffix("m").strip()
+            add("SubjectDistance", f"{float(meters):.3f}")
+        except ValueError:
+            pass
+
     color_space = _param(preset, "color_space")
     if color_space is not None:
         # Core path still writes ColorSpace=sRGB as encode default; optional override only
@@ -1448,8 +1551,13 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
     focal = str(preset.get("focalLength") or "")
     if not iso or not shutter or not aperture or not focal:
         raise BusinessError(message="预设缺少曝光字段", code="EXIF_WRITE_FAILED")
+    # 2026-11-17（P1a）：归一化到真机可能出现的档位，避免 f/1.37、ISO 57、"30s" 这类值。
+    iso = normalize_iso_text(iso)
+    shutter = normalize_shutter_text(shutter)
+    f_number = normalize_fstop(_f_number(aperture))
+    focal = normalize_focal_text(focal, fallback=focal)
+    aperture = f"{f_number:g}"
     tv = apex_shutter_value(shutter_seconds(shutter))
-    f_number = _f_number(aperture)
     av = apex_aperture_value(f_number)
     requested = {
         "Make": brand,
@@ -1470,9 +1578,39 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
     with tempfile.TemporaryDirectory(prefix="rp-s2-") as folder:
         path = Path(folder) / "result.jpg"
         path.write_bytes(jpeg)
+        # 2026-11-17（P0）：补相机 JPEG 的确定性骨架。只写文件自身能证明的值，
+        # 不写任何枚举默认值（P2：预设没有的参数一律不写）。
+        shot_at = datetime.now()
+        shot_text = shot_at.strftime("%Y:%m:%d %H:%M:%S")
+        subsec = f"{shot_at.microsecond // 10000:02d}"
+        actual_width = actual_height = 0
+        thumbnail_path: Path | None = Path(folder) / "thumb.jpg"
+        try:
+            with Image.open(io.BytesIO(jpeg)) as probe:
+                actual_width, actual_height = probe.size
+                thumb = probe.convert("RGB")
+                thumb.thumbnail((160, 120))
+                thumb.save(thumbnail_path, format="JPEG", quality=70)
+        except Exception:  # pragma: no cover - 源图由上游解码保证
+            thumbnail_path = None
+        unique_id = uuid.uuid4().hex.upper()[:32]
         command = [
             "exiftool",
             "-overwrite_original",
+            f"-IFD0:ModifyDate={shot_text}",
+            f"-DateTimeOriginal={shot_text}",
+            f"-CreateDate={shot_text}",
+            f"-SubSecTime={subsec}",
+            f"-SubSecTimeOriginal={subsec}",
+            f"-SubSecTimeDigitized={subsec}",
+            "-IFD0:XResolution#=72",
+            "-IFD0:YResolution#=72",
+            "-IFD0:ResolutionUnit#=2",
+            "-YCbCrPositioning=2",
+            "-ExifVersion=0230",
+            "-FlashpixVersion=0100",
+            "-ComponentsConfiguration=1 2 3 0",
+            f"-ImageUniqueID={unique_id}",
             f"-Make={requested['Make']}",
             f"-Model={requested['Model']}",
             f"-ISO={requested['ISO']}",
@@ -1484,17 +1622,27 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
             "-GPS:all=",
             "-MakerNote=",
         ]
+        if actual_width and actual_height:
+            # 用真实输出像素，绝不使用预设里的 image_width/height（避免自相矛盾）。
+            command.extend(
+                [f"-ExifImageWidth={actual_width}", f"-ExifImageHeight={actual_height}"]
+            )
+        if thumbnail_path is not None:
+            command.append(f"-ThumbnailImage<={thumbnail_path}")
         if write_aperture_value:
             command.append(f"-ApertureValue={av:.6f}")
         for tag, value in optional:
             # Only non-empty optional params reach here; never emit `-Tag=` blanks.
-            if tag in _NUMERIC_EXIF_TAGS:
+            if tag == "Flash":
+                # 2026-11-17：不加 EXIF 组限定会落到 XMP-exif:FlashMode，EXIF IFD 里没有 Flash。
+                command.append(f"-EXIF:Flash#={value}")
+            elif tag in _NUMERIC_EXIF_TAGS:
                 command.append(f"-{tag}#={value}")
             else:
                 command.append(f"-{tag}={value}")
-        if maker_note:
-            # PRODUCT-GAP A7：管理员 2026-11-07 授权写入；必须可回读，失败不静默。
-            command.append(f"-MakerNote={maker_note}")
+        # 2026-11-17：MakerNote 是厂商私有二进制块，exiftool 无法凭空创建
+        # （-EXIF:MakerNote 会报 "isn't writable"，文本只能落到 XMP-exif）。
+        # 对齐旧版 exiftool 写入路径：不写 MakerNote，预设置里的 makerNote 仅作档案字段。
         if gps_plan.get("action") == "write":
             lat = float(gps_plan["latitude"])
             lon = float(gps_plan["longitude"])
@@ -1538,6 +1686,11 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
             "-GPSLongitude#",
             "-GPSAltitude#",
             "-MakerNote",
+            "-DateTimeOriginal",
+            "-Orientation#",
+            "-ExifImageWidth#",
+            "-ExifImageHeight#",
+            "-ImageUniqueID",
         ]
         for tag, _value in optional:
             # Numeric enums were written with Tag#=N; read Tag# so PrintConv
@@ -1574,15 +1727,15 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
     fields.append(_gps_field(gps_plan, row))
     maker_read = str(row.get("MakerNote") or "")
     if maker_note:
-        maker_ok = maker_note in maker_read or maker_read.strip() == maker_note
+        # 2026-11-17：不再伪造 MakerNote；记录为 skipped，避免误判失败。
         fields.append(
             {
                 "tag": "MakerNote",
                 "requested": maker_note,
-                "written": maker_note,
+                "written": "",
                 "read_back": maker_read,
-                "verification_status": "verified" if maker_ok else "failed",
-                "reason": "" if maker_ok else "MakerNote 回读与请求不一致",
+                "verification_status": "skipped",
+                "reason": "MakerNote 不写入（exiftool 无法创建厂商私有块）",
             }
         )
     else:
@@ -1608,6 +1761,23 @@ def _write_and_read(jpeg: bytes, preset: dict, *, seed: int = 0) -> tuple[bytes,
             )
         if field["verification_status"] == "failed" and field["tag"] not in {"GPSLatitude", "MakerNote"}:
             raise BusinessError(message=f"{field['tag']} 回读与预设不一致", code="EXIF_WRITE_FAILED")
+    # 2026-11-17（P0）：骨架标签做软校验（只告警，不改任务终态）。
+    skeleton_expected: dict[str, object] = {
+        "DateTimeOriginal": shot_text,
+        "ImageUniqueID": unique_id,
+    }
+    if actual_width and actual_height:
+        skeleton_expected["ExifImageWidth"] = actual_width
+        skeleton_expected["ExifImageHeight"] = actual_height
+    for skeleton_tag, expected in skeleton_expected.items():
+        got = row.get(skeleton_tag)
+        if str(got) != str(expected):
+            _LOG.warning(
+                "exif_skeleton_mismatch tag=%s expected=%s got=%s",
+                skeleton_tag,
+                expected,
+                got,
+            )
     if not final.startswith(b"\xff\xd8\xff"):
         raise BusinessError(message="最终文件不是 JPEG", code="OUTPUT_CONSTRAINT_UNSATISFIED")
     return final, fields
@@ -1617,7 +1787,7 @@ def _verified_optional(tag: str, requested: str, read_back: object) -> dict:
     """Verify an optional tag that was intentionally written (non-empty source only)."""
     actual = "" if read_back is None else str(read_back)
     head = actual.split()[0] if actual.split() else actual
-    if tag in {"MaxApertureValue", "FocalPlaneXResolution", "FocalPlaneYResolution", "FocalLengthIn35mmFormat"}:
+    if tag in {"MaxApertureValue", "FocalPlaneXResolution", "FocalPlaneYResolution", "FocalLengthIn35mmFormat", "ExposureCompensation", "SubjectDistance"}:
         ok = _close(head, requested) if head else False
     elif tag == "WhiteBalance":
         lowered = actual.strip().lower()

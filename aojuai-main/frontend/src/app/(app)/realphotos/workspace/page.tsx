@@ -1,18 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
-import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch } from '@/lib/api'
 import { formatRate } from '@/lib/format-rate'
-import {
-  taskStatusLabel,
-  ticketStatusLabel,
-  ticketTypeLabel,
-} from '@/lib/realphotos-labels'
+import { taskStatusLabel, ticketTypeLabel } from '@/lib/realphotos-labels'
+import { formatDateTimeShort } from '@/lib/realphotos-time'
 
 type WorkspacePayload = {
   viewKind?: 'merchant' | 'admin' | 'order_support' | 'tech_support'
@@ -87,139 +82,93 @@ function costCell(cost: number | null | undefined, reason: string | null | undef
   return '暂无数据'
 }
 
-type Ticket = {
-  id: number
-  ticketType: string
-  status: string
-  reason: string
-  createdAt?: string | null
-}
 
 export default function RealphotosWorkspacePage() {
   const [data, setData] = useState<WorkspacePayload | null>(null)
   const [message, setMessage] = useState('')
-  const [appealReason, setAppealReason] = useState('')
-  const [myTickets, setMyTickets] = useState<Ticket[]>([])
-  const [search, setSearch] = useState('')
 
   useEffect(() => {
     void apiFetch<WorkspacePayload>('/api/v1/realphotos/workspace')
       .then((payload) => {
         setData(payload)
-        if (payload.merchantCards) {
-          void apiFetch<{ items: Ticket[] }>('/api/v1/realphotos/my-support-tickets')
-            .then((rows) => setMyTickets(rows.items || []))
-            .catch(() => undefined)
-        }
       })
       .catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '工作台读取失败'))
   }, [])
 
   const view = data?.viewKind || (data?.merchantCards ? 'merchant' : 'admin')
-  const filteredOrders = useMemo(
-    () =>
-      (data?.orderSupportDesk?.items || []).filter((item) =>
-        matchSearchText(search, item.id, item.tenantId, item.requesterUserId, item.tierYuan, item.creditPoints),
-      ),
-    [data, search],
-  )
-  const filteredTechTickets = useMemo(
-    () =>
-      (data?.techSupportDesk?.items || []).filter((item) =>
-        matchSearchText(
-          search,
-          item.id,
-          item.tenantId,
-          item.ownerAccountId,
-          item.ticketType,
-          ticketTypeLabel(item.ticketType),
-          item.reason,
-        ),
-      ),
-    [data, search],
-  )
-  const filteredHistory = useMemo(
-    () =>
-      (data?.recentHistory || []).filter((item) =>
-        matchSearchText(search, item.id, item.kind, item.status, taskStatusLabel(item.status), item.presetCode, item.mode),
-      ),
-    [data, search],
-  )
-  const filteredMyTickets = useMemo(
-    () =>
-      myTickets.filter((item) =>
-        matchSearchText(search, item.id, item.ticketType, ticketTypeLabel(item.ticketType), item.status, item.reason),
-      ),
-    [myTickets, search],
+  // 2026-11-17: 工作台删除搜索框；列表直接展示后端数据。最近历史按 10 条一页。
+  const filteredOrders = data?.orderSupportDesk?.items || []
+  const filteredTechTickets = data?.techSupportDesk?.items || []
+  const historyRows = data?.recentHistory || []
+  const [historyPage, setHistoryPage] = useState(1)
+  const historyPageSize = 10
+  const historyPageCount = Math.max(1, Math.ceil(historyRows.length / historyPageSize))
+  const filteredHistory = historyRows.slice(
+    (historyPage - 1) * historyPageSize,
+    historyPage * historyPageSize,
   )
 
-  async function createAppeal() {
-    try {
-      await apiFetch('/api/v1/realphotos/support-tickets', {
-        method: 'POST',
-        body: JSON.stringify({ ticketType: 'image_appeal', reason: appealReason }),
-      })
-      setMessage('已创建图片申诉')
-      toastTask('已创建图片申诉', true)
-      setAppealReason('')
-      const rows = await apiFetch<{ items: Ticket[] }>('/api/v1/realphotos/my-support-tickets')
-      setMyTickets(rows.items || [])
-    } catch (error: unknown) {
-      const text = error instanceof ApiError ? error.message : '申诉创建失败'
-      setMessage(text)
-      toastTask(text, false)
-    }
-  }
 
   const subtitle =
     view === 'admin'
-      ? ''
+      ? '平台运营概览：队列、失败率与成本'
       : view === 'order_support'
-        ? '待处理充值单'
+        ? '待确认的充值单，确认后积分即时到账'
         : view === 'tech_support'
-          ? '待处理工单'
-          : '本账号概览与最近历史'
+          ? '待处理工单，处理结果会通知商家'
+          : '查看积分、任务与近期处理结果；处理新图从「批量原图」开始'
 
   return (
     <main className="space-y-6 p-6">
       <RpPageHeader title="工作台" description={subtitle || '按角色查看待办与本账号概览'} />
-      <div className="rp-filter">
-        <ListSearch value={search} placeholder="本页列表关键词" onChange={setSearch} />
-      </div>
       {data?.preReviewFrozen && view === 'merchant' ? (
-        <p className="text-sm text-destructive">
-          账号已冻结：可查看历史与保留期内结果，不能从工作台发起新获取或处理。请到
-          <Link className="mx-1 underline" href="/realphotos/batch">
-            批量原图
-          </Link>
-          会看到同样拒绝。
+        <p className="rp-card border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+          账号处于预审冻结：目前只能查看历史与保留期内的结果，解冻后可继续上传与处理。
         </p>
       ) : null}
       <p className="text-sm">{message}</p>
-      {data?.showTaskChainBanner ? <p className="text-sm">一条任务链</p> : null}
 
       {view === 'merchant' && data?.cards ? (
-        <section className="grid max-w-4xl grid-cols-2 gap-3 text-sm md:grid-cols-4">
-          <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
-            <div>可用积分</div>
-            <div className="text-lg">{cell(data.cards.availableInteger)}</div>
-            <div className="text-muted-foreground">冻结 {cell(data.cards.reservedInteger)}</div>
+        <section className="grid max-w-5xl grid-cols-2 gap-3 md:grid-cols-4">
+          <article className="rp-stat">
+            <div className="rp-stat-label">可用积分</div>
+            <div className="rp-stat-value">{cell(data.cards.availableInteger)}</div>
+            <div className="rp-stat-hint">处理中冻结 {cell(data.cards.reservedInteger)} 分</div>
           </article>
-          <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
-            <div>进行中任务</div>
-            <div className="text-lg">{cell(data.cards.activeTasks)}</div>
-            <div className="text-muted-foreground">本账号处理中</div>
+          <article className="rp-stat">
+            <div className="rp-stat-label">进行中任务</div>
+            <div className="rp-stat-value">{cell(data.cards.activeTasks)}</div>
           </article>
-          <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
-            <div>本月已完成</div>
-            <div className="text-lg">{cell(data.cards.monthDelivered)}</div>
-            <div className="text-muted-foreground">已交付真实计数</div>
+          <article className="rp-stat">
+            <div className="rp-stat-label">本月已完成</div>
+            <div className="rp-stat-value">{cell(data.cards.monthDelivered)}</div>
           </article>
-          <article className="rp-card rounded-xl border border-border bg-card shadow-sm p-4">
-            <div>未读消息</div>
-            <div className="text-lg">{cell(data.cards.unreadMessages)}</div>
-            <div className="text-muted-foreground">本账号收件箱</div>
+          <article className="rp-stat">
+            <div className="rp-stat-label">未读消息</div>
+            <div className="rp-stat-value">{cell(data.cards.unreadMessages)}</div>
+            <div className="rp-stat-hint">保留 30 天</div>
           </article>
+        </section>
+      ) : null}
+
+      {view === 'merchant' && historyRows.length === 0 ? (
+        <section className="rp-card border-primary/25 bg-primary/5 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-1">
+              <h2 className="text-sm font-semibold text-foreground">三步完成第一张原图</h2>
+              <p className="text-xs text-muted-foreground">
+                ① 上传或导入图片 · ② 选择设备预设 · ③ 提交处理并等待检测结果
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link className="rp-btn rp-btn-primary rp-btn-sm" href="/realphotos/batch">
+                开始处理
+              </Link>
+              <Link className="rp-btn rp-btn-sm" href="/realphotos/library">
+                查看图片资源
+              </Link>
+            </div>
+          </div>
         </section>
       ) : null}
 
@@ -264,6 +213,9 @@ export default function RealphotosWorkspacePage() {
               </tr>
             </tbody>
           </table>
+          <p className="mt-2 text-xs text-muted-foreground">
+            队列含预审与检测；失败率按近 24 小时统计。
+          </p>
         </section>
       ) : null}
 
@@ -291,7 +243,7 @@ export default function RealphotosWorkspacePage() {
             <tbody>
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td className="rp-empty" colSpan={6}>暂无待处理充值单</td>
+                  <td className="rp-empty" colSpan={6}>当前没有待确认的充值单。商家提交充值申请后会出现在这里。</td>
                 </tr>
               ) : (
                 filteredOrders.map((item) => (
@@ -301,7 +253,7 @@ export default function RealphotosWorkspacePage() {
                     <td>{item.requesterUserId}</td>
                     <td>{item.tierYuan} 元</td>
                     <td>{item.creditPoints}</td>
-                    <td>{item.createdAt || '空'}</td>
+                    <td>{formatDateTimeShort(item.createdAt) || '—'}</td>
                   </tr>
                 ))
               )}
@@ -339,7 +291,7 @@ export default function RealphotosWorkspacePage() {
             <tbody>
               {filteredTechTickets.length === 0 ? (
                 <tr>
-                  <td className="rp-empty" colSpan={5}>暂无待处理工单</td>
+                  <td className="rp-empty" colSpan={5}>当前没有待处理工单。商家提交图片申诉后会进入这里。</td>
                 </tr>
               ) : (
                 filteredTechTickets.map((item) => (
@@ -360,7 +312,7 @@ export default function RealphotosWorkspacePage() {
       {view === 'merchant' ? (
         <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium">最近历史（本账号）</h2>
+            <h2 className="text-sm font-medium">最近历史</h2>
             <Link className="text-sm underline" href="/realphotos/tasks">
               全部任务
             </Link>
@@ -377,7 +329,7 @@ export default function RealphotosWorkspacePage() {
             <tbody>
               {filteredHistory.length === 0 ? (
                 <tr>
-                  <td className="rp-empty" colSpan={4}>暂无本账号历史</td>
+                  <td className="rp-empty" colSpan={4}>还没有处理记录。上传或导入图片后，这里会显示每次处理的状态与时间。</td>
                 </tr>
               ) : (
                 filteredHistory.map((item) => (
@@ -385,58 +337,36 @@ export default function RealphotosWorkspacePage() {
                     <td>{item.kind === 'processing' ? '处理' : '生图'}</td>
                     <td>{item.id}</td>
                     <td>{taskStatusLabel(item.status)}</td>
-                    <td>{item.createdAt || '空'}</td>
+                    <td>{formatDateTimeShort(item.createdAt) || '—'}</td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
+          <div className="flex items-center gap-2 text-sm">
+            <button
+              className="rp-btn border px-2 py-1"
+              type="button"
+              disabled={historyPage <= 1}
+              onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
+            >
+              上一页
+            </button>
+            <span>
+              第 {historyPage} / {historyPageCount} 页 · 共 {historyRows.length} 条
+            </span>
+            <button
+              className="rp-btn border px-2 py-1"
+              type="button"
+              disabled={historyPage >= historyPageCount}
+              onClick={() => setHistoryPage((p) => p + 1)}
+            >
+              下一页
+            </button>
+          </div>
         </section>
       ) : null}
 
-      {view === 'merchant' ? (
-        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
-          <h2 className="text-sm font-medium">图片申诉（本租户）</h2>
-          <p className="text-xs text-muted-foreground">可查看/创建申诉；无解冻入口。</p>
-          <div className="flex flex-wrap gap-2 text-sm">
-            <input
-              className="w-full max-w-md border px-2 py-1"
-              placeholder="申诉原因"
-              value={appealReason}
-              onChange={(event) => setAppealReason(event.target.value)}
-            />
-            <button className="rp-btn border px-3 py-1" type="button" onClick={() => void createAppeal()}>
-              创建申诉
-            </button>
-          </div>
-          <table className="rp-table w-full text-sm">
-            <thead>
-              <tr>
-                <th className="text-left">编号</th>
-                <th className="text-left">类型</th>
-                <th className="text-left">状态</th>
-                <th className="text-left">原因</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredMyTickets.length === 0 ? (
-                <tr>
-                  <td colSpan={4}>尚无本账号工单</td>
-                </tr>
-              ) : (
-                filteredMyTickets.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.id}</td>
-                    <td>{ticketTypeLabel(item.ticketType)}</td>
-                    <td>{ticketStatusLabel(item.status)}</td>
-                    <td>{item.reason}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </section>
-      ) : null}
     </main>
   )
 }

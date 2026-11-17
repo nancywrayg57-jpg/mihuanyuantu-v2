@@ -9,14 +9,12 @@ import {
   BookOpen,
   Copy,
   Cpu,
-  ChevronRight,
   CalendarDays,
   Building2,
   Coins,
   Clock,
   Files,
   KeyRound,
-  LayoutDashboard,
   Languages,
   LogOut,
   Menu,
@@ -77,7 +75,8 @@ type NavGroup = {
   items: NavItem[]
 }
 
-const BRAND_LOGO_SRC = '/logo.svg'
+// 2026-11-17：右上角品牌 logo 使用「带文字」版本（原有文字保留）
+const BRAND_LOGO_SRC = '/brand/logo-with-text.svg'
 const DEFAULT_USER_AVATAR_SRC = '/avatar-ai.svg'
 
 function resolveSessionDisplayName(session: { nickname?: string; username?: string } | null | undefined, fallback: string) {
@@ -150,7 +149,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   // 手风琴互斥：undefined = 跟随当前路由所在分组，null = 全部收起
-  const [expandedGroupId, setExpandedGroupId] = useState<string | null | undefined>(undefined)
   const [hideDemoMenus, setHideDemoMenus] = useState(false)
   const { locale, setLocale, t, tMenu } = useLocale()
   const sessionDisplayName = resolveSessionDisplayName(session, t('system.layout.accountFallback'))
@@ -194,15 +192,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
   )
 
   const visibleGroups = useMemo<NavGroup[]>(() => {
-    const groups: NavGroup[] = [
-      {
-        id: 'overview',
-        label: t('system.layout.overview'),
-        icon: LayoutDashboard,
-        pinned: true,
-        items: [{ to: '/welcome', label: t('system.layout.home'), icon: LayoutDashboard }],
-      },
-    ]
+    // 2026-11-17: 删除「概览 / 首页」固定分组；导航只由后端菜单驱动。
+    const groups: NavGroup[] = []
 
     const demoLabel = t('system.layout.demo')
     for (const root of (menuRoutes || []).filter(isRouteVisible)) {
@@ -276,7 +267,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             )}
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-background/80">
-              <img src={BRAND_LOGO_SRC} alt={branding.title} className="h-7 w-7" />
+              <img src={BRAND_LOGO_SRC} alt={branding.title} className="h-9 w-9 rounded-md object-cover" />
             </span>
             {!compact ? <span className="truncate font-semibold tracking-tight">{branding.title}</span> : null}
           </Link>
@@ -303,12 +294,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             {visibleGroups.map((group) => {
               const groupId = group.id
               const GroupIcon = group.icon || PanelTop
-              const pinned = Boolean(group.pinned)
               const active = group.items.some((item) => isNavItemActive(item.to))
-              // 手风琴互斥：未做选择时跟随当前路由所在分组；pinned 分组常开
-              const expanded = pinned ? true : expandedGroupId === undefined ? active : expandedGroupId === groupId
-              const collapsed = !expanded
-              const canToggle = !pinned
 
               if (compact) {
                 // 收起态：分组变为飞出菜单，二级直接可达
@@ -361,57 +347,32 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 )
               }
 
+              // 2026-11-17: 全站导航不再有二级菜单——每项都直接渲染为一级按钮。
               return (
-                <div key={groupId} className="border-b border-border/40 pb-1.5 last:border-0 last:pb-0">
-                  <button
-                    type="button"
-                    disabled={!canToggle}
-                    onClick={() => setExpandedGroupId(expanded ? null : groupId)}
-                    className={cn(
-                      'flex h-8 w-full items-center gap-2 rounded-md px-2 text-sm font-semibold text-foreground/85 transition-colors',
-                      active && 'text-foreground',
-                      canToggle ? 'hover:bg-muted/60' : 'cursor-default',
-                    )}
-                  >
-                    <GroupIcon className={cn('h-4 w-4 shrink-0 text-muted-foreground', active && 'text-primary')} />
-                    <span className="truncate">{tMenu(group.label)}</span>
-                    {canToggle ? (
-                      <ChevronRight
+                <div key={groupId} className="space-y-0.5">
+                  {group.items.map((item) => {
+                    const itemActive = isNavItemActive(item.to)
+                    return (
+                      <Link
+                        key={item.to}
+                        href={item.to}
+                        onClick={() => setMobileNavOpen(false)}
                         className={cn(
-                          'ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform',
-                          collapsed ? 'rotate-0' : 'rotate-90',
+                          'relative flex h-8 items-center gap-2 rounded-md px-2 text-sm font-medium transition-colors',
+                          itemActive
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                         )}
-                      />
-                    ) : null}
-                  </button>
-                  {!collapsed ? (
-                    <div className="mt-0.5 space-y-0.5">
-                      {group.items.map((item) => {
-                        const itemActive = isNavItemActive(item.to)
-                        return (
-                          <Link
-                            key={item.to}
-                            href={item.to}
-                            onClick={() => setMobileNavOpen(false)}
-                            className={cn(
-                              'relative flex h-8 items-center gap-2 rounded-md pl-4 pr-2 text-sm font-medium transition-colors',
-                              itemActive
-                                ? 'bg-primary/10 text-primary'
-                                : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-                            )}
-                          >
-                            {itemActive ? (
-                              <span className="absolute left-1 top-1/2 h-3.5 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
-                            ) : null}
-                            {item.icon ? (
-                              <item.icon className={cn('h-4 w-4 shrink-0', !itemActive && 'text-muted-foreground/80')} />
-                            ) : null}
-                            <span className="truncate">{tMenu(item.label)}</span>
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  ) : null}
+                      >
+                        {item.icon ? (
+                          <item.icon className={cn('h-4 w-4 shrink-0', !itemActive && 'text-muted-foreground/80')} />
+                        ) : (
+                          <PanelTop className={cn('h-4 w-4 shrink-0', !itemActive && 'text-muted-foreground/80')} />
+                        )}
+                        <span className="truncate">{tMenu(item.label)}</span>
+                      </Link>
+                    )
+                  })}
                 </div>
               )
             })}

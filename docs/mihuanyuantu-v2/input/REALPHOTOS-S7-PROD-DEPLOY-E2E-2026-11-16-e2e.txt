@@ -1,0 +1,118 @@
+REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16 evidence
+recorded: 2026-11-16T23:55:00+08:00 (Asia/Shanghai) — final pass run
+operator: 主代理会话（Windows 工作站 → 生产机 SSH/SFTP）
+
+target_host: 47.242.28.49 (iZj6c5tqrza96o5w52qxpcZ, 内网 172.17.54.212)
+target_domain: https://exif-demo.honeybadgersoft.com
+os: Ubuntu 24.04.2 LTS / kernel 6.8 / 4 vCPU / 7270 MiB / no swap / / 49G (~27% used)
+release: 3ed1088d33148fc9b382f02e08c645f8c5f71eba (deployed), reconciled to branch tip 0f5fd1c (clean tree)
+release_dir: /root/蜜獾原图-v2/releases/3ed1088 ; current -> symlink
+shared_dir: /root/蜜獾原图-v2/shared (0700; *.env/*.json/*.txt = 0600)
+storage_root: /root/蜜獾原图-v2/www/mhyt/{upload,phy-export,export}
+database: realphotos_prod @ 127.0.0.1:5432 (same-host self-built PostgreSQL 16.15, T01=B)
+db_role: realphotos_app (LOGIN, NOSUPERUSER, NOCREATEDB, NOCREATEROLE), listen_addresses=localhost
+migration: core head base_20260828_tenant_redaction_policies ; realphotos chain realphotos_0005
+runtime: Python 3.12.3 / venv SQLAlchemy 2.0.57 / Node v22.23.1 / pnpm 10.13.1 / exiftool 12.76
+units: realphotos-api, realphotos-web, realphotos-process, realphotos-notify, realphotos-cleanup (enabled + active)
+egress: gemini-egress-proxy (Xray 26.11.9, vmess node -> US exit 150.241.181.64, local http 127.0.0.1:7890) enabled + active
+nginx: /etc/nginx/sites-available/exif-demo.honeybadgersoft.com.conf (app vhost active; placeholder kept for rollback)
+tls: Let's Encrypt cert valid, certbot.timer enabled+active, https 200
+
+=== markers ===
+T0_S7_CHECKLIST_PASS
+T1_INFRA_PASS
+T2_SECRETS_PASS
+T3_DEPLOY_PASS
+T4_SMOKE_PASS
+T5_M_PASS
+T5_O_PASS
+T5_T_PASS
+T5_A_PASS
+T5_PROD_E2E_PASS
+T6_GATE_PASS
+T7_PR_PASS
+REALPHOTOS_S7_PROD_E2E_PASS
+
+=== T1 infra evidence ===
+pg_lsclusters: 16 main 5432 online postgres /var/lib/postgresql/16/main
+role check: connected user=realphotos_app db=realphotos_prod ; super=false createdb=false ; listen=localhost
+tls: https=200 ; certbot.timer enabled/active ; df / 27% used
+cold restart: all five units active, /health=200, /login=200, DB reachable
+
+=== T2 secrets evidence ===
+files: backend/.env, frontend/.env.production.local, 生产物料/realphotos-duty-secrets.json (all 0600)
+duty present (no plaintext logged): {"generation": true, "prompt_opt": true, "pre_review": true, "final_detection": true}
+admin provider-contracts: duties=[generation, prompt_opt, pre_review, import, final_detection]
+contracts_with_secret=[generation, prompt_opt, pre_review, final_detection]  (import is URL-only by design)
+
+=== T3/T4 deploy + smoke evidence ===
+systemd: api=active web=active process=active notify=active cleanup=active
+local: api_health=200 ; web_login=200 (Next 15.5.7)
+public: https_login=200 ; POST /api/v1/realphotos/auth/challenges=200 ; /health=200
+asset upload bytes=10955146 3072x4096 ; gateway read 200 same bytes
+presets after device-preset-imports/activate-all: 405
+
+=== T5 four-role production E2E (public HTTPS, fail_count=0) ===
+PASS https_login_page | http=200
+PASS login:rp_merchant_a1 / rp_order_support / rp_tech_support / rp_admin
+PASS m_workspace_merchant view=merchant ; wallet/ledger/inbox/tasks/generation-caps 200
+PASS m_recharge_create 200 (order created; staff-only listing correctly 403 for merchant)
+PASS m_deny managed-users/account-logs/held-credits/provider-contracts 403
+PASS m_upload_asset ; m_gateway_read 200 same bytes ; m_presets n=405
+PASS m_submit_task task=4 ; m_generation_live 200
+PASS o_workspace_order_support view=order_support ; o_recharge_orders 200 ; o_reject_recharge 200
+PASS o_deny held-credits/managed-users/account-logs/device-preset-imports/provider-contracts 403
+PASS t_tickets_page20 200 ; t_held_credits/managed_users/account_logs 200 ; t_deny_provider_contracts 403
+PASS a_workspace_admin view=admin ; a_provider_contracts/detection_pass_score/device_preset_imports/ops_metrics 200
+fail_count=0
+
+=== supplier live sampling (all three duties) ===
+pre_review:   dashscope qwen3-vl-plus HTTP 200
+generation:   aoju gpt-image-2 HTTP 200 -> asset id=4 text_to_image image/png 2585364 bytes 1536x1024
+final_detection: Gemini HTTP 200 via egress proxy -> detector=gemini-3.1-pro-preview
+
+=== T5 detection task (business outcome per PRD) ===
+task id=4 tenant=2 preset=legacy-legacy-online-1069 pipeline=s2-five-layer-3
+status=FAILED failure_class=detection_not_passed
+detection result: detector=gemini-3.1-pro-preview total_score=52 passed=false
+output: 12370703 bytes valid JPEG, expires 2026-11-23T15:50:12Z, gateway download http=200 head=FFD8
+credit: disposition=released_detection_not_passed (released, not consumed) — 与 PRD「正常未通过保留可下载 JPEG 并释放该张预留」一致
+note: 业务未通过按 PRD 记，不算基础设施失败
+
+=== T6 gate (§11) ===
+| PRD 真实模型/算法小样与归档 | PASS：预审 / 生图 / 最终检测三岗均有生产实测；检测报告为 gemini-3.1-pro-preview 真实分数 |
+| 物料阻塞项 | T01 关闭（B 同机 PG，管理员接受单点）；T02 关闭（五层+EXIF+检测+交付+积分全链路已通）；T03 决策=正式供应商，基址 http://47.85.47.252 可达且 /api/images/<file> 形态吻合（缺失对象 404），未做对象级导入 → 见 R4 |
+| 部署/TLS/回滚/监控 | 部署、TLS、回滚（06/08 脚本）已执行并演练；监控仍为手工规程 → R5 |
+| 收费开关 | 保持 production_billing=false |
+T6_GATE_PASS
+
+=== defects fixed in this work order ===
+D1 frontend build P0: rp-table.tsx unused type import broke next build
+D2 frontend build P0: (app)/schedule/page.tsx hooks after conditional early return
+D3 infra P0: exiftool missing -> EXIF_WRITE_FAILED
+D4 runtime P0: SQLAlchemy 2.1 default DBAPI -> psycopg3, migrations broke; pinned >=2.0.36,<2.1
+D5 config P0: material parser mis-picked server credential block as Gemini key
+D6 egress P0: Gemini rejects HK/CN egress -> allowed-region egress proxy (Xray + admin-provided vmess node)
+
+=== residuals (see closeout) ===
+R1 same-host DB single point (accepted, T01-B)
+R2 no swap; disk 27%
+R3 supplier egress region (resolved via proxy; proxy is a new dependency)
+R4 import base not object-probed
+R5 monitoring/backup manual
+R6 seed account passwords
+R7 egress proxy depends on a third-party subscription node (expiry printed in node name: 2026-12-06) — hard deadline to replace with owned SG/JP proxy
+
+=== public entry ===
+serving the application (not placeholder); rollback available: sh /root/蜜獾原图-v2/shared/08_rollback.sh
+
+production_billing=false
+REALPHOTOS_S7_PROD_E2E_PASS
+
+=== model switch 2026-11-17 ===
+contract: final_detection gemini-3.1-pro-preview -> gemini-2.5-flash (admin provider-contracts API; provider/baseUrl/enabled unchanged)
+env: GEMINI_MODEL=gemini-2.5-flash (seed fallback); realphotos-api + realphotos-process restarted
+precheck: models/gemini-2.5-flash:generateContent -> 200 via egress proxy; gemini-2.5-pro -> 404 (no longer available to new users)
+task 5: detector=gemini-2.5-flash total_score=60 passed=false output_byte_size=12359870 credit=released_detection_not_passed
+task 4 (before): detector=gemini-3.1-pro-preview total_score=52 passed=false output_byte_size=12370703
+rollback: same API with modelId=gemini-3.1-pro-preview

@@ -47,6 +47,7 @@ const HTTP_STATUS_MESSAGE_KEYS: Record<number, MessageKey> = {
   403: 'system.api.http403',
   404: 'system.api.http404',
   408: 'system.api.http408',
+  413: 'system.api.http413',
   429: 'system.api.http429',
   500: 'system.api.http500',
   502: 'system.api.http502',

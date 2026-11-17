@@ -14,6 +14,7 @@ from PIL import Image
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.capabilities.realphotos.adapters.storage import get_storage_adapter
 from app.capabilities.realphotos.constants import DEVICE_TYPE_ALIASES, DEVICE_TYPES
 from app.capabilities.realphotos.models import (
     RealphotosAccountLog,
@@ -31,6 +32,7 @@ from app.capabilities.realphotos.models import (
     RealphotosMerchantProfile,
     RealphotosPresetVersion,
     RealphotosPromptOptimization,
+    RealphotosRechargeOrder,
     RealphotosReviewStreak,
     RealphotosSupportTicket,
 )
@@ -39,6 +41,7 @@ from app.capabilities.realphotos.services.credit_service import RealphotosCredit
 from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
 from app.capabilities.realphotos.services.s1_upload import inspect_upload
 from app.core.exceptions import BusinessError, ForbiddenError
+from app.core.logger import get_logger
 from app.core.security import hash_password
 from app.domain.auth.models import Tenant
 from app.domain.roles.models import Role
@@ -50,11 +53,15 @@ USER_PAGE_SIZE = 10
 TENANT_PAGE_SIZE = 20
 HELD_PAGE_SIZE = 20
 TICKET_PAGE_SIZE = 20
-LOG_PAGE_SIZE = 20
+LOG_PAGE_SIZE = 10
 GPS_MODES = {"none", "fixed", "random_by_scene"}
 # PRESET-BULK-IMPORT B1: stop injecting Honeybadger s1-* into merchant enabled list.
 INJECT_S1_CATALOG_INTO_ENABLED = False
+logger = get_logger(__name__)
 PROTECTED_USERNAME = "rp_admin"
+# 2026-11-17：平台默认租户不可删除
+PROTECTED_TENANT_IDS = frozenset({1})
+PROTECTED_TENANT_CODES = frozenset({"default"})
 PLACEHOLDER_BRAND_BLOCKLIST = {"honeybadger", "runtimecam", "bizcam"}
 ACCOUNT_LOG_ACTION_ZH = {
     "create": "创建账号",
@@ -150,6 +157,29 @@ class RealphotosOpsService:
         profile = await self._profile(tenant_id, owner_account_id)
         if profile is not None and bool(profile.pre_review_frozen):
             raise BusinessError(message="账号已因预审冻结，不能新建任务", code="ACCOUNT_FROZEN")
+
+    async def image_lock_state(
+        self,
+        *,
+        tenant_id: int,
+        owner_account_id: int,
+        data: bytes,
+    ) -> dict[str, Any]:
+        """2026-11-17：只读查询该像素是否被锁定（任务详情决定是否显示申诉入口）。"""
+        identity = pixel_identity(data)
+        row = (
+            await self.db.execute(
+                select(RealphotosImageLock).where(
+                    RealphotosImageLock.tenant_id == int(tenant_id),
+                    RealphotosImageLock.owner_account_id == int(owner_account_id),
+                    RealphotosImageLock.image_identity == identity,
+                    RealphotosImageLock.deleted_at.is_(None),
+                )
+            )
+        ).scalar_one_or_none()
+        if row is None:
+            return {"locked": False, "reason": ""}
+        return {"locked": True, "reason": str(row.reason or "")}
 
     async def assert_image_unlocked(
         self,
@@ -410,8 +440,12 @@ class RealphotosOpsService:
         ticket_id: int,
         outcome: str,
         note: str,
+        unlock_task_id: int | None = None,
     ) -> dict[str, Any]:
-        """Close image_appeal (or other non-freeze) tickets. Does not unlock images."""
+        """Close image_appeal (or other non-freeze) tickets.
+
+        2026-11-17：办结时可按任务号解除图片锁定（FR-006），原先明确不解锁。
+        """
         from datetime import UTC, datetime
 
         self._require_tech_or_admin(actor_role_codes)
@@ -437,15 +471,169 @@ class RealphotosOpsService:
         row.resolution_note = text
         row.resolution_outcome = result
         await self.db.flush()
+        unlocked = await self._maybe_unlock_image(
+            ticket=row, operator_user_id=int(operator_user_id), task_id=unlock_task_id
+        )
         tenants, users = await self._tenant_user_name_maps(
             tenant_ids={int(row.tenant_id)},
             user_ids={int(row.owner_account_id)},
         )
-        return self._ticket_dict(
+        payload = self._ticket_dict(
             row,
             tenant_name=tenants.get(int(row.tenant_id)),
             username=users.get(int(row.owner_account_id)),
         )
+        payload["imageUnlock"] = unlocked
+        return payload
+
+    async def ticket_thumbnail(
+        self, *, actor_role_codes: set[str], ticket_id: int, width: int = 480
+    ) -> bytes:
+        """2026-11-17：申诉工单目标图片的缩略图（支持 任务 #N 与 资产 #N）。"""
+        self._require_tech_or_admin(actor_role_codes)
+        row = await self.db.get(RealphotosSupportTicket, int(ticket_id))
+        if row is None or row.deleted_at is not None:
+            raise BusinessError(message="工单不存在", code="NOT_FOUND")
+        asset = await self._asset_for_ticket_reason(row)
+        handle = get_storage_adapter().open_read(asset.object_key)
+        try:
+            data = handle.read()
+        finally:
+            handle.close()
+        with Image.open(io.BytesIO(data)) as image:
+            rgb = image.convert("RGB")
+            rgb.thumbnail((int(width), int(width)))
+            out = io.BytesIO()
+            rgb.save(out, format="JPEG", quality=80)
+            return out.getvalue()
+
+    async def unlock_ticket_image(
+        self, *, actor_role_codes: set[str], operator_user_id: int, ticket_id: int
+    ) -> dict[str, Any]:
+        """2026-11-17：申诉目标即被锁定的图片，技术客服可直接按工单解锁。"""
+        self._require_tech_or_admin(actor_role_codes)
+        row = await self.db.get(RealphotosSupportTicket, int(ticket_id))
+        if row is None or row.deleted_at is not None:
+            raise BusinessError(message="工单不存在", code="NOT_FOUND")
+        if row.ticket_type != "image_appeal":
+            raise BusinessError(message="该工单不是图片申诉", code="INPUT_INVALID")
+        import re as _re
+
+        match = _re.search(r"#(\d+)", str(row.reason or ""))
+        if match is None:
+            raise BusinessError(message="该工单未关联任务编号", code="NOT_FOUND")
+        return await self._maybe_unlock_image(
+            ticket=row,
+            operator_user_id=int(operator_user_id),
+            task_id=int(match.group(1)),
+        )
+
+    async def _asset_for_ticket_reason(self, ticket: RealphotosSupportTicket) -> RealphotosAsset:
+        """从工单原因解析目标图片：支持「任务 #N」（租户内编号/历史全局 id）与「资产 #N」。"""
+        import re as _re
+
+        from sqlalchemy import text as _text
+
+        match = _re.search(r"(任务|资产)\s*#(\d+)", str(ticket.reason or ""))
+        if match is None:
+            raise BusinessError(message="该工单未关联任务或资产编号", code="NOT_FOUND")
+        kind, raw = match.group(1), int(match.group(2))
+        if kind == "资产":
+            asset = (
+                await self.db.execute(
+                    select(RealphotosAsset).where(
+                        RealphotosAsset.id == raw,
+                        RealphotosAsset.tenant_id == int(ticket.tenant_id),
+                        RealphotosAsset.owner_account_id == int(ticket.owner_account_id),
+                        RealphotosAsset.deleted_at.is_(None),
+                    )
+                )
+            ).scalar_one_or_none()
+            if asset is None:
+                raise BusinessError(message="工单关联的图片不存在", code="NOT_FOUND")
+            return asset
+        task_row = (
+            await self.db.execute(
+                _text(
+                    "select id from ("
+                    "  select id, row_number() over (order by id) as seq"
+                    "  from cap_realphotos_image_tasks"
+                    "  where tenant_id = :tenant_id and owner_account_id = :owner_id"
+                    "    and deleted_at is null"
+                    ") x where seq = :seq"
+                ),
+                {
+                    "tenant_id": int(ticket.tenant_id),
+                    "owner_id": int(ticket.owner_account_id),
+                    "seq": raw,
+                },
+            )
+        ).first()
+        task = None
+        if task_row is not None:
+            task = await self.db.get(RealphotosImageTask, int(task_row[0]))
+        if task is None:
+            task = (
+                await self.db.execute(
+                    select(RealphotosImageTask).where(
+                        RealphotosImageTask.id == raw,
+                        RealphotosImageTask.tenant_id == int(ticket.tenant_id),
+                        RealphotosImageTask.owner_account_id == int(ticket.owner_account_id),
+                        RealphotosImageTask.deleted_at.is_(None),
+                    )
+                )
+            ).scalar_one_or_none()
+        if task is None:
+            raise BusinessError(message="工单关联的任务不存在", code="NOT_FOUND")
+        asset = await self.db.get(RealphotosAsset, int(task.asset_id))
+        if asset is None or asset.deleted_at is not None:
+            raise BusinessError(message="该任务的原图已不存在", code="NOT_FOUND")
+        return asset
+
+    async def _maybe_unlock_image(
+        self,
+        *,
+        ticket: RealphotosSupportTicket,
+        operator_user_id: int,
+        task_id: int | None,
+    ) -> dict[str, Any]:
+        """按工单目标图片解除锁定（任务 #N 或 资产 #N）。"""
+        if task_id is None:
+            return {"requested": False}
+        asset = await self._asset_for_ticket_reason(ticket)
+        handle = get_storage_adapter().open_read(asset.object_key)
+        try:
+            data = handle.read()
+        finally:
+            handle.close()
+        identity = pixel_identity(data)
+        rows = (
+            await self.db.execute(
+                select(RealphotosImageLock).where(
+                    RealphotosImageLock.tenant_id == int(ticket.tenant_id),
+                    RealphotosImageLock.owner_account_id == int(ticket.owner_account_id),
+                    RealphotosImageLock.image_identity == identity,
+                    RealphotosImageLock.deleted_at.is_(None),
+                )
+            )
+        ).scalars().all()
+        now = datetime.now(UTC)
+        for lock in rows:
+            lock.deleted_at = now
+        await self.db.flush()
+        logger.info(
+            "realphotos_image_unlocked",
+            ticket_id=int(ticket.id),
+            asset_id=int(asset.id),
+            operator_user_id=int(operator_user_id),
+            unlocked=int(len(rows)),
+        )
+        return {
+            "requested": True,
+            "assetId": str(int(asset.id)),
+            "unlocked": int(len(rows)),
+            "alreadyUnlocked": len(rows) == 0,
+        }
 
     @staticmethod
     def _ticket_dict(
@@ -833,6 +1021,19 @@ class RealphotosOpsService:
             payload["gpsWriteConnected"] = bool(snap["gpsWriteConnected"])
         # Admin ledger may store author/copyright; IP-GEO still excluded (EXIF write path unchanged).
         payload["copyrightPolicy"] = "admin_ledger_author_copyright_allowed_ip_geo_excluded"
+        return payload
+
+    async def preset_detail_for_merchant(self, *, code: str) -> dict[str, Any]:
+        """2026-11-17: 批量原图页展示预设全部设备参数（商家只读、仅启用预设）。"""
+        row = await self._preset_row(code)
+        if row is None or row.deleted_at is not None or not bool(row.enabled):
+            raise BusinessError(message="预设不存在或未启用", code="NOT_FOUND")
+        snap = await self._latest_snapshot(code)
+        gps_config = dict(snap["gpsConfig"]) if isinstance(snap.get("gpsConfig"), dict) else None
+        legacy = snap.get("legacyParameters") if isinstance(snap.get("legacyParameters"), dict) else {}
+        display_name = str(legacy.get("name") or "").strip()
+        payload = self._preset_dict(row, gps_config=gps_config, name=display_name or None)
+        payload["legacyParameters"] = dict(legacy)
         return payload
 
     async def list_enabled_presets(self) -> list[dict]:
@@ -1268,6 +1469,102 @@ class RealphotosOpsService:
             reason="",
         )
         return {"deleted": True}
+
+    async def delete_tenant(
+        self,
+        *,
+        actor_role_codes: set[str],
+        operator_user_id: int,
+        operator_tenant_id: int,
+        tenant_id: int,
+        confirm_code: str,
+    ) -> dict[str, Any]:
+        """2026-11-17：管理员删除租户（仅允许删除无业务数据的租户）。"""
+        if ROLE_ADMIN not in actor_role_codes and "admin" not in actor_role_codes:
+            raise ForbiddenError(message="只有平台管理员可以删除租户")
+        tenant = (
+            await self.db.execute(
+                select(Tenant).where(
+                    Tenant.id == int(tenant_id), Tenant.deleted_at.is_(None)
+                )
+            )
+        ).scalar_one_or_none()
+        if tenant is None:
+            raise BusinessError(message="租户不存在", code="NOT_FOUND")
+        if int(tenant.id) in PROTECTED_TENANT_IDS or str(tenant.code or "") in PROTECTED_TENANT_CODES:
+            raise ForbiddenError(message="平台默认租户不可删除")
+        if int(tenant.id) == int(operator_tenant_id):
+            raise ForbiddenError(message="不能删除当前登录账号所属租户")
+        if str(confirm_code or "").strip() not in {str(tenant.code or ""), str(tenant.name or "")}:
+            raise BusinessError(message="须输入租户编码或名称确认删除", code="INPUT_INVALID")
+
+        async def _count(model: Any, *where: Any) -> int:
+            return int(
+                (
+                    await self.db.execute(
+                        select(func.count()).select_from(model).where(*where)
+                    )
+                ).scalar()
+                or 0
+            )
+
+        counts = {
+            "users": await _count(User, User.tenant_id == int(tenant.id), User.deleted_at.is_(None)),
+            "assets": await _count(RealphotosAsset, RealphotosAsset.tenant_id == int(tenant.id), RealphotosAsset.deleted_at.is_(None)),
+            "tasks": await _count(RealphotosImageTask, RealphotosImageTask.tenant_id == int(tenant.id), RealphotosImageTask.deleted_at.is_(None)),
+            "rechargeOrders": await _count(RealphotosRechargeOrder, RealphotosRechargeOrder.tenant_id == int(tenant.id), RealphotosRechargeOrder.deleted_at.is_(None)),
+            "tickets": await _count(RealphotosSupportTicket, RealphotosSupportTicket.tenant_id == int(tenant.id), RealphotosSupportTicket.deleted_at.is_(None)),
+        }
+        account = (
+            await self.db.execute(
+                select(RealphotosCreditAccount).where(
+                    RealphotosCreditAccount.tenant_id == int(tenant.id)
+                )
+            )
+        ).scalar_one_or_none()
+        balance_reserved = int(getattr(account, "reserved_integer", 0) or 0) if account else 0
+        balance_available = int(getattr(account, "available_integer", 0) or 0) if account else 0
+        if any(int(v) for v in counts.values()) or balance_available or balance_reserved:
+            raise BusinessError(
+                message=(
+                    "租户下仍有数据，无法删除："
+                    f"账号 {counts['users']}、图片 {counts['assets']}、任务 {counts['tasks']}、"
+                    f"充值单 {counts['rechargeOrders']}、工单 {counts['tickets']}、"
+                    f"余额 {balance_available}（冻结 {balance_reserved}）。请先清理后再删除。"
+                ),
+                code="TENANT_NOT_EMPTY",
+                details={**counts, "availableInteger": balance_available, "reservedInteger": balance_reserved},
+            )
+
+        tenant.deleted_at = datetime.now(UTC)
+        await self.db.execute(
+            Role.__table__.update()
+            .where(Role.tenant_id == int(tenant.id), Role.deleted_at.is_(None))
+            .values(deleted_at=datetime.now(UTC))
+        )
+        # 菜单/授权是纯配置，随租户一并清掉，避免遗留孤儿行。
+        from sqlalchemy import text as _sql_text
+
+        await self.db.execute(
+            _sql_text("DELETE FROM role_menus WHERE tenant_id = :tenant_id"),
+            {"tenant_id": int(tenant.id)},
+        )
+        await self.db.execute(
+            _sql_text("DELETE FROM menus WHERE tenant_id = :tenant_id"),
+            {"tenant_id": int(tenant.id)},
+        )
+        await self.db.flush()
+        logger.info(
+            "realphotos_tenant_deleted",
+            tenant_id=int(tenant.id),
+            tenant_code=str(tenant.code or ""),
+            operator_user_id=int(operator_user_id),
+        )
+        return {
+            "tenantId": str(int(tenant.id)),
+            "tenantCode": str(tenant.code or ""),
+            "deleted": True,
+        }
 
     async def list_tenants(self, *, actor_role_codes: set[str], page: int = 1) -> dict[str, Any]:
         self._require_tech_or_admin(actor_role_codes)

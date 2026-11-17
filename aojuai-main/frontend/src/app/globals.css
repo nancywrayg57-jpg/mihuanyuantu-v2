@@ -37,8 +37,17 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 238.7 83.5% 66.7%;
-    --primary-foreground: 210 40% 98%;
+    /* 2026-11-17: 品牌主色（靛蓝），替代原“主按钮黑色” */
+    --primary: 238 72% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    /* 语义色：成功 / 警告 / 信息（此前散落在各页 inline 类） */
+    --success: 152 62% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 92% 42%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 40%;
+    --info-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -54,9 +63,16 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 238.7 83.5% 66.7%;
+    --ring: 238 72% 56%;
 
     --radius: 0.5rem;
+    /* 圆角阶梯：卡片 12 / 输入与按钮 8 / 弹窗 16 */
+    --radius-card: 0.75rem;
+    --radius-input: 0.5rem;
+    --radius-dialog: 1rem;
+    /* 阴影阶梯：只用于卡片与浮层 */
+    --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+    --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
   }
 
   .dark {
@@ -73,6 +89,13 @@
     --primary: 234 89% 74%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
+    --success: 152 55% 52%;
+    --success-foreground: 222.2 47.4% 11.2%;
+    --warning: 38 92% 60%;
+    --warning-foreground: 222.2 47.4% 11.2%;
+    --info: 199 85% 62%;
+    --info-foreground: 222.2 47.4% 11.2%;
+
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
 
@@ -88,6 +111,9 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 234 89% 74%;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.5);
   }
 }
 

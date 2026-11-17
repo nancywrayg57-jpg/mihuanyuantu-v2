@@ -10,6 +10,7 @@ import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { gpsSubmitGuard } from '@/lib/realphotos-gps-submit'
 import { deviceTypeLabel } from '@/lib/realphotos-labels'
+import { PRESET_FIELD_DEFS, type PresetFieldDef } from '@/lib/realphotos-preset-fields'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
 
 type Preset = {
@@ -21,7 +22,25 @@ type Preset = {
   gpsWillSkip?: boolean
   gpsWritableReason?: string
   gpsMode?: string
+  [key: string]: unknown
 }
+
+
+/** 2026-11-17: 预设参数取值，规则与「设备预设」页一致（列字段优先，其次 legacyParameters）。 */
+function presetFieldText(preset: Record<string, unknown>, field: PresetFieldDef): string {
+  const legacy = (preset.legacyParameters as Record<string, unknown> | undefined) || {}
+  if (field.column) {
+    const direct = preset[field.column]
+    if (direct !== undefined && direct !== null && String(direct).trim() !== '') return String(direct)
+  }
+  const raw = legacy[field.key]
+  return raw === undefined || raw === null ? '' : String(raw)
+}
+
+/** 展开时展示除两份提示词外的全部设备参数。 */
+const PRESET_DETAIL_FIELDS = PRESET_FIELD_DEFS.filter(
+  (field) => field.column !== 'aiPositivePrompt' && field.column !== 'aiNegativePrompt',
+)
 
 type PendingAsset = { id: string; previewUrl: string }
 
@@ -36,6 +55,8 @@ export function RealphotosBatchClient() {
   const [frozen, setFrozen] = useState(false)
   const [library, setLibrary] = useState<PendingAsset[]>([])
   const [presetSearch, setPresetSearch] = useState('')
+  const [presetDetailOpen, setPresetDetailOpen] = useState(false)
+  const [presetDetail, setPresetDetail] = useState<Preset | null>(null)
   const gatewayPreviewUrls = useRef<Set<string>>(new Set())
 
   useEffect(() => {
@@ -172,6 +193,29 @@ export function RealphotosBatchClient() {
     [presets, presetCode],
   )
   const gpsGuard = useMemo(() => gpsSubmitGuard(selectedPreset), [selectedPreset])
+
+  // 2026-11-17: 选中预设后拉取全量设备参数（列表接口只给精简字段）。
+  useEffect(() => {
+    if (!presetCode) {
+      setPresetDetail(null)
+      return
+    }
+    let cancelled = false
+    void apiFetch<Preset>(
+      `/api/v1/realphotos/presets/${encodeURIComponent(presetCode)}`,
+    )
+      .then((data) => {
+        if (!cancelled) setPresetDetail(data)
+      })
+      .catch(() => {
+        if (!cancelled) setPresetDetail(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [presetCode])
+
+  const detailPreset = presetDetail && presetDetail.code === presetCode ? presetDetail : selectedPreset
   const gpsSubmitBlocked = gpsGuard.blocked
   const gpsSkipHint = gpsGuard.skipHint
   async function onFile(next: File | null) {
@@ -262,7 +306,7 @@ export function RealphotosBatchClient() {
         <p className="text-sm text-destructive">账号已冻结：可查看历史，不能提交新处理。</p>
       ) : null}
       <p className="text-sm">{notice}</p>
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
+      <section className="rp-card space-y-3 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-medium">设备预设（类型 → 品牌 → 型号）</h2>
           <ListSearch value={presetSearch} placeholder="型号 / 品牌 / 编码" onChange={setPresetSearch} />
@@ -324,29 +368,80 @@ export function RealphotosBatchClient() {
               : `将跳过 GPS 写入：${gpsSkipHint}`}
           </p>
         ) : null}
+        {detailPreset ? (
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-1 md:grid-cols-4">
+              <div>
+                <dt className="text-muted-foreground">类型</dt>
+                <dd>{deviceTypeLabel(String(detailPreset.deviceType || ''))}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">品牌</dt>
+                <dd>{String(detailPreset.brand || '—')}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">型号</dt>
+                <dd>{String(detailPreset.model || '—')}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">GPS</dt>
+                <dd>
+                  {String(detailPreset.gpsMode || 'none')}
+                  {detailPreset.gpsWillSkip ? '（跳过写入）' : ''}
+                </dd>
+              </div>
+            </dl>
+            {presetDetailOpen ? (
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 border-t border-border/50 pt-2 md:grid-cols-4">
+                {PRESET_DETAIL_FIELDS.map((field) => {
+                  const text = presetFieldText(detailPreset, field)
+                  if (!text.trim()) return null
+                  return (
+                    <div key={field.key}>
+                      <dt className="text-muted-foreground">{field.label}</dt>
+                      <dd className="break-all">{text}</dd>
+                    </div>
+                  )
+                })}
+              </dl>
+            ) : null}
+            <button
+              className="rp-btn border mt-2 px-2 py-0.5 text-xs"
+              type="button"
+              onClick={() => setPresetDetailOpen((prev) => !prev)}
+            >
+              {presetDetailOpen ? '收起' : '展开全部'}
+            </button>
+          </div>
+        ) : null}
       </section>
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
-        <h2 className="text-sm font-medium">待处理图片（库内资源）</h2>
-        <p className="text-sm text-muted-foreground">
-          <Link className="underline" href="/realphotos/library">
-            打开图片资源勾选
+      <section className="rp-card space-y-3 p-4">
+        <h2 className="text-sm font-medium">待处理图片</h2>
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <Link className="rp-btn" href="/realphotos/library">
+            勾选图片
           </Link>
-        </p>
-        <div className="flex flex-wrap items-end gap-3 text-sm">
-          <label>
-            本地辅助入库
-            <input
-              className="mt-1 block"
-              type="file"
-              accept="image/jpeg,image/png,.jpg,.jpeg,.png"
-              onChange={(event) => void onFile(event.target.files?.[0] || null)}
-            />
-          </label>
-          <button className="rp-btn border px-3 py-1" type="button" disabled={frozen} onClick={() => void uploadToLibrary()}>
+          {/* 2026-11-17：原生 file 控件改为统一按钮样式 */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">本地辅助入库</span>
+            <label className="rp-btn cursor-pointer">
+              选择文件
+              <input
+                className="sr-only"
+                type="file"
+                accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+                onChange={(event) => void onFile(event.target.files?.[0] || null)}
+              />
+            </label>
+            <span className="max-w-[12rem] truncate text-xs text-muted-foreground">
+              {file?.name || '未选择文件'}
+            </span>
+          </div>
+          <button className="rp-btn" type="button" disabled={frozen} onClick={() => void uploadToLibrary()}>
             上传并加入本批
           </button>
           <button
-            className="rp-btn border px-3 py-1"
+            className="rp-btn"
             type="button"
             onClick={() =>
               setLibrary((prev) => {
@@ -362,7 +457,7 @@ export function RealphotosBatchClient() {
             移除最后一张
           </button>
           <button
-            className="rp-btn rp-btn-primary border px-3 py-1"
+            className="rp-btn rp-btn-primary"
             type="button"
             disabled={frozen || gpsSubmitBlocked}
             onClick={() => void submitBatch()}
@@ -370,7 +465,7 @@ export function RealphotosBatchClient() {
             开始处理
           </button>
         </div>
-        <table className="rp-table w-full text-sm">
+        <table className="rp-table">
           <thead>
             <tr>
               <th className="text-left">缩略图</th>

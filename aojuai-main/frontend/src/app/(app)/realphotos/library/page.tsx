@@ -30,7 +30,7 @@ type Asset = {
 }
 
 const UPLOAD_BATCH_MAX = 20
-const PAGE_SIZE = 20
+const PAGE_SIZE = 10
 
 export default function RealphotosLibraryPage() {
   const router = useRouter()
@@ -43,7 +43,12 @@ export default function RealphotosLibraryPage() {
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<Record<string, true>>({})
   const [thumbs, setThumbs] = useState<Record<string, string>>({})
-  const [preview, setPreview] = useState<{ id: string; url: string } | null>(null)
+  const [preview, setPreview] = useState<{ id: string; url: string; fullUrl?: string; loading?: boolean } | null>(null)
+  // 2026-11-17：被锁定的图片在资源列表直接申诉（任务详情不再提供入口）
+  const [appealTarget, setAppealTarget] = useState<Asset | null>(null)
+  const [appealText, setAppealText] = useState('')
+  const [appealNote, setAppealNote] = useState('')
+  const [appealBusy, setAppealBusy] = useState(false)
   const [frozen, setFrozen] = useState(false)
   const downloadUsedNames = useRef(new Map<string, number>())
 
@@ -72,26 +77,52 @@ export default function RealphotosLibraryPage() {
     void reload().catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '资源加载失败'))
   }, [reload])
 
+  // 2026-11-17：放大查看先展示缩略图，再拉 1600px 大图，避免只放大 160px 小图。
+  async function openPreview(item: { id: string; objectKey?: string | null }) {
+    const placeholder = thumbs[item.id]
+    setPreview({ id: item.id, url: placeholder || '', loading: Boolean(item.objectKey) })
+    if (!item.objectKey) return
+    const path = item.objectKey.split('/').map(encodeURIComponent).join('/')
+    try {
+      const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${path}?thumb=1600`)
+      const url = URL.createObjectURL(blob)
+      setPreview((prev) => {
+        if (!prev || prev.id !== item.id) {
+          URL.revokeObjectURL(url)
+          return prev
+        }
+        if (prev.fullUrl) URL.revokeObjectURL(prev.fullUrl)
+        return { ...prev, fullUrl: url, loading: false }
+      })
+    } catch {
+      setPreview((prev) => (prev && prev.id === item.id ? { ...prev, loading: false } : prev))
+    }
+  }
+
   useEffect(() => {
     let cancelled = false
     const created: string[] = []
     async function loadThumbs() {
       setThumbs({})
-      for (const item of items) {
-        if (cancelled) return
-        if (!item.objectKey) continue
-        try {
-          const blob = await apiFetchBlob(
-            `/api/v1/realphotos/gateway/objects/${item.objectKey.split('/').map(encodeURIComponent).join('/')}`,
-          )
-          if (cancelled) return
-          const url = URL.createObjectURL(blob)
-          created.push(url)
-          setThumbs((prev) => ({ ...prev, [item.id]: url }))
-        } catch {
-          // 网关鉴权失败时保留占位
+      // 2026-11-17：改拉 160px 缩略图（服务端缓存），并发 4，避免串行下载原图。
+      const queue = items.filter((row) => Boolean(row.objectKey))
+      const worker = async () => {
+        for (;;) {
+          const item = queue.shift()
+          if (!item || cancelled || !item.objectKey) return
+          try {
+            const path = item.objectKey.split('/').map(encodeURIComponent).join('/')
+            const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${path}?thumb=160`)
+            if (cancelled) return
+            const url = URL.createObjectURL(blob)
+            created.push(url)
+            setThumbs((prev) => ({ ...prev, [item.id]: url }))
+          } catch {
+            // 网关鉴权失败时保留占位
+          }
         }
       }
+      await Promise.all(Array.from({ length: Math.min(4, queue.length) }, () => worker()))
     }
     void loadThumbs()
     return () => {
@@ -220,6 +251,33 @@ export default function RealphotosLibraryPage() {
     router.push(`/realphotos/batch?assetIds=${ids.join(',')}`)
   }
 
+  async function submitAppeal() {
+    if (!appealTarget) return
+    const text = appealText.trim()
+    if (!text) {
+      setAppealNote('请填写申诉原因')
+      return
+    }
+    setAppealBusy(true)
+    try {
+      await apiFetch('/api/v1/realphotos/support-tickets', {
+        method: 'POST',
+        body: JSON.stringify({
+          ticketType: 'image_appeal',
+          reason: `资产 #${appealTarget.id}：${text}`,
+        }),
+      })
+      setAppealTarget(null)
+      setAppealText('')
+      setAppealNote('')
+      toastTask('申诉已提交', true)
+    } catch (error: unknown) {
+      setAppealNote(error instanceof ApiError ? error.message : '申诉提交失败')
+    } finally {
+      setAppealBusy(false)
+    }
+  }
+
   async function onLocalUpload(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return
     if (frozen) {
@@ -239,18 +297,32 @@ export default function RealphotosLibraryPage() {
       }
     }
     try {
-      if (files.length === 1) {
-        const body = new FormData()
-        body.set('file', files[0])
-        await apiFetch('/api/v1/realphotos/assets', { method: 'POST', body })
-      } else {
-        const body = new FormData()
-        for (const file of files) {
-          body.append('files', file)
+      // 2026-11-17：分批上传（每批 5 张），避免单次请求体超过网关体积限制触发 413。
+      const UPLOAD_CHUNK = 5
+      let uploaded = 0
+      for (let start = 0; start < files.length; start += UPLOAD_CHUNK) {
+        const chunk = files.slice(start, start + UPLOAD_CHUNK)
+        const send = async () => {
+          const body = new FormData()
+          if (chunk.length === 1) {
+            body.set('file', chunk[0])
+            await apiFetch('/api/v1/realphotos/assets', { method: 'POST', body })
+          } else {
+            for (const file of chunk) {
+              body.append('files', file)
+            }
+            await apiFetch('/api/v1/realphotos/assets/batch', { method: 'POST', body })
+          }
         }
-        await apiFetch('/api/v1/realphotos/assets/batch', { method: 'POST', body })
+        // 弱网下大文件偶发连接中断，整批重试一次再判定失败。
+        try {
+          await send()
+        } catch {
+          await send()
+        }
+        uploaded += chunk.length
       }
-      report(`本地上传已入库 ${files.length} 张`, true)
+      report(`本地上传已入库 ${uploaded} 张`, true)
       setPage(1)
       await reload()
     } catch (error: unknown) {
@@ -281,20 +353,20 @@ export default function RealphotosLibraryPage() {
         }}
       />
 
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 flex flex-wrap items-center gap-2 text-sm">
-        <span className="font-medium">添加图片：</span>
+      <section className="rp-card flex flex-wrap items-center gap-2 p-3 text-sm">
+        <span className="rp-stat-label">添加图片</span>
         {frozen ? (
-          <span className="border px-2 py-1 opacity-50">URL 导入（已冻结）</span>
+          <span className="rp-btn rp-btn-sm pointer-events-none opacity-50">URL 导入（已冻结）</span>
         ) : (
-          <Link className="rp-btn border px-2 py-1" href="/realphotos/imports">
+          <Link className="rp-btn rp-btn-sm" href="/realphotos/imports">
             URL 导入
           </Link>
         )}
         {frozen ? (
-          <span className="border px-2 py-1 opacity-50">本地上传（已冻结）</span>
+          <span className="rp-btn rp-btn-sm pointer-events-none opacity-50">本地上传（已冻结）</span>
         ) : (
           <button
-            className="rp-btn border px-2 py-1"
+            className="rp-btn rp-btn-sm"
             type="button"
             onClick={() => fileInputRef.current?.click()}
           >
@@ -302,34 +374,32 @@ export default function RealphotosLibraryPage() {
           </button>
         )}
         {frozen ? (
-          <span className="border px-2 py-1 opacity-50">文生图（已冻结）</span>
+          <span className="rp-btn rp-btn-sm pointer-events-none opacity-50">文生图（已冻结）</span>
         ) : (
-          <Link className="rp-btn border px-2 py-1" href="/realphotos/generate?mode=text_to_image">
+          <Link className="rp-btn rp-btn-sm" href="/realphotos/generate?mode=text_to_image">
             文生图
           </Link>
         )}
         {frozen ? (
-          <span className="border px-2 py-1 opacity-50">图生图（已冻结）</span>
+          <span className="rp-btn rp-btn-sm pointer-events-none opacity-50">图生图（已冻结）</span>
         ) : (
-          <Link className="rp-btn border px-2 py-1" href="/realphotos/generate?mode=image_to_image">
+          <Link className="rp-btn rp-btn-sm" href="/realphotos/generate?mode=image_to_image">
             图生图
           </Link>
         )}
-      </section>
-
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 flex flex-wrap gap-2 text-sm">
-        <button className="rp-btn rp-btn-primary border px-2 py-1" type="button" onClick={() => goProcess()}>
+        <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+        <button className="rp-btn rp-btn-primary rp-btn-sm" type="button" onClick={() => goProcess()}>
           去处理（已选 {selectedIds.length}）
         </button>
-        <button className="rp-btn border px-2 py-1" type="button" onClick={() => void downloadSelected()}>
+        <button className="rp-btn rp-btn-sm" type="button" onClick={() => void downloadSelected()}>
           批量下载
         </button>
-        <button className="rp-btn rp-btn-danger border px-2 py-1" type="button" onClick={() => void removeSelected()}>
+        <button className="rp-btn rp-btn-danger rp-btn-sm" type="button" onClick={() => void removeSelected()}>
           批量删除
         </button>
       </section>
 
-      <section className="rp-filter rp-card rounded-xl border border-border bg-card shadow-sm p-4 flex flex-wrap items-center gap-3 text-sm">
+      <section className="rp-card rp-filter flex flex-wrap items-center gap-3 p-3 text-sm">
         <label>
           搜索
           <input
@@ -353,13 +423,14 @@ export default function RealphotosLibraryPage() {
             <option value="local_upload">本地上传</option>
             <option value="text_to_image">文生图</option>
             <option value="image_to_image">图生图</option>
+            <option value="url_import">URL导入</option>
           </select>
         </label>
         <span>
           第 {page} / {pageCount} 页 · 共 {total} 条 · 已选 {selectedIds.length} 张
         </span>
         <button
-          className="rp-btn border px-2 py-1"
+          className="rp-btn rp-btn-sm"
           type="button"
           disabled={page <= 1}
           onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -367,7 +438,7 @@ export default function RealphotosLibraryPage() {
           上一页
         </button>
         <button
-          className="rp-btn border px-2 py-1"
+          className="rp-btn rp-btn-sm"
           type="button"
           disabled={page >= pageCount}
           onClick={() => setPage((p) => p + 1)}
@@ -375,7 +446,8 @@ export default function RealphotosLibraryPage() {
           下一页
         </button>
       </section>
-      <table className="rp-table w-full text-sm">
+      <section className="rp-card overflow-hidden">
+      <table className="rp-table">
         <thead>
           <tr>
             <th className="text-left">
@@ -423,10 +495,10 @@ export default function RealphotosLibraryPage() {
                     <button
                       type="button"
                       className="block"
-                      onClick={() => setPreview({ id: item.id, url: thumbs[item.id] })}
+                      onClick={() => void openPreview(item)}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={thumbs[item.id]} alt="" className="h-10 w-10 object-cover border" />
+                      <img src={thumbs[item.id]} alt="" loading="lazy" decoding="async" className="h-10 w-10 rounded border object-cover" />
                     </button>
                   ) : (
                     <span className="inline-block h-10 w-10 border text-center leading-10 text-xs">图</span>
@@ -434,16 +506,29 @@ export default function RealphotosLibraryPage() {
                 </td>
                 <td>{item.displayName || `${item.originKind}_${item.id}`}</td>
                 <td>{originKindLabel(item.originKind)}</td>
-                <td>{item.locked ? '图片锁定' : '可用'}</td>
+                <td>{item.locked ? '已锁定' : '可用'}</td>
                 <td>
                   {item.width}×{item.height}
                 </td>
                 <td>{formatByteSizeMb(item.byteSize)}</td>
                 <td className="space-x-2">
-                  <button className="rp-btn border px-2 py-0.5" type="button" onClick={() => void downloadOne(item)}>
+                  {item.locked ? (
+                    <button
+                      className="rp-btn rp-btn-sm rp-btn-primary"
+                      type="button"
+                      onClick={() => {
+                        setAppealTarget(item)
+                        setAppealText('')
+                        setAppealNote('')
+                      }}
+                    >
+                      申诉
+                    </button>
+                  ) : null}
+                  <button className="rp-btn rp-btn-sm" type="button" onClick={() => void downloadOne(item)}>
                     下载
                   </button>
-                  <button className="rp-btn rp-btn-sm rp-btn-danger border px-2 py-0.5" type="button" onClick={() => void removeOne(item.id)}>
+                  <button className="rp-btn rp-btn-sm rp-btn-danger" type="button" onClick={() => void removeOne(item.id)}>
                     删除
                   </button>
                 </td>
@@ -452,10 +537,80 @@ export default function RealphotosLibraryPage() {
           )}
         </tbody>
       </table>
+      </section>
       {preview ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6" onClick={() => setPreview(null)}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => {
+            if (preview.fullUrl) URL.revokeObjectURL(preview.fullUrl)
+            setPreview(null)
+          }}
+        >
+          <button
+            className="absolute right-4 top-4 rp-btn rp-btn-sm bg-white/90"
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              if (preview.fullUrl) URL.revokeObjectURL(preview.fullUrl)
+              setPreview(null)
+            }}
+          >
+            关闭
+          </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview.url} alt={`资源 ${preview.id}`} className="max-h-full max-w-full border bg-white" />
+          <img
+            src={preview.fullUrl || preview.url}
+            alt={`资源 ${preview.id}`}
+            className="max-h-[92vh] max-w-[92vw] rounded bg-white object-contain shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          />
+          {preview.loading ? (
+            <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded bg-black/60 px-3 py-1 text-xs text-white">
+              正在加载大图…
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+      {appealTarget ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setAppealTarget(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="图片申诉"
+        >
+          <div className="rp-card w-full max-w-md space-y-3 p-4 text-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-medium">图片申诉 · {appealTarget.displayName || appealTarget.id}</h2>
+              <button className="rp-btn rp-btn-sm" type="button" onClick={() => setAppealTarget(null)}>
+                关闭
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              该图片已被锁定，申诉后由技术客服核实并决定是否解锁。
+            </p>
+            <textarea
+              className="rp-input w-full"
+              rows={3}
+              placeholder="申诉原因"
+              value={appealText}
+              onChange={(e) => setAppealText(e.target.value)}
+            />
+            {appealNote ? <p className="text-xs text-destructive">{appealNote}</p> : null}
+            <div className="flex justify-end gap-2">
+              <button className="rp-btn rp-btn-sm" type="button" onClick={() => setAppealTarget(null)}>
+                取消
+              </button>
+              <button
+                className="rp-btn rp-btn-sm rp-btn-primary"
+                type="button"
+                disabled={appealBusy}
+                onClick={() => void submitAppeal()}
+              >
+                {appealBusy ? '提交中…' : '提交申诉'}
+              </button>
+            </div>
+          </div>
         </div>
       ) : null}
     </main>

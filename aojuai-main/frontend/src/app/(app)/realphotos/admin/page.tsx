@@ -12,7 +12,7 @@ export default function RealphotosAdminPage() {
 
   return (
     <main className="space-y-4 p-6 text-sm">
-      <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm">
+      <section className="rp-card p-4 shadow-sm">
       <p>
         运营指标已并入
         <Link className="mx-1 underline" href="/realphotos/workspace">

@@ -9,6 +9,99 @@ grill_session: confirmed_2026-11-04
 grill_round2: confirmed_2026-11-05
 autonomous_stages: "S0-S6"
 s7_requires_admin_confirm: true
+s7_authorized: true
+s7_authorization: "管理员工单 REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16（2026-11-16，桌面工单即授权载体）"
+s7_prod_deploy_2026_11_16:
+  work_order: REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16
+  branch: cursor/s7-prod-deploy-9973
+  baseline_main: 3ed1088
+  t0_checklist: docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md#§10.9
+  t01_decision: B_same_host_postgres_accepted_risk
+  t03_decision: formal_supplier_api_type_import
+  target_host: 47.242.28.49
+  target_domain: https://exif-demo.honeybadgersoft.com
+  storage_root: /root/蜜獾原图-v2/www/mhyt
+  status: deployed_and_verified_pending_owner_merge
+  markers:
+    T0_S7_CHECKLIST_PASS: true
+    T1_INFRA_PASS: true
+    T2_SECRETS_PASS: true
+    T3_DEPLOY_PASS: true
+    T4_SMOKE_PASS: true
+    T5_M_PASS: true
+    T5_O_PASS: true
+    T5_T_PASS: true
+    T5_A_PASS: true
+    T5_PROD_E2E_PASS: true
+    T6_GATE_PASS: true
+    T7_PR_PASS: true
+    REALPHOTOS_S7_PROD_E2E_PASS: true
+  final_detection_model: gemini-2.5-flash (2026-11-17 switch; task5 detector verified)
+  ui_revision_2026_11_17:
+    branch: cursor/s7-prod-deploy-9973
+    deploy_commits: [5e01cb1, 791e9f4, 79c1621, 29e833e, 703701c]
+    nav: flat (no root 蜜獾原图, no 概览/首页, no second-level menus)
+    lists: 10 per page; time format YYYY-MM-DD HH:mm
+    ledger: operator shows username + role
+    logs: real timestamp column (pageSize 10)
+    messages: note 消息保留30天; 补发 -> 标为未读 (POST /inbox/{id}/unread)
+    workspace: search box removed
+    verify: playwright DOM checks fail_count=0
+  ui_revision_2026_11_17_b:
+    commit: f9a5c94
+    scope: [workspace labels, task-detail sections, prompts dialog, imports note, batch pick button, preset detail]
+    build_id: V1FDJ934Zi5HhJyTz6GGv
+    verify: playwright DOM 19 checks fail_count=0
+  ui_revision_2026_11_17_c:
+    commits: [505a942, 831283b, 011af0c]
+    build_id: T5pwVCHxxm3eMVL7HqGXO
+    preset_full_params: GET /realphotos/presets/{code} -> 55 params; batch panel renders 41 dt fields (prompts excluded)
+    channel_edit: PUT /provider-contracts/{duty} (modelId/purpose/baseUrl) + 修改 dialog
+    import_channel: disabled (SERVICE_NOT_CONFIGURED); temp host not in use
+    checks_report: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-CHECKS-2026-11-17.md
+  e2e_full_2026_11_17:
+    report: docs/mihuanyuantu-v2/input/REALPHOTOS-E2E-REPORT-2026-11-17.md
+  prelaunch_2026_11_17:
+    release: 90e5ad1
+    build_id: InQPFm3W-gnIE-YvWJqsM
+    login_cleanup: demo accounts removed; product tags/hero/footer rewritten; register hint removed
+    checklist: docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-CHECKLIST-2026-11-17.md
+    upload_413: nginx 25m -> 200m + chunked upload (5/req) + specific 413 message
+    roles: rp_admin / rp_merchant_a1 / rp_order_support / rp_tech_support
+    restored: import channel disabled + base 47.85.47.252, detection gemini-2.5-flash
+  evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-e2e.txt
+  closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md
+  blocker: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md
+  release: 3ed1088 at /root/蜜獾原图-v2/releases/3ed1088 (current symlink)
+  database: realphotos_prod @127.0.0.1:5432 same-host PG16.15, role realphotos_app non-super
+  units: realphotos-api/web/process/notify/cleanup (enabled+active)
+  public_entry: serving_application
+  unblock_decision: A_outbound_https_proxy (admin 2026-11-16)
+  unblock_state: resolved_via_egress_proxy
+  proxy_script: /root/蜜獾原图-v2/shared/09_proxy.sh (apply <proxy-url> | revert)
+  roll_forward_cmd: sh /root/蜜獾原图-v2/shared/06_nginx.sh
+  rollback_cmd: sh /root/蜜獾原图-v2/shared/08_rollback.sh
+  egress_proxy:
+    unit: gemini-egress-proxy.service (Xray 26.11.9, enabled+active)
+    local_endpoint: http://127.0.0.1:7890
+    exit_ip: 150.241.181.64
+    dependency: third_party_subscription_node
+    expiry_warning: "node name states 2026-12-06; replace with owned SG/JP proxy (R7)"
+  detection_task_4:
+    failure_class: detection_not_passed
+    detector: gemini-3.1-pro-preview
+    total_score: 52
+    output_bytes: 12370703
+    output_expires_at: "2026-11-23T15:50:12Z"
+    gateway_download: http=200 jpeg_header=true
+    credit_disposition: released_detection_not_passed
+  supplier_live_samples:
+    pre_review: dashscope qwen3-vl-plus http=200
+    generation: aoju gpt-image-2 http=200 asset_id=4 1536x1024
+    final_detection: gemini-3.1-pro-preview http=200 via egress proxy; task4 total_score=52 passed=false
+  defects_fixed: [D1_rp_table_unused_type, D2_schedule_hooks_after_return, D3_exiftool_missing, D4_sqlalchemy_21_psycopg3, D5_gemini_key_parse]
+  e2e_log: /tmp/realphotos-s7-prod-e2e.log
+  production_billing: false
 s0_coding_authorized: true
 s0_pause_after_milestone: true
 
@@ -515,18 +608,23 @@ known_conflicts:
     detail: "前置校验用库内资产的软删、不属于提交账号或入库字节再次 inspect 失败，发生在按张冻结之后。PostgreSQL 部分成功的可下载张使用 detection_mode=pass，detector=fixture，任务 40 消费 10、任务 41 释放 10。这不是新的 Gemini 小样，也不代替任务 29。SQLite 单测没有代替 /tmp/s4-pg-e2e.log。"
 
 next_action:
-  owner: collaborator
-  action: "PRELAUNCH-E2E：推 cursor/prelaunch-e2e-9973 开 PR；非作者 Owner squash。禁S7；禁自评自合。"
-  work_order: "REALPHOTOS-PRELAUNCH-E2E-2026-11-15"
-  prior_work_order: "UI polish #64 merged; OPS-DESK-UX-FIX #60; OPS-DESK-UX #59"
-  branch: cursor/prelaunch-e2e-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/65"
-  tip: bcc3320
-  baseline_main: 6bb498a
-  e2e_evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-e2e.txt
-  evidence_marker: REALPHOTOS_PRELAUNCH_E2E_PASS
+  owner: owner_merge
+  action: "S7 已部署并通过四角色 + 三岗供应商生产端测（REALPHOTOS_S7_PROD_E2E_PASS）。下一步：Owner 以非作者账号审合 PR #68（禁自评自合），通过后打 v2.M.P；并在 2026-12-06 前把第三方订阅出口代理替换为自有 SG/JP 代理（R7）。收费保持 false。"
+  work_order: "REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16"
+  branch: cursor/s7-prod-deploy-9973
+  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/68"
+  blocker: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md
+  closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md
+  production_entry: serving_application
   production_billing: false
-  r9_s7: blocked
+  prior_work_order: "REALPHOTOS-PRELAUNCH-E2E-2026-11-15（#65 merged）；UI polish #64；OPS-DESK-UX-FIX #60；OPS-DESK-UX #59"
+  prior_branch: cursor/prelaunch-e2e-9973
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/65"
+  prior_tip: bcc3320
+  prior_baseline_main: 6bb498a
+  prior_e2e_evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PRELAUNCH-E2E-2026-11-15-e2e.txt
+  prior_evidence_marker: REALPHOTOS_PRELAUNCH_E2E_PASS
+  r9_s7: authorized_in_progress_blocked_supplier_detection
   closed_ops_desk_ux:
     pr: 59
     status: merged

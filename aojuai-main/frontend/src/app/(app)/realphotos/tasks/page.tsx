@@ -10,6 +10,7 @@ import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { RpSection } from '@/components/realphotos/rp-section'
 import { RpDialog, RpEmpty, RpFilterBar, RpPagination, RpStatus, RpTable, RpTh } from '@/components/realphotos/rp-table'
 import { rpSelectClass, toastTask } from '@/components/realphotos/surface'
+import { PRESET_FIELD_DEFS, type PresetFieldDef } from '@/lib/realphotos-preset-fields'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import {
   DETECTION_PASS_SCORE,
@@ -20,10 +21,11 @@ import {
   detectionNotPassedExplanation,
   failureClassLabelForTask,
   generationModeLabel,
-  gpsModeLabel,
   presetDisplayName,
   taskStatusLabel,
 } from '@/lib/realphotos-labels'
+import { formatDateTimeShort } from '@/lib/realphotos-time'
+import { ticketStatusLabel, ticketTypeLabel } from '@/lib/realphotos-labels'
 
 type Detection = {
   accepted?: boolean
@@ -45,8 +47,11 @@ type ProcessingTask = {
   status: string
   presetCode?: string
   presetSnapshot?: Record<string, unknown> | null
+  taskNo?: number | null
   outputObjectKey?: string | null
   creditDisposition?: string | null
+  imageLocked?: boolean
+  imageLockReason?: string
   failureClass?: string | null
   failureMessage?: string | null
   failureTitle?: string | null
@@ -157,12 +162,16 @@ function DetectionReport({ detection }: { detection: Detection | null | undefine
         ))}
       </div>
       <dl className="rp-kv">
-        <dt>模型结果</dt>
-        <dd>{boolPassLabel(detection.passed)}</dd>
+        <dt>模型检测</dt>
+        <dd className={detection.passed ? 'text-emerald-600' : 'text-destructive'}>
+          {boolPassLabel(detection.passed)}
+        </dd>
         {detection.accepted !== undefined ? (
           <>
-            <dt>平台接受</dt>
-            <dd>{boolPassLabel(detection.accepted)}</dd>
+            <dt>平台检测</dt>
+            <dd className={detection.accepted ? 'text-emerald-600' : 'text-destructive'}>
+              {boolPassLabel(detection.accepted)}
+            </dd>
           </>
         ) : null}
         <dt>检测器</dt>
@@ -185,6 +194,15 @@ function DetectionReport({ detection }: { detection: Detection | null | undefine
   )
 }
 
+function presetFieldText(preset: Record<string, unknown>, field: PresetFieldDef): string {
+  const legacy = (preset.legacyParameters as Record<string, unknown> | undefined) || {}
+  if (field.column) {
+    const direct = preset[field.column]
+    if (direct !== undefined && direct !== null && String(direct).trim() !== '') return String(direct)
+  }
+  const raw = legacy[field.key]
+  return raw === undefined || raw === null ? '' : String(raw)
+}
 export default function RealphotosTasksPage() {
   const [tab, setTab] = useState<'processing' | 'generation'>('processing')
   const [procPage, setProcPage] = useState(1)
@@ -196,6 +214,10 @@ export default function RealphotosTasksPage() {
   const [genTotal, setGenTotal] = useState(0)
   const [genItems, setGenItems] = useState<GenerationTask[]>([])
   const [checked, setChecked] = useState<Record<string, boolean>>({})
+  // 2026-11-17：图片申诉从工作台迁到任务详情（管理员确认方案 A）
+  const [myTickets, setMyTickets] = useState<
+    Array<{ id: string; ticketType: string; status: string; reason: string; createdAt?: string | null }>
+  >([])
   const [detail, setDetail] = useState<ProcessingTask | null>(null)
   const [genDetail, setGenDetail] = useState<GenerationTask | null>(null)
   const [notice, setNotice] = useState('')
@@ -235,6 +257,12 @@ export default function RealphotosTasksPage() {
   useEffect(() => {
     void apiFetch<{ unreadCount?: number }>('/api/v1/realphotos/inbox')
       .then((data) => setUnreadHint(Number(data.unreadCount || 0)))
+      .catch(() => undefined)
+  }, [])
+
+  useEffect(() => {
+    void apiFetch<{ items: typeof myTickets }>('/api/v1/realphotos/my-support-tickets')
+      .then((data) => setMyTickets(data.items || []))
       .catch(() => undefined)
   }, [])
 
@@ -584,7 +612,36 @@ export default function RealphotosTasksPage() {
       </div>
 
       {tab === 'processing' ? (
-        <section className="rp-card space-y-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+        <section className="rp-card space-y-3 p-4">
+          {myTickets.length > 0 ? (
+            <details className="rp-card p-3 text-sm">
+              <summary className="cursor-pointer font-medium">我的申诉（{myTickets.length}）</summary>
+              <table className="rp-table mt-2 w-full">
+                <thead>
+                  <tr>
+                    <th className="text-left">编号</th>
+                    <th className="text-left">类型</th>
+                    <th className="text-left">状态</th>
+                    <th className="text-left">原因</th>
+                    <th className="text-left">时间</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {myTickets.slice(0, 10).map((row) => (
+                    <tr key={row.id}>
+                      <td>{row.id}</td>
+                      <td>{ticketTypeLabel(row.ticketType)}</td>
+                      <td>{ticketStatusLabel(row.status)}</td>
+                      <td className="max-w-md truncate" title={row.reason}>
+                        {row.reason}
+                      </td>
+                      <td>{formatDateTimeShort(row.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </details>
+          ) : null}
           <RpFilterBar>
             <RpField label="状态">
               <select
@@ -671,7 +728,7 @@ export default function RealphotosTasksPage() {
                         <span className="inline-block h-10 w-10" aria-hidden />
                       )}
                     </td>
-                    <td>{item.id}</td>
+                    <td>{item.taskNo ?? item.id}</td>
                     <td>
                       <RpStatus tone={statusTone(item.status)}>{taskStatusLabel(item.status)}</RpStatus>
                     </td>
@@ -713,29 +770,28 @@ export default function RealphotosTasksPage() {
           {downloadNote ? <p className="text-sm">{downloadNote}</p> : null}
           {detail ? (
             <RpDialog
-              title={`处理任务 ${detail.id}`}
-              label={`处理任务 ${detail.id} 详情`}
+              title={`处理任务 ${detail.taskNo ?? detail.id}`}
+              label={`处理任务 ${detail.taskNo ?? detail.id} 详情`}
               onClose={() => setDetail(null)}
             >
-              <RpSection title="基本" tone="basic">
+              <RpSection title="检测报告" tone="report">
+                <DetectionReport detection={detail.detection} />
+              </RpSection>
+              <RpSection title="基本信息" tone="basic">
                 <dl className="rp-kv">
                   <dt>状态</dt>
                   <dd>{taskStatusLabel(detail.status)}</dd>
                   <dt>预设名称</dt>
                   <dd>{presetDisplayName(detail)}</dd>
                   <dt>创建时间</dt>
-                  <dd>{detail.createdAt || '—'}</dd>
+                  <dd>{formatDateTimeShort(detail.createdAt) || '—'}</dd>
                   {detail.copiedFrom ? (
                     <>
                       <dt>复制自</dt>
                       <dd>{detail.copiedFrom}</dd>
                     </>
                   ) : null}
-                </dl>
-              </RpSection>
-              <RpSection title="积分" tone="credit">
-                <dl className="rp-kv">
-                  <dt>处置</dt>
+                  <dt>积分处置</dt>
                   <dd>{creditDispositionLabel(detail.creditDisposition)}</dd>
                   {detail.billingMode ? (
                     <>
@@ -743,71 +799,32 @@ export default function RealphotosTasksPage() {
                       <dd>{detail.billingMode}</dd>
                     </>
                   ) : null}
+                  <dt>设备参数</dt>
+                  <dd>
+                    {/* 2026-11-17：默认收起，点击查看全部（与批量原图页的预设展示一致） */}
+                    <details className="space-y-2">
+                      <summary className="cursor-pointer text-primary">查看全部参数</summary>
+                      <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
+                        {PRESET_FIELD_DEFS.map((field) => {
+                          const text = presetFieldText(detail.presetSnapshot || {}, field)
+                          if (!text) return null
+                          return (
+                            <div key={field.key} className="flex gap-2 text-xs">
+                              <dt className="w-24 shrink-0 text-muted-foreground">{field.label}</dt>
+                              <dd className="break-all">{text}</dd>
+                            </div>
+                          )
+                        })}
+                      </dl>
+                    </details>
+                  </dd>
                 </dl>
-              </RpSection>
-              <RpSection title="失败" tone="failure">
-                <dl className="rp-kv">
-                  <dt>失败原因</dt>
-                  <dd>{failureClassLabelForTask(detail.failureClass, detail.detectionMode)}</dd>
-                  {detail.detectionMode ? (
-                    <>
-                      <dt>检测模式</dt>
-                      <dd>
-                        {detail.detectionMode === 'technical' ? '历史联调替身（已停用）' : detail.detectionMode}
-                      </dd>
-                    </>
-                  ) : null}
-                  {detail.failureMessage ? (
-                    <>
-                      <dt>详情</dt>
-                      <dd>
-                        {detail.failureTitle ? `${detail.failureTitle} — ` : ''}
-                        {detail.failureMessage}
-                      </dd>
-                    </>
-                  ) : null}
-                </dl>
-              </RpSection>
-              {detail.gpsWrite ? (
-                <RpSection title="EXIF / GPS" tone="gps">
-                  <dl className="rp-kv">
-                    <dt>GPS 模式</dt>
-                    <dd>
-                      {detail.gpsWrite.gpsMode ? gpsModeLabel(String(detail.gpsWrite.gpsMode)) : '—'}
-                    </dd>
-                    <dt>是否写入</dt>
-                    <dd>{detail.gpsWrite.written ? '是' : '否'}</dd>
-                    <dt>GPS 原因</dt>
-                    <dd>{detail.gpsWrite.reason || '—'}</dd>
-                    {detail.gpsWrite.actualGps ? (
-                      <>
-                        <dt>实际坐标</dt>
-                        <dd>
-                          {detail.gpsWrite.actualGps.latitude ?? '—'}, {detail.gpsWrite.actualGps.longitude ?? '—'}
-                          ，海拔 {detail.gpsWrite.actualGps.altitude ?? '—'}
-                        </dd>
-                      </>
-                    ) : null}
-                  </dl>
-                  {detail.gpsWrite.failedTags && detail.gpsWrite.failedTags.length > 0 ? (
-                    <ul className="list-inside list-disc">
-                      {detail.gpsWrite.failedTags.map((row) => (
-                        <li key={`${row.tag}-${row.reason}`}>
-                          失败标签 {row.tag || '—'}: {row.reason || '回读失败'}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </RpSection>
-              ) : null}
-              <RpSection title="检测报告" tone="report">
-                <DetectionReport detection={detail.detection} />
               </RpSection>
             </RpDialog>
           ) : null}
         </section>
       ) : (
-        <section className="rp-card space-y-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+        <section className="rp-card space-y-3 p-4">
           <RpFilterBar>
             <RpField label="模式">
               <select

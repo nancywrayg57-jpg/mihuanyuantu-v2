@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.capabilities.realphotos.services.job_service import RealphotosJobService
+from app.capabilities.realphotos.services.job_service import QUEUE_POLICY, RealphotosJobService
 from app.capabilities.realphotos.worker_roles import PROCESS_JOB_KINDS, job_kinds_for_role
 from app.core.logger import get_logger
-from app.core.task_queue import QueuePolicy
+from app.core.task_queue import QueuePolicy, record_failure
 from app.core.worker_registry import WorkerDefinition
 from app.infrastructure.database.session import async_session_factory
 
@@ -98,27 +98,60 @@ class RealphotosRoleTaskSource:
                 "worker": self.worker_id,
                 "role": self.role,
             }
-            if job.job_kind == "process_image":
-                from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
+            try:
+                if job.job_kind == "process_image":
+                    from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
 
-                await RealphotosS1Service(db).execute_queued(job)
-            elif job.job_kind == "inbox_cleanup":
-                from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
+                    await RealphotosS1Service(db).execute_queued(job)
+                elif job.job_kind == "inbox_cleanup":
+                    from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
 
-                cleanup = await RealphotosS1Service(db).cleanup_expired_inbox()
-                result.update(cleanup)
-            elif job.job_kind == "output_cleanup":
-                from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
+                    cleanup = await RealphotosS1Service(db).cleanup_expired_inbox()
+                    result.update(cleanup)
+                elif job.job_kind == "output_cleanup":
+                    from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
 
-                cleanup = await RealphotosS1Service(db).cleanup_expired_outputs()
-                result.update(cleanup)
-            elif job.job_kind == "library_orphan_cleanup":
-                from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
+                    cleanup = await RealphotosS1Service(db).cleanup_expired_outputs()
+                    result.update(cleanup)
+                elif job.job_kind == "library_orphan_cleanup":
+                    from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
 
-                cleanup = await RealphotosS1Service(db).cleanup_library_orphans()
-                result.update(cleanup)
-            await service.complete_success(job=job, result=result)
-            await db.commit()
+                    cleanup = await RealphotosS1Service(db).cleanup_library_orphans()
+                    result.update(cleanup)
+                await service.complete_success(job=job, result=result)
+                await db.commit()
+            except Exception as exc:
+                # 2026-11-17 修复：作业失败必须落库（原实现只记日志，job 会永久停在 running）。
+                await db.rollback()
+                try:
+                    failed = await service.get_job(
+                        tenant_id=int(claimed["tenant_id"]),
+                        job_id=int(claimed["job_id"]),
+                    )
+                    state = record_failure(
+                        failed,
+                        policy=QUEUE_POLICY,
+                        error=f"{type(exc).__name__}: {exc}",
+                    )
+                    failed.claimed_by = None
+                    failed.claimed_at = None
+                    if hasattr(failed, "last_error"):
+                        failed.last_error = f"{type(exc).__name__}: {exc}"[:500]
+                    await db.commit()
+                except Exception:  # noqa: BLE001 - 记录失败不能掩盖原始异常
+                    await db.rollback()
+                    state = "unknown"
+                logger.warning(
+                    "realphotos_role_job_failed",
+                    job_id=int(claimed["job_id"]),
+                    tenant_id=int(claimed["tenant_id"]),
+                    role=self.role,
+                    job_kind=str(job.job_kind),
+                    error_type=type(exc).__name__,
+                    error=str(exc)[:200],
+                    state=state,
+                )
+                raise
             logger.info(
                 "realphotos_role_job_succeeded",
                 job_id=int(job.id),

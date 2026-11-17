@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { toast } from 'sonner'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch } from '@/lib/api'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
@@ -32,6 +33,8 @@ export function RealphotosGenerateClient() {
   const [negative, setNegative] = useState('')
   const [reference, setReference] = useState<File | null>(null)
   const [message, setMessage] = useState('')
+  // 2026-11-17：提交生图立即给出反馈（生图耗时较长，不能让用户以为没点到）
+  const [submitting, setSubmitting] = useState(false)
   const [templates, setTemplates] = useState<Template[]>([])
   const [templateId, setTemplateId] = useState('')
   const [optId, setOptId] = useState<string | null>(null)
@@ -167,6 +170,8 @@ export function RealphotosGenerateClient() {
       toastTask(text, false)
       return
     }
+    setSubmitting(true)
+    const loadingToast = toast.loading('正在提交生图，请稍候…')
     const seedField = seedSupported && seed.trim() ? seed.trim() : ''
     const fields = {
       mode,
@@ -215,11 +220,13 @@ export function RealphotosGenerateClient() {
             : '未填写种子（未发送）'
       const text = `已入库。生图不会自动进入处理。${sizeNote}。${submittedSeedNote}`
       setMessage(text)
-      toastTask(text, true)
+      toast.success('生图成功', { id: loadingToast })
     } catch (error: unknown) {
       const text = error instanceof ApiError ? error.message : '提交失败'
       setMessage(text)
-      toastTask(text, false)
+      toast.error(text, { id: loadingToast })
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -227,11 +234,11 @@ export function RealphotosGenerateClient() {
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">生图入库</h1>
       <p className="text-sm">{message}</p>
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
+      <section className="rp-card space-y-3 p-4">
         <h2 className="text-sm font-medium">选用 AI 提示词模板</h2>
         <div className="flex flex-wrap gap-2 text-sm">
           <ListSearch value={templateSearch} placeholder="模板名称 / 提示词" onChange={setTemplateSearch} />
-          <select className="border px-2 py-1" value={templateId} onChange={(event) => setTemplateId(event.target.value)}>
+          <select className="rp-input" value={templateId} onChange={(event) => setTemplateId(event.target.value)}>
             <option value="">选择模板</option>
             {filteredTemplates.map((item) => (
               <option key={item.id} value={item.id}>
@@ -239,12 +246,12 @@ export function RealphotosGenerateClient() {
               </option>
             ))}
           </select>
-          <button className="rp-btn border px-3 py-1" type="button" onClick={applyTemplate}>
+          <button className="rp-btn" type="button" onClick={applyTemplate}>
             选用
           </button>
         </div>
       </section>
-      <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
+      <section className="rp-card space-y-3 p-4">
         <h2 className="text-sm font-medium">提交</h2>
         <label className="block text-sm">
           模式
@@ -254,20 +261,28 @@ export function RealphotosGenerateClient() {
           </select>
         </label>
         {mode === 'image_to_image' ? (
-          <label className="block text-sm">
-            参考图
-            <input
-              className="mt-1 block text-sm"
-              type="file"
-              accept="image/jpeg,image/png,.jpg,.jpeg,.png"
-              onChange={(event) => void onReference(event.target.files?.[0] || null)}
-            />
-          </label>
+          <div className="block text-sm">
+            <span className="mb-1 block">参考图</span>
+            <div className="flex items-center gap-2">
+              <label className="rp-btn rp-btn-sm cursor-pointer">
+                选择文件
+                <input
+                  className="sr-only"
+                  type="file"
+                  accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+                  onChange={(event) => void onReference(event.target.files?.[0] || null)}
+                />
+              </label>
+              <span className="max-w-[14rem] truncate text-xs text-muted-foreground">
+                {reference?.name || '未选择文件'}
+              </span>
+            </div>
+          </div>
         ) : null}
         <label className="block text-sm">
           正向提示词
           <textarea
-            className="mt-1 block w-full max-w-xl border px-2 py-1"
+            className="rp-input mt-1 block w-full max-w-xl"
             rows={3}
             value={prompt}
             onChange={(event) => {
@@ -279,7 +294,7 @@ export function RealphotosGenerateClient() {
         <label className="block text-sm">
           负向提示词
           <textarea
-            className="mt-1 block w-full max-w-xl border px-2 py-1"
+            className="rp-input mt-1 block w-full max-w-xl"
             rows={2}
             value={negative}
             onChange={(event) => setNegative(event.target.value)}
@@ -288,37 +303,34 @@ export function RealphotosGenerateClient() {
         <div className="flex flex-wrap gap-3 text-sm">
           <label>
             宽
-            <input className="ml-1 border px-2 py-1 w-24" value={width} onChange={(e) => setWidth(e.target.value)} />
+            <input className="rp-input ml-1 w-24" value={width} onChange={(e) => setWidth(e.target.value)} />
           </label>
           <label>
             高
-            <input className="ml-1 border px-2 py-1 w-24" value={height} onChange={(e) => setHeight(e.target.value)} />
+            <input className="rp-input ml-1 w-24" value={height} onChange={(e) => setHeight(e.target.value)} />
           </label>
-          <label className={seedSupported ? '' : 'text-neutral-500'} data-testid="generation-seed">
-            {seedSupported ? '可选种子' : '可选种子（当前模型不支持）'}
-            <input
-              className="ml-1 w-40 border px-2 py-1 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500 disabled:opacity-70"
-              value={seedSupported ? seed : ''}
-              disabled={!seedSupported}
-              aria-disabled={!seedSupported}
-              data-seed-supported={seedSupported ? 'true' : 'false'}
-              onChange={(e) => {
-                if (seedSupported) setSeed(e.target.value)
-              }}
-              placeholder={seedSupported ? '留空则不传' : '不可填写'}
-              title={seedNote}
-            />
-          </label>
-          {!seedSupported ? <span className="text-xs text-neutral-500">{seedNote}</span> : null}
+          {seedSupported ? (
+            <label data-testid="generation-seed">
+              可选种子
+              <input
+                className="rp-input ml-1 w-40"
+                value={seed}
+                data-seed-supported="true"
+                onChange={(e) => setSeed(e.target.value)}
+                placeholder="留空则不传"
+                title={seedNote}
+              />
+            </label>
+          ) : null}
         </div>
         {lastSizes ? <p className="text-xs text-muted-foreground">{lastSizes}</p> : null}
         <div className="space-y-2 text-sm">
           <div className="flex flex-wrap gap-2">
-            <button className="rp-btn border px-3 py-1" type="button" onClick={() => void optimize()}>
+            <button className="rp-btn" type="button" onClick={() => void optimize()}>
               提示词优化
             </button>
             <button
-              className="rp-btn border px-3 py-1 disabled:opacity-40"
+              className="rp-btn disabled:opacity-40"
               type="button"
               disabled={!optId || !optimizedText}
               onClick={() => void confirmOpt()}
@@ -336,9 +348,16 @@ export function RealphotosGenerateClient() {
             </div>
           ) : null}
         </div>
-        <button className="rp-btn border px-3 py-1 text-sm" type="button" onClick={() => void submit()}>
-          提交生图
-        </button>
+        <div className="flex justify-end border-t pt-3">
+          <button
+            className="rp-btn rp-btn-primary rp-btn-lg"
+            type="button"
+            disabled={submitting}
+            onClick={() => void submit()}
+          >
+            {submitting ? '提交中…' : '提交生图'}
+          </button>
+        </div>
       </section>
     </main>
   )

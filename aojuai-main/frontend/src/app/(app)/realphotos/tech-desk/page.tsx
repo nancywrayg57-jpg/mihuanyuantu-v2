@@ -5,11 +5,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { toastTask } from '@/components/realphotos/surface'
-import { ApiError, apiFetch } from '@/lib/api'
+import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import {
   ticketStatusLabel,
   ticketTypeLabel,
 } from '@/lib/realphotos-labels'
+import { formatDateTimeShort } from '@/lib/realphotos-time'
 
 type Ticket = {
   id: number
@@ -61,6 +62,12 @@ export default function RealphotosTechDeskPage() {
   const [appealReason, setAppealReason] = useState('')
   const [resolveNote, setResolveNote] = useState('')
   const [resolveOutcome, setResolveOutcome] = useState('accepted')
+  // 2026-11-17：办结时可选择解除该任务图片的锁定（FR-006）
+  const [unlockOnResolve, setUnlockOnResolve] = useState(true)
+  // 2026-11-17：申诉工单展示关联图片缩略图，点击看大图
+  const [thumbUrl, setThumbUrl] = useState('')
+  const [largeUrl, setLargeUrl] = useState('')
+  const [previewOpen, setPreviewOpen] = useState(false)
   const [heldDrafts, setHeldDrafts] = useState<Record<number, { amount: string; reason: string }>>({})
   const [message, setMessage] = useState('')
   const [ticketType, setTicketType] = useState('all')
@@ -114,6 +121,62 @@ export default function RealphotosTechDeskPage() {
     setTicketPageSize(Number(data?.pageSize) || 20)
     setTicketTotal(Number(data?.total) || (Array.isArray(data?.items) ? data.items.length : 0))
     setCanAppeal(true)
+  }
+
+  useEffect(() => {
+    if (!detail || detail.ticketType !== 'image_appeal') {
+      setThumbUrl('')
+      return
+    }
+    let revoked = ''
+    let cancelled = false
+    void (async () => {
+      try {
+        const blob = await apiFetchBlob(`/api/v1/realphotos/support-tickets/${detail.id}/thumbnail?thumb=480`)
+        if (cancelled) return
+        revoked = URL.createObjectURL(blob)
+        setThumbUrl(revoked)
+      } catch {
+        if (!cancelled) setThumbUrl('')
+      }
+    })()
+    return () => {
+      cancelled = true
+      if (revoked) URL.revokeObjectURL(revoked)
+    }
+  }, [detail])
+
+  function parseTaskNo(reason: string | null | undefined): number | undefined {
+    const match = /#(\d+)/.exec(String(reason || ''))
+    return match ? Number(match[1]) : undefined
+  }
+
+  async function unlockTicketImage() {
+    if (!detail) return
+    try {
+      const res = await apiFetch<{ unlocked?: number }>(
+        `/api/v1/realphotos/support-tickets/${detail.id}/unlock`,
+        { method: 'POST' },
+      )
+      toastTask(res?.unlocked ? `已解除图片锁定（${res.unlocked} 条）` : '该图片已解锁', true)
+    } catch (error: unknown) {
+      toastTask(error instanceof ApiError ? error.message : '解锁失败', false)
+    }
+  }
+
+  async function openLarge() {
+    if (!detail) return
+    try {
+      const blob = await apiFetchBlob(`/api/v1/realphotos/support-tickets/${detail.id}/thumbnail?thumb=1600`)
+      const url = URL.createObjectURL(blob)
+      setLargeUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev)
+        return url
+      })
+      setPreviewOpen(true)
+    } catch (error: unknown) {
+      toastTask(error instanceof ApiError ? error.message : '大图加载失败', false)
+    }
   }
 
   useEffect(() => {
@@ -248,9 +311,16 @@ export default function RealphotosTechDeskPage() {
     try {
       const updated = await apiFetch<Ticket>(`/api/v1/realphotos/support-tickets/${detail.id}/resolve`, {
         method: 'POST',
-        body: JSON.stringify({ outcome: resolveOutcome, note: resolveNote }),
+        body: JSON.stringify({
+          outcome: resolveOutcome,
+          note: resolveNote,
+          ...(detail && unlockOnResolve ? { unlockTaskId: parseTaskNo(detail.reason) } : {}),
+        }),
       })
-      const text = `工单 ${updated.id} 已办结（${updated.resolutionOutcome}）；办结不等于解锁图片`
+      const unlock = (updated as unknown as { imageUnlock?: { unlocked?: number } }).imageUnlock
+      const text = unlock?.unlocked
+        ? `工单 ${updated.id} 已办结，并解除图片锁定（${unlock.unlocked} 条）`
+        : `工单 ${updated.id} 已办结（${updated.resolutionOutcome}）`
       setMessage(text)
       toastTask(text, true)
       closeHandle()
@@ -309,14 +379,14 @@ export default function RealphotosTechDeskPage() {
       {canUnfreeze ? (
         <div className="flex gap-2 text-sm">
           <button
-            className={`rp-btn border px-3 py-1 ${deskTab === 'appeals' ? 'bg-muted' : ''}`}
+            className={`rp-btn ${deskTab === 'appeals' ? 'bg-muted' : ''}`}
             type="button"
             onClick={() => setDeskTab('appeals')}
           >
             账号申诉
           </button>
           <button
-            className={`rp-btn border px-3 py-1 ${deskTab === 'held' ? 'bg-muted' : ''}`}
+            className={`rp-btn ${deskTab === 'held' ? 'bg-muted' : ''}`}
             type="button"
             onClick={() => {
               setDeskTab('held')
@@ -329,7 +399,7 @@ export default function RealphotosTechDeskPage() {
       ) : null}
 
       {(!canUnfreeze || deskTab === 'appeals') ? (
-        <section className="rp-card rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
+        <section className="rp-card p-4 shadow-sm space-y-3">
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <label>
               类型筛选
@@ -342,37 +412,37 @@ export default function RealphotosTechDeskPage() {
             </label>
             <ListSearch value={search} placeholder="编号 / 租户 / 账号 / 原因" onChange={setSearch} />
           </div>
-          <table className="rp-table w-full border-collapse text-sm">
+          <table className="rp-table">
             <thead>
               <tr>
-                <th className="border px-2 py-1 text-left">编号</th>
-                <th className="border px-2 py-1 text-left">租户</th>
-                <th className="border px-2 py-1 text-left">账号</th>
-                <th className="border px-2 py-1 text-left">类型</th>
-                <th className="border px-2 py-1 text-left">状态</th>
-                <th className="border px-2 py-1 text-left">原因</th>
-                <th className="border px-2 py-1 text-left">操作</th>
+                <th className="text-left">编号</th>
+                <th className="text-left">租户</th>
+                <th className="text-left">账号</th>
+                <th className="text-left">类型</th>
+                <th className="text-left">状态</th>
+                <th className="text-left">原因</th>
+                <th className="text-left">操作</th>
               </tr>
             </thead>
             <tbody>
               {visible.length === 0 ? (
                 <tr>
-                  <td className="border px-2 py-1" colSpan={7}>
+                  <td colSpan={7}>
                     尚无工单
                   </td>
                 </tr>
               ) : (
                 visible.map((item) => (
                   <tr key={item.id}>
-                    <td className="border px-2 py-1">{item.id}</td>
-                    <td className="border px-2 py-1">{tenantLabel(item)}</td>
-                    <td className="border px-2 py-1">{accountLabel(item)}</td>
-                    <td className="border px-2 py-1">{ticketTypeLabel(item.ticketType)}</td>
-                    <td className="border px-2 py-1">{ticketStatusLabel(item.status)}</td>
-                    <td className="border px-2 py-1">{item.reason}</td>
-                    <td className="border px-2 py-1">
+                    <td>{item.id}</td>
+                    <td>{tenantLabel(item)}</td>
+                    <td>{accountLabel(item)}</td>
+                    <td>{ticketTypeLabel(item.ticketType)}</td>
+                    <td>{ticketStatusLabel(item.status)}</td>
+                    <td>{item.reason}</td>
+                    <td>
                       <button
-                        className="rp-btn border px-2 py-0.5"
+                        className="rp-btn rp-btn-sm"
                         type="button"
                         onClick={() => openHandle(item)}
                       >
@@ -386,7 +456,7 @@ export default function RealphotosTechDeskPage() {
           </table>
           <div className="flex items-center gap-2 text-sm">
             <button
-              className="rp-btn border px-2 py-1"
+              className="rp-btn rp-btn-sm"
               type="button"
               disabled={ticketPage <= 1}
               onClick={() => setTicketPage((p) => Math.max(1, p - 1))}
@@ -397,7 +467,7 @@ export default function RealphotosTechDeskPage() {
               第 {ticketPage} / {ticketPageCount} 页 · 共 {ticketTotal} 条 · 每页 {ticketPageSize}
             </span>
             <button
-              className="rp-btn border px-2 py-1"
+              className="rp-btn rp-btn-sm"
               type="button"
               disabled={ticketPage >= ticketPageCount}
               onClick={() => setTicketPage((p) => p + 1)}
@@ -409,42 +479,42 @@ export default function RealphotosTechDeskPage() {
       ) : null}
 
       {canAppeal && !canUnfreeze ? (
-        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
+        <section className="rp-card p-4 space-y-2">
           <h2 className="text-sm font-medium">创建图片申诉</h2>
           <input
-            className="w-full max-w-md border px-2 py-1 text-sm"
+            className="rp-input w-full max-w-md"
             placeholder="申诉原因"
             value={appealReason}
             onChange={(event) => setAppealReason(event.target.value)}
           />
-          <button className="rp-btn border px-3 py-1 text-sm" type="button" onClick={() => void createAppeal()}>
+          <button className="rp-btn text-sm" type="button" onClick={() => void createAppeal()}>
             提交申诉
           </button>
         </section>
       ) : null}
 
       {canUnfreeze && deskTab === 'held' ? (
-        <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-2">
+        <section className="rp-card p-4 space-y-2">
           <h2 className="text-sm font-medium">积分冻结（按租户聚合）</h2>
           <p className="text-xs text-muted-foreground">
             按租户展示 held 合计；FIFO 消耗预留直到达到本次释放金额，须写原因。每页 {heldPageSize} 条。
           </p>
-          <table className="rp-table w-full border-collapse text-sm">
+          <table className="rp-table">
             <thead>
               <tr>
-                <th className="border px-2 py-1 text-left">租户</th>
-                <th className="border px-2 py-1 text-left">账号摘要</th>
-                <th className="border px-2 py-1 text-left">冻结合计</th>
-                <th className="border px-2 py-1 text-left">任务数</th>
-                <th className="border px-2 py-1 text-left">本次释放</th>
-                <th className="border px-2 py-1 text-left">原因</th>
-                <th className="border px-2 py-1 text-left">操作</th>
+                <th className="text-left">租户</th>
+                <th className="text-left">账号摘要</th>
+                <th className="text-left">冻结合计</th>
+                <th className="text-left">任务数</th>
+                <th className="text-left">本次释放</th>
+                <th className="text-left">原因</th>
+                <th className="text-left">操作</th>
               </tr>
             </thead>
             <tbody>
               {heldItems.length === 0 ? (
                 <tr>
-                  <td className="rp-empty border px-2 py-1" colSpan={7}>
+                  <td className="rp-empty" colSpan={7}>
                     暂无技术失败冻结待客服任务
                   </td>
                 </tr>
@@ -453,29 +523,29 @@ export default function RealphotosTechDeskPage() {
                   const draft = heldDraft(item.tenantId)
                   return (
                     <tr key={item.tenantId}>
-                      <td className="border px-2 py-1">{tenantLabel(item)}</td>
-                      <td className="border px-2 py-1">{item.accountSummary || '—'}</td>
-                      <td className="border px-2 py-1">{item.heldTotal}</td>
-                      <td className="border px-2 py-1">{item.taskCount ?? '—'}</td>
-                      <td className="border px-2 py-1">
+                      <td>{tenantLabel(item)}</td>
+                      <td>{item.accountSummary || '—'}</td>
+                      <td>{item.heldTotal}</td>
+                      <td>{item.taskCount ?? '—'}</td>
+                      <td>
                         <input
-                          className="w-24 border px-2 py-1"
+                          className="rp-input w-24"
                           placeholder="整数"
                           value={draft.amount}
                           onChange={(event) => patchHeldDraft(item.tenantId, { amount: event.target.value })}
                         />
                       </td>
-                      <td className="border px-2 py-1">
+                      <td>
                         <input
-                          className="w-full min-w-[10rem] border px-2 py-1"
+                          className="rp-input w-full min-w-[10rem]"
                           placeholder="审计原因"
                           value={draft.reason}
                           onChange={(event) => patchHeldDraft(item.tenantId, { reason: event.target.value })}
                         />
                       </td>
-                      <td className="border px-2 py-1">
+                      <td>
                         <button
-                          className="rp-btn border px-2 py-0.5"
+                          className="rp-btn rp-btn-sm"
                           type="button"
                           onClick={() => void releaseHeldByAmount(item)}
                         >
@@ -490,7 +560,7 @@ export default function RealphotosTechDeskPage() {
           </table>
           <div className="flex items-center gap-2 text-sm">
             <button
-              className="rp-btn border px-2 py-1"
+              className="rp-btn rp-btn-sm"
               type="button"
               disabled={heldPage <= 1}
               onClick={() => setHeldPage((p) => Math.max(1, p - 1))}
@@ -501,7 +571,7 @@ export default function RealphotosTechDeskPage() {
               第 {heldPage} / {heldPageCount} 页 · 共 {heldTotal} 条
             </span>
             <button
-              className="rp-btn border px-2 py-1"
+              className="rp-btn rp-btn-sm"
               type="button"
               disabled={heldPage >= heldPageCount}
               onClick={() => setHeldPage((p) => p + 1)}
@@ -521,14 +591,14 @@ export default function RealphotosTechDeskPage() {
           aria-label={`处理工单 ${detail.id}`}
         >
           <div
-            className="max-h-[90vh] w-full max-w-lg space-y-3 overflow-y-auto rp-card rounded-xl border border-border bg-card p-4 text-sm shadow"
+            className="max-h-[90vh] w-full max-w-lg space-y-3 overflow-y-auto rp-card p-4 text-sm shadow"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex justify-between gap-2">
               <strong>工单 {detail.id}</strong>
               <button
                 type="button"
-                className="rp-btn border px-2 py-0.5"
+                className="rp-btn rp-btn-sm"
                 onClick={() => closeHandle()}
               >
                 关闭
@@ -540,7 +610,27 @@ export default function RealphotosTechDeskPage() {
               关联账号：{tenantLabel(detail)} / {accountLabel(detail)}
             </p>
             <p>原因：{detail.reason}</p>
-            <p>时间：{detail.createdAt || '（无）'}</p>
+            <p>时间：{formatDateTimeShort(detail.createdAt) || '（无）'}</p>
+            {detail.ticketType === 'image_appeal' ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">关联图片</span>
+                <button
+                  className="rp-btn rp-btn-sm"
+                  type="button"
+                  onClick={() => void unlockTicketImage()}
+                >
+                  解锁图片
+                </button>
+                {thumbUrl ? (
+                  <button type="button" className="block" onClick={() => void openLarge()}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={thumbUrl} alt="关联图片缩略图" className="h-24 w-24 rounded border object-cover" />
+                  </button>
+                ) : (
+                  <span className="text-xs text-muted-foreground">（无可用图片）</span>
+                )}
+              </div>
+            ) : null}
             {detail.resolvedAt ? (
               <p>
                 办结：{detail.resolvedAt} / {detail.resolutionOutcome} / {detail.resolutionNote}
@@ -548,9 +638,9 @@ export default function RealphotosTechDeskPage() {
             ) : null}
             {canUnfreeze && detail.status === 'open' && detail.ticketType === 'image_appeal' ? (
               <div className="space-y-2 border-t pt-2">
-                <p className="font-medium">标记已处理（办结 ≠ 解锁图片）</p>
+                <p className="font-medium">标记已处理（可同时解锁图片）</p>
                 <select
-                  className="border px-2 py-1"
+                  className="rp-input"
                   value={resolveOutcome}
                   onChange={(event) => setResolveOutcome(event.target.value)}
                 >
@@ -559,13 +649,21 @@ export default function RealphotosTechDeskPage() {
                   <option value="resolved">已处理</option>
                 </select>
                 <input
-                  className="ml-2 w-64 border px-2 py-1"
+                  className="rp-input ml-2 w-64"
                   placeholder="办结原因"
                   value={resolveNote}
                   onChange={(event) => setResolveNote(event.target.value)}
                 />
+                <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={unlockOnResolve}
+                    onChange={(event) => setUnlockOnResolve(event.target.checked)}
+                  />
+                  办结同时解除该图片锁定
+                </label>
                 <button
-                  className="rp-btn ml-2 border px-3 py-1"
+                  className="rp-btn ml-2"
                   type="button"
                   onClick={() => void resolveDetail()}
                 >
@@ -580,13 +678,13 @@ export default function RealphotosTechDeskPage() {
                   目标已锁定：{tenantLabel(detail)} / {accountLabel(detail)}
                 </p>
                 <input
-                  className="w-full border px-2 py-1"
+                  className="rp-input w-full"
                   placeholder="解冻原因（必填）"
                   value={reason}
                   onChange={(event) => setReason(event.target.value)}
                 />
                 <button
-                  className="rp-btn border px-3 py-1"
+                  className="rp-btn"
                   type="button"
                   onClick={() => void unfreezeFromDetail()}
                 >
@@ -595,6 +693,30 @@ export default function RealphotosTechDeskPage() {
               </div>
             ) : null}
           </div>
+        </div>
+      ) : null}
+      {previewOpen && largeUrl ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setPreviewOpen(false)}
+        >
+          <button
+            className="absolute right-4 top-4 rp-btn rp-btn-sm bg-white/90"
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              setPreviewOpen(false)
+            }}
+          >
+            关闭
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={largeUrl}
+            alt="关联图片大图"
+            className="max-h-[92vh] max-w-[92vw] rounded bg-white object-contain shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          />
         </div>
       ) : null}
     </main>
