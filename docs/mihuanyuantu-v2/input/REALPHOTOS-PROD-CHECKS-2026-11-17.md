@@ -109,3 +109,50 @@ ExifIFD:LightSource, ExifIFD:ExposureProgram, ExifIFD:Flash*, ExifIFD:MakerNote
 | 问题 | 原因 | 修复 | 验证 |
 | --- | --- | --- | --- |
 | 图片资源「来源」列对导入图片显示「未知来源」 | 导入资产 `origin_kind=url_import`，但 `originKindLabel` 只映射了 local_upload / text_to_image / image_to_image | 增加 `url_import → URL导入`（并兼容 `url-api` / `url_api` 历史写法），资源页来源筛选同步增加该选项 | Playwright：列表显示「URL导入」、全文无「未知来源」、下拉含该项 |
+
+---
+
+## P0 实施：相机 EXIF 骨架（2026-11-17，已上线）
+
+对照旧版 `D:\workspace\蜜獾原图\server\exifToolWriter.ts` 补齐「真机 JPEG 必有」的骨架标签；**不写任何枚举默认值**（P2），并修正两处旧版会造假的写法。
+
+### 写入清单
+
+| 标签 | 取值 | 说明 |
+| --- | --- | --- |
+| `IFD0:ModifyDate` / `ExifIFD:DateTimeOriginal` / `ExifIFD:CreateDate` | 写入时刻 `YYYY:MM:DD HH:MM:SS` | `-DateTime=` 会落到 XMP，故显式写 IFD0 |
+| `ExifIFD:SubSecTime`（+Original/Digitized） | 毫秒前两位 | 与上述时间一致 |
+| `IFD0:XResolution` / `YResolution` / `ResolutionUnit` | 72 / 72 / 2(inches) | 用 `-IFD0:...=#` 数值写，避免落到 JFIF/IFD1 |
+| `IFD0:YCbCrPositioning` | 2(Centered) | — |
+| `ExifIFD:ExifVersion` / `FlashpixVersion` | 0230 / 0100 | — |
+| `ExifIFD:ComponentsConfiguration` | `1 2 3 0` | — |
+| `ExifIFD:ImageUniqueID` | 32 位随机 hex | 每张唯一 |
+| `ExifIFD:ExifImageWidth` / `ExifImageHeight` | **实际输出像素** | 旧版用预设的 8256×5504，与实际 3072×4096 矛盾；本版不照搬 |
+| `IFD1:ThumbnailImage` | 160×120 JPEG（约 1.7 KB） | 真机照片必有 IFD1 缩略图 |
+
+### 刻意**不写**的
+
+- `Orientation`：旧版强制写 1。实测源图/输出方向并不一致（曾出现写入后为 3），且写 1 会改变看图软件的旋转语义。本版**不写**，保留编码器结果，避免“元数据说正立、像素却旋转”的矛盾。
+- 枚举默认值（`MeteringMode`/`WhiteBalance`/`ExposureProgram`/`SceneCaptureType`/`LightSource`/`Flash`）：预设没有就不写（P2）。
+- `ExposureBiasValue`/`CustomRendered`/`SensingMethod`/`DigitalZoomRatio`/`Contrast`/`Saturation`/`Sharpness`/`SubjectDistanceRange`：这些是旧版的常量默认值，属于“编造”，不写。
+- 预设里的 `image_width`/`image_height`：只在预设页展示，绝不作为 EXIF 尺寸来源。
+
+### 生产验证（task 14）
+
+```
+[IFD0]   Modify Date            : 2026:11:17 11:29:22
+[ExifIFD] Date/Time Original    : 2026:11:17 11:29:22
+[ExifIFD] Create Date           : 2026:11:17 11:29:22
+[ExifIFD] Sub Sec Time          : 04
+[IFD0]   X Resolution           : 72     [IFD0] Resolution Unit : inches
+[IFD0]   Y Cb Cr Positioning    : Centered
+[ExifIFD] Exif Version          : 0230   [ExifIFD] Flashpix Version : 0100
+[ExifIFD] Components Configuration : Y, Cb, Cr, -
+[ExifIFD] Image Unique ID       : 0CC97F44FED54BB888CFAD88C32F1F50
+[ExifIFD] Exif Image Width      : 3072   [ExifIFD] Exif Image Height : 4096
+ThumbnailImage: 1715 bytes (IFD1)
+```
+
+- 实际像素 3072×4096 与 `ExifImageWidth/Height` 一致；
+- 缺省参数抽样（Keywords/Category/Subject/Rating/UserComment）仍为 absent；
+- 骨架软校验日志：修复后**无新增** mismatch（历史 8 条均为已移除的 Orientation 期望）。
