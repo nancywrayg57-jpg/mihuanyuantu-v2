@@ -113,7 +113,6 @@ export default function RealphotosProviderContractsPage() {
                 <RpTh>模型</RpTh>
                 <RpTh>版本</RpTh>
                 <RpTh>区域</RpTh>
-                <RpTh>凭据引用</RpTh>
                 <RpTh>能力</RpTh>
                 <RpTh>状态</RpTh>
                 <RpTh>缺口</RpTh>
@@ -121,10 +120,10 @@ export default function RealphotosProviderContractsPage() {
             </thead>
             <tbody>
               {loading ? (
-                <RpSkeletonRows colSpan={9} />
+                <RpSkeletonRows colSpan={8} />
               ) : visibleItems.length === 0 ? (
                 <RpEmptyState
-                  colSpan={9}
+                  colSpan={8}
                   title="暂无模型合同"
                   description="合同由平台初始化；如需接入新的供应商，请联系平台管理员。"
                 />
@@ -143,9 +142,6 @@ export default function RealphotosProviderContractsPage() {
                       <td className="max-w-[12rem] truncate" title={item.region}>
                         {item.region || '空'}
                       </td>
-                      <td className="max-w-[16rem] truncate" title={item.credentialRef}>
-                        {item.credentialRef || '空'}
-                      </td>
                       <td>
                         <div className="flex flex-wrap items-center gap-1">
                           <button
@@ -162,8 +158,8 @@ export default function RealphotosProviderContractsPage() {
                           ))}
                         </div>
                       </td>
-                      <td>{item.enabled ? '启用' : '停用'}</td>
-                      <td className="max-w-[18rem] truncate" title={item.gapNote}>
+                      <td className="whitespace-nowrap">{item.enabled ? '启用' : '停用'}</td>
+                      <td className="max-w-[16rem] truncate" title={item.gapNote}>
                         {item.gapNote || '—'}
                       </td>
                     </tr>
@@ -183,6 +179,9 @@ export default function RealphotosProviderContractsPage() {
         >
           <p className="text-xs text-muted-foreground">
             {capabilityTarget.provider} / {capabilityTarget.modelId} / 版本 {capabilityTarget.configVersion}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            凭据引用：{capabilityTarget.credentialRef || '空'}
           </p>
           <RpTable>
             <thead>
