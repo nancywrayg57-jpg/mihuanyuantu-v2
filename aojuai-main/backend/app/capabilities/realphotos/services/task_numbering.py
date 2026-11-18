@@ -11,7 +11,7 @@ from collections.abc import Iterable
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
+from app.infrastructure.database.dialect import get_dialect
 
 IMAGE_TABLE = "cap_realphotos_image_tasks"
 GENERATION_TABLE = "cap_realphotos_generation_tasks"
@@ -37,7 +37,7 @@ async def tenant_sequence_map(
     if not wanted:
         return {}
 
-    if settings.IS_SQLITE:
+    if get_dialect().name == "sqlite":
         rows = (
             await db.execute(
                 text(
