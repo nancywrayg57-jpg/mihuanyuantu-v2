@@ -112,8 +112,16 @@ async def test_refresh_token_allows_cookie_only_request_without_body(
     monkeypatch.setattr(auth, "decode_token", lambda token: {"type": "refresh", "sub": "7"} if token == "refresh-demo" else {})
     monkeypatch.setattr(auth.UserService, "get_user_by_id_any_tenant", fake_get_user_by_id_any_tenant)
     monkeypatch.setattr(auth, "_build_auth_session_payload", fake_build_auth_session_payload)
-    monkeypatch.setattr(auth, "create_access_token", lambda subject, extra_data: f"access-{subject}-{extra_data['tenant_id']}")
-    monkeypatch.setattr(auth, "create_refresh_token", lambda subject: f"refresh-{subject}")
+    monkeypatch.setattr(
+        auth,
+        "create_access_token",
+        lambda subject, extra_data=None, **_kwargs: f"access-{subject}-{(extra_data or {}).get('tenant_id')}",
+    )
+    monkeypatch.setattr(
+        auth,
+        "create_refresh_token",
+        lambda subject, expires_delta=None, extra_data=None, **_kwargs: f"refresh-{subject}",
+    )
 
     app = _build_test_app()
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:

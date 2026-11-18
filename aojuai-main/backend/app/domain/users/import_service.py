@@ -147,10 +147,20 @@ def generate_initial_password() -> str:
 
     **不接受 CSV 里填明文密码**：那份文件会躺在邮箱、聊天记录和下载目录里。
     这里生成随机密码，只在导入结果里返回一次，由管理员线下转交。
+    SEC-A02：必须同时含字母、数字、特殊字符。
     """
-    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"
-    body = "".join(secrets.choice(alphabet) for _ in range(10))
-    return f"Aoju@{body}"
+    letters = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+    digits = "23456789"
+    symbols = "@#$%&*!"
+    parts = [
+        secrets.choice(letters),
+        secrets.choice(digits),
+        secrets.choice(symbols),
+    ]
+    alphabet = letters + digits
+    parts.extend(secrets.choice(alphabet) for _ in range(9))
+    secrets.SystemRandom().shuffle(parts)
+    return "".join(parts)
 
 
 class UserImportService:
