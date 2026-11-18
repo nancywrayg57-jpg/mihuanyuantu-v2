@@ -1194,7 +1194,8 @@ ux_audit_2026_11_18:
     demo_routes: "removed nav + BusinessRouteGuard redirect"
     topbar: "single identity block + neutral default avatar; role labels"
     last_login: "realphotos login writes last_login_at"
-    presets: "405 -> 131 unique brand+model on merchant; snapshot names"
+    presets: "405 -> 131 unique brand+model globally; snapshot names"
+    preset_dedupe: "274 duplicates soft-deleted; canonical admin/catalog then newest id"
     upload_names: "single/batch send original file.name"
     e2e_cleanup: "3 tickets, 1 template, 3 assets, 5 tasks, tenant #6 soft-deleted"
     p2: "ticket duration/nowrap, prompt labels, API copy, batch empty state, thumbnails, dock padding, contract note"
@@ -1212,7 +1213,7 @@ ux_audit_2026_11_18:
     tasks_e2e: 0
     test_tenant: 0
     tenants: 5
-    enabled_presets_db: 405
+    enabled_presets_db: 131
     unique_brand_model: 131
   checks:
     backend: "ruff pass; 19 tests pass"
@@ -1225,7 +1226,6 @@ ux_audit_2026_11_18:
     - "用户管理创建/删除/操作弹窗仍是自定义遮罩，未统一 RpDialog"
     - "系统日志身份列仍多行，行高偏大"
     - "历史 local_upload_* 文件名不可还原"
-    - "管理员设备预设台账仍 405 条，仅商家侧去重"
   next: "等待管理员验收；如需要再处理 P2 残留"
 
 

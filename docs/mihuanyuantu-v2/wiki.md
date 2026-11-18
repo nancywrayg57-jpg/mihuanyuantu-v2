@@ -203,7 +203,7 @@
 - Demo routes are gone from nav and blocked by `BusinessRouteGuard`; `/schedule`, `/permission/*`, `/system/dict`, `/tenant/package/*` redirect to `/realphotos/workspace`. The old `hideDemoMenus` async pattern was the root cause of the first-paint flash and direct-URL access.
 - Top bar is now one identity block: display name + role on the left, neutral `avatar-default.svg` on the right. Do not reintroduce AI avatars or duplicate the name in the avatar button.
 - `RealphotosAuthService.login` writes `last_login_at`; otherwise tenant 最近活跃 is always null.
-- Merchant preset list dedupes by normalized brand+model (405 → 131) and passes the version-snapshot name into `_preset_dict`. Admin ledger intentionally still shows all 405.
+- Presets are deduped globally by normalized brand+model: 405 → 131; 274 duplicates soft-deleted (canonical admin/catalog first, then newest id). Merchant and admin both show 131. Names come from the version snapshot.
 - Single and batch upload send `file.name`; batch endpoint accepts repeated `names`. Historical `local_upload_*` cannot be recovered.
 - E2E cleanup was a one-off soft delete: 3 tickets, 1 template, 3 assets (#123/#126/#127), 5 tasks, tenant #6, plus inbox/outbox/snapshots/reservations. Ledger rows stay for audit. The earlier `assets_e2e=3` query had a false positive: asset #63's object-key hash contains `e2e`.
 - Residual P2: custom user-management dialogs, multi-line log identity cells.
