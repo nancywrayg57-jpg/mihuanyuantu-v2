@@ -125,7 +125,7 @@ async def test_login_http_body_omits_tokens(db) -> None:
         assert "accessToken" not in payload
         assert "refreshToken" not in payload
         assert payload.get("authMode") == "cookie"
-        assert "set-cookie" in {k.lower() for k in ok.headers.keys()}
+        assert "set-cookie" in {k.lower() for k in ok.headers}
 
 
 @pytest.mark.asyncio

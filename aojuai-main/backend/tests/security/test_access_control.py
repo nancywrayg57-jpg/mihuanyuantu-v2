@@ -2,15 +2,16 @@
 
 from __future__ import annotations
 
+import io
+
 import pytest
+from PIL import Image
 
 from app.capabilities.realphotos.permissions import ROLE_ADMIN, ROLE_MERCHANT, ROLE_TECH_SUPPORT
 from app.capabilities.realphotos.services.bootstrap import bootstrap_s0_accounts
 from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
 from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
 from app.core.exceptions import ForbiddenError, NotFoundError
-from PIL import Image
-import io
 
 
 def _jpeg() -> bytes:

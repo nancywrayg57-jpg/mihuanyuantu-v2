@@ -6,9 +6,9 @@ import pytest
 from fastapi import Request
 from starlette.datastructures import Headers
 
+from app.capabilities.realphotos.services import import_fetch
 from app.core.csrf_protection import enforce_cookie_csrf
 from app.core.exceptions import BusinessError, ForbiddenError
-from app.capabilities.realphotos.services import import_fetch
 
 
 def _request(*, method: str = "POST", headers: dict[str, str] | None = None, cookies: dict[str, str] | None = None) -> Request:
