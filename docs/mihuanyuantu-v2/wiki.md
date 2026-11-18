@@ -197,6 +197,18 @@
 - Consistency passed for task numbers (list/detail/ledger/inbox/generation), wallet vs ledger, preset field values, tenant names. Names and last-active are the failures.
 - Lesson: audit with direct URL navigation, not just sidebar clicks; menu visibility and route authorization are different layers.
 
+### Audit fixes U3–U6 (2026-11-18)
+
+- PRs #83/#84; `main` `3386a3a`; BUILD_ID `xRRVDsErSitXP_hPKD85c`; 20/20 production UI/API checks.
+- Demo routes are gone from nav and blocked by `BusinessRouteGuard`; `/schedule`, `/permission/*`, `/system/dict`, `/tenant/package/*` redirect to `/realphotos/workspace`. The old `hideDemoMenus` async pattern was the root cause of the first-paint flash and direct-URL access.
+- Top bar is now one identity block: display name + role on the left, neutral `avatar-default.svg` on the right. Do not reintroduce AI avatars or duplicate the name in the avatar button.
+- `RealphotosAuthService.login` writes `last_login_at`; otherwise tenant 最近活跃 is always null.
+- Merchant preset list dedupes by normalized brand+model (405 → 131) and passes the version-snapshot name into `_preset_dict`. Admin ledger intentionally still shows all 405.
+- Single and batch upload send `file.name`; batch endpoint accepts repeated `names`. Historical `local_upload_*` cannot be recovered.
+- E2E cleanup was a one-off soft delete: 3 tickets, 1 template, 3 assets (#123/#126/#127), 5 tasks, tenant #6, plus inbox/outbox/snapshots/reservations. Ledger rows stay for audit. The earlier `assets_e2e=3` query had a false positive: asset #63's object-key hash contains `e2e`.
+- Residual P2: custom user-management dialogs, multi-line log identity cells.
+
+
 
 
 
