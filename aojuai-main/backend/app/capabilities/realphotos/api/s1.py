@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
@@ -656,19 +657,84 @@ async def inbox(
     if _order_support_only(roles):
         rows = [row for row in rows if is_recharge_inbox_event(row.event_key, row.title)]
     unread = sum(1 for row in rows if row.read_at is None)
+
+    # 2026-11-18 UX-P1-5：消息带任务号/图片名，供列表定位与按批合并。
+    from app.capabilities.realphotos.models import RealphotosAsset, RealphotosImageTask
+    from app.capabilities.realphotos.services.asset_naming import (
+        compose_list_filename,
+        meta_from_asset,
+    )
+    from app.capabilities.realphotos.services.task_numbering import processing_task_no_map
+
+    task_ids: list[int] = []
+    for row in rows:
+        match = re.match(r"inbox:task:(\d+):", str(row.event_key or ""))
+        if match:
+            task_ids.append(int(match.group(1)))
+    tasks = {
+        int(task.id): task
+        for task in (
+            await db.execute(
+                select(RealphotosImageTask).where(
+                    RealphotosImageTask.tenant_id == int(tenant_ctx.tenant_id),
+                    RealphotosImageTask.id.in_(task_ids or [-1]),
+                    RealphotosImageTask.deleted_at.is_(None),
+                )
+            )
+        ).scalars().all()
+    }
+    task_no_map = await processing_task_no_map(
+        db, tenant_id=int(tenant_ctx.tenant_id), task_ids=task_ids
+    )
+    asset_ids = {int(task.asset_id) for task in tasks.values()}
+    assets = {
+        int(asset.id): asset
+        for asset in (
+            await db.execute(
+                select(RealphotosAsset).where(
+                    RealphotosAsset.tenant_id == int(tenant_ctx.tenant_id),
+                    RealphotosAsset.id.in_(asset_ids or [-1]),
+                    RealphotosAsset.deleted_at.is_(None),
+                )
+            )
+        ).scalars().all()
+    }
+
+    def _asset_name(asset_id: int) -> str | None:
+        asset = assets.get(int(asset_id))
+        if asset is None:
+            return None
+        naming = compose_list_filename(
+            meta=meta_from_asset(asset),
+            asset_id=int(asset.id),
+            origin_kind=str(asset.origin_kind),
+        )
+        return naming["displayName"]
+
+    items = []
+    for row in rows:
+        event_key = str(row.event_key or "")
+        match = re.match(r"inbox:task:(\d+):", event_key)
+        task = tasks.get(int(match.group(1))) if match else None
+        kind = "task" if task is not None else ("recharge" if event_key.startswith("recharge:") else "system")
+        items.append(
+            {
+                "id": str(int(row.id)),
+                "title": row.title,
+                "body": row.body,
+                "readAt": row.read_at.isoformat() if row.read_at else None,
+                "createdAt": row.created_at.isoformat() if row.created_at else None,
+                "eventKey": row.event_key,
+                "kind": kind,
+                "taskId": str(int(task.id)) if task is not None else None,
+                "taskNo": task_no_map.get(int(task.id)) if task is not None else None,
+                "batchId": str(int(task.batch_id)) if task is not None else None,
+                "assetName": _asset_name(int(task.asset_id)) if task is not None else None,
+            }
+        )
     return SuccessResponse(
         data={
-            "items": [
-                {
-                    "id": str(int(row.id)),
-                    "title": row.title,
-                    "body": row.body,
-                    "readAt": row.read_at.isoformat() if row.read_at else None,
-                    "createdAt": row.created_at.isoformat() if row.created_at else None,
-                    "eventKey": row.event_key,
-                }
-                for row in rows
-            ],
+            "items": items,
             "unreadCount": unread,
             "scope": "recharge_only" if _order_support_only(roles) else "all",
         }

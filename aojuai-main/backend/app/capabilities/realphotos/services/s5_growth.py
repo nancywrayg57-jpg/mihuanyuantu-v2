@@ -372,6 +372,7 @@ class RealphotosGrowthService:
         page_size: int = 20,
         origin_kind: str | None = None,
         asset_ids: list[int] | None = None,
+        sort: str | None = None,
     ) -> tuple[list[RealphotosAsset], int, int, int]:
         """FR-028：服务端分页。返回 (items, total, page, page_size)。
 
@@ -410,10 +411,16 @@ class RealphotosGrowthService:
         total = int(
             await self.db.scalar(select(func.count()).select_from(RealphotosAsset).where(*filters)) or 0
         )
+        # 2026-11-18 UX-P1-1：列表排序（最近上传 / 最早上传 / 文件最大 / 文件最小）。
+        order_by = {
+            "oldest": RealphotosAsset.id.asc(),
+            "largest": RealphotosAsset.byte_size.desc(),
+            "smallest": RealphotosAsset.byte_size.asc(),
+        }.get(str(sort or "").strip(), RealphotosAsset.id.desc())
         rows = await self.db.execute(
             select(RealphotosAsset)
             .where(*filters)
-            .order_by(RealphotosAsset.id.desc())
+            .order_by(order_by)
             .offset((page_n - 1) * size)
             .limit(size)
         )

@@ -1,12 +1,14 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
-import { ApiError, apiFetch } from '@/lib/api'
+import { toastTask } from '@/components/realphotos/surface'
+import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { formatRate } from '@/lib/format-rate'
-import { taskStatusLabel, ticketTypeLabel } from '@/lib/realphotos-labels'
+import { failureClassLabelForTask, taskStatusLabel, ticketTypeLabel } from '@/lib/realphotos-labels'
 import { formatDateTimeShort } from '@/lib/realphotos-time'
 
 type WorkspacePayload = {
@@ -66,7 +68,13 @@ type WorkspacePayload = {
     status: string
     createdAt: string | null
     presetCode?: string
+    presetName?: string
     mode?: string
+    objectKey?: string | null
+    failureClass?: string | null
+    failureTitle?: string | null
+    failureMessage?: string | null
+    canReprocess?: boolean
   }>
 }
 
@@ -85,15 +93,21 @@ function costCell(cost: number | null | undefined, reason: string | null | undef
 
 
 export default function RealphotosWorkspacePage() {
+  const router = useRouter()
   const [data, setData] = useState<WorkspacePayload | null>(null)
   const [message, setMessage] = useState('')
+  const [thumbs, setThumbs] = useState<Record<string, string>>({})
+  const [reprocessing, setReprocessing] = useState<string | null>(null)
+
+  async function reload() {
+    const payload = await apiFetch<WorkspacePayload>('/api/v1/realphotos/workspace')
+    setData(payload)
+  }
 
   useEffect(() => {
-    void apiFetch<WorkspacePayload>('/api/v1/realphotos/workspace')
-      .then((payload) => {
-        setData(payload)
-      })
-      .catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '工作台读取失败'))
+    void reload().catch((error: unknown) =>
+      setMessage(error instanceof ApiError ? error.message : '工作台读取失败'),
+    )
   }, [])
 
   const view = data?.viewKind || (data?.merchantCards ? 'merchant' : 'admin')
@@ -108,6 +122,55 @@ export default function RealphotosWorkspacePage() {
     (historyPage - 1) * historyPageSize,
     historyPage * historyPageSize,
   )
+
+  // 2026-11-18 UX-P1-7：最近历史缩略图（结果图优先，未交付时用源图）。
+  useEffect(() => {
+    let cancelled = false
+    const created: string[] = []
+    setThumbs({})
+    void (async () => {
+      for (const item of filteredHistory) {
+        if (!item.objectKey) continue
+        try {
+          const path = String(item.objectKey).split('/').map(encodeURIComponent).join('/')
+          const blob = await apiFetchBlob(
+            `/api/v1/realphotos/gateway/objects/${path}?thumb=160`,
+          )
+          if (cancelled) return
+          const url = URL.createObjectURL(blob)
+          created.push(url)
+          setThumbs((prev) => ({ ...prev, [item.id]: url }))
+        } catch {
+          // 单张失败不阻断
+        }
+      }
+    })()
+    return () => {
+      cancelled = true
+      for (const url of created) URL.revokeObjectURL(url)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, historyPage])
+
+  async function reprocess(item: WorkspacePayload['recentHistory'][number]) {
+    if (reprocessing) return
+    setReprocessing(item.id)
+    try {
+      await apiFetch(`/api/v1/realphotos/processing-tasks/${item.id}/reprocess`, {
+        method: 'POST',
+        body: JSON.stringify({
+          presetCode: item.presetCode,
+          idempotencyKey: `ws-reprocess-${item.id}-${Date.now()}`,
+        }),
+      })
+      toastTask('已建立重处理任务，原任务报告仍保留', true)
+      await reload()
+    } catch (error: unknown) {
+      toastTask(error instanceof ApiError ? error.message : '重处理失败', false)
+    } finally {
+      setReprocessing(null)
+    }
+  }
 
 
   const subtitle =
@@ -147,7 +210,6 @@ export default function RealphotosWorkspacePage() {
           <article className="rp-stat">
             <div className="rp-stat-label">未读消息</div>
             <div className="rp-stat-value">{cell(data.cards.unreadMessages)}</div>
-            <div className="rp-stat-hint">保留 30 天</div>
           </article>
         </section>
       ) : null}
@@ -321,24 +383,86 @@ export default function RealphotosWorkspacePage() {
           <table className="rp-table w-full text-sm">
             <thead>
               <tr>
+                <th className="text-left">缩略图</th>
                 <th className="text-left">任务</th>
                 <th className="text-left">状态</th>
+                <th className="text-left">失败原因</th>
                 <th className="text-left">时间</th>
+                <th className="text-left">操作</th>
               </tr>
             </thead>
             <tbody>
               {filteredHistory.length === 0 ? (
                 <tr>
-                  <td className="rp-empty" colSpan={3}>还没有处理记录。上传或导入图片后，这里会显示每次处理的状态与时间。</td>
+                  <td className="rp-empty" colSpan={6}>还没有处理记录。上传或导入图片后，这里会显示每次处理的状态与时间。</td>
                 </tr>
               ) : (
                 filteredHistory.map((item) => (
-                  <tr key={`${item.kind}-${item.id}`}>
+                  <tr
+                    key={`${item.kind}-${item.id}`}
+                    className="cursor-pointer hover:bg-muted/30"
+                    onClick={() => router.push(`/realphotos/tasks?taskId=${item.id}`)}
+                  >
+                    <td>
+                      {thumbs[item.id] ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={thumbs[item.id]}
+                          alt=""
+                          className="h-14 w-14 rounded border object-cover"
+                        />
+                      ) : (
+                        <span className="inline-block h-14 w-14 border text-center leading-[3.5rem] text-xs">图</span>
+                      )}
+                    </td>
                     <td>
                       {item.kind === 'processing' ? '处理' : '生图'} #{item.taskNo ?? item.id}
+                      {item.presetName ? (
+                        <div className="max-w-[12rem] truncate text-xs text-muted-foreground">
+                          {item.presetName}
+                        </div>
+                      ) : null}
                     </td>
                     <td>{taskStatusLabel(item.status)}</td>
-                    <td>{formatDateTimeShort(item.createdAt) || '—'}</td>
+                    <td className="max-w-[16rem] truncate" title={item.failureMessage || ''}>
+                      {item.failureMessage ||
+                        (item.failureClass ? failureClassLabelForTask(item.failureClass, '') : '—')}
+                    </td>
+                    <td className="whitespace-nowrap">{formatDateTimeShort(item.createdAt) || '—'}</td>
+                    <td className="space-x-1 whitespace-nowrap">
+                      {item.canReprocess ? (
+                        <button
+                          className="rp-btn rp-btn-sm"
+                          type="button"
+                          disabled={reprocessing === item.id}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            void reprocess(item)
+                          }}
+                        >
+                          {reprocessing === item.id ? '提交中…' : '重处理'}
+                        </button>
+                      ) : null}
+                      {item.status === 'IMAGE_LOCKED' ? (
+                        <Link
+                          className="rp-btn rp-btn-sm rp-btn-primary"
+                          href="/realphotos/library"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          申诉
+                        </Link>
+                      ) : null}
+                      <button
+                        className="rp-btn rp-btn-sm"
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          router.push(`/realphotos/tasks?taskId=${item.id}`)
+                        }}
+                      >
+                        详情
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}

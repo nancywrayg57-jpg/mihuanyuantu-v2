@@ -40,7 +40,7 @@ from app.capabilities.realphotos.permissions import ROLE_ADMIN, ROLE_ORDER_SUPPO
 from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
 from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
 from app.capabilities.realphotos.services.s1_upload import inspect_upload
-from app.core.exceptions import BusinessError, ForbiddenError
+from app.core.exceptions import BusinessError, ForbiddenError, NotFoundError
 from app.core.logger import get_logger
 from app.core.security import hash_password
 from app.domain.auth.models import Tenant
@@ -50,9 +50,10 @@ from app.domain.users.models import User, UserRole, UserStatus
 FIXTURE_PROVIDER = "fixture"
 UNCONFIGURED_PROVIDER = "unconfigured"
 USER_PAGE_SIZE = 10
-TENANT_PAGE_SIZE = 20
-HELD_PAGE_SIZE = 20
-TICKET_PAGE_SIZE = 20
+# 2026-11-18 UX-P1-1：全站列表统一每页 10 条。
+TENANT_PAGE_SIZE = 10
+HELD_PAGE_SIZE = 10
+TICKET_PAGE_SIZE = 10
 LOG_PAGE_SIZE = 10
 GPS_MODES = {"none", "fixed", "random_by_scene"}
 # PRESET-BULK-IMPORT B1: stop injecting Honeybadger s1-* into merchant enabled list.
@@ -681,10 +682,15 @@ class RealphotosOpsService:
         return tenants, users
 
     async def list_tickets(
-        self, *, actor_role_codes: set[str], page: int = 1
+        self,
+        *,
+        actor_role_codes: set[str],
+        page: int = 1,
+        page_size: int | None = None,
+        sort: str | None = None,
     ) -> dict[str, Any]:
         self._require_tech_or_admin(actor_role_codes)
-        size = TICKET_PAGE_SIZE
+        size = max(1, min(int(page_size or TICKET_PAGE_SIZE), 100))
         index = max(int(page), 1)
         rows = (
             await self.db.execute(
@@ -693,7 +699,18 @@ class RealphotosOpsService:
                 .order_by(RealphotosSupportTicket.id.desc())
             )
         ).scalars().all()
+        # 2026-11-18 UX-P1-3：按等待时长排序（未办结优先，最早创建的排最前）。
+        if str(sort or "").strip() == "waiting":
+            rows = sorted(
+                rows,
+                key=lambda row: (
+                    0 if str(row.status) == "open" else 1,
+                    row.created_at.timestamp() if row.created_at else 0,
+                    int(row.id),
+                ),
+            )
         total = len(rows)
+        open_total = sum(1 for row in rows if str(row.status) == "open")
         start = (index - 1) * size
         page_rows = rows[start : start + size]
         tenant_ids = {int(row.tenant_id) for row in page_rows}
@@ -705,6 +722,7 @@ class RealphotosOpsService:
             "page": index,
             "pageSize": size,
             "total": total,
+            "openTotal": open_total,
             "items": [
                 self._ticket_dict(
                     row,
@@ -769,6 +787,7 @@ class RealphotosOpsService:
             )
         ).scalars().all()
         total = len(rows)
+        open_total = sum(1 for row in rows if str(row.status) == "open")
         start = (index - 1) * size
         rows = rows[start : start + size]
         tenants, users = await self._tenant_user_name_maps(
@@ -779,6 +798,7 @@ class RealphotosOpsService:
             "page": index,
             "pageSize": size,
             "total": total,
+            "openTotal": open_total,
             "items": [
                 self._ticket_dict(
                     row,
@@ -1582,6 +1602,8 @@ class RealphotosOpsService:
                 "tenantId": int(row.id),
                 "tenantName": str(row.name or ""),
                 "tenantCode": str(row.code or ""),
+                "isActive": bool(getattr(row, "is_active", True)),
+                "createdAt": row.created_at.isoformat() if getattr(row, "created_at", None) else None,
             }
             for row in tenant_rows
         ]
@@ -1615,6 +1637,8 @@ class RealphotosOpsService:
                             "tenantId": tid,
                             "tenantName": str(row.name or ""),
                             "tenantCode": str(row.code or ""),
+                            "isActive": bool(getattr(row, "is_active", True)),
+                            "createdAt": row.created_at.isoformat() if getattr(row, "created_at", None) else None,
                         }
                     )
                 else:
@@ -1623,11 +1647,15 @@ class RealphotosOpsService:
                             "tenantId": tid,
                             "tenantName": f"租户#{tid}",
                             "tenantCode": f"tenant-{tid}",
+                            "isActive": True,
+                            "createdAt": None,
                         }
                     )
         start = (index - 1) * size
         page_catalog = catalog[start : start + size]
         counts: dict[int, int] = {}
+        last_active: dict[int, str | None] = {}
+        owners: dict[int, str] = {}
         if page_catalog:
             tenant_ids = [int(row["tenantId"]) for row in page_catalog]
             count_rows = (
@@ -1638,6 +1666,25 @@ class RealphotosOpsService:
                 )
             ).all()
             counts = {int(tid): int(n) for tid, n in count_rows}
+            active_rows = (
+                await self.db.execute(
+                    select(User.tenant_id, func.max(User.last_login_at))
+                    .where(User.deleted_at.is_(None), User.tenant_id.in_(tenant_ids))
+                    .group_by(User.tenant_id)
+                )
+            ).all()
+            last_active = {
+                int(tid): (moment.isoformat() if moment else None) for tid, moment in active_rows
+            }
+            owner_rows = (
+                await self.db.execute(
+                    select(User.tenant_id, User.username)
+                    .where(User.deleted_at.is_(None), User.tenant_id.in_(tenant_ids))
+                    .order_by(User.tenant_id.asc(), User.id.asc())
+                )
+            ).all()
+            for tid, username in owner_rows:
+                owners.setdefault(int(tid), str(username or ""))
         return {
             "page": index,
             "pageSize": size,
@@ -1648,6 +1695,10 @@ class RealphotosOpsService:
                     "tenantName": str(row["tenantName"] or ""),
                     "tenantCode": str(row["tenantCode"] or ""),
                     "accountCount": int(counts.get(int(row["tenantId"]), 0)),
+                    "isActive": bool(row.get("isActive", True)),
+                    "createdAt": row.get("createdAt"),
+                    "lastActiveAt": last_active.get(int(row["tenantId"])),
+                    "ownerUsername": owners.get(int(row["tenantId"])) or None,
                 }
                 for row in page_catalog
             ],
@@ -1686,9 +1737,94 @@ class RealphotosOpsService:
                     "status": int(row.status),
                     "tenantId": int(row.tenant_id),
                     "roleCodes": role_codes,
+                    "lastLoginAt": row.last_login_at.isoformat() if row.last_login_at else None,
                 }
             )
         return {"pageSize": size, "items": items}
+
+    async def tenant_detail(
+        self, *, actor_role_codes: set[str], tenant_id: int
+    ) -> dict[str, Any]:
+        """2026-11-18 UX-P1-4：租户详情（账号 / 任务 / 余额汇总）。"""
+        self._require_tech_or_admin(actor_role_codes)
+        tenant = (
+            await self.db.execute(
+                select(Tenant).where(
+                    Tenant.id == int(tenant_id), Tenant.deleted_at.is_(None)
+                )
+            )
+        ).scalar_one_or_none()
+        if tenant is None:
+            raise NotFoundError(message="租户不存在")
+        accounts = await self.list_users(
+            actor_role_codes=actor_role_codes, page=1, tenant_id=int(tenant_id)
+        )
+        asset_count = int(
+            await self.db.scalar(
+                select(func.count())
+                .select_from(RealphotosAsset)
+                .where(
+                    RealphotosAsset.tenant_id == int(tenant_id),
+                    RealphotosAsset.deleted_at.is_(None),
+                )
+            )
+            or 0
+        )
+        task_total = int(
+            await self.db.scalar(
+                select(func.count())
+                .select_from(RealphotosImageTask)
+                .where(
+                    RealphotosImageTask.tenant_id == int(tenant_id),
+                    RealphotosImageTask.deleted_at.is_(None),
+                )
+            )
+            or 0
+        )
+        task_delivered = int(
+            await self.db.scalar(
+                select(func.count())
+                .select_from(RealphotosImageTask)
+                .where(
+                    RealphotosImageTask.tenant_id == int(tenant_id),
+                    RealphotosImageTask.deleted_at.is_(None),
+                    RealphotosImageTask.status == "DELIVERED",
+                )
+            )
+            or 0
+        )
+        task_failed = int(
+            await self.db.scalar(
+                select(func.count())
+                .select_from(RealphotosImageTask)
+                .where(
+                    RealphotosImageTask.tenant_id == int(tenant_id),
+                    RealphotosImageTask.deleted_at.is_(None),
+                    RealphotosImageTask.status.in_(("FAILED", "PRE_REVIEW_FAILED", "IMAGE_LOCKED")),
+                )
+            )
+            or 0
+        )
+        wallet = await RealphotosCreditService(self.db).get_wallet(
+            tenant_id=int(tenant_id)
+        )
+        return {
+            "tenant": {
+                "tenantId": int(tenant.id),
+                "tenantName": str(tenant.name or ""),
+                "tenantCode": str(tenant.code or ""),
+                "isActive": bool(getattr(tenant, "is_active", True)),
+                "createdAt": tenant.created_at.isoformat() if tenant.created_at else None,
+            },
+            "accounts": accounts["items"],
+            "stats": {
+                "assetCount": asset_count,
+                "taskTotal": task_total,
+                "taskDelivered": task_delivered,
+                "taskFailed": task_failed,
+            },
+            "wallet": wallet,
+        }
 
     async def list_logs(self, *, actor_role_codes: set[str], page: int = 1) -> dict[str, Any]:
         self._require_tech_or_admin(actor_role_codes)

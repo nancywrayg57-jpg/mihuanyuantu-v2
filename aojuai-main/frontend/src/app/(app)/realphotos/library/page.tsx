@@ -32,6 +32,15 @@ type Asset = {
 const UPLOAD_BATCH_MAX = 20
 const PAGE_SIZE = 10
 
+/** 2026-11-18 UX-P1-1：长文件名中段省略，保留扩展名。 */
+function truncateMiddle(name: string, max = 42): string {
+  const value = String(name || '')
+  if (value.length <= max) return value
+  const head = Math.max(8, Math.floor((max - 1) * 0.6))
+  const tail = Math.max(6, max - 1 - head)
+  return `${value.slice(0, head)}…${value.slice(-tail)}`
+}
+
 export default function RealphotosLibraryPage() {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -39,6 +48,7 @@ export default function RealphotosLibraryPage() {
   const [total, setTotal] = useState(0)
   const [message, setMessage] = useState('')
   const [originFilter, setOriginFilter] = useState('all')
+  const [sort, setSort] = useState('newest')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<Record<string, true>>({})
@@ -62,6 +72,7 @@ export default function RealphotosLibraryPage() {
     const params = new URLSearchParams({
       page: String(page),
       pageSize: String(PAGE_SIZE),
+      sort,
     })
     if (originFilter !== 'all') {
       params.set('originKind', originFilter)
@@ -71,7 +82,7 @@ export default function RealphotosLibraryPage() {
     )
     setItems(data.items || [])
     setTotal(Number(data.total || 0))
-  }, [page, originFilter])
+  }, [page, originFilter, sort])
 
   useEffect(() => {
     void reload().catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '资源加载失败'))
@@ -426,6 +437,33 @@ export default function RealphotosLibraryPage() {
             <option value="url_import">URL导入</option>
           </select>
         </label>
+        <label>
+          排序
+          <select
+            className="rp-input ml-2"
+            value={sort}
+            onChange={(event) => {
+              setSort(event.target.value)
+              setPage(1)
+            }}
+          >
+            <option value="newest">最近上传</option>
+            <option value="oldest">最早上传</option>
+            <option value="largest">文件最大</option>
+            <option value="smallest">文件最小</option>
+          </select>
+        </label>
+        <button
+          className="rp-btn rp-btn-sm"
+          type="button"
+          onClick={() => {
+            setSort('newest')
+            setOriginFilter('all')
+            setPage(1)
+          }}
+        >
+          最近上传
+        </button>
         <span>
           第 {page} / {pageCount} 页 · 共 {total} 条 · 已选 {selectedIds.length} 张
         </span>
@@ -446,7 +484,7 @@ export default function RealphotosLibraryPage() {
           下一页
         </button>
       </section>
-      <section className="rp-card overflow-hidden">
+      <section className="rp-card overflow-x-auto">
       <table className="rp-table">
         <thead>
           <tr>
@@ -477,10 +515,12 @@ export default function RealphotosLibraryPage() {
         <tbody>
           {visibleItems.length === 0 ? (
             <tr>
-              <td className="rp-empty" colSpan={8}>暂无资源</td>
+              <td className="rp-empty" colSpan={8}>还没有图片。先从本地上传或 URL 导入开始。</td>
             </tr>
           ) : (
-            visibleItems.map((item) => (
+            visibleItems.map((item) => {
+              const fileName = item.displayName || `${item.originKind}_${item.id}`
+              return (
               <tr key={item.id} className={item.locked ? 'opacity-70' : undefined}>
                 <td>
                   <input
@@ -494,24 +534,35 @@ export default function RealphotosLibraryPage() {
                   {thumbs[item.id] ? (
                     <button
                       type="button"
-                      className="block"
+                      className="relative z-0 block h-14 w-14 rounded border hover:z-10"
+                      title="点击查看大图"
                       onClick={() => void openPreview(item)}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={thumbs[item.id]} alt="" loading="lazy" decoding="async" className="h-10 w-10 rounded border object-cover" />
+                      <img
+                        src={thumbs[item.id]}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        className="h-14 w-14 object-cover transition-transform duration-150 hover:scale-125"
+                      />
                     </button>
                   ) : (
-                    <span className="inline-block h-10 w-10 border text-center leading-10 text-xs">图</span>
+                    <span className="inline-block h-14 w-14 border text-center leading-[3.5rem] text-xs">图</span>
                   )}
                 </td>
-                <td>{item.displayName || `${item.originKind}_${item.id}`}</td>
+                <td>
+                  <span className="block max-w-[18rem] truncate" title={fileName}>
+                    {truncateMiddle(fileName)}
+                  </span>
+                </td>
                 <td>{originKindLabel(item.originKind)}</td>
                 <td>{item.locked ? '已锁定' : '可用'}</td>
                 <td>
                   {item.width}×{item.height}
                 </td>
                 <td>{formatByteSizeMb(item.byteSize)}</td>
-                <td className="space-x-2">
+                <td className="space-x-2 whitespace-nowrap">
                   {item.locked ? (
                     <button
                       className="rp-btn rp-btn-sm rp-btn-primary"
@@ -533,7 +584,8 @@ export default function RealphotosLibraryPage() {
                   </button>
                 </td>
               </tr>
-            ))
+              )
+            })
           )}
         </tbody>
       </table>
