@@ -1172,11 +1172,11 @@ ux_p2_2026_11_18:
   next: "UX 清单 18 项已完成；可按需安排弹窗全站统一或新需求"
 
 ux_audit_2026_11_18:
-  stage: U6_deployed_pending_admin_acceptance
-  scope: "全系统 UI/UX 与数据一致性审计（U1–U2）+ 修复（U3–U6）"
+  stage: U6_completed_p2_done_pending_admin_acceptance
+  scope: "全系统 UI/UX 与数据一致性审计（U1–U2）+ 修复（U3–U6）+ P2 收尾"
   baseline_main: 5dc847b
-  production_head: 3386a3a
-  build_id: xRRVDsErSitXP_hPKD85c
+  production_head: a715ea4
+  build_id: iPkxpMi1g3--NGWkAlrzb
   instruction: docs/mihuanyuantu-v2/input/蜜獾原图-全系统UX与数据一致性审计指令-2026-11-18.md
   report: docs/mihuanyuantu-v2/input/蜜獾原图-UX与数据一致性审计报告-2026-11-18.md
   findings:
@@ -1198,7 +1198,7 @@ ux_audit_2026_11_18:
     preset_dedupe: "274 duplicates soft-deleted; canonical admin/catalog then newest id"
     upload_names: "single/batch send original file.name"
     e2e_cleanup: "3 tickets, 1 template, 3 assets, 5 tasks, tenant #6 soft-deleted"
-    p2: "ticket duration/nowrap, prompt labels, API copy, batch empty state, thumbnails, dock padding, contract note"
+    p2: "ticket duration/nowrap, prompt labels, API copy, batch empty state, thumbnails, dock padding, contract note, user dialogs RpDialog, compact log identities"
   test_pollution:
     tickets: 3
     prompt_templates: 1
@@ -1223,10 +1223,8 @@ ux_audit_2026_11_18:
   no_production_data_changes: false
   production_billing: false
   residuals:
-    - "用户管理创建/删除/操作弹窗仍是自定义遮罩，未统一 RpDialog"
-    - "系统日志身份列仍多行，行高偏大"
     - "历史 local_upload_* 文件名不可还原"
-  next: "等待管理员验收；如需要再处理 P2 残留"
+  next: "P2 已收尾；等待管理员验收，可开始独立安全审计工单"
 
 
 
