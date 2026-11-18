@@ -103,7 +103,7 @@ async def test_ledger_exposes_reserved_delta_balance_and_task_no(db) -> None:
         tenant_id=tenant,
         owner_account_id=user_id,
         batch_id=1,
-        chain_id=1,
+        chain_id=7,
         asset_id=1,
         status="SUBMITTED",
         preset_code="iphone-15-pro",
@@ -120,12 +120,13 @@ async def test_ledger_exposes_reserved_delta_balance_and_task_no(db) -> None:
         event_key="ux-p0-freeze",
         reference={"taskId": int(task.id), "images": 1},
     )
+    # 批次结算只记 chainId，流水仍应能回溯到链内任务号。
     await credits.consume_reserved(
         tenant_id=tenant,
         amount=10,
         operator_user_id=user_id,
         event_key="ux-p0-consume",
-        reference={"taskId": int(task.id), "images": 1},
+        reference={"chainId": int(task.chain_id), "images": 1},
     )
     await db.commit()
 
@@ -147,6 +148,7 @@ async def test_ledger_exposes_reserved_delta_balance_and_task_no(db) -> None:
     assert consume["taskNo"] == 1
     assert consume["taskKind"] == "processing"
     assert consume["taskId"] == str(int(task.id))
+    assert consume["chainId"] == "7"
 
 
 @pytest.mark.asyncio
