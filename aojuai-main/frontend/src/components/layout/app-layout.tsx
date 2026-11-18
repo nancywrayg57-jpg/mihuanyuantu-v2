@@ -371,7 +371,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <div className="min-w-0 flex-1 overflow-hidden">
               <div className="flex items-center gap-2 text-sm">
                 <div className="truncate font-medium">{sessionDisplayName}</div>
-                <div className="text-muted-foreground">{sessionRoleLabel}</div>
+                {sessionDisplayName === sessionRoleLabel ? null : (
+                  <div className="text-muted-foreground">{sessionRoleLabel}</div>
+                )}
                 {session?.isSuperuser ? (
                   <div className="ml-2 hidden items-center gap-2 text-muted-foreground sm:flex">
                     <span>{t('topbar.targetTenant')}</span>
