@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { apiFetch } from '@/lib/api'
 import { filterMenuRoutesByFeatureSwitches } from '@/lib/feature-switches'
+import { hasAnyPermission, type Session } from '@/lib/auth'
 import { useT } from '@/lib/i18n'
 import { useAuth } from '@/hooks/useAuth'
 import { useTenant } from '@/hooks/useTenant'
@@ -26,8 +27,20 @@ export type MenuRoute = {
   children?: MenuRoute[]
 }
 
-export function useMenuRoutes() {
-  const t = useT()
+/** 2026-11-18 UX-P0-1：管理端页面不因历史授权残留在商家菜单里显示。 */
+function filterAdminOnlyRoutes(routes: MenuRoute[], session: Session | null): MenuRoute[] {
+  const isAdmin = hasAnyPermission(session, ['realphotos:admin:read'])
+  const adminOnlyPaths = new Set(['/realphotos/presets', '/realphotos/provider-contracts', '/realphotos/admin'])
+  return routes
+    .filter((route) => isAdmin || !adminOnlyPaths.has(route.path))
+    .map((route) =>
+      route.children?.length
+        ? { ...route, children: filterAdminOnlyRoutes(route.children, session) }
+        : route,
+    )
+}
+
+export function useMenuRoutes() {  const t = useT()
   const { session } = useAuth()
   const { targetTenantId, featureCatalog, featureSwitches } = useTenant()
 
@@ -55,7 +68,12 @@ export function useMenuRoutes() {
         })
         if (ignore) return
         const nextRoutes = Array.isArray(data) ? data : []
-        setRoutes(filterMenuRoutesByFeatureSwitches(nextRoutes, featureCatalog, featureSwitches))
+        setRoutes(
+          filterAdminOnlyRoutes(
+            filterMenuRoutesByFeatureSwitches(nextRoutes, featureCatalog, featureSwitches),
+            session,
+          ),
+        )
       } catch (err) {
         if (ignore) return
         setRoutes([])

@@ -5,11 +5,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { RpButton } from '@/components/realphotos/rp-button'
+import { RpDialog } from '@/components/realphotos/rp-table'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { gpsSubmitGuard } from '@/lib/realphotos-gps-submit'
-import { deviceTypeLabel } from '@/lib/realphotos-labels'
+import { deviceTypeLabel, gpsModeLabel } from '@/lib/realphotos-labels'
 import { PRESET_FIELD_DEFS, type PresetFieldDef } from '@/lib/realphotos-preset-fields'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
 
@@ -37,10 +39,22 @@ function presetFieldText(preset: Record<string, unknown>, field: PresetFieldDef)
   return raw === undefined || raw === null ? '' : String(raw)
 }
 
-/** 展开时展示除两份提示词外的全部设备参数。 */
+/** 展开时展示除两份提示词、以及首屏摘要已展示字段外的其余设备参数。 */
 const PRESET_DETAIL_FIELDS = PRESET_FIELD_DEFS.filter(
-  (field) => field.column !== 'aiPositivePrompt' && field.column !== 'aiNegativePrompt',
+  (field) =>
+    field.column !== 'aiPositivePrompt' &&
+    field.column !== 'aiNegativePrompt' &&
+    !['deviceType', 'brand', 'model', 'iso', 'shutter', 'aperture', 'focalLength', 'gpsMode'].includes(
+      String(field.column || ''),
+    ),
 )
+
+const PROCESS_UNIT_CREDITS = 10
+
+function presetColumnText(preset: Record<string, unknown>, column: string): string {
+  const field = PRESET_FIELD_DEFS.find((item) => item.column === column)
+  return field ? presetFieldText(preset, field) : ''
+}
 
 type PendingAsset = { id: string; previewUrl: string }
 
@@ -57,6 +71,8 @@ export function RealphotosBatchClient() {
   const [presetSearch, setPresetSearch] = useState('')
   const [presetDetailOpen, setPresetDetailOpen] = useState(false)
   const [presetDetail, setPresetDetail] = useState<Preset | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const gatewayPreviewUrls = useRef<Set<string>>(new Set())
 
   useEffect(() => {
@@ -256,7 +272,7 @@ export function RealphotosBatchClient() {
     }
   }
 
-  async function submitBatch() {
+  function requestSubmit() {
     if (frozen) {
       const text = '账号已因预审冻结，不能提交处理'
       setNotice(text)
@@ -275,6 +291,13 @@ export function RealphotosBatchClient() {
       toastTask(text, false)
       return
     }
+    setConfirmOpen(true)
+  }
+
+  async function submitBatch() {
+    if (submitting) return
+    if (frozen || !presetCode || library.length < 1) return
+    setSubmitting(true)
     try {
       const data = await apiFetch<{ batchId: string; tasks: { id: string }[] }>(
         '/api/v1/realphotos/processing-batches',
@@ -292,10 +315,13 @@ export function RealphotosBatchClient() {
       const text = `批次 ${data.batchId} 已提交，共 ${data.tasks.length} 张。到任务详情查看。`
       setNotice(text)
       toastTask(text, true)
+      setConfirmOpen(false)
     } catch (error: unknown) {
       const text = error instanceof ApiError ? error.message : '批次提交失败'
       setNotice(text)
       toastTask(text, false)
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -386,9 +412,25 @@ export function RealphotosBatchClient() {
               <div>
                 <dt className="text-muted-foreground">GPS</dt>
                 <dd>
-                  {String(detailPreset.gpsMode || 'none')}
+                  {gpsModeLabel(String(detailPreset.gpsMode || 'none'))}
                   {detailPreset.gpsWillSkip ? '（跳过写入）' : ''}
                 </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">ISO</dt>
+                <dd>{presetColumnText(detailPreset, 'iso') || '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">快门</dt>
+                <dd>{presetColumnText(detailPreset, 'shutter') || '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">光圈</dt>
+                <dd>{presetColumnText(detailPreset, 'aperture') || '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">焦距</dt>
+                <dd>{presetColumnText(detailPreset, 'focalLength') || '—'}</dd>
               </div>
             </dl>
             {presetDetailOpen ? (
@@ -410,7 +452,7 @@ export function RealphotosBatchClient() {
               type="button"
               onClick={() => setPresetDetailOpen((prev) => !prev)}
             >
-              {presetDetailOpen ? '收起' : '展开全部'}
+              {presetDetailOpen ? '收起其余参数' : '展开其余参数'}
             </button>
           </div>
         ) : null}
@@ -459,8 +501,8 @@ export function RealphotosBatchClient() {
           <button
             className="rp-btn rp-btn-primary"
             type="button"
-            disabled={frozen || gpsSubmitBlocked}
-            onClick={() => void submitBatch()}
+            disabled={frozen || gpsSubmitBlocked || submitting}
+            onClick={requestSubmit}
           >
             开始处理
           </button>
@@ -496,6 +538,42 @@ export function RealphotosBatchClient() {
           </tbody>
         </table>
       </section>
+
+      {confirmOpen && detailPreset ? (
+        <RpDialog title="确认提交处理" onClose={() => setConfirmOpen(false)}>
+          <p className="text-sm">
+            本次提交 <strong>{library.length}</strong> 张，单价 <strong>{PROCESS_UNIT_CREDITS} 积分/张</strong>，
+            预计冻结 <strong>{library.length * PROCESS_UNIT_CREDITS} 积分</strong>。
+          </p>
+          <dl className="rp-kv text-sm">
+            <dt>预设</dt>
+            <dd>{presetColumnText(detailPreset, 'brand')} {presetColumnText(detailPreset, 'model')}</dd>
+            <dt>曝光</dt>
+            <dd>
+              ISO {presetColumnText(detailPreset, 'iso') || '—'} · 快门{' '}
+              {presetColumnText(detailPreset, 'shutter') || '—'} · 光圈{' '}
+              {presetColumnText(detailPreset, 'aperture') || '—'} · 焦距{' '}
+              {presetColumnText(detailPreset, 'focalLength') || '—'}
+            </dd>
+            <dt>GPS</dt>
+            <dd>
+              {gpsModeLabel(String(detailPreset.gpsMode || 'none'))}
+              {detailPreset.gpsWillSkip ? '（跳过写入）' : ''}
+            </dd>
+          </dl>
+          <p className="text-xs text-muted-foreground">
+            提交后按张冻结；检测未通过或处理失败时按规则释放或走申诉，具体以任务详情与积分流水为准。
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <RpButton variant="primary" type="button" disabled={submitting} onClick={() => void submitBatch()}>
+              {submitting ? '提交中…' : '确认提交'}
+            </RpButton>
+            <RpButton type="button" onClick={() => setConfirmOpen(false)}>
+              再检查一下
+            </RpButton>
+          </div>
+        </RpDialog>
+      ) : null}
     </main>
   )
 }

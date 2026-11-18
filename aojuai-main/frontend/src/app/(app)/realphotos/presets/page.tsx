@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
+import { hasAnyPermission } from '@/lib/auth'
 import { ApiError, apiFetch } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
 import { deviceTypeLabel, gpsModeLabel } from '@/lib/realphotos-labels'
 import {
   EXCLUDED_IP_GEO_KEYS,
@@ -154,6 +156,9 @@ function formFromPreset(item: Preset): FormState {
 }
 
 export default function RealphotosPresetsPage() {
+  const { session, ready } = useAuth()
+  // 2026-11-18 UX-P0-1：设备预设由平台统一维护；商家只读，管理员可维护。
+  const canAdmin = hasAnyPermission(session, ['realphotos:admin:read'])
   const [items, setItems] = useState<Preset[]>([])
   const [form, setForm] = useState<FormState>(emptyForm)
   const [message, setMessage] = useState('')
@@ -168,13 +173,21 @@ export default function RealphotosPresetsPage() {
   const [search, setSearch] = useState('')
 
   async function load() {
-    const data = await apiFetch<{ items: Preset[] }>('/api/v1/realphotos/device-presets')
+    const path = canAdmin
+      ? '/api/v1/realphotos/device-presets'
+      : '/api/v1/realphotos/presets'
+    const data = await apiFetch<{ items: Preset[] }>(path)
     setItems(data.items)
   }
 
   useEffect(() => {
-    void load().catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '预设读取失败'))
-  }, [])
+    if (!ready) return
+    setPage(1)
+    void load().catch((error: unknown) =>
+      setMessage(error instanceof ApiError ? error.message : '预设读取失败'),
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canAdmin, ready])
 
   const filteredItems = useMemo(
     () =>
@@ -217,6 +230,7 @@ export default function RealphotosPresetsPage() {
   }
 
   async function openEdit(item: Preset) {
+    if (!canAdmin) return
     try {
       const full = await apiFetch<Preset>(`/api/v1/realphotos/device-presets/${encodeURIComponent(item.code)}`)
       setFormMode('edit')
@@ -229,8 +243,11 @@ export default function RealphotosPresetsPage() {
   }
 
   async function openDetail(item: Preset) {
+    const path = canAdmin
+      ? `/api/v1/realphotos/device-presets/${encodeURIComponent(item.code)}`
+      : `/api/v1/realphotos/presets/${encodeURIComponent(item.code)}`
     try {
-      const full = await apiFetch<Preset>(`/api/v1/realphotos/device-presets/${encodeURIComponent(item.code)}`)
+      const full = await apiFetch<Preset>(path)
       setDetail(full)
       setDetailTab('basic')
     } catch (error: unknown) {
@@ -481,14 +498,28 @@ export default function RealphotosPresetsPage() {
 
   return (
     <main className="space-y-4 p-6">
-      <RpPageHeader title="设备预设" description="按类型、品牌与型号维护处理预设。" />
+      <RpPageHeader
+        title="设备预设"
+        description={
+          canAdmin
+            ? '按类型、品牌与型号维护处理预设。'
+            : '设备预设由平台统一维护，商家账号仅可查看可用机型与参数。'
+        }
+      />
+      {!canAdmin ? (
+        <p className="rp-card border-primary/25 bg-primary/5 p-3 text-sm">
+          这里的预设由平台提供，不能自行新增或修改。需要新的机型/镜头参数，请联系平台管理员或技术客服。
+        </p>
+      ) : null}
       <p className="text-sm">{message}</p>
 
       <section className="rp-card p-4 shadow-sm space-y-3">
       <div className="rp-filter flex flex-wrap items-center gap-3 text-sm">
-        <button className="rp-btn" type="button" onClick={openCreate}>
-          新增预设
-        </button>
+        {canAdmin ? (
+          <button className="rp-btn" type="button" onClick={openCreate}>
+            新增预设
+          </button>
+        ) : null}
         <ListSearch
           value={search}
           placeholder="名称 / 品牌 / 型号"
@@ -520,6 +551,10 @@ export default function RealphotosPresetsPage() {
             <th className="text-left">类型</th>
             <th className="text-left">品牌</th>
             <th className="text-left">型号</th>
+            <th className="text-left">ISO</th>
+            <th className="text-left">快门</th>
+            <th className="text-left">光圈</th>
+            <th className="text-left">焦距</th>
             <th className="text-left">GPS</th>
             <th className="text-left">状态</th>
             <th className="text-left">操作</th>
@@ -528,8 +563,8 @@ export default function RealphotosPresetsPage() {
         <tbody>
           {pageItems.length === 0 ? (
             <tr>
-              <td className="rp-empty" colSpan={7}>
-                暂无预设
+              <td className="rp-empty" colSpan={11}>
+                {canAdmin ? '暂无预设' : '平台暂未提供可用预设，请联系管理员。'}
               </td>
             </tr>
           ) : (
@@ -539,25 +574,33 @@ export default function RealphotosPresetsPage() {
                 <td>{deviceTypeLabel(item.deviceType)}</td>
                 <td>{item.brand}</td>
                 <td>{item.model}</td>
+                <td>{item.iso || '—'}</td>
+                <td>{item.shutter || '—'}</td>
+                <td>{item.aperture || '—'}</td>
+                <td>{item.focalLength || '—'}</td>
                 <td>{gpsModeLabel(item.gpsMode)}</td>
                 <td>{item.enabled ? '启用' : '停用'}</td>
                 <td className="space-x-1">
                   <button className="rp-btn rp-btn-sm" type="button" onClick={() => void openDetail(item)}>
                     查看详情
                   </button>
-                  <button className="rp-btn rp-btn-sm" type="button" onClick={() => void openEdit(item)}>
-                    编辑
-                  </button>
-                  <button
-                    className="rp-btn rp-btn-sm"
-                    type="button"
-                    onClick={() => void setEnabled(item.code, !item.enabled)}
-                  >
-                    {item.enabled ? '停用' : '启用'}
-                  </button>
-                  <button className="rp-btn rp-btn-sm" type="button" onClick={() => void loadVersions(item.code)}>
-                    版本
-                  </button>
+                  {canAdmin ? (
+                    <>
+                      <button className="rp-btn rp-btn-sm" type="button" onClick={() => void openEdit(item)}>
+                        编辑
+                      </button>
+                      <button
+                        className="rp-btn rp-btn-sm"
+                        type="button"
+                        onClick={() => void setEnabled(item.code, !item.enabled)}
+                      >
+                        {item.enabled ? '停用' : '启用'}
+                      </button>
+                      <button className="rp-btn rp-btn-sm" type="button" onClick={() => void loadVersions(item.code)}>
+                        版本
+                      </button>
+                    </>
+                  ) : null}
                 </td>
               </tr>
             ))
@@ -694,16 +737,18 @@ export default function RealphotosPresetsPage() {
                 <p className="text-xs text-muted-foreground">状态：{detail.enabled ? '启用' : '停用'}</p>
               ) : null}
               {detailTab === 'exif' ? renderGpsDetail(detail) : null}
-              <button
-                className="rp-btn rp-btn-sm"
-                type="button"
-                onClick={() => {
-                  setDetail(null)
-                  void openEdit(detail)
-                }}
-              >
-                去编辑
-              </button>
+              {canAdmin ? (
+                <button
+                  className="rp-btn rp-btn-sm"
+                  type="button"
+                  onClick={() => {
+                    setDetail(null)
+                    void openEdit(detail)
+                  }}
+                >
+                  去编辑
+                </button>
+              ) : null}
             </div>
           </div>
         </div>

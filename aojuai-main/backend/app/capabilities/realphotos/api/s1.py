@@ -121,24 +121,13 @@ def _task_payload(task, task_no: int | None = None) -> dict[str, Any]:
 
 
 async def _tenant_task_no_map(db, *, tenant_id: int, task_ids: list[int]) -> dict[int, int]:
-    """2026-11-17：租户内任务编号（各租户从 1 开始，互不串号）。"""
-    if not task_ids:
-        return {}
-    from sqlalchemy import text as _text
+    """2026-11-17：租户内任务编号（各租户从 1 开始，互不串号）。
 
-    rows = (
-        await db.execute(
-            _text(
-                "select id, seq from ("
-                "  select id, row_number() over (order by id) as seq"
-                "  from cap_realphotos_image_tasks"
-                "  where tenant_id = :tenant_id and deleted_at is null"
-                ") x where id = any(:ids)"
-            ),
-            {"tenant_id": int(tenant_id), "ids": [int(x) for x in task_ids]},
-        )
-    ).all()
-    return {int(i): int(s) for i, s in rows}
+    2026-11-18：抽到 `task_numbering`，与生图任务/积分流水共用同一口径。
+    """
+    from app.capabilities.realphotos.services.task_numbering import processing_task_no_map
+
+    return await processing_task_no_map(db, tenant_id=tenant_id, task_ids=task_ids)
 
 
 async def _enrich_task_detail(

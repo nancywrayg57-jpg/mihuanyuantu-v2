@@ -8,6 +8,10 @@ from sqlalchemy import select
 from app.api.deps import DBSession, PermissionChecker, TenantCtx
 from app.capabilities.realphotos.permissions import WALLET_READ
 from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
+from app.capabilities.realphotos.services.task_numbering import (
+    generation_task_no_map,
+    processing_task_no_map,
+)
 from app.core.response import SuccessResponse
 from app.core.schemas import PageResponse
 from app.domain.roles.models import Role
@@ -81,22 +85,64 @@ async def get_ledger(
     )
     operator_ids = {int(row.operator_user_id) for row in rows if row.operator_user_id}
     displays = await _operator_displays(db, operator_ids)
-    items = [
-        {
-            "id": str(int(row.id)),
-            "eventKey": row.event_key,
-            "entryType": row.entry_type,
-            "deltaAvailable": str(int(row.delta_available)),
-            "deltaReserved": str(int(row.delta_reserved)),
-            "beforeAvailable": str(int(row.before_available)),
-            "afterAvailable": str(int(row.after_available)),
-            "operatorUserId": str(row.operator_user_id) if row.operator_user_id else None,
-            "operatorDisplay": displays.get(int(row.operator_user_id)) if row.operator_user_id else None,
-            "reason": row.reason,
-            "createdAt": row.created_at.isoformat() if row.created_at else None,
-        }
-        for row in rows
-    ]
+    processing_ids: list[int] = []
+    generation_ids: list[int] = []
+    for row in rows:
+        reference = row.reference or {}
+        task_id = reference.get("taskId")
+        if task_id is None:
+            continue
+        if str(reference.get("source") or "") == "generation_store":
+            generation_ids.append(int(task_id))
+        else:
+            processing_ids.append(int(task_id))
+    processing_no_map = await processing_task_no_map(
+        db, tenant_id=int(tenant_ctx.tenant_id), task_ids=processing_ids
+    )
+    generation_no_map = await generation_task_no_map(
+        db, tenant_id=int(tenant_ctx.tenant_id), task_ids=generation_ids
+    )
+    items = []
+    for row in rows:
+        reference = dict(row.reference or {})
+        task_id = reference.get("taskId")
+        task_kind = (
+            "generation"
+            if str(reference.get("source") or "") == "generation_store" and task_id is not None
+            else "processing"
+            if task_id is not None
+            else None
+        )
+        task_no = None
+        if task_id is not None:
+            task_no = (
+                generation_no_map.get(int(task_id))
+                if task_kind == "generation"
+                else processing_no_map.get(int(task_id))
+            )
+        items.append(
+            {
+                "id": str(int(row.id)),
+                "eventKey": row.event_key,
+                "entryType": row.entry_type,
+                "deltaAvailable": str(int(row.delta_available)),
+                "deltaReserved": str(int(row.delta_reserved)),
+                "beforeAvailable": str(int(row.before_available)),
+                "afterAvailable": str(int(row.after_available)),
+                "beforeReserved": str(int(row.before_reserved)),
+                "afterReserved": str(int(row.after_reserved)),
+                "operatorUserId": str(row.operator_user_id) if row.operator_user_id else None,
+                "operatorDisplay": displays.get(int(row.operator_user_id)) if row.operator_user_id else None,
+                "reason": row.reason,
+                "taskId": str(int(task_id)) if task_id is not None else None,
+                "taskNo": task_no,
+                "taskKind": task_kind,
+                "batchId": str(reference.get("batchId")) if reference.get("batchId") is not None else None,
+                "chainId": str(reference.get("chainId")) if reference.get("chainId") is not None else None,
+                "referenceSource": reference.get("source"),
+                "createdAt": row.created_at.isoformat() if row.created_at else None,
+            }
+        )
     return SuccessResponse(
         data=PageResponse(
             list=items,
