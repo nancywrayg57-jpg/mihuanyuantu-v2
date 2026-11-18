@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 
 from app.api.deps import DBSession, PermissionChecker, TenantCtx
+from app.capabilities.realphotos.models import RealphotosImageTask
 from app.capabilities.realphotos.permissions import WALLET_READ
 from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
 from app.capabilities.realphotos.services.task_numbering import (
@@ -85,17 +86,44 @@ async def get_ledger(
     )
     operator_ids = {int(row.operator_user_id) for row in rows if row.operator_user_id}
     displays = await _operator_displays(db, operator_ids)
+    references = [dict(row.reference or {}) for row in rows]
+    # 批次结算流水按 chainId 记账；用链内首个任务补出「关联任务」。
+    chain_ids = {
+        int(reference["chainId"])
+        for reference in references
+        if reference.get("chainId") is not None and reference.get("taskId") is None
+    }
+    chain_task_map: dict[int, int] = {}
+    if chain_ids:
+        chain_rows = (
+            await db.execute(
+                select(RealphotosImageTask.chain_id, RealphotosImageTask.id)
+                .where(
+                    RealphotosImageTask.tenant_id == int(tenant_ctx.tenant_id),
+                    RealphotosImageTask.chain_id.in_(chain_ids),
+                    RealphotosImageTask.deleted_at.is_(None),
+                )
+                .order_by(RealphotosImageTask.id.asc())
+            )
+        ).all()
+        for chain_id, task_id in chain_rows:
+            chain_task_map.setdefault(int(chain_id), int(task_id))
+
+    resolved: list[tuple[dict, int | None]] = []
     processing_ids: list[int] = []
     generation_ids: list[int] = []
-    for row in rows:
-        reference = row.reference or {}
+    for reference in references:
         task_id = reference.get("taskId")
-        if task_id is None:
+        if task_id is None and reference.get("chainId") is not None:
+            task_id = chain_task_map.get(int(reference["chainId"]))
+        task_id_int = int(task_id) if task_id is not None else None
+        resolved.append((reference, task_id_int))
+        if task_id_int is None:
             continue
         if str(reference.get("source") or "") == "generation_store":
-            generation_ids.append(int(task_id))
+            generation_ids.append(task_id_int)
         else:
-            processing_ids.append(int(task_id))
+            processing_ids.append(task_id_int)
     processing_no_map = await processing_task_no_map(
         db, tenant_id=int(tenant_ctx.tenant_id), task_ids=processing_ids
     )
@@ -103,9 +131,7 @@ async def get_ledger(
         db, tenant_id=int(tenant_ctx.tenant_id), task_ids=generation_ids
     )
     items = []
-    for row in rows:
-        reference = dict(row.reference or {})
-        task_id = reference.get("taskId")
+    for row, (reference, task_id) in zip(rows, resolved, strict=True):
         task_kind = (
             "generation"
             if str(reference.get("source") or "") == "generation_store" and task_id is not None
