@@ -160,3 +160,14 @@
 - Tenant task numbers: `services/task_numbering.py` is the single source; it uses a window function on PostgreSQL and a Python fallback on SQLite. Dialect checks must go through `infrastructure.database.dialect.get_dialect()` — the portability governance test rejects `settings.IS_SQLITE` in app code.
 - Verification lesson: API assertions alone miss display regressions. The wallet screenshot caught the missing chain task number that the API sample check initially tolerated; always inspect the rendered table, not just a JSON field.
 
+### UX P1 iteration 2 (2026-11-18)
+
+- Scope: P1-1..P1-7 from the desktop UX review. Evidence: `docs/mihuanyuantu-v2/input/REALPHOTOS-UX-P1-2026-11-18.md`; production `60a8038`, BUILD_ID `2EG6HqaZ9p6c0dqtZkk3Q`, 30/30 API+DOM checks. P2 remains.
+- List density is now 10/page everywhere (`TENANT_PAGE_SIZE`/`TICKET_PAGE_SIZE`/`HELD_PAGE_SIZE` changed in `s6_ops.py`); existing tests that asserted 20 were updated intentionally.
+- Message enrichment is read-time: `event_key` still carries `inbox:task:{id}:...`, and the inbox API parses that id to attach task number, batch id, asset name and kind. This avoids an inbox schema migration and also enriches old rows. Purged assets fall back to `资源 #id（已清理）` so every task message has a locator.
+- Same-batch grouping is a frontend concern keyed by `batchId + title`; mark-read/mark-unread fan out to each message id. Do not merge rows across batches with the same title.
+- Tenant detail route uses `{target_tenant_id}` in the path: the shared `TenantCtx` dependency already declares a `tenant_id` query parameter, and FastAPI rejects a path parameter with the same name ("Path parameters cannot have default values").
+- Workspace history now returns `objectKey` (result first, source fallback), `failureClass` and `canReprocess`; failure detail is only attached for failed statuses so a retried-then-delivered task does not show a stale failure reason.
+- Verification lesson: production data includes old rows whose source assets were purged. API checks must accept a documented fallback, and the UI must still render a useful locator instead of a blank cell.
+
+
