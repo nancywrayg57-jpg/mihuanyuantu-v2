@@ -92,16 +92,22 @@ export default function RealphotosLogsPage() {
               <tr key={item.id}>
                 <td>{formatDateTimeShort(item.createdAt) || `#${item.id}`}</td>
                 <td>
-                  <div>{item.operatorDisplay || `用户 #${item.operatorUserId}`}</div>
-                  <div className="text-xs text-muted-foreground">#{item.operatorUserId}</div>
+                  <div className="flex items-baseline gap-1 whitespace-nowrap">
+                    <span className="max-w-40 truncate">{item.operatorDisplay || `用户 #${item.operatorUserId}`}</span>
+                    <span className="text-xs text-muted-foreground">#{item.operatorUserId}</span>
+                  </div>
                 </td>
                 <td>
-                  <div>{item.targetDisplay || `用户 #${item.targetUserId}`}</div>
-                  <div className="text-xs text-muted-foreground">#{item.targetUserId}</div>
+                  <div className="flex items-baseline gap-1 whitespace-nowrap">
+                    <span className="max-w-40 truncate">{item.targetDisplay || `用户 #${item.targetUserId}`}</span>
+                    <span className="text-xs text-muted-foreground">#{item.targetUserId}</span>
+                  </div>
                 </td>
                 <td>
-                  <div>{item.tenantDisplay || `租户 #${item.tenantId}`}</div>
-                  <div className="text-xs text-muted-foreground">#{item.tenantId}</div>
+                  <div className="flex items-baseline gap-1 whitespace-nowrap">
+                    <span className="max-w-48 truncate">{item.tenantDisplay || `租户 #${item.tenantId}`}</span>
+                    <span className="text-xs text-muted-foreground">#{item.tenantId}</span>
+                  </div>
                 </td>
                 <td title={item.action}>
                   {item.actionLabel || item.action}
