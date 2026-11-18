@@ -1063,12 +1063,6 @@ class RealphotosOpsService:
 
         items: list[dict] = []
         seen_codes: set[str] = set()
-        seen_keys: set[str] = set()
-
-        def identity(payload: dict) -> str:
-            brand = str(payload.get("brand") or "").strip().lower()
-            model = str(payload.get("model") or "").strip().lower()
-            return f"{brand}|{model}" if brand or model else f"code|{payload.get('code')}"
 
         if INJECT_S1_CATALOG_INTO_ENABLED:
             disabled = {
@@ -1089,11 +1083,8 @@ class RealphotosOpsService:
                 payload["gpsWritable"] = bool(writable["gpsWritable"])
                 payload["gpsWillSkip"] = bool(writable.get("gpsWillSkip"))
                 payload["gpsWritableReason"] = str(writable["gpsWritableReason"] or "")
-                if identity(payload) in seen_keys:
-                    continue
                 items.append(payload)
                 seen_codes.add(str(payload["code"]))
-                seen_keys.add(identity(payload))
 
         extra = (
             await self.db.execute(
@@ -1104,7 +1095,8 @@ class RealphotosOpsService:
                 )
             )
         ).scalars().all()
-        # 2026-11-18 UX audit：按品牌+型号去重；管理员/目录来源优先，其次最新 id。
+        # 2026-11-18 admin decision: keep every legacy variant; only dedupe by unique code.
+        # Brand+model is not a safe key (Nikon D850 has 10 distinct scene/lens presets).
         source_priority = {"admin": 0, "catalog": 1, "legacy_import": 2}
         extra = sorted(
             extra,
@@ -1152,12 +1144,8 @@ class RealphotosOpsService:
             payload = self._preset_dict(
                 row, gps_config=gps_config, name=display_name or None
             )
-            key = identity(payload)
-            if key in seen_keys:
-                continue
             items.append(payload)
             seen_codes.add(str(row.code))
-            seen_keys.add(key)
         return items
 
     async def save_preset(

@@ -43,7 +43,7 @@ async def test_login_updates_last_login_at(db) -> None:
 
 
 @pytest.mark.asyncio
-async def test_presets_are_deduped_by_brand_and_model_with_names(db) -> None:
+async def test_presets_keep_brand_model_variants_with_names(db) -> None:
     await bootstrap_s0_accounts(db)
     ops = RealphotosOpsService(db)
     roles = {ROLE_ADMIN, "admin"}
@@ -65,14 +65,9 @@ async def test_presets_are_deduped_by_brand_and_model_with_names(db) -> None:
     await db.commit()
 
     items = await ops.list_enabled_presets()
-    identities = [
-        (str(item.get("brand") or "").strip().lower(), str(item.get("model") or "").strip().lower())
-        for item in items
-    ]
-    assert len(identities) == len(set(identities))
     audit_rows = [item for item in items if str(item.get("brand")) == "AuditCam"]
-    assert len(audit_rows) == 1
-    assert audit_rows[0]["name"] in {"AuditCam X1 主摄", "AuditCam X1 长焦"}
+    assert len(audit_rows) == 2
+    assert {row["name"] for row in audit_rows} == {"AuditCam X1 主摄", "AuditCam X1 长焦"}
 
 
 @pytest.mark.asyncio
