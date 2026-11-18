@@ -62,6 +62,7 @@ type WorkspacePayload = {
   recentHistory: Array<{
     kind: string
     id: string
+    taskNo?: number | null
     status: string
     createdAt: string | null
     presetCode?: string
@@ -320,8 +321,7 @@ export default function RealphotosWorkspacePage() {
           <table className="rp-table w-full text-sm">
             <thead>
               <tr>
-                <th className="text-left">类型</th>
-                <th className="text-left">编号</th>
+                <th className="text-left">任务</th>
                 <th className="text-left">状态</th>
                 <th className="text-left">时间</th>
               </tr>
@@ -329,13 +329,14 @@ export default function RealphotosWorkspacePage() {
             <tbody>
               {filteredHistory.length === 0 ? (
                 <tr>
-                  <td className="rp-empty" colSpan={4}>还没有处理记录。上传或导入图片后，这里会显示每次处理的状态与时间。</td>
+                  <td className="rp-empty" colSpan={3}>还没有处理记录。上传或导入图片后，这里会显示每次处理的状态与时间。</td>
                 </tr>
               ) : (
                 filteredHistory.map((item) => (
                   <tr key={`${item.kind}-${item.id}`}>
-                    <td>{item.kind === 'processing' ? '处理' : '生图'}</td>
-                    <td>{item.id}</td>
+                    <td>
+                      {item.kind === 'processing' ? '处理' : '生图'} #{item.taskNo ?? item.id}
+                    </td>
                     <td>{taskStatusLabel(item.status)}</td>
                     <td>{formatDateTimeShort(item.createdAt) || '—'}</td>
                   </tr>

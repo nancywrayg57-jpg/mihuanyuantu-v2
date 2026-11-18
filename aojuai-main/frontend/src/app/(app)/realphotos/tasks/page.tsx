@@ -93,6 +93,7 @@ type GenerationItem = {
 
 type GenerationTask = {
   id: string
+  taskNo?: number | null
   mode: string
   provider: string
   quantity: number
@@ -738,7 +739,7 @@ export default function RealphotosTasksPage() {
                         <span className="inline-block h-10 w-10" aria-hidden />
                       )}
                     </td>
-                    <td>{item.taskNo ?? item.id}</td>
+                    <td>{`处理 #${item.taskNo ?? item.id}`}</td>
                     <td>
                       <RpStatus tone={statusTone(item.status)}>{taskStatusLabel(item.status)}</RpStatus>
                     </td>
@@ -780,8 +781,8 @@ export default function RealphotosTasksPage() {
           {downloadNote ? <p className="text-sm">{downloadNote}</p> : null}
           {detail ? (
             <RpDialog
-              title={`处理任务 ${detail.taskNo ?? detail.id}`}
-              label={`处理任务 ${detail.taskNo ?? detail.id} 详情`}
+              title={`处理任务 #${detail.taskNo ?? detail.id}`}
+              label={`处理任务 #${detail.taskNo ?? detail.id} 详情`}
               onClose={() => setDetail(null)}
             >
               <RpSection title="检测报告" tone="report">
@@ -902,7 +903,7 @@ export default function RealphotosTasksPage() {
               ) : (
                 visibleGenItems.map((item) => (
                   <tr key={item.id}>
-                    <td>{item.id}</td>
+                    <td>{`生图 #${item.taskNo ?? item.id}`}</td>
                     <td>{generationModeLabel(item.mode)}</td>
                     <td>{item.quantity}</td>
                     <td>
@@ -925,8 +926,8 @@ export default function RealphotosTasksPage() {
           {downloadNote ? <p className="text-sm">{downloadNote}</p> : null}
           {genDetail ? (
             <RpDialog
-              title={`生图任务 ${genDetail.id}`}
-              label={`生图任务 ${genDetail.id} 详情`}
+              title={`生图任务 #${genDetail.taskNo ?? genDetail.id}`}
+              label={`生图任务 #${genDetail.taskNo ?? genDetail.id} 详情`}
               onClose={() => setGenDetail(null)}
             >
               <RpSection title="预览" tone="preview">

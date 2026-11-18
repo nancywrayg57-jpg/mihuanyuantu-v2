@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, Query, Request, UploadFile
@@ -12,9 +13,10 @@ from app.api.deps import CurrentUser, DBSession, PermissionChecker, TenantCtx
 from app.capabilities.realphotos.constants import IMAGE_PROCESSING_SCOPE
 from app.capabilities.realphotos.permissions import ADMIN_READ, ROLE_ADMIN, WORKSPACE_READ
 from app.capabilities.realphotos.services.s5_growth import RealphotosGrowthService
-from app.core.exceptions import BusinessError, ForbiddenError
+from app.capabilities.realphotos.services.task_numbering import generation_task_no_map
+from app.core.exceptions import BusinessError, ForbiddenError, NotFoundError
 from app.core.response import SuccessResponse
-from app.domain.auth.api_key_service import ApiKeyService
+from app.domain.auth.api_key_service import MAX_KEYS_PER_USER, ApiKeyService
 from app.domain.roles.models import Role
 from app.domain.users.models import UserRole
 
@@ -259,6 +261,9 @@ async def list_generation_tasks(
         mode=mode,
     )
     items = []
+    no_map = await generation_task_no_map(
+        db, tenant_id=int(tenant_ctx.tenant_id), task_ids=[task.id for task in rows]
+    )
     for task in rows:
         gen_items = await service.list_generation_items(
             tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id)
@@ -266,6 +271,7 @@ async def list_generation_tasks(
         items.append(
             {
                 "id": str(int(task.id)),
+                "taskNo": no_map.get(int(task.id)),
                 "mode": task.mode,
                 "provider": task.provider,
                 "quantity": int(task.quantity),
@@ -330,9 +336,13 @@ async def create_generation(
     trace = getattr(task, "supplier_trace", None)
     await db.commit()
     items = await service.list_generation_items(tenant_id=int(tenant_ctx.tenant_id), task_id=int(task.id))
+    no_map = await generation_task_no_map(
+        db, tenant_id=int(tenant_ctx.tenant_id), task_ids=[task.id]
+    )
     return SuccessResponse(
         data={
             "id": str(int(task.id)),
+            "taskNo": no_map.get(int(task.id)),
             "provider": task.provider,
             "supplier": trace,
             "requestedWidth": int(task.width),
@@ -503,6 +513,50 @@ async def import_resource_file(
     return SuccessResponse(data=payload)
 
 
+@router.get("/business-api-keys")
+async def list_business_keys(
+    current_user: CurrentUser,
+    request: Request,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([WORKSPACE_READ, ADMIN_READ])),
+) -> dict[str, Any]:
+    """2026-11-18 UX-P0-2：业务凭证列表（只看 image_processing scope，明文不可再取）。"""
+    _reject_key_auth(request)
+    keys = await ApiKeyService.list_keys(
+        db, int(current_user.tenant_id), int(current_user.id)
+    )
+    items = [
+        _business_key_payload(key)
+        for key in keys
+        if IMAGE_PROCESSING_SCOPE in list(key.scopes or [])
+    ]
+    return SuccessResponse(data={"items": items, "maxKeys": MAX_KEYS_PER_USER})
+
+
+def _business_key_payload(key) -> dict[str, Any]:
+    expires_at = getattr(key, "expires_at", None)
+    status = "active"
+    if expires_at is not None:
+        moment = expires_at
+        if moment.tzinfo is None:
+            moment = moment.replace(tzinfo=UTC)
+        if moment < datetime.now(UTC):
+            status = "expired"
+    created_at = getattr(key, "created_at", None)
+    last_used_at = getattr(key, "last_used_at", None)
+    return {
+        "id": str(int(key.id)),
+        "name": key.name,
+        "keyPrefix": key.key_prefix,
+        "maskedKey": f"{key.key_prefix}{'•' * 8}",
+        "scopes": list(key.scopes or []),
+        "status": status,
+        "createdAt": created_at.isoformat() if created_at else None,
+        "lastUsedAt": last_used_at.isoformat() if last_used_at else None,
+        "expiresAt": expires_at.isoformat() if expires_at else None,
+    }
+
+
 @router.post("/business-api-keys")
 async def create_business_key(
     body: BusinessKeyBody,
@@ -528,10 +582,61 @@ async def create_business_key(
     await db.commit()
     return SuccessResponse(
         data={
-            "id": str(int(api_key.id)),
-            "keyPrefix": api_key.key_prefix,
-            "scopes": list(api_key.scopes),
+            **_business_key_payload(api_key),
             "apiKey": plaintext,
+        }
+    )
+
+
+@router.post("/business-api-keys/{key_id}/rotate")
+async def rotate_business_key(
+    key_id: int,
+    current_user: CurrentUser,
+    request: Request,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([WORKSPACE_READ, ADMIN_READ])),
+) -> dict[str, Any]:
+    """重新生成：吊销旧凭证并用同一名称签发新凭证（明文只返回这一次）。"""
+    _reject_key_auth(request)
+    keys = await ApiKeyService.list_keys(
+        db, int(current_user.tenant_id), int(current_user.id)
+    )
+    target = next(
+        (
+            key
+            for key in keys
+            if int(key.id) == int(key_id)
+            and IMAGE_PROCESSING_SCOPE in list(key.scopes or [])
+        ),
+        None,
+    )
+    if target is None:
+        raise NotFoundError(resource="ApiKey", resource_id=int(key_id))
+    name = target.name
+    expires_in_days = None
+    if target.expires_at is not None:
+        moment = target.expires_at
+        if moment.tzinfo is None:
+            moment = moment.replace(tzinfo=UTC)
+        delta_days = (moment - datetime.now(UTC)).days
+        expires_in_days = max(1, delta_days)
+    await ApiKeyService.revoke_key(
+        db, int(current_user.tenant_id), int(current_user.id), int(key_id)
+    )
+    api_key, plaintext = await ApiKeyService.create_key(
+        db,
+        int(current_user.tenant_id),
+        int(current_user.id),
+        name=name,
+        scopes=[IMAGE_PROCESSING_SCOPE],
+        expires_in_days=expires_in_days,
+    )
+    await db.commit()
+    return SuccessResponse(
+        data={
+            **_business_key_payload(api_key),
+            "apiKey": plaintext,
+            "rotatedFrom": str(int(key_id)),
         }
     )
 

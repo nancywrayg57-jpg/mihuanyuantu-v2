@@ -27,6 +27,10 @@ from app.capabilities.realphotos.permissions import (
 )
 from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
 from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
+from app.capabilities.realphotos.services.task_numbering import (
+    generation_task_no_map,
+    processing_task_no_map,
+)
 from app.core.response import SuccessResponse
 from app.domain.roles.models import Role
 from app.domain.users.models import UserRole
@@ -198,11 +202,18 @@ async def get_workspace(
                 .limit(10)
             )
         ).scalars().all()
+        processing_no_map = await processing_task_no_map(
+            db, tenant_id=tenant_id, task_ids=[row.id for row in recent_processing]
+        )
+        generation_no_map = await generation_task_no_map(
+            db, tenant_id=tenant_id, task_ids=[row.id for row in recent_generation]
+        )
         for row in recent_processing:
             recent.append(
                 {
                     "kind": "processing",
                     "id": str(int(row.id)),
+                    "taskNo": processing_no_map.get(int(row.id)),
                     "status": row.status,
                     "presetCode": row.preset_code,
                     "createdAt": row.created_at.isoformat() if row.created_at else None,
@@ -213,6 +224,7 @@ async def get_workspace(
                 {
                     "kind": "generation",
                     "id": str(int(row.id)),
+                    "taskNo": generation_no_map.get(int(row.id)),
                     "status": "stored",
                     "mode": row.mode,
                     "provider": row.provider,

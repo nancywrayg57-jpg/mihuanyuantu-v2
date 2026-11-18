@@ -17,11 +17,34 @@ type Ledger = {
   operatorUserId?: string | null
   operatorDisplay?: string | null
   deltaAvailable: string
+  deltaReserved?: string
+  beforeAvailable?: string
+  afterAvailable?: string
+  beforeReserved?: string
+  afterReserved?: string
+  taskId?: string | null
+  taskNo?: number | null
+  taskKind?: 'processing' | 'generation' | null
+  batchId?: string | null
   createdAt?: string | null
 }
 type PageData = { list?: Ledger[]; total?: number; currentPage?: number; pageSize?: number }
 
 const LEDGER_PAGE_SIZE = 10
+
+function signed(value: string | undefined): string {
+  const num = Number(value || 0)
+  if (num > 0) return `+${num}`
+  return String(num)
+}
+
+function taskRef(row: Ledger): string {
+  if (row.taskNo != null) {
+    return `${row.taskKind === 'generation' ? '生图' : '处理'} #${row.taskNo}`
+  }
+  if (row.taskId) return `#${row.taskId}`
+  return '—'
+}
 
 export default function RealphotosWalletPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null)
@@ -32,6 +55,7 @@ export default function RealphotosWalletPage() {
   const [search, setSearch] = useState('')
   const [ledgerPage, setLedgerPage] = useState(1)
   const [ledgerTotal, setLedgerTotal] = useState(0)
+  const [exporting, setExporting] = useState(false)
 
   async function reload() {
     const data = await apiFetch<Wallet>('/api/v1/realphotos/wallet')
@@ -82,11 +106,86 @@ export default function RealphotosWalletPage() {
           row.entryType,
           ledgerEntryTypeLabel(row.entryType),
           row.deltaAvailable,
+          row.deltaReserved,
           row.operatorUserId,
+          taskRef(row),
         ),
       ),
     [ledger, search],
   )
+
+  async function exportLedger() {
+    if (exporting) return
+    setExporting(true)
+    try {
+      const all: Ledger[] = []
+      let page = 1
+      for (;;) {
+        const data = await apiFetch<PageData>(
+          `/api/v1/realphotos/wallet/ledger?currentPage=${page}&pageSize=100`,
+        )
+        const rows = data.list || []
+        all.push(...rows)
+        const total = Number(data.total || 0)
+        if (rows.length === 0 || all.length >= total) break
+        page += 1
+      }
+      const header = [
+        '流水号',
+        '类型',
+        '可用变动',
+        '冻结变动',
+        '变动后可用',
+        '变动后冻结',
+        '关联任务',
+        '操作账号',
+        '时间',
+      ]
+      const exported = all.filter((row) =>
+        matchSearchText(
+          search,
+          row.id,
+          row.entryType,
+          ledgerEntryTypeLabel(row.entryType),
+          row.deltaAvailable,
+          row.deltaReserved,
+          row.operatorUserId,
+          taskRef(row),
+        ),
+      )
+      const lines = [
+        header,
+        ...exported.map((row) => [
+          row.id,
+          ledgerEntryTypeLabel(row.entryType),
+          signed(row.deltaAvailable),
+          signed(row.deltaReserved),
+          row.afterAvailable ?? '',
+          row.afterReserved ?? '',
+          taskRef(row),
+          row.operatorDisplay || row.operatorUserId || '',
+          formatDateTimeShort(row.createdAt),
+        ]),
+      ]
+      const csv = lines
+        .map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\r\n')
+      const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `蜜獾原图-积分流水-${new Date().toISOString().slice(0, 10)}.csv`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+      setMessage(`已导出 ${exported.length} 条流水。`)
+    } catch (error: unknown) {
+      setMessage(error instanceof ApiError ? error.message : '导出失败')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   return (
     <main className="space-y-6 p-6">
@@ -145,14 +244,26 @@ export default function RealphotosWalletPage() {
       <section className="rp-card space-y-3 p-4">
         <div className="rp-filter flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-medium">流水</h2>
-          <ListSearch value={search} placeholder="流水 / 类型 / 账号" onChange={setSearch} />
+          <div className="flex flex-wrap items-center gap-2">
+            <ListSearch value={search} placeholder="流水 / 类型 / 任务号 / 账号" onChange={setSearch} />
+            <button className="rp-btn rp-btn-sm" type="button" disabled={exporting} onClick={() => void exportLedger()}>
+              {exporting ? '导出中…' : '导出 CSV'}
+            </button>
+          </div>
         </div>
+        <p className="text-xs text-muted-foreground">
+          处理任务提交时先从可用余额冻结，检测/交付时从冻结里消费，因此「消费」类记录的可用变动为 0、冻结变动为负；
+          「变动后」列展示该笔之后的可用 / 冻结余额。
+        </p>
         <table className="rp-table">
           <thead>
             <tr>
               <th className="text-left">流水</th>
               <th className="text-left">类型</th>
               <th className="text-left">可用变动</th>
+              <th className="text-left">冻结变动</th>
+              <th className="text-left">变动后（可用 / 冻结）</th>
+              <th className="text-left">关联任务</th>
               <th className="text-left">操作账号</th>
               <th className="text-left">时间</th>
             </tr>
@@ -162,9 +273,14 @@ export default function RealphotosWalletPage() {
               <tr key={row.id}>
                 <td>{row.id}</td>
                 <td>{ledgerEntryTypeLabel(row.entryType)}</td>
-                <td>{row.deltaAvailable}</td>
+                <td>{signed(row.deltaAvailable)}</td>
+                <td>{signed(row.deltaReserved)}</td>
+                <td>
+                  {row.afterAvailable ?? '—'} / {row.afterReserved ?? '—'}
+                </td>
+                <td className="whitespace-nowrap">{taskRef(row)}</td>
                 <td>{row.operatorDisplay || row.operatorUserId || ''}</td>
-                <td>{formatDateTimeShort(row.createdAt)}</td>
+                <td className="whitespace-nowrap">{formatDateTimeShort(row.createdAt)}</td>
               </tr>
             ))}
           </tbody>
