@@ -1128,4 +1128,16 @@ ux_p1_2026_11_18:
     - "P2 六项未做"
   next: "P2 六项，等待管理员确认"
 
+task_actions_2026_11_18:
+  trigger: "管理员询问复制参数是否等同主动重处理"
+  decision: "不相同，保留 copy；修正文案并重命名重新处理"
+  copy: "任意任务；pre_review_mode=pass；不冻结；成功交付后扣 10/张；failure 不扣；FR-013/ND-025"
+  reprocess: "仅真实检测未通过且有结果文件；正常预审；正常冻结 10；policy.origin=reprocess"
+  ui:
+    copy_label: "按原参数复制"
+    reprocess_label: "重新处理"
+  evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-UX-P1-2026-11-18.md#6-追加修正2026-11-18-任务操作按钮
+  production_billing: false
+
+
 

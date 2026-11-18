@@ -170,4 +170,11 @@
 - Workspace history now returns `objectKey` (result first, source fallback), `failureClass` and `canReprocess`; failure detail is only attached for failed statuses so a retried-then-delivered task does not show a stale failure reason.
 - Verification lesson: production data includes old rows whose source assets were purged. API checks must accept a documented fallback, and the UI must still render a useful locator instead of a blank cell.
 
+### Task actions clarification (2026-11-18)
+
+- `copy_processing_task` and `reprocess` are not duplicates. Copy: any task, `pre_review_mode=pass`, `billing_mode=copy_no_reserve`, no reservation, but `_consume_copy` still charges 10 on successful delivery (failure releases). Reprocess: only real detection-not-passed tasks with an output file, normal `submit_single` path with pre-review and a normal 10-credit reservation, `policy.origin=reprocess`.
+- Because copy is FR-013 / ND-025, do not delete it as a "duplicate". The earlier P0 label `复制参数（不扣分）` was factually wrong; the button is now `按原参数复制` with a tooltip/toast stating "免预审、免冻结；成功交付后扣 10 积分/张". `主动重处理` is now `重新处理` in task detail and workspace.
+- Lesson: label a billing mode by its actual settlement path, not by the absence of an upfront freeze.
+
+
 
