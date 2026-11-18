@@ -280,6 +280,7 @@ async def upload_assets_batch(
     tenant_ctx: TenantCtx,
     db: DBSession,
     files: list[UploadFile] = File(...),
+    names: list[str] | None = Form(default=None),
     _: None = Depends(PermissionChecker([GATEWAY_READ])),
 ) -> dict[str, Any]:
     """FR-028 / AC-002：本地多文件上传；>20 整批拒绝。"""
@@ -292,6 +293,7 @@ async def upload_assets_batch(
         tenant_id=int(tenant_ctx.tenant_id),
         owner_account_id=int(current_user.id),
         files=payloads,
+        meta_names=names,
     )
     await db.commit()
     items = []

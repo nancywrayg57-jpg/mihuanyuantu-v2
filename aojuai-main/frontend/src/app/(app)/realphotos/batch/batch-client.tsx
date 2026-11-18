@@ -17,6 +17,7 @@ import { inspectLocalFile } from '@/lib/realphotos-s1'
 
 type Preset = {
   code: string
+  name?: string | null
   model: string
   deviceType: string
   brand: string
@@ -56,7 +57,7 @@ function presetColumnText(preset: Record<string, unknown>, column: string): stri
   return field ? presetFieldText(preset, field) : ''
 }
 
-type PendingAsset = { id: string; previewUrl: string }
+type PendingAsset = { id: string; previewUrl: string; name?: string }
 
 export function RealphotosBatchClient() {
   const searchParams = useSearchParams()
@@ -109,10 +110,10 @@ export function RealphotosBatchClient() {
     setNotice(`已从图片资源带入 ${ids.length} 张`)
 
     async function loadLibraryThumbs() {
-      let assets: { id: string; objectKey?: string }[] = []
+      let assets: { id: string; objectKey?: string; displayName?: string }[] = []
       try {
         // Resolve selected ids directly — default assets pageSize=20 would miss older picks.
-        const data = await apiFetch<{ items: { id: string; objectKey?: string }[] }>(
+        const data = await apiFetch<{ items: { id: string; objectKey?: string; displayName?: string }[] }>(
           `/api/v1/realphotos/assets?ids=${encodeURIComponent(ids.join(','))}`,
         )
         assets = data.items || []
@@ -121,6 +122,14 @@ export function RealphotosBatchClient() {
         return
       }
       const byId = new Map(assets.map((item) => [String(item.id), item]))
+      if (!cancelled) {
+        setLibrary((prev) =>
+          prev.map((row) => ({
+            ...row,
+            name: byId.get(String(row.id))?.displayName || row.name,
+          })),
+        )
+      }
       let missing = 0
       let thumbFail = 0
       for (const id of ids) {
@@ -257,13 +266,14 @@ export function RealphotosBatchClient() {
     }
     const body = new FormData()
     body.set('file', file)
+    body.set('name', file.name)
     try {
       const data = await apiFetch<{ id: string }>('/api/v1/realphotos/assets', { method: 'POST', body })
       const previewUrl = URL.createObjectURL(file)
       setLibrary((prev) => {
         if (prev.length >= 10) return prev
         if (prev.some((item) => item.id === data.id)) return prev
-        return [...prev, { id: data.id, previewUrl }]
+        return [...prev, { id: data.id, previewUrl, name: file.name }]
       })
       setNotice(`已入库资源 ${data.id}，并加入本批待处理`)
       setFile(null)
@@ -378,7 +388,7 @@ export function RealphotosBatchClient() {
             >
               {models.map((item) => (
                 <option key={item.code} value={item.code}>
-                  {item.model}（{item.code}）
+                  {String(item.name || item.model)}
                 </option>
               ))}
             </select>
@@ -501,7 +511,7 @@ export function RealphotosBatchClient() {
           <button
             className="rp-btn rp-btn-primary"
             type="button"
-            disabled={frozen || gpsSubmitBlocked || submitting}
+            disabled={frozen || gpsSubmitBlocked || submitting || library.length === 0}
             onClick={requestSubmit}
           >
             开始处理
@@ -511,14 +521,24 @@ export function RealphotosBatchClient() {
           <thead>
             <tr>
               <th className="text-left">缩略图</th>
-              <th className="text-left">资源 id</th>
+              <th className="text-left">文件名</th>
               <th className="text-left">张数</th>
             </tr>
           </thead>
           <tbody>
             {library.length === 0 ? (
               <tr>
-                <td className="rp-empty" colSpan={3}>还没有库内资源。不能提交空批。</td>
+                <td className="rp-empty" colSpan={3}>
+                  <div className="space-y-1">
+                    <div className="font-medium text-foreground">还没有待处理图片</div>
+                    <div className="text-xs text-muted-foreground">
+                      先从「图片资源」勾选图片，或使用上方本地上传加入本批。
+                    </div>
+                    <Link className="rp-btn rp-btn-primary rp-btn-sm" href="/realphotos/library">
+                      去图片资源选图
+                    </Link>
+                  </div>
+                </td>
               </tr>
             ) : (
               library.map((item, index) => (
@@ -530,7 +550,9 @@ export function RealphotosBatchClient() {
                       <span className="inline-block h-12 w-12 border" />
                     )}
                   </td>
-                  <td>{item.id}</td>
+                  <td className="max-w-[18rem] truncate" title={item.name || `资源 #${item.id}`}>
+                    {item.name || `资源 #${item.id}`}
+                  </td>
                   <td>{index === 0 ? `${library.length} / 10` : ''}</td>
                 </tr>
               ))

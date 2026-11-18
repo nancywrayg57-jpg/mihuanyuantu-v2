@@ -231,6 +231,7 @@ class RealphotosS1Service:
         tenant_id: int,
         owner_account_id: int,
         files: list[bytes],
+        meta_names: list[str] | None = None,
     ) -> list[RealphotosAsset]:
         """FR-028 / AC-002：本地批量上传；>20 整批拒绝且不入库。单张非法与单文件一致（抛错不入库）。"""
         items = list(files or [])
@@ -251,12 +252,15 @@ class RealphotosS1Service:
         for data in items:
             inspect_upload(data)
         created: list[RealphotosAsset] = []
-        for data in items:
+        names = list(meta_names or [])
+        for index, data in enumerate(items):
+            meta_name = str(names[index]).strip() if index < len(names) and names[index] else None
             created.append(
                 await self.upload(
                     tenant_id=int(tenant_id),
                     owner_account_id=int(owner_account_id),
                     data=data,
+                    meta_name=meta_name,
                 )
             )
         return created

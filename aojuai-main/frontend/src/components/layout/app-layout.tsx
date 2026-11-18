@@ -36,7 +36,6 @@ import { InboxBell } from '@/components/layout/inbox-bell'
 import { HelpMenu } from '@/components/layout/help-menu'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { apiFetch } from '@/lib/api'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -78,15 +77,21 @@ type NavGroup = {
 
 // 2026-11-17：右上角品牌 logo 使用「带文字」版本（原有文字保留）
 const BRAND_LOGO_SRC = '/brand/logo-with-text.svg'
-const DEFAULT_USER_AVATAR_SRC = '/avatar-ai.svg'
+// 2026-11-18 UX audit U3：取消 AI 动态头像，统一使用无信息的默认头像。
+const DEFAULT_USER_AVATAR_SRC = '/avatar-default.svg'
 
 function resolveSessionDisplayName(session: { nickname?: string; username?: string } | null | undefined, fallback: string) {
   return session?.nickname || session?.username || fallback
 }
 
-function resolveSessionAvatarSrc(avatar: string | null | undefined) {
-  const value = String(avatar || '').trim()
-  return value || DEFAULT_USER_AVATAR_SRC
+function resolveRoleLabel(session: { roles?: string[]; isSuperuser?: boolean } | null | undefined): string {
+  if (session?.isSuperuser) return '超级管理员'
+  const roles = new Set(session?.roles || [])
+  if (roles.has('rp_admin') || roles.has('admin')) return '平台管理员'
+  if (roles.has('rp_tech_support')) return '技术客服'
+  if (roles.has('rp_order_support')) return '订单客服'
+  if (roles.has('rp_merchant')) return '商家'
+  return '用户'
 }
 
 function routeTitle(route: MenuRoute) {
@@ -149,33 +154,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  // 手风琴互斥：undefined = 跟随当前路由所在分组，null = 全部收起
-  const [hideDemoMenus, setHideDemoMenus] = useState(false)
   const { locale, setLocale, t, tMenu } = useLocale()
   const sessionDisplayName = resolveSessionDisplayName(session, t('system.layout.accountFallback'))
-  const sessionAvatarSrc = resolveSessionAvatarSrc(session?.avatar)
-
-  useEffect(() => {
-    if (!session) {
-      setHideDemoMenus(false)
-      return
-    }
-    void apiFetch<{ roleCodes?: string[] }>('/api/v1/realphotos/me')
-      .then((data) => {
-        const roles = data.roleCodes || []
-        const business = new Set([
-          'rp_merchant',
-          'rp_order_support',
-          'rp_tech_support',
-          'rp_admin',
-          'admin',
-        ])
-        setHideDemoMenus(
-          roles.some((code) => business.has(code) || String(code).startsWith('rp_merchant')),
-        )
-      })
-      .catch(() => setHideDemoMenus(false))
-  }, [session])
+  const sessionRoleLabel = resolveRoleLabel(session)
+  const sessionAvatarSrc = DEFAULT_USER_AVATAR_SRC
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -194,29 +176,19 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   const visibleGroups = useMemo<NavGroup[]>(() => {
     // 2026-11-17: 删除「概览 / 首页」固定分组；导航只由后端菜单驱动。
+    // 2026-11-18 UX audit U3：演示分组永久移除，不再等待 /me 后隐藏。
     const groups: NavGroup[] = []
 
-    const demoLabel = t('system.layout.demo')
     for (const root of (menuRoutes || []).filter(isRouteVisible)) {
-      const rootTitle = routeTitle(root)
-      if (hideDemoMenus && (rootTitle === demoLabel || rootTitle === '演示' || root.path === '/demo')) {
-        continue
-      }
       const children = root.children || []
       const visibleChildren = children.filter(isRouteVisible)
       const leafRoutes = collectLeafRoutes(visibleChildren)
       const sources = leafRoutes.length ? leafRoutes : children.length ? [] : [root]
-      const items = sources
-        .filter((r) => {
-          if (!hideDemoMenus) return true
-          const title = routeTitle(r)
-          return title !== demoLabel && title !== '演示' && !String(r.path || '').startsWith('/schedule')
-        })
-        .map((r) => ({
-          to: r.path,
-          label: routeTitle(r),
-          icon: iconFromBackendKey(r.meta?.icon ?? null),
-        }))
+      const items = sources.map((r) => ({
+        to: r.path,
+        label: routeTitle(r),
+        icon: iconFromBackendKey(r.meta?.icon ?? null),
+      }))
       if (items.length > 0) {
         groups.push({
           id: `menu:${root.path || routeTitle(root)}`,
@@ -227,28 +199,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
       }
     }
 
-    if (!hideDemoMenus) {
-      const usedPaths = new Set(groups.flatMap((g) => g.items.map((i) => i.to)))
-      const demoItems: NavItem[] = [
-        { to: '/schedule', label: t('system.layout.schedule'), icon: CalendarDays },
-        { to: '/permission/page', label: t('system.layout.pagePermission'), icon: Shield },
-        { to: '/permission/button', label: t('system.layout.buttonPermission'), icon: KeyRound },
-        { to: '/system/dict', label: t('system.layout.dict'), icon: BookOpen },
-        { to: '/tenant/package/index', label: t('system.layout.tenantPackage'), icon: Building2 },
-      ]
-      const missingDemoItems = demoItems.filter((i) => !usedPaths.has(i.to))
-      if (missingDemoItems.length) {
-        groups.push({
-          id: 'demo',
-          label: demoLabel,
-          icon: Shield,
-          items: missingDemoItems,
-        })
-      }
-    }
-
     return groups
-  }, [hideDemoMenus, menuRoutes, t])
+  }, [menuRoutes])
 
   const renderNav = (options: { compact: boolean; allowCollapseToggle: boolean }) => {
     const { compact, allowCollapseToggle } = options
@@ -419,7 +371,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <div className="min-w-0 flex-1 overflow-hidden">
               <div className="flex items-center gap-2 text-sm">
                 <div className="truncate font-medium">{sessionDisplayName}</div>
-                <div className="text-muted-foreground">{session?.isSuperuser ? t('role.superuser') : t('role.user')}</div>
+                <div className="text-muted-foreground">{sessionRoleLabel}</div>
                 {session?.isSuperuser ? (
                   <div className="ml-2 hidden items-center gap-2 text-muted-foreground sm:flex">
                     <span>{t('topbar.targetTenant')}</span>
@@ -467,12 +419,16 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary" className="gap-2 pl-2 pr-3">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-muted">
-                    <img src={sessionAvatarSrc} alt={sessionDisplayName} className="h-full w-full object-cover" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full"
+                  aria-label="账号菜单"
+                  title="账号菜单"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-muted">
+                    <img src={sessionAvatarSrc} alt="" className="h-full w-full object-cover" />
                   </span>
-                  <span className="hidden max-w-40 truncate sm:inline">{sessionDisplayName}</span>
-                  <span className="sm:hidden">{t('topbar.menu')}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -558,7 +514,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
-          <div className="min-w-0 flex-1 p-3 md:p-4">
+          <div className="min-w-0 flex-1 p-3 pb-24 md:p-4 md:pb-24">
             {children}
           </div>
         </main>

@@ -39,7 +39,7 @@ export default function DashboardPage() {
               <Link href="/system/menu">{t('system.menu.menu')}</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/schedule">{t('system.layout.schedule')}</Link>
+              <Link href="/realphotos/workspace">进入工作台</Link>
             </Button>
           </div>
         </CardContent>

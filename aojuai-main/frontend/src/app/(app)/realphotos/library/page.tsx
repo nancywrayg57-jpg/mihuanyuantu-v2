@@ -338,10 +338,12 @@ export default function RealphotosLibraryPage() {
           const body = new FormData()
           if (chunk.length === 1) {
             body.set('file', chunk[0])
+            body.set('name', chunk[0].name)
             await apiFetch('/api/v1/realphotos/assets', { method: 'POST', body })
           } else {
             for (const file of chunk) {
               body.append('files', file)
+              body.append('names', file.name)
             }
             await apiFetch('/api/v1/realphotos/assets/batch', { method: 'POST', body })
           }
