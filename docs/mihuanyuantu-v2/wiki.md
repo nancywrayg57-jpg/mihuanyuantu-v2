@@ -185,6 +185,19 @@
 - Loading feedback is stateful at the action level: skeletons only when the list is empty (so polling does not flicker), upload/download counters in the button/message, and `disabled` while busy. This avoids duplicate submits on slow networks.
 - Help menu lives in the top bar and coexists with the AI dock. Replay uses a full-page `<a href="/realphotos/workspace?guide=1">` so the workspace mount effect sees the query; client-side Link to the same route may not remount.
 
+### UX/data consistency audit U1–U2 (2026-11-18)
+
+- Report: `docs/mihuanyuantu-v2/input/蜜獾原图-UX与数据一致性审计报告-2026-11-18.md`; instruction: `.../蜜獾原图-全系统UX与数据一致性审计指令-2026-11-18.md`. Baseline `5dc847b`, BUILD_ID `qwEgDCl-fNzI3U75NAlRx`. Read-only; no code/data changes.
+- P0 found: business roles can navigate directly to platform demo pages (`/permission/page`, `/permission/button`, `/system/dict`, `/tenant/package/index`, `/schedule`) even after the demo menu is hidden; `/permission/button` exposes raw permission codes and `/tenant/package` shows fake CRUD. Hiding a menu is not authorization; demo routes need a role guard.
+- First-paint role flash: `hideDemoMenus` defaults to false until `/realphotos/me` resolves, and workspace falls back to the `admin` subtitle when data is null. Both need a neutral/role-safe loading state.
+- `last_login_at` is never written by the realphotos login path (platform `UserService` has the write), so every tenant shows 最近活跃=从未登录 despite successful logins.
+- Preset display names are not canonical: merchant `list_enabled_presets` omits the version-snapshot name, admin passes it; 405 enabled presets contain duplicates (Nikon D850 ×10). Fix the data source and dedupe, not just the label helper.
+- Library uploads do not send `file.name`, so assets fall back to `local_upload_<id>`; URL imports show raw URL fragments. Batch also labels the column 资源 id and puts `legacy-legacy-online-*` codes in the model dropdown.
+- Test pollution is real and visible: 3 E2E tickets, 1 E2E prompt template, 3 E2E assets/4 tasks, 1 leftover test tenant. `test123` / `merumeru 的店铺` are user-created, not pollution.
+- Consistency passed for task numbers (list/detail/ledger/inbox/generation), wallet vs ledger, preset field values, tenant names. Names and last-active are the failures.
+- Lesson: audit with direct URL navigation, not just sidebar clicks; menu visibility and route authorization are different layers.
+
+
 
 
 
