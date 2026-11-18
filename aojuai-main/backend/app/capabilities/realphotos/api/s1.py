@@ -703,7 +703,8 @@ async def inbox(
     def _asset_name(asset_id: int) -> str | None:
         asset = assets.get(int(asset_id))
         if asset is None:
-            return None
+            # 资源可能已按保留策略清理；消息仍要能定位到任务。
+            return f"资源 #{int(asset_id)}（已清理）"
         naming = compose_list_filename(
             meta=meta_from_asset(asset),
             asset_id=int(asset.id),
