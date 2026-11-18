@@ -176,5 +176,15 @@
 - Because copy is FR-013 / ND-025, do not delete it as a "duplicate". The earlier P0 label `复制参数（不扣分）` was factually wrong; the button is now `按原参数复制` with a tooltip/toast stating "免预审、免冻结；成功交付后扣 10 积分/张". `主动重处理` is now `重新处理` in task detail and workspace.
 - Lesson: label a billing mode by its actual settlement path, not by the absence of an upfront freeze.
 
+### UX P2 iteration 3 (2026-11-18)
+
+- Scope: P2-1..P2-6. Evidence: `docs/mihuanyuantu-v2/input/REALPHOTOS-UX-P2-2026-11-18.md`; production `9b985f1`, BUILD_ID `qwEgDCl-fNzI3U75NAlRx`, 13/13 Playwright checks.
+- `RpTableScroll` solves mobile clipping once: a horizontal scroll container, a right-edge gradient, a small-screen hint, and `[&_table]:min-w-[720px]` to force overflow instead of squeezing. Do not re-add page-local `overflow-x-auto` wrappers.
+- `RpDialog` owns a11y now: Escape, initial focus, Tab trap, focus restore. Use `closeOnBackdrop={false}` for form dialogs; do not hand-roll modal overlays for new forms.
+- Contract table: nine columns did not fit at 1440px and pushed 缺口 off-screen. Move credentialRef into the capability dialog and keep eight columns; `whitespace-nowrap` on status prevents vertical "启/用". Verify the right-most column in a screenshot, not just DOM text.
+- Loading feedback is stateful at the action level: skeletons only when the list is empty (so polling does not flicker), upload/download counters in the button/message, and `disabled` while busy. This avoids duplicate submits on slow networks.
+- Help menu lives in the top bar and coexists with the AI dock. Replay uses a full-page `<a href="/realphotos/workspace?guide=1">` so the workspace mount effect sees the query; client-side Link to the same route may not remount.
+
+
 
 
