@@ -1,12 +1,14 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { toast } from 'sonner'
 import { toastTask } from '@/components/realphotos/surface'
-import { ApiError, apiFetch } from '@/lib/api'
+import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
+import { formatDateTimeShort } from '@/lib/realphotos-time'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
 
 type Template = {
@@ -24,6 +26,19 @@ type GenerationSeedCapability = {
   seedSupported?: boolean
   seedNote?: string
 }
+
+type RecentGeneration = {
+  id: string
+  taskNo?: number | null
+  mode: string
+  width: number
+  height: number
+  quantity: number
+  createdAt?: string | null
+  items: Array<{ index: number; status: string; assetId?: string | null; actualWidth?: number | null; actualHeight?: number | null }>
+}
+
+type RecentAsset = { id: string; objectKey?: string | null; displayName?: string | null }
 
 export function RealphotosGenerateClient() {
   const searchParams = useSearchParams()
@@ -48,6 +63,67 @@ export function RealphotosGenerateClient() {
   const [seedNote, setSeedNote] = useState('正在读取模型种子能力')
   const [lastSizes, setLastSizes] = useState('')
   const [templateSearch, setTemplateSearch] = useState('')
+  const [recent, setRecent] = useState<RecentGeneration[]>([])
+  const [recentAssets, setRecentAssets] = useState<Record<string, RecentAsset>>({})
+  const [recentThumbs, setRecentThumbs] = useState<Record<string, string>>({})
+
+  async function loadRecent() {
+    const data = await apiFetch<{ items: RecentGeneration[] }>(
+      '/api/v1/realphotos/generation-tasks?page=1&page_size=6',
+    )
+    const rows = data.items || []
+    setRecent(rows)
+    const assetIds = Array.from(
+      new Set(
+        rows
+          .flatMap((row) => row.items.map((item) => item.assetId))
+          .filter((id): id is string => Boolean(id)),
+      ),
+    )
+    if (!assetIds.length) {
+      setRecentAssets({})
+      return
+    }
+    const assets = await apiFetch<{ items: RecentAsset[] }>(
+      `/api/v1/realphotos/assets?ids=${encodeURIComponent(assetIds.join(','))}`,
+    )
+    setRecentAssets(
+      Object.fromEntries((assets.items || []).map((asset) => [String(asset.id), asset])),
+    )
+  }
+
+  useEffect(() => {
+    void loadRecent().catch(() => undefined)
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    const created: string[] = []
+    setRecentThumbs({})
+    void (async () => {
+      for (const row of recent) {
+        const assetId = row.items.find((item) => item.assetId)?.assetId
+        const asset = assetId ? recentAssets[String(assetId)] : null
+        if (!asset?.objectKey) continue
+        try {
+          const path = String(asset.objectKey).split('/').map(encodeURIComponent).join('/')
+          const blob = await apiFetchBlob(
+            `/api/v1/realphotos/gateway/objects/${path}?thumb=160`,
+          )
+          if (cancelled) return
+          const url = URL.createObjectURL(blob)
+          created.push(url)
+          setRecentThumbs((prev) => ({ ...prev, [row.id]: url }))
+        } catch {
+          // 缩略图失败时保留占位
+        }
+      }
+    })()
+    return () => {
+      cancelled = true
+      for (const url of created) URL.revokeObjectURL(url)
+    }
+  }, [recent, recentAssets])
 
   useEffect(() => {
     setMode(initialMode)
@@ -221,6 +297,7 @@ export function RealphotosGenerateClient() {
       const text = `已入库。生图不会自动进入处理。${sizeNote}。${submittedSeedNote}`
       setMessage(text)
       toast.success('生图成功', { id: loadingToast })
+      await loadRecent()
     } catch (error: unknown) {
       const text = error instanceof ApiError ? error.message : '提交失败'
       setMessage(text)
@@ -358,6 +435,75 @@ export function RealphotosGenerateClient() {
             {submitting ? '提交中…' : '提交生图'}
           </button>
         </div>
+      </section>
+
+      <section className="rp-card space-y-3 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-medium">最近生成</h2>
+          <button className="rp-btn rp-btn-sm" type="button" onClick={() => void loadRecent()}>
+            刷新
+          </button>
+        </div>
+        <table className="rp-table">
+          <thead>
+            <tr>
+              <th className="text-left">缩略图</th>
+              <th className="text-left">任务</th>
+              <th className="text-left">尺寸</th>
+              <th className="text-left">时间</th>
+              <th className="text-left">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {recent.length === 0 ? (
+              <tr>
+                <td className="rp-empty" colSpan={5}>
+                  还没有生成记录。提交后会在这里显示最近 6 条结果。
+                </td>
+              </tr>
+            ) : (
+              recent.map((row) => {
+                const assetId = row.items.find((item) => item.assetId)?.assetId || null
+                const asset = assetId ? recentAssets[String(assetId)] : null
+                return (
+                  <tr key={row.id}>
+                    <td>
+                      {recentThumbs[row.id] ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={recentThumbs[row.id]}
+                          alt=""
+                          className="h-14 w-14 rounded border object-cover"
+                        />
+                      ) : (
+                        <span className="inline-block h-14 w-14 border text-center leading-[3.5rem] text-xs">图</span>
+                      )}
+                    </td>
+                    <td>
+                      <div>{`生图 #${row.taskNo ?? row.id}`}</div>
+                      <div className="max-w-[16rem] truncate text-xs text-muted-foreground" title={asset?.displayName || ''}>
+                        {asset?.displayName || '—'}
+                      </div>
+                    </td>
+                    <td>
+                      {row.width}×{row.height}
+                    </td>
+                    <td className="whitespace-nowrap">{formatDateTimeShort(row.createdAt) || '—'}</td>
+                    <td>
+                      {assetId ? (
+                        <Link className="rp-btn rp-btn-sm" href={`/realphotos/batch?assetIds=${assetId}`}>
+                          去处理
+                        </Link>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">无可处理资源</span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })
+            )}
+          </tbody>
+        </table>
       </section>
     </main>
   )

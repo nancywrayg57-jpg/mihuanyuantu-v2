@@ -48,6 +48,18 @@ function accountLabel(item: { ownerAccountId: number; username?: string | null }
   return name ? `${name}（#${item.ownerAccountId}）` : `#${item.ownerAccountId}`
 }
 
+/** 2026-11-18 UX-P1-3：等待时长（未办结算到当前，已办结显示已办结）。 */
+function waitingText(item: Ticket): string {
+  if (item.status !== 'open') return '已办结'
+  const start = item.createdAt ? new Date(item.createdAt).getTime() : NaN
+  if (!Number.isFinite(start)) return '—'
+  const minutes = Math.max(0, Math.floor((Date.now() - start) / 60000))
+  if (minutes < 60) return `${minutes} 分钟`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} 小时`
+  return `${Math.floor(hours / 24)} 天`
+}
+
 export default function RealphotosTechDeskPage() {
   const [items, setItems] = useState<Ticket[]>([])
   const [myItems, setMyItems] = useState<Ticket[]>([])
@@ -57,7 +69,9 @@ export default function RealphotosTechDeskPage() {
   const [heldPageSize, setHeldPageSize] = useState(20)
   const [ticketPage, setTicketPage] = useState(1)
   const [ticketTotal, setTicketTotal] = useState(0)
-  const [ticketPageSize, setTicketPageSize] = useState(20)
+  const [ticketPageSize, setTicketPageSize] = useState(10)
+  const [ticketSort, setTicketSort] = useState('waiting')
+  const [ticketOpenTotal, setTicketOpenTotal] = useState(0)
   const [reason, setReason] = useState('')
   const [appealReason, setAppealReason] = useState('')
   const [resolveNote, setResolveNote] = useState('')
@@ -83,11 +97,15 @@ export default function RealphotosTechDeskPage() {
       page?: number
       pageSize?: number
       total?: number
-    }>(`/api/v1/realphotos/support-tickets?page=${page}`)
+      openTotal?: number
+    }>(
+      `/api/v1/realphotos/support-tickets?page=${page}&pageSize=10&sort=${encodeURIComponent(ticketSort)}`,
+    )
     setItems(Array.isArray(data?.items) ? data.items : [])
     setTicketPage(Number(data?.page) || page)
-    setTicketPageSize(Number(data?.pageSize) || 20)
+    setTicketPageSize(Number(data?.pageSize) || 10)
     setTicketTotal(Number(data?.total) || (Array.isArray(data?.items) ? data.items.length : 0))
+    setTicketOpenTotal(Number(data?.openTotal) || 0)
     setCanUnfreeze(true)
   }
 
@@ -115,11 +133,13 @@ export default function RealphotosTechDeskPage() {
       page?: number
       pageSize?: number
       total?: number
-    }>(`/api/v1/realphotos/my-support-tickets?page=${page}`)
+      openTotal?: number
+    }>(`/api/v1/realphotos/my-support-tickets?page=${page}&pageSize=10`)
     setMyItems(Array.isArray(data?.items) ? data.items : [])
     setTicketPage(Number(data?.page) || page)
-    setTicketPageSize(Number(data?.pageSize) || 20)
+    setTicketPageSize(Number(data?.pageSize) || 10)
     setTicketTotal(Number(data?.total) || (Array.isArray(data?.items) ? data.items.length : 0))
+    setTicketOpenTotal(Number(data?.openTotal) || 0)
     setCanAppeal(true)
   }
 
@@ -212,7 +232,17 @@ export default function RealphotosTechDeskPage() {
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ticketPage, deskTab, canUnfreeze, canAppeal])
+  }, [ticketPage, deskTab, canUnfreeze, canAppeal, ticketSort])
+
+  // 2026-11-18 UX-P1-3：技术客服台 30 秒自动刷新；仍可手动刷新。
+  useEffect(() => {
+    if (!canUnfreeze || deskTab !== 'appeals') return
+    const timer = window.setInterval(() => {
+      void loadTickets(ticketPage).catch(() => undefined)
+    }, 30000)
+    return () => window.clearInterval(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canUnfreeze, ticketPage, deskTab, ticketSort])
 
   const source = canUnfreeze ? items : myItems
   const visible = useMemo(
@@ -237,7 +267,7 @@ export default function RealphotosTechDeskPage() {
       ),
     [source, ticketType, search],
   )
-  const openCount = source.filter((item) => item.status === 'open').length
+  const openCount = ticketOpenTotal
   const heldPageCount = Math.max(1, Math.ceil(heldTotal / Math.max(heldPageSize, 1)))
   const ticketPageCount = Math.max(1, Math.ceil(ticketTotal / Math.max(ticketPageSize, 1)))
 
@@ -371,9 +401,21 @@ export default function RealphotosTechDeskPage() {
   return (
     <main className="space-y-4 p-6">
       <RpPageHeader title="工单管理" />
-      <p className="text-sm">
+      <p className="flex flex-wrap items-center gap-2 text-sm">
         {message}
-        {canUnfreeze ? ` · 待处理 open=${openCount}` : ''}
+        {canUnfreeze ? (
+          <>
+            <span>· 待处理 open={openCount}</span>
+            <button
+              className="rp-btn rp-btn-sm"
+              type="button"
+              onClick={() => void loadDesk()}
+            >
+              刷新
+            </button>
+            <span className="text-xs text-muted-foreground">每 30 秒自动刷新</span>
+          </>
+        ) : null}
       </p>
 
       {canUnfreeze ? (
@@ -411,6 +453,20 @@ export default function RealphotosTechDeskPage() {
               </select>
             </label>
             <ListSearch value={search} placeholder="编号 / 租户 / 账号 / 原因" onChange={setSearch} />
+            <label>
+              排序
+              <select
+                className="rp-input ml-2"
+                value={ticketSort}
+                onChange={(event) => {
+                  setTicketSort(event.target.value)
+                  setTicketPage(1)
+                }}
+              >
+                <option value="waiting">等待最久优先</option>
+                <option value="newest">最新创建优先</option>
+              </select>
+            </label>
           </div>
           <table className="rp-table">
             <thead>
@@ -421,14 +477,16 @@ export default function RealphotosTechDeskPage() {
                 <th className="text-left">类型</th>
                 <th className="text-left">状态</th>
                 <th className="text-left">原因</th>
+                <th className="text-left">创建时间</th>
+                <th className="text-left">等待时长</th>
                 <th className="text-left">操作</th>
               </tr>
             </thead>
             <tbody>
               {visible.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>
-                    尚无工单
+                  <td className="rp-empty" colSpan={9}>
+                    还没有工单。商家提交图片申诉后会进入这里。
                   </td>
                 </tr>
               ) : (
@@ -439,14 +497,18 @@ export default function RealphotosTechDeskPage() {
                     <td>{accountLabel(item)}</td>
                     <td>{ticketTypeLabel(item.ticketType)}</td>
                     <td>{ticketStatusLabel(item.status)}</td>
-                    <td>{item.reason}</td>
+                    <td className="max-w-md truncate" title={item.reason}>
+                      {item.reason}
+                    </td>
+                    <td className="whitespace-nowrap">{formatDateTimeShort(item.createdAt) || '—'}</td>
+                    <td className="whitespace-nowrap">{waitingText(item)}</td>
                     <td>
                       <button
                         className="rp-btn rp-btn-sm"
                         type="button"
                         onClick={() => openHandle(item)}
                       >
-                        {canUnfreeze ? '处理' : '详情'}
+                        {item.status === 'open' ? (canUnfreeze ? '处理' : '详情') : '查看'}
                       </button>
                     </td>
                   </tr>

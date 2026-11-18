@@ -1,8 +1,8 @@
 'use client'
 
-import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useAuth } from '@/hooks/useAuth'
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpButton } from '@/components/realphotos/rp-button'
 import { RpField } from '@/components/realphotos/rp-field'
@@ -215,6 +215,11 @@ function presetFieldText(preset: Record<string, unknown>, field: PresetFieldDef)
   return raw === undefined || raw === null ? '' : String(raw)
 }
 export default function RealphotosTasksPage() {
+  const { session } = useAuth()
+  // 2026-11-18 UX-P1-2：技术重试只对技术客服/管理员展示。
+  const canTech =
+    Boolean(session?.isSuperuser) ||
+    Boolean(session?.roles?.some((role) => ['rp_tech_support', 'rp_admin', 'admin'].includes(role)))
   const [tab, setTab] = useState<'processing' | 'generation'>('processing')
   const [procPage, setProcPage] = useState(1)
   const [procStatus, setProcStatus] = useState('all')
@@ -233,7 +238,6 @@ export default function RealphotosTasksPage() {
   const [genDetail, setGenDetail] = useState<GenerationTask | null>(null)
   const [notice, setNotice] = useState('')
   const [downloadNote, setDownloadNote] = useState('')
-  const [unreadHint, setUnreadHint] = useState(0)
   const [procSearch, setProcSearch] = useState('')
   const [genSearch, setGenSearch] = useState('')
   const [thumbs, setThumbs] = useState<Record<string, string>>({})
@@ -265,10 +269,39 @@ export default function RealphotosTasksPage() {
     setGenTotal(data.total || 0)
   }, [genPage, genMode])
 
+  // 2026-11-18 UX-P1-5/P1-7：工作台/消息中心深链直达任务详情。
   useEffect(() => {
-    void apiFetch<{ unreadCount?: number }>('/api/v1/realphotos/inbox')
-      .then((data) => setUnreadHint(Number(data.unreadCount || 0)))
-      .catch(() => undefined)
+    const raw = new URLSearchParams(window.location.search).get('taskId')
+    const taskId = Number(raw)
+    if (!Number.isFinite(taskId) || taskId <= 0) return
+    let cancelled = false
+    void (async () => {
+      try {
+        const row = await apiFetch<ProcessingTask>(`/api/v1/realphotos/processing-tasks/${taskId}`)
+        if (!cancelled) {
+          setTab('processing')
+          setDetail(row)
+        }
+        return
+      } catch {
+        // 不是处理任务时继续按生图任务查找
+      }
+      try {
+        const data = await apiFetch<{ items: GenerationTask[] }>(
+          '/api/v1/realphotos/generation-tasks?page=1&page_size=50',
+        )
+        const found = (data.items || []).find((item) => String(item.id) === String(taskId))
+        if (!cancelled && found) {
+          setTab('generation')
+          setGenDetail(found)
+        }
+      } catch {
+        // 无权限或不存在时保持列表页
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   useEffect(() => {
@@ -604,14 +637,7 @@ export default function RealphotosTasksPage() {
 
   return (
     <main className="space-y-6 p-6">
-      <RpPageHeader
-        title="任务详情"
-        actions={
-          <Link className="rp-btn" href="/realphotos/messages">
-            消息中心{unreadHint > 0 ? `（未读 ${unreadHint}）` : ''}
-          </Link>
-        }
-      />
+      <RpPageHeader title="任务详情" />
       {notice ? <p className="text-sm text-muted-foreground">{notice}</p> : null}
       <div className="flex gap-2 text-sm">
         <RpButton pressed={tab === 'processing'} type="button" onClick={() => setTab('processing')}>
@@ -685,14 +711,21 @@ export default function RealphotosTasksPage() {
             <RpButton variant="primary" type="button" onClick={() => void downloadChecked()}>
               下载勾选
             </RpButton>
-            <RpButton type="button" disabled={!selected.some(canRetry)} onClick={() => void retryTechnical()}>
-              技术重试
-            </RpButton>
+            {canTech ? (
+              <RpButton type="button" disabled={!selected.some(canRetry)} onClick={() => void retryTechnical()}>
+                技术重试
+              </RpButton>
+            ) : null}
             <RpButton type="button" disabled={!selected.some(canReprocess)} onClick={() => void reprocessTask()}>
               主动重处理
             </RpButton>
-            <RpButton type="button" disabled={selected.length !== 1} onClick={() => void copyProcessing()}>
-              复制（免冻）
+            <RpButton
+              type="button"
+              disabled={selected.length !== 1}
+              title="只复制参数，不新建任务、不扣积分"
+              onClick={() => void copyProcessing()}
+            >
+              复制参数（不扣分）
             </RpButton>
           </RpFilterBar>
           <RpTable>

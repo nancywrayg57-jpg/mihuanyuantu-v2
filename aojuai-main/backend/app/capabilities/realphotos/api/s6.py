@@ -250,10 +250,14 @@ async def list_tickets(
     tenant_ctx: TenantCtx,
     db: DBSession,
     page: int = 1,
+    page_size: int = Query(default=10, alias="pageSize", ge=1, le=100),
+    sort: str = Query(default="newest"),
     _: None = Depends(PermissionChecker([TECH_DESK_READ])),
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
-    payload = await RealphotosOpsService(db).list_tickets(actor_role_codes=roles, page=page)
+    payload = await RealphotosOpsService(db).list_tickets(
+        actor_role_codes=roles, page=page, page_size=page_size, sort=sort
+    )
     return SuccessResponse(data=payload)
 
 
@@ -383,6 +387,21 @@ async def list_tenants(
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     payload = await RealphotosOpsService(db).list_tenants(actor_role_codes=roles, page=page)
+    return SuccessResponse(data=payload)
+
+
+@router.get("/managed-tenants/{target_tenant_id}")
+async def tenant_detail(
+    target_tenant_id: int,
+    current_user: CurrentUser,
+    tenant_ctx: TenantCtx,
+    db: DBSession,
+    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    payload = await RealphotosOpsService(db).tenant_detail(
+        actor_role_codes=roles, tenant_id=int(target_tenant_id)
+    )
     return SuccessResponse(data=payload)
 
 

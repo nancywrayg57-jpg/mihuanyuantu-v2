@@ -9,6 +9,8 @@ from sqlalchemy import func, select
 from app.api.deps import CurrentUser, DBSession, PermissionChecker, TenantCtx
 from app.capabilities.realphotos.constants import RUNNING_TASK_STATUSES, TASK_DELIVERED
 from app.capabilities.realphotos.models import (
+    RealphotosAsset,
+    RealphotosGenerationItem,
     RealphotosGenerationTask,
     RealphotosImageTask,
     RealphotosInboxMessage,
@@ -208,7 +210,56 @@ async def get_workspace(
         generation_no_map = await generation_task_no_map(
             db, tenant_id=tenant_id, task_ids=[row.id for row in recent_generation]
         )
+        # 2026-11-18 UX-P1-7：最近历史补缩略图与失败摘要。
+        from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
+
+        asset_ids = {int(row.asset_id) for row in recent_processing}
+        generation_items = (
+            await db.execute(
+                select(RealphotosGenerationItem)
+                .where(
+                    RealphotosGenerationItem.tenant_id == tenant_id,
+                    RealphotosGenerationItem.task_id.in_(
+                        [row.id for row in recent_generation] or [-1]
+                    ),
+                    RealphotosGenerationItem.deleted_at.is_(None),
+                )
+                .order_by(RealphotosGenerationItem.id.asc())
+            )
+        ).scalars().all()
+        generation_asset: dict[int, int] = {}
+        for item in generation_items:
+            if item.asset_id is not None:
+                generation_asset.setdefault(int(item.task_id), int(item.asset_id))
+                asset_ids.add(int(item.asset_id))
+        assets = {
+            int(asset.id): asset
+            for asset in (
+                await db.execute(
+                    select(RealphotosAsset).where(
+                        RealphotosAsset.tenant_id == tenant_id,
+                        RealphotosAsset.id.in_(asset_ids or [-1]),
+                        RealphotosAsset.deleted_at.is_(None),
+                    )
+                )
+            ).scalars().all()
+        }
+        task_service = RealphotosS1Service(db)
+        failed_statuses = {"FAILED", "PRE_REVIEW_FAILED", "IMAGE_LOCKED"}
         for row in recent_processing:
+            failure = None
+            if row.failure_class or str(row.status) in failed_statuses:
+                failure = await task_service.failure_detail_payload(
+                    tenant_id=tenant_id, task_id=int(row.id)
+                )
+            asset = assets.get(int(row.asset_id))
+            snapshot = dict(row.preset_snapshot or {})
+            legacy = snapshot.get("legacyParameters") if isinstance(snapshot.get("legacyParameters"), dict) else {}
+            preset_name = (
+                str((legacy or {}).get("name") or "").strip()
+                or str(snapshot.get("name") or "").strip()
+                or row.preset_code
+            )
             recent.append(
                 {
                     "kind": "processing",
@@ -216,10 +267,22 @@ async def get_workspace(
                     "taskNo": processing_no_map.get(int(row.id)),
                     "status": row.status,
                     "presetCode": row.preset_code,
+                    "presetName": preset_name,
+                    "objectKey": row.output_object_key
+                    or (asset.object_key if asset is not None else None),
+                    "failureClass": row.failure_class,
+                    "failureTitle": (failure or {}).get("title")
+                    or (failure or {}).get("failureClass"),
+                    "failureMessage": (failure or {}).get("message"),
+                    "canReprocess": bool(
+                        row.output_object_key
+                        and str(row.failure_class or "") == "detection_not_passed"
+                    ),
                     "createdAt": row.created_at.isoformat() if row.created_at else None,
                 }
             )
         for row in recent_generation:
+            asset = assets.get(generation_asset.get(int(row.id), 0))
             recent.append(
                 {
                     "kind": "generation",
@@ -228,6 +291,11 @@ async def get_workspace(
                     "status": "stored",
                     "mode": row.mode,
                     "provider": row.provider,
+                    "objectKey": asset.object_key if asset is not None else None,
+                    "failureClass": None,
+                    "failureTitle": None,
+                    "failureMessage": None,
+                    "canReprocess": False,
                     "createdAt": row.created_at.isoformat() if row.created_at else None,
                 }
             )

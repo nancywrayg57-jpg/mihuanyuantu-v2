@@ -5,12 +5,30 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { ApiError, apiFetch } from '@/lib/api'
+import { formatDateTimeShort } from '@/lib/realphotos-time'
 
 type TenantRow = {
   tenantId: number
   tenantName: string
   tenantCode: string
   accountCount: number
+  isActive?: boolean
+  createdAt?: string | null
+  lastActiveAt?: string | null
+  ownerUsername?: string | null
+}
+
+type TenantDetail = {
+  tenant: {
+    tenantId: number
+    tenantName: string
+    tenantCode: string
+    isActive: boolean
+    createdAt?: string | null
+  }
+  accounts: Account[]
+  stats: { assetCount: number; taskTotal: number; taskDelivered: number; taskFailed: number }
+  wallet: { availableInteger?: string; reservedInteger?: string }
 }
 
 type Account = {
@@ -55,6 +73,10 @@ export default function RealphotosUsersPage() {
   const [accountsOpen, setAccountsOpen] = useState<TenantRow | null>(null)
   const [accounts, setAccounts] = useState<Account[]>([])
   const [accountsLoading, setAccountsLoading] = useState(false)
+  const [detailOpen, setDetailOpen] = useState<TenantRow | null>(null)
+  const [detailData, setDetailData] = useState<TenantDetail | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [moreTenantId, setMoreTenantId] = useState<number | null>(null)
 
   const [createOpen, setCreateOpen] = useState<TenantRow | null>(null)
   const [deleteOpen, setDeleteOpen] = useState<TenantRow | null>(null)
@@ -159,6 +181,20 @@ export default function RealphotosUsersPage() {
       setMessage(error instanceof ApiError ? error.message : '账号读取失败')
     } finally {
       setAccountsLoading(false)
+    }
+  }
+
+  async function openTenantDetail(row: TenantRow) {
+    setDetailOpen(row)
+    setDetailData(null)
+    setDetailLoading(true)
+    try {
+      const data = await apiFetch<TenantDetail>(`/api/v1/realphotos/managed-tenants/${row.tenantId}`)
+      setDetailData(data)
+    } catch (error: unknown) {
+      setMessage(error instanceof ApiError ? error.message : '租户详情读取失败')
+    } finally {
+      setDetailLoading(false)
     }
   }
 
@@ -320,14 +356,17 @@ export default function RealphotosUsersPage() {
             <tr>
               <th className="text-left">租户编号</th>
               <th className="text-left">租户</th>
+              <th className="text-left">状态</th>
               <th className="text-left">账号数</th>
+              <th className="text-left">创建时间</th>
+              <th className="text-left">最近活跃</th>
               <th className="text-left">操作</th>
             </tr>
           </thead>
           <tbody>
             {visibleTenants.length === 0 ? (
               <tr>
-                <td className="rp-empty" colSpan={4}>
+                <td className="rp-empty" colSpan={7}>
                   {loading ? '加载中…' : message || '暂无租户'}
                 </td>
               </tr>
@@ -336,17 +375,31 @@ export default function RealphotosUsersPage() {
                 <tr key={item.tenantId}>
                   <td>{item.tenantId}</td>
                   <td>
-                    <div>{item.tenantName || '—'}</div>
-                    <div className="text-xs text-muted-foreground">{item.tenantCode || '—'}</div>
+                    <button
+                      className="text-left font-medium text-primary hover:underline"
+                      type="button"
+                      onClick={() => void openTenantDetail(item)}
+                    >
+                      {item.tenantName || '—'}
+                    </button>
+                    <div className="text-xs text-muted-foreground">
+                      {item.tenantCode || '—'}
+                      {item.ownerUsername ? ` · 负责人 ${item.ownerUsername}` : ''}
+                    </div>
                   </td>
+                  <td>{item.isActive === false ? '停用' : '正常'}</td>
                   <td>{item.accountCount}</td>
+                  <td className="whitespace-nowrap">{formatDateTimeShort(item.createdAt) || '—'}</td>
+                  <td className="whitespace-nowrap">
+                    {item.lastActiveAt ? formatDateTimeShort(item.lastActiveAt) : '从未登录'}
+                  </td>
                   <td className="space-x-1 whitespace-nowrap">
                     <button
                       className="rp-btn rp-btn-sm"
                       type="button"
-                      onClick={() => void openAccounts(item)}
+                      onClick={() => void openTenantDetail(item)}
                     >
-                      查看账号
+                      详情
                     </button>
                     <button
                       className="rp-btn rp-btn-sm"
@@ -363,16 +416,26 @@ export default function RealphotosUsersPage() {
                       操作
                     </button>
                     <button
-                      className="rp-btn rp-btn-sm rp-btn-danger"
+                      className="rp-btn rp-btn-sm"
                       type="button"
-                      onClick={() => {
-                        setDeleteOpen(item)
-                        setTenantConfirm('')
-                        setMessage('')
-                      }}
+                      onClick={() => setMoreTenantId((prev) => (prev === item.tenantId ? null : item.tenantId))}
                     >
-                      删除租户
+                      更多
                     </button>
+                    {moreTenantId === item.tenantId ? (
+                      <button
+                        className="rp-btn rp-btn-sm rp-btn-danger"
+                        type="button"
+                        onClick={() => {
+                          setDeleteOpen(item)
+                          setTenantConfirm('')
+                          setMessage('')
+                          setMoreTenantId(null)
+                        }}
+                      >
+                        删除租户
+                      </button>
+                    ) : null}
                   </td>
                 </tr>
               ))
@@ -401,6 +464,89 @@ export default function RealphotosUsersPage() {
           </button>
         </div>
       </section>
+
+      {detailOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setDetailOpen(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="租户详情"
+        >
+          <div
+            className="rp-dialog flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden border bg-card text-sm"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
+              <h2 className="text-sm font-medium">租户详情 · {tenantLabel(detailOpen)}</h2>
+              <div className="flex gap-2">
+                <button
+                  className="rp-btn rp-btn-sm"
+                  type="button"
+                  onClick={() => void openAccounts(detailOpen)}
+                >
+                  查看账号
+                </button>
+                <button className="rp-btn rp-btn-sm" type="button" onClick={() => setDetailOpen(null)}>
+                  关闭
+                </button>
+              </div>
+            </div>
+            <div className="overflow-y-auto p-4">
+              {detailLoading ? <p className="text-muted-foreground">加载中…</p> : null}
+              {detailData ? (
+                <div className="space-y-4">
+                  <dl className="rp-kv">
+                    <dt>状态</dt>
+                    <dd>{detailData.tenant.isActive ? '正常' : '停用'}</dd>
+                    <dt>创建时间</dt>
+                    <dd>{formatDateTimeShort(detailData.tenant.createdAt) || '—'}</dd>
+                    <dt>可用积分</dt>
+                    <dd>{detailData.wallet.availableInteger ?? '—'}</dd>
+                    <dt>冻结积分</dt>
+                    <dd>{detailData.wallet.reservedInteger ?? '—'}</dd>
+                    <dt>资源</dt>
+                    <dd>{detailData.stats.assetCount}</dd>
+                    <dt>任务</dt>
+                    <dd>
+                      共 {detailData.stats.taskTotal} · 已交付 {detailData.stats.taskDelivered} · 失败{' '}
+                      {detailData.stats.taskFailed}
+                    </dd>
+                    <dt>账号</dt>
+                    <dd>{detailData.accounts.length}</dd>
+                  </dl>
+                  <table className="rp-table">
+                    <thead>
+                      <tr>
+                        <th className="text-left">登录名</th>
+                        <th className="text-left">状态</th>
+                        <th className="text-left">角色</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detailData.accounts.length === 0 ? (
+                        <tr>
+                          <td className="rp-empty" colSpan={3}>
+                            该租户暂无账号
+                          </td>
+                        </tr>
+                      ) : (
+                        detailData.accounts.map((account) => (
+                          <tr key={account.id}>
+                            <td>{account.username}</td>
+                            <td>{statusLabel(account.status)}</td>
+                            <td>{(account.roleCodes || []).join(', ') || '—'}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {accountsOpen ? (
         <div
