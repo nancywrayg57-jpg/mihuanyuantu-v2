@@ -571,11 +571,11 @@ export default function RealphotosTasksPage() {
           }),
         })
       }
-      setNotice('已建立重处理任务，原任务报告仍保留')
-      toastTask('已建立重处理任务，原任务报告仍保留', true)
+      setNotice('已建立重新处理任务，原任务报告仍保留')
+      toastTask('已建立重新处理任务，原任务报告仍保留', true)
       await loadProcessing()
     } catch (error: unknown) {
-      const text = error instanceof ApiError ? error.message : '主动重处理失败'
+      const text = error instanceof ApiError ? error.message : '重新处理失败'
       setNotice(text)
       toastTask(text, false)
     }
@@ -599,7 +599,7 @@ export default function RealphotosTasksPage() {
           }),
         },
       )
-      const text = `已复制为任务 ${data.id}（copiedFrom=${data.copiedFrom || current.id}，免冻）`
+      const text = `已按原参数复制为任务 #${data.id}（免预审、免冻结；成功交付后扣 10 积分/张）`
       setNotice(text)
       toastTask(text, true)
       await loadProcessing()
@@ -717,15 +717,15 @@ export default function RealphotosTasksPage() {
               </RpButton>
             ) : null}
             <RpButton type="button" disabled={!selected.some(canReprocess)} onClick={() => void reprocessTask()}>
-              主动重处理
+              重新处理
             </RpButton>
             <RpButton
               type="button"
               disabled={selected.length !== 1}
-              title="只复制参数，不新建任务、不扣积分"
+              title="免预审、免冻结；成功交付后按 10 积分/张扣费"
               onClick={() => void copyProcessing()}
             >
-              复制参数（不扣分）
+              按原参数复制
             </RpButton>
           </RpFilterBar>
           <RpTable>
@@ -1021,7 +1021,7 @@ export default function RealphotosTasksPage() {
                   </tbody>
                 </RpTable>
               </RpSection>
-              <p className="text-xs text-muted-foreground">生图详情无复制、主动重处理、四卡或任务链时间线。</p>
+              <p className="text-xs text-muted-foreground">生图详情无复制、重新处理、四卡或任务链时间线。</p>
             </RpDialog>
           ) : null}
         </section>

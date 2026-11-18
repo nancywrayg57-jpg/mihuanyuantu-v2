@@ -163,10 +163,10 @@ export default function RealphotosWorkspacePage() {
           idempotencyKey: `ws-reprocess-${item.id}-${Date.now()}`,
         }),
       })
-      toastTask('已建立重处理任务，原任务报告仍保留', true)
+      toastTask('已建立重新处理任务，原任务报告仍保留', true)
       await reload()
     } catch (error: unknown) {
-      toastTask(error instanceof ApiError ? error.message : '重处理失败', false)
+      toastTask(error instanceof ApiError ? error.message : '重新处理失败', false)
     } finally {
       setReprocessing(null)
     }
@@ -440,7 +440,7 @@ export default function RealphotosWorkspacePage() {
                             void reprocess(item)
                           }}
                         >
-                          {reprocessing === item.id ? '提交中…' : '重处理'}
+                          {reprocessing === item.id ? '提交中…' : '重新处理'}
                         </button>
                       ) : null}
                       {item.status === 'IMAGE_LOCKED' ? (
