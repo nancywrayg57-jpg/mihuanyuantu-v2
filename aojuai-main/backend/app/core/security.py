@@ -2,6 +2,7 @@
 AOJU Backend - Security Utilities
 """
 import hashlib
+import secrets
 import time
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -11,6 +12,19 @@ from jose import JWTError, jwt
 
 from app.core.config import settings
 from app.core.exceptions import UnauthorizedError
+
+DEFAULT_JWT_SECRET_PLACEHOLDER = "your-super-secret-key-change-in-production"
+
+
+def assert_jwt_secret_safe_for_env() -> None:
+    """SEC-A08：生产环境禁止使用代码默认 JWT 占位密钥。"""
+    if str(getattr(settings, "ENV", "") or "").strip().lower() != "production":
+        return
+    secret = str(settings.JWT_SECRET_KEY or "").strip()
+    if not secret or secret == DEFAULT_JWT_SECRET_PLACEHOLDER:
+        raise RuntimeError(
+            "JWT_SECRET_KEY must be set to a non-default value when ENV=production"
+        )
 
 
 def hash_password(password: str) -> str:
@@ -71,10 +85,13 @@ def create_access_token(
         "sub": str(subject),
         "exp": expire,
         "type": "access",
+        "jti": secrets.token_urlsafe(16),
     }
 
     if extra_data:
         to_encode.update(extra_data)
+        if not to_encode.get("jti"):
+            to_encode["jti"] = secrets.token_urlsafe(16)
 
     return jwt.encode(
         to_encode,
@@ -86,6 +103,7 @@ def create_access_token(
 def create_refresh_token(
     subject: str | int,
     expires_delta: timedelta | None = None,
+    extra_data: dict[str, Any] | None = None,
 ) -> str:
     """Create JWT refresh token"""
     if expires_delta:
@@ -95,17 +113,35 @@ def create_refresh_token(
             days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS
         )
 
-    to_encode = {
+    to_encode: dict[str, Any] = {
         "sub": str(subject),
         "exp": expire,
         "type": "refresh",
+        "jti": secrets.token_urlsafe(16),
     }
+    if extra_data:
+        to_encode.update(extra_data)
+        if not to_encode.get("jti"):
+            to_encode["jti"] = secrets.token_urlsafe(16)
 
     return jwt.encode(
         to_encode,
         settings.JWT_SECRET_KEY,
         algorithm=settings.JWT_ALGORITHM,
     )
+
+
+def assert_absolute_session_valid(payload: dict[str, Any]) -> None:
+    """SEC-A07：若令牌携带 rp_abs_exp，则拒绝越过绝对会话边界。"""
+    abs_exp = payload.get("rp_abs_exp")
+    if abs_exp is None:
+        return
+    try:
+        abs_ts = int(abs_exp)
+    except (TypeError, ValueError) as exc:
+        raise UnauthorizedError(message="Invalid absolute session bound") from exc
+    if int(datetime.now(UTC).timestamp()) >= abs_ts:
+        raise UnauthorizedError(message="Session absolute lifetime exceeded")
 
 
 def decode_token(token: str) -> dict[str, Any]:

@@ -32,7 +32,8 @@ from app.core.module_guards import (
     ensure_public_module_enabled_for_tenant,
 )
 from app.core.role_semantics import TENANT_ADMIN_ROLE_CODES, has_tenant_admin_role
-from app.core.security import decode_token
+from app.core.security import assert_absolute_session_valid, decode_token
+from app.core.token_revocation import is_token_revoked
 from app.domain.users.models import User
 from app.infrastructure.database import get_db
 
@@ -68,6 +69,9 @@ async def _load_authenticated_user(*, db: AsyncSession, token: str) -> User:
 
     if payload.get("type") != "access":
         raise UnauthorizedError(message="Invalid token type")
+    if await is_token_revoked(token, payload=payload):
+        raise UnauthorizedError(message="Token has been revoked")
+    assert_absolute_session_valid(payload)
 
     user_id = payload.get("sub")
     if not user_id:

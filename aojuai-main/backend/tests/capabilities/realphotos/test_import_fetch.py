@@ -73,3 +73,13 @@ async def test_fetch_rewrites_static_to_api(monkeypatch):
     )
     assert raw.startswith(b"fakepng")
     assert seen == ["http://47.85.47.252/api/images/f4.png"]
+
+def test_missing_import_base_url_is_not_configured(monkeypatch):
+    """SEC-F03：未配置时不得回落到硬编码公网地址。"""
+    from app.capabilities.realphotos.services import import_fetch
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "REALPHOTOS_IMPORT_BASE_URL", "")
+    with pytest.raises(BusinessError) as err:
+        import_fetch.default_import_base_url()
+    assert err.value.code == "SERVICE_NOT_CONFIGURED"

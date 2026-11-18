@@ -95,8 +95,9 @@ def enforce_cookie_csrf(request: Request) -> None:
         raise ForbiddenError(message="跨站请求已被拒绝，请从当前站点重新发起操作")
 
     source_origin = _extract_source_origin(request)
+    # SEC-E01：Cookie 会话写操作必须带 Origin/Referer，缺省拒绝
     if not source_origin:
-        return
+        raise ForbiddenError(message="缺少请求来源，请刷新页面后重试")
     if source_origin == "null":
         raise ForbiddenError(message="请求来源无效，请刷新页面后重试")
     if source_origin not in get_allowed_csrf_origins(request):

@@ -102,9 +102,14 @@ async def read_object(
     """鉴权后读取；`?thumb=<px>` 返回缩放缓存图，否则流式返回原对象。"""
     key = object_key.strip().lstrip("/")
     tenant_id = int(tenant_ctx.tenant_id)
+    filename = key.rsplit("/", 1)[-1] or "object.bin"
+    safe_name = "".join(ch if ch.isalnum() or ch in "._-" else "_" for ch in filename)[:180]
     base_headers = {
         "X-Realphotos-Object-Key": key,
         "X-Realphotos-Tenant-Id": str(tenant_id),
+        # SEC-E02：强制下载/附件语义，降低内联嗅探风险
+        "Content-Disposition": f'inline; filename="{safe_name}"',
+        "X-Content-Type-Options": "nosniff",
     }
 
     def _thumb_response(payload: bytes) -> Response | None:

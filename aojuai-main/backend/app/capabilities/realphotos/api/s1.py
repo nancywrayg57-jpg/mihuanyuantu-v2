@@ -544,12 +544,15 @@ async def get_task(
 @router.delete("/assets/{asset_id}")
 async def delete_asset(
     asset_id: int,
+    current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
     _: None = Depends(PermissionChecker([GATEWAY_READ])),
 ) -> dict[str, Any]:
     await RealphotosS1Service(db).soft_delete_asset(
-        tenant_id=int(tenant_ctx.tenant_id), asset_id=int(asset_id)
+        tenant_id=int(tenant_ctx.tenant_id),
+        asset_id=int(asset_id),
+        owner_account_id=int(current_user.id),
     )
     await db.commit()
     return SuccessResponse(data={"deleted": True})

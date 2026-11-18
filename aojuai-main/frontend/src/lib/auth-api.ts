@@ -10,9 +10,11 @@ type LoginResponseData = {
   permissions: string[]
   isSuperuser: boolean
   mustCompleteProfile?: boolean
-  accessToken: string
-  refreshToken: string
+  /** SEC-A05：Web 登录仅 Cookie，body 不再回传 token */
+  accessToken?: string
+  refreshToken?: string
   expires: string
+  authMode?: string
 }
 
 type AuthSessionResponseData = {

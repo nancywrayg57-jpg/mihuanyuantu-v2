@@ -13,22 +13,35 @@ from app.domain.users.profile_schema import UserProfileCompletionState
 PASSWORD_MAX_LENGTH = 50
 PASSWORD_MIN_LENGTH = int(getattr(settings, "PASSWORD_MIN_LENGTH", 8) or 8)
 PASSWORD_RULE_MESSAGE = (
-    f"密码格式应为{PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH}位数字、字母、符号的任意两种组合"
+    f"密码须为{PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH}位，且同时包含字母、数字和特殊字符"
 )
 _PASSWORD_CHINESE_RE = re.compile(r"[\u4e00-\u9fff]")
+_SYSTEM_NAME_FRAGMENTS = ("honeybadger", "mihuan", "蜜獾", "realphotos", "aojuai")
 
 
-def _validate_password_strength(password: str) -> str:
+def _validate_password_strength(password: str, *, username: str | None = None) -> str:
+    """SEC-A02：字母+数字+特殊字符；禁中文；可选禁用户名/系统名片段。"""
     if _PASSWORD_CHINESE_RE.search(password):
         raise ValueError("密码不能包含中文")
 
-    has_digit = bool(re.search(r"\d", password))
-    has_alpha = bool(re.search(r"[a-zA-Z]", password))
-    has_symbol = bool(re.search(r"[^a-zA-Z0-9]", password))
-
-    if (has_digit + has_alpha + has_symbol) < 2:
+    text = str(password or "")
+    if len(text) < PASSWORD_MIN_LENGTH or len(text) > PASSWORD_MAX_LENGTH:
         raise ValueError(PASSWORD_RULE_MESSAGE)
-    return password
+
+    has_digit = bool(re.search(r"\d", text))
+    has_alpha = bool(re.search(r"[a-zA-Z]", text))
+    has_symbol = bool(re.search(r"[^a-zA-Z0-9]", text))
+    if not (has_digit and has_alpha and has_symbol):
+        raise ValueError(PASSWORD_RULE_MESSAGE)
+
+    lowered = text.casefold()
+    uname = str(username or "").strip().casefold()
+    if uname and len(uname) >= 3 and uname in lowered:
+        raise ValueError("密码不能包含用户名")
+    for fragment in _SYSTEM_NAME_FRAGMENTS:
+        if fragment.casefold() in lowered:
+            raise ValueError("密码不能包含系统相关名称")
+    return text
 
 
 class UserBase(BaseModel):
