@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
+import { RpEmptyState, RpSkeletonRows, RpTableScroll } from '@/components/realphotos/rp-table'
 import { ApiError, apiFetch } from '@/lib/api'
 import { formatDateTimeShort } from '@/lib/realphotos-time'
 
@@ -351,6 +352,7 @@ export default function RealphotosUsersPage() {
       </div>
 
       <section className="rp-card p-4 shadow-sm space-y-3">
+        <RpTableScroll>
         <table className="rp-table">
           <thead>
             <tr>
@@ -364,12 +366,14 @@ export default function RealphotosUsersPage() {
             </tr>
           </thead>
           <tbody>
-            {visibleTenants.length === 0 ? (
-              <tr>
-                <td className="rp-empty" colSpan={7}>
-                  {loading ? '加载中…' : message || '暂无租户'}
-                </td>
-              </tr>
+            {loading ? (
+              <RpSkeletonRows colSpan={7} />
+            ) : visibleTenants.length === 0 ? (
+              <RpEmptyState
+                colSpan={7}
+                title={message || '暂无租户'}
+                description="平台租户会在商家注册后自动出现；也可以由管理员创建账号。"
+              />
             ) : (
               visibleTenants.map((item) => (
                 <tr key={item.tenantId}>
@@ -442,6 +446,7 @@ export default function RealphotosUsersPage() {
             )}
           </tbody>
         </table>
+        </RpTableScroll>
         <div className="flex items-center gap-2 text-sm">
           <button
             className="rp-btn rp-btn-sm"

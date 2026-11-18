@@ -33,6 +33,7 @@ import {
 } from 'lucide-react'
 
 import { InboxBell } from '@/components/layout/inbox-bell'
+import { HelpMenu } from '@/components/layout/help-menu'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { apiFetch } from '@/lib/api'
@@ -459,6 +460,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 {t('system.layout.demoMode')}
               </Badge>
             ) : null}
+
+            <HelpMenu />
 
             <InboxBell />
 

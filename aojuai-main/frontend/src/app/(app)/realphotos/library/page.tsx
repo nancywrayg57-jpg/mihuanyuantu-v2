@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
+import { RpEmptyState, RpDialog, RpSkeletonRows, RpTableScroll } from '@/components/realphotos/rp-table'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { allocateDownloadFileName, extensionForContentType } from '@/lib/realphotos-download'
@@ -60,6 +61,9 @@ export default function RealphotosLibraryPage() {
   const [appealNote, setAppealNote] = useState('')
   const [appealBusy, setAppealBusy] = useState(false)
   const [frozen, setFrozen] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null)
+  const [downloadProgress, setDownloadProgress] = useState<{ done: number; total: number } | null>(null)
   const downloadUsedNames = useRef(new Map<string, number>())
 
   useEffect(() => {
@@ -69,6 +73,7 @@ export default function RealphotosLibraryPage() {
   }, [])
 
   const reload = useCallback(async () => {
+    setLoading(true)
     const params = new URLSearchParams({
       page: String(page),
       pageSize: String(PAGE_SIZE),
@@ -77,11 +82,15 @@ export default function RealphotosLibraryPage() {
     if (originFilter !== 'all') {
       params.set('originKind', originFilter)
     }
-    const data = await apiFetch<{ items: Asset[]; total: number; page: number; pageSize: number }>(
-      `/api/v1/realphotos/assets?${params.toString()}`,
-    )
-    setItems(data.items || [])
-    setTotal(Number(data.total || 0))
+    try {
+      const data = await apiFetch<{ items: Asset[]; total: number; page: number; pageSize: number }>(
+        `/api/v1/realphotos/assets?${params.toString()}`,
+      )
+      setItems(data.items || [])
+      setTotal(Number(data.total || 0))
+    } finally {
+      setLoading(false)
+    }
   }, [page, originFilter, sort])
 
   useEffect(() => {
@@ -230,9 +239,20 @@ export default function RealphotosLibraryPage() {
 
   async function downloadSelected() {
     const targets = items.filter((item) => selected[item.id])
+    if (targets.length === 0) return
     const batchNames = new Map<string, number>()
-    for (const item of targets) {
-      await downloadOne(item, batchNames)
+    setDownloadProgress({ done: 0, total: targets.length })
+    try {
+      let done = 0
+      for (const item of targets) {
+        await downloadOne(item, batchNames)
+        done += 1
+        setDownloadProgress({ done, total: targets.length })
+        setMessage(`正在下载 ${done}/${targets.length}…`)
+      }
+      setMessage(`批量下载完成 ${targets.length} 张`)
+    } finally {
+      setDownloadProgress(null)
     }
   }
 
@@ -311,6 +331,7 @@ export default function RealphotosLibraryPage() {
       // 2026-11-17：分批上传（每批 5 张），避免单次请求体超过网关体积限制触发 413。
       const UPLOAD_CHUNK = 5
       let uploaded = 0
+      setUploadProgress({ done: 0, total: files.length })
       for (let start = 0; start < files.length; start += UPLOAD_CHUNK) {
         const chunk = files.slice(start, start + UPLOAD_CHUNK)
         const send = async () => {
@@ -332,12 +353,16 @@ export default function RealphotosLibraryPage() {
           await send()
         }
         uploaded += chunk.length
+        setUploadProgress({ done: uploaded, total: files.length })
+        setMessage(`正在上传 ${uploaded}/${files.length}…`)
       }
       report(`本地上传已入库 ${uploaded} 张`, true)
       setPage(1)
       await reload()
     } catch (error: unknown) {
       report(error instanceof ApiError ? error.message : '上传失败', false)
+    } finally {
+      setUploadProgress(null)
     }
   }
 
@@ -345,6 +370,16 @@ export default function RealphotosLibraryPage() {
     <main className="space-y-6 p-6">
       <RpPageHeader title="图片资源" />
       <p className="text-sm">{message}</p>
+      {uploadProgress ? (
+        <p className="text-sm text-muted-foreground" role="status">
+          上传中 {uploadProgress.done}/{uploadProgress.total} 张…
+        </p>
+      ) : null}
+      {downloadProgress ? (
+        <p className="text-sm text-muted-foreground" role="status">
+          下载中 {downloadProgress.done}/{downloadProgress.total} 张…
+        </p>
+      ) : null}
       {frozen ? (
         <p className="text-sm text-amber-800">
           账号已因预审冻结：不可上传/导入/生图；仍可登录、列表与经网关下载保留期内资源。
@@ -379,9 +414,10 @@ export default function RealphotosLibraryPage() {
           <button
             className="rp-btn rp-btn-sm"
             type="button"
+            disabled={frozen || Boolean(uploadProgress)}
             onClick={() => fileInputRef.current?.click()}
           >
-            本地上传
+            {uploadProgress ? `上传中 ${uploadProgress.done}/${uploadProgress.total}` : '本地上传'}
           </button>
         )}
         {frozen ? (
@@ -402,8 +438,8 @@ export default function RealphotosLibraryPage() {
         <button className="rp-btn rp-btn-primary rp-btn-sm" type="button" onClick={() => goProcess()}>
           去处理（已选 {selectedIds.length}）
         </button>
-        <button className="rp-btn rp-btn-sm" type="button" onClick={() => void downloadSelected()}>
-          批量下载
+        <button className="rp-btn rp-btn-sm" type="button" disabled={Boolean(downloadProgress)} onClick={() => void downloadSelected()}>
+          {downloadProgress ? `下载中 ${downloadProgress.done}/${downloadProgress.total}` : '批量下载'}
         </button>
         <button className="rp-btn rp-btn-danger rp-btn-sm" type="button" onClick={() => void removeSelected()}>
           批量删除
@@ -470,7 +506,7 @@ export default function RealphotosLibraryPage() {
         <button
           className="rp-btn rp-btn-sm"
           type="button"
-          disabled={page <= 1}
+          disabled={page <= 1 || loading}
           onClick={() => setPage((p) => Math.max(1, p - 1))}
         >
           上一页
@@ -478,13 +514,14 @@ export default function RealphotosLibraryPage() {
         <button
           className="rp-btn rp-btn-sm"
           type="button"
-          disabled={page >= pageCount}
+          disabled={page >= pageCount || loading}
           onClick={() => setPage((p) => p + 1)}
         >
           下一页
         </button>
       </section>
-      <section className="rp-card overflow-x-auto">
+      <section className="rp-card">
+      <RpTableScroll>
       <table className="rp-table">
         <thead>
           <tr>
@@ -513,10 +550,19 @@ export default function RealphotosLibraryPage() {
           </tr>
         </thead>
         <tbody>
-          {visibleItems.length === 0 ? (
-            <tr>
-              <td className="rp-empty" colSpan={8}>还没有图片。先从本地上传或 URL 导入开始。</td>
-            </tr>
+          {loading ? (
+            <RpSkeletonRows colSpan={8} />
+          ) : visibleItems.length === 0 ? (
+            <RpEmptyState
+              colSpan={8}
+              title="还没有图片"
+              description="先从本地上传或 URL 导入开始；同一批最多 10 张可去处理。"
+              action={
+                <Link className="rp-btn rp-btn-primary rp-btn-sm" href="/realphotos/imports">
+                  去导入图片
+                </Link>
+              }
+            />
           ) : (
             visibleItems.map((item) => {
               const fileName = item.displayName || `${item.originKind}_${item.id}`
@@ -589,6 +635,7 @@ export default function RealphotosLibraryPage() {
           )}
         </tbody>
       </table>
+      </RpTableScroll>
       </section>
       {preview ? (
         <div
@@ -624,46 +671,37 @@ export default function RealphotosLibraryPage() {
         </div>
       ) : null}
       {appealTarget ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setAppealTarget(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="图片申诉"
+        <RpDialog
+          title={`图片申诉 · ${appealTarget.displayName || appealTarget.id}`}
+          label="图片申诉"
+          closeOnBackdrop={false}
+          onClose={() => setAppealTarget(null)}
         >
-          <div className="rp-card w-full max-w-md space-y-3 p-4 text-sm" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="font-medium">图片申诉 · {appealTarget.displayName || appealTarget.id}</h2>
-              <button className="rp-btn rp-btn-sm" type="button" onClick={() => setAppealTarget(null)}>
-                关闭
-              </button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              该图片已被锁定，申诉后由技术客服核实并决定是否解锁。
-            </p>
-            <textarea
-              className="rp-input w-full"
-              rows={3}
-              placeholder="申诉原因"
-              value={appealText}
-              onChange={(e) => setAppealText(e.target.value)}
-            />
-            {appealNote ? <p className="text-xs text-destructive">{appealNote}</p> : null}
-            <div className="flex justify-end gap-2">
-              <button className="rp-btn rp-btn-sm" type="button" onClick={() => setAppealTarget(null)}>
-                取消
-              </button>
-              <button
-                className="rp-btn rp-btn-sm rp-btn-primary"
-                type="button"
-                disabled={appealBusy}
-                onClick={() => void submitAppeal()}
-              >
-                {appealBusy ? '提交中…' : '提交申诉'}
-              </button>
-            </div>
+          <p className="text-xs text-muted-foreground">
+            该图片已被锁定，申诉后由技术客服核实并决定是否解锁。
+          </p>
+          <textarea
+            className="rp-input w-full"
+            rows={3}
+            placeholder="申诉原因"
+            value={appealText}
+            onChange={(e) => setAppealText(e.target.value)}
+          />
+          {appealNote ? <p className="text-xs text-destructive">{appealNote}</p> : null}
+          <div className="flex justify-end gap-2">
+            <button className="rp-btn rp-btn-sm" type="button" onClick={() => setAppealTarget(null)}>
+              取消
+            </button>
+            <button
+              className="rp-btn rp-btn-sm rp-btn-primary"
+              type="button"
+              disabled={appealBusy}
+              onClick={() => void submitAppeal()}
+            >
+              {appealBusy ? '提交中…' : '提交申诉'}
+            </button>
           </div>
-        </div>
+        </RpDialog>
       ) : null}
     </main>
   )

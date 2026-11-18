@@ -139,7 +139,12 @@ export default function RealphotosPromptsPage() {
         </table>
       </section>
       {createOpen ? (
-        <RpDialog title="新建模板" label="新建模板" onClose={() => setCreateOpen(false)}>
+        <RpDialog
+          title="新建模板"
+          label="新建模板"
+          closeOnBackdrop={false}
+          onClose={() => setCreateOpen(false)}
+        >
           <label className="block text-sm">
             名称
             <input

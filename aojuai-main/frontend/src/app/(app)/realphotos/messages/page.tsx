@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { RpEmptyState, RpSkeletonRows, RpTableScroll } from '@/components/realphotos/rp-table'
 import { ApiError, apiFetch } from '@/lib/api'
 import { formatDateTimeShort } from '@/lib/realphotos-time'
 
@@ -45,6 +46,8 @@ export default function RealphotosMessagesPage() {
   const [items, setItems] = useState<InboxItem[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [busyGroup, setBusyGroup] = useState<string | null>(null)
 
   const [scope, setScope] = useState('all')
   const [kind, setKind] = useState<'all' | InboxKind>('all')
@@ -53,12 +56,17 @@ export default function RealphotosMessagesPage() {
   const [page, setPage] = useState(1)
 
   async function reload() {
-    const data = await apiFetch<{ items: InboxItem[]; unreadCount?: number; scope?: string }>(
-      '/api/v1/realphotos/inbox',
-    )
-    setItems(data.items || [])
-    setUnreadCount(Number(data.unreadCount || 0))
-    setScope(data.scope || 'all')
+    setLoading(true)
+    try {
+      const data = await apiFetch<{ items: InboxItem[]; unreadCount?: number; scope?: string }>(
+        '/api/v1/realphotos/inbox',
+      )
+      setItems(data.items || [])
+      setUnreadCount(Number(data.unreadCount || 0))
+      setScope(data.scope || 'all')
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -75,7 +83,9 @@ export default function RealphotosMessagesPage() {
     }
   }
 
-  async function markGroup(ids: string[], unread: boolean) {
+  async function markGroup(ids: string[], unread: boolean, key = '') {
+    if (busyGroup) return
+    setBusyGroup(key || ids.join(','))
     try {
       await Promise.all(
         ids.map((id) =>
@@ -87,6 +97,8 @@ export default function RealphotosMessagesPage() {
       await reload()
     } catch (error: unknown) {
       setMessage(error instanceof ApiError ? error.message : '批量标记失败')
+    } finally {
+      setBusyGroup(null)
     }
   }
 
@@ -179,6 +191,7 @@ export default function RealphotosMessagesPage() {
           </select>
           <ListSearch value={search} placeholder="标题 / 正文 / 任务号" onChange={setSearch} />
         </div>
+        <RpTableScroll>
         <table className="rp-table">
           <thead>
             <tr>
@@ -190,12 +203,19 @@ export default function RealphotosMessagesPage() {
             </tr>
           </thead>
           <tbody>
-            {visibleGroups.length === 0 ? (
-              <tr>
-                <td className="rp-empty" colSpan={5}>
-                  暂无消息。处理任务或充值单有新进展时会在这里提醒。
-                </td>
-              </tr>
+            {loading ? (
+              <RpSkeletonRows colSpan={5} />
+            ) : visibleGroups.length === 0 ? (
+              <RpEmptyState
+                colSpan={5}
+                title="暂无消息"
+                description="处理任务或充值单有新进展时会在这里提醒；也可以先去看任务详情。"
+                action={
+                  <Link className="rp-btn rp-btn-primary rp-btn-sm" href="/realphotos/tasks">
+                    去任务详情
+                  </Link>
+                }
+              />
             ) : (
               visibleGroups.map((group) => {
                 const first = group.items[0]
@@ -242,18 +262,20 @@ export default function RealphotosMessagesPage() {
                         <button
                           className="rp-btn rp-btn-sm"
                           type="button"
-                          onClick={() => void markGroup(unreadItems.map((item) => item.id), false)}
+                          disabled={Boolean(busyGroup)}
+                          onClick={() => void markGroup(unreadItems.map((item) => item.id), false, group.key)}
                         >
-                          标为已读
+                          {busyGroup === group.key ? '处理中…' : '标为已读'}
                         </button>
                       ) : null}
                       {readItems.length > 0 ? (
                         <button
                           className="rp-btn rp-btn-sm"
                           type="button"
-                          onClick={() => void markGroup(readItems.map((item) => item.id), true)}
+                          disabled={Boolean(busyGroup)}
+                          onClick={() => void markGroup(readItems.map((item) => item.id), true, group.key)}
                         >
-                          标为未读
+                          {busyGroup === group.key ? '处理中…' : '标为未读'}
                         </button>
                       ) : null}
                       {taskItems.length > 0 ? (
@@ -271,11 +293,12 @@ export default function RealphotosMessagesPage() {
             )}
           </tbody>
         </table>
+        </RpTableScroll>
         <div className="flex items-center gap-2 text-sm">
           <button
             className="rp-btn rp-btn-sm"
             type="button"
-            disabled={page <= 1}
+            disabled={page <= 1 || loading}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
             上一页
@@ -286,7 +309,7 @@ export default function RealphotosMessagesPage() {
           <button
             className="rp-btn rp-btn-sm"
             type="button"
-            disabled={page >= pageCount}
+            disabled={page >= pageCount || loading}
             onClick={() => setPage((p) => p + 1)}
           >
             下一页

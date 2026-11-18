@@ -8,7 +8,17 @@ import { RpButton } from '@/components/realphotos/rp-button'
 import { RpField } from '@/components/realphotos/rp-field'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { RpSection } from '@/components/realphotos/rp-section'
-import { RpDialog, RpEmpty, RpFilterBar, RpPagination, RpStatus, RpTable, RpTh } from '@/components/realphotos/rp-table'
+import {
+  RpDialog,
+  RpEmptyState,
+  RpFilterBar,
+  RpPagination,
+  RpSkeletonRows,
+  RpStatus,
+  RpTable,
+  RpTableScroll,
+  RpTh,
+} from '@/components/realphotos/rp-table'
 import { rpSelectClass, toastTask } from '@/components/realphotos/surface'
 import { PRESET_FIELD_DEFS, type PresetFieldDef } from '@/lib/realphotos-preset-fields'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
@@ -242,31 +252,44 @@ export default function RealphotosTasksPage() {
   const [genSearch, setGenSearch] = useState('')
   const [thumbs, setThumbs] = useState<Record<string, string>>({})
   const [preview, setPreview] = useState<{ id: string; url: string } | null>(null)
+  const [loadingProc, setLoadingProc] = useState(true)
+  const [loadingGen, setLoadingGen] = useState(true)
+  const [downloading, setDownloading] = useState<{ done: number; total: number } | null>(null)
 
   const loadProcessing = useCallback(async () => {
-    const qs = new URLSearchParams({
-      page: String(procPage),
-      page_size: String(PAGE_SIZE),
-    })
-    if (procStatus !== 'all') qs.set('status', procStatus)
-    const data = await apiFetch<{ items: ProcessingTask[]; total: number }>(
-      `/api/v1/realphotos/processing-tasks?${qs.toString()}`,
-    )
-    setProcItems(data.items || [])
-    setProcTotal(data.total || 0)
+    setLoadingProc(true)
+    try {
+      const qs = new URLSearchParams({
+        page: String(procPage),
+        page_size: String(PAGE_SIZE),
+      })
+      if (procStatus !== 'all') qs.set('status', procStatus)
+      const data = await apiFetch<{ items: ProcessingTask[]; total: number }>(
+        `/api/v1/realphotos/processing-tasks?${qs.toString()}`,
+      )
+      setProcItems(data.items || [])
+      setProcTotal(data.total || 0)
+    } finally {
+      setLoadingProc(false)
+    }
   }, [procPage, procStatus])
 
   const loadGeneration = useCallback(async () => {
-    const qs = new URLSearchParams({
-      page: String(genPage),
-      page_size: String(PAGE_SIZE),
-    })
-    if (genMode !== 'all') qs.set('mode', genMode)
-    const data = await apiFetch<{ items: GenerationTask[]; total: number }>(
-      `/api/v1/realphotos/generation-tasks?${qs.toString()}`,
-    )
-    setGenItems(data.items || [])
-    setGenTotal(data.total || 0)
+    setLoadingGen(true)
+    try {
+      const qs = new URLSearchParams({
+        page: String(genPage),
+        page_size: String(PAGE_SIZE),
+      })
+      if (genMode !== 'all') qs.set('mode', genMode)
+      const data = await apiFetch<{ items: GenerationTask[]; total: number }>(
+        `/api/v1/realphotos/generation-tasks?${qs.toString()}`,
+      )
+      setGenItems(data.items || [])
+      setGenTotal(data.total || 0)
+    } finally {
+      setLoadingGen(false)
+    }
   }, [genPage, genMode])
 
   // 2026-11-18 UX-P1-5/P1-7：工作台/消息中心深链直达任务详情。
@@ -498,7 +521,9 @@ export default function RealphotosTasksPage() {
 
       const usedNames = new Map<string, number>()
       const notes: string[] = []
-      for (const item of files) {
+      setDownloading({ done: 0, total: files.length })
+      for (const [index, item] of files.entries()) {
+        setDownloading({ done: index, total: files.length })
         const blob = await apiFetchBlob(`/api/v1/realphotos/gateway/objects/${item.objectKey}`)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const jpeg = bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff
@@ -524,6 +549,7 @@ export default function RealphotosTasksPage() {
           URL.revokeObjectURL(url)
           notes.push(`${fileName}:${bytes.length}${jpeg ? '' : ':非JPEG'}`)
         }
+        setDownloading({ done: index + 1, total: files.length })
       }
       if (mode === 'directory') {
         const text = `已写入选定目录 ${notes.join(' ')}`
@@ -538,6 +564,8 @@ export default function RealphotosTasksPage() {
       const text = error instanceof ApiError ? error.message : '下载失败'
       setDownloadNote(text)
       toastTask(text, false)
+    } finally {
+      setDownloading(null)
     }
   }
 
@@ -708,8 +736,13 @@ export default function RealphotosTasksPage() {
               onPrev={() => setProcPage((p) => p - 1)}
               onNext={() => setProcPage((p) => p + 1)}
             />
-            <RpButton variant="primary" type="button" onClick={() => void downloadChecked()}>
-              下载勾选
+            <RpButton
+              variant="primary"
+              type="button"
+              disabled={Boolean(downloading)}
+              onClick={() => void downloadChecked()}
+            >
+              {downloading ? `下载中 ${downloading.done}/${downloading.total}` : '下载勾选'}
             </RpButton>
             {canTech ? (
               <RpButton type="button" disabled={!selected.some(canRetry)} onClick={() => void retryTechnical()}>
@@ -728,6 +761,7 @@ export default function RealphotosTasksPage() {
               按原参数复制
             </RpButton>
           </RpFilterBar>
+          <RpTableScroll>
           <RpTable>
             <thead>
               <tr>
@@ -741,8 +775,19 @@ export default function RealphotosTasksPage() {
               </tr>
             </thead>
             <tbody>
-              {visibleProcItems.length === 0 ? (
-                <RpEmpty colSpan={7}>暂无处理任务</RpEmpty>
+              {loadingProc && procItems.length === 0 ? (
+                <RpSkeletonRows colSpan={7} />
+              ) : visibleProcItems.length === 0 ? (
+                <RpEmptyState
+                  colSpan={7}
+                  title="还没有处理任务"
+                  description="去批量原图选择图片与设备预设，提交后这里会显示检测报告与下载入口。"
+                  action={
+                    <a className="rp-btn rp-btn-primary rp-btn-sm" href="/realphotos/batch">
+                      去批量原图
+                    </a>
+                  }
+                />
               ) : (
                 visibleProcItems.map((item) => (
                   <tr key={item.id}>
@@ -795,6 +840,7 @@ export default function RealphotosTasksPage() {
               )}
             </tbody>
           </RpTable>
+          </RpTableScroll>
           {preview ? (
             <div
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6"
@@ -919,6 +965,7 @@ export default function RealphotosTasksPage() {
               onNext={() => setGenPage((p) => p + 1)}
             />
           </RpFilterBar>
+          <RpTableScroll>
           <RpTable>
             <thead>
               <tr>
@@ -931,8 +978,19 @@ export default function RealphotosTasksPage() {
               </tr>
             </thead>
             <tbody>
-              {visibleGenItems.length === 0 ? (
-                <RpEmpty colSpan={6}>暂无生图任务</RpEmpty>
+              {loadingGen && genItems.length === 0 ? (
+                <RpSkeletonRows colSpan={6} />
+              ) : visibleGenItems.length === 0 ? (
+                <RpEmptyState
+                  colSpan={6}
+                  title="还没有生图任务"
+                  description="在「生图入库」提交文生图或图生图后，结果会出现在这里。"
+                  action={
+                    <a className="rp-btn rp-btn-primary rp-btn-sm" href="/realphotos/generate">
+                      去生图
+                    </a>
+                  }
+                />
               ) : (
                 visibleGenItems.map((item) => (
                   <tr key={item.id}>
@@ -956,6 +1014,7 @@ export default function RealphotosTasksPage() {
               )}
             </tbody>
           </RpTable>
+          </RpTableScroll>
           {downloadNote ? <p className="text-sm">{downloadNote}</p> : null}
           {genDetail ? (
             <RpDialog

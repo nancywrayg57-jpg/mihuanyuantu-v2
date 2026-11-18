@@ -707,7 +707,12 @@ export function RealphotosSystemClient() {
         </section>
       ) : null}
       {editing ? (
-        <RpDialog title={`修改渠道 · ${editing.provider}`} label="修改渠道" onClose={() => setEditing(null)}>
+        <RpDialog
+          title={`修改渠道 · ${editing.provider}`}
+          label="修改渠道"
+          closeOnBackdrop={false}
+          onClose={() => setEditing(null)}
+        >
           <label className="block text-sm">
             模型版本
             <input

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
+import { RpEmptyState, RpSkeletonRows, RpTableScroll } from '@/components/realphotos/rp-table'
 import { toast } from 'sonner'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
@@ -66,30 +67,36 @@ export function RealphotosGenerateClient() {
   const [recent, setRecent] = useState<RecentGeneration[]>([])
   const [recentAssets, setRecentAssets] = useState<Record<string, RecentAsset>>({})
   const [recentThumbs, setRecentThumbs] = useState<Record<string, string>>({})
+  const [recentLoading, setRecentLoading] = useState(true)
 
   async function loadRecent() {
-    const data = await apiFetch<{ items: RecentGeneration[] }>(
-      '/api/v1/realphotos/generation-tasks?page=1&page_size=6',
-    )
-    const rows = data.items || []
-    setRecent(rows)
-    const assetIds = Array.from(
-      new Set(
-        rows
-          .flatMap((row) => row.items.map((item) => item.assetId))
-          .filter((id): id is string => Boolean(id)),
-      ),
-    )
-    if (!assetIds.length) {
-      setRecentAssets({})
-      return
+    setRecentLoading(true)
+    try {
+      const data = await apiFetch<{ items: RecentGeneration[] }>(
+        '/api/v1/realphotos/generation-tasks?page=1&page_size=6',
+      )
+      const rows = data.items || []
+      setRecent(rows)
+      const assetIds = Array.from(
+        new Set(
+          rows
+            .flatMap((row) => row.items.map((item) => item.assetId))
+            .filter((id): id is string => Boolean(id)),
+        ),
+      )
+      if (!assetIds.length) {
+        setRecentAssets({})
+        return
+      }
+      const assets = await apiFetch<{ items: RecentAsset[] }>(
+        `/api/v1/realphotos/assets?ids=${encodeURIComponent(assetIds.join(','))}`,
+      )
+      setRecentAssets(
+        Object.fromEntries((assets.items || []).map((asset) => [String(asset.id), asset])),
+      )
+    } finally {
+      setRecentLoading(false)
     }
-    const assets = await apiFetch<{ items: RecentAsset[] }>(
-      `/api/v1/realphotos/assets?ids=${encodeURIComponent(assetIds.join(','))}`,
-    )
-    setRecentAssets(
-      Object.fromEntries((assets.items || []).map((asset) => [String(asset.id), asset])),
-    )
   }
 
   useEffect(() => {
@@ -440,10 +447,16 @@ export function RealphotosGenerateClient() {
       <section className="rp-card space-y-3 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-medium">最近生成</h2>
-          <button className="rp-btn rp-btn-sm" type="button" onClick={() => void loadRecent()}>
-            刷新
+          <button
+            className="rp-btn rp-btn-sm"
+            type="button"
+            disabled={recentLoading}
+            onClick={() => void loadRecent()}
+          >
+            {recentLoading ? '刷新中…' : '刷新'}
           </button>
         </div>
+        <RpTableScroll>
         <table className="rp-table">
           <thead>
             <tr>
@@ -455,12 +468,14 @@ export function RealphotosGenerateClient() {
             </tr>
           </thead>
           <tbody>
-            {recent.length === 0 ? (
-              <tr>
-                <td className="rp-empty" colSpan={5}>
-                  还没有生成记录。提交后会在这里显示最近 6 条结果。
-                </td>
-              </tr>
+            {recentLoading && recent.length === 0 ? (
+              <RpSkeletonRows colSpan={5} />
+            ) : recent.length === 0 ? (
+              <RpEmptyState
+                colSpan={5}
+                title="还没有生成记录"
+                description="提交文生图或图生图后，结果会出现在这里，并可一键去处理。"
+              />
             ) : (
               recent.map((row) => {
                 const assetId = row.items.find((item) => item.assetId)?.assetId || null
@@ -504,6 +519,7 @@ export function RealphotosGenerateClient() {
             )}
           </tbody>
         </table>
+        </RpTableScroll>
       </section>
     </main>
   )

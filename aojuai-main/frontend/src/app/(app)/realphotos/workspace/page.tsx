@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
+import { RpEmptyState, RpSkeletonRows, RpTableScroll } from '@/components/realphotos/rp-table'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { formatRate } from '@/lib/format-rate'
@@ -98,6 +99,12 @@ export default function RealphotosWorkspacePage() {
   const [message, setMessage] = useState('')
   const [thumbs, setThumbs] = useState<Record<string, string>>({})
   const [reprocessing, setReprocessing] = useState<string | null>(null)
+  const [forceGuide, setForceGuide] = useState(false)
+
+  useEffect(() => {
+    // 2026-11-18 UX-P2-6：帮助菜单「重看新手引导」= ?guide=1
+    setForceGuide(new URLSearchParams(window.location.search).get('guide') === '1')
+  }, [])
 
   async function reload() {
     const payload = await apiFetch<WorkspacePayload>('/api/v1/realphotos/workspace')
@@ -214,7 +221,7 @@ export default function RealphotosWorkspacePage() {
         </section>
       ) : null}
 
-      {view === 'merchant' && historyRows.length === 0 ? (
+      {view === 'merchant' && (historyRows.length === 0 || forceGuide) ? (
         <section className="rp-card border-primary/25 bg-primary/5 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-1">
@@ -230,6 +237,11 @@ export default function RealphotosWorkspacePage() {
               <Link className="rp-btn rp-btn-sm" href="/realphotos/library">
                 查看图片资源
               </Link>
+              {forceGuide ? (
+                <button className="rp-btn rp-btn-sm" type="button" onClick={() => setForceGuide(false)}>
+                  收起引导
+                </button>
+              ) : null}
             </div>
           </div>
         </section>
@@ -380,6 +392,7 @@ export default function RealphotosWorkspacePage() {
               全部任务
             </Link>
           </div>
+          <RpTableScroll>
           <table className="rp-table w-full text-sm">
             <thead>
               <tr>
@@ -392,10 +405,19 @@ export default function RealphotosWorkspacePage() {
               </tr>
             </thead>
             <tbody>
-              {filteredHistory.length === 0 ? (
-                <tr>
-                  <td className="rp-empty" colSpan={6}>还没有处理记录。上传或导入图片后，这里会显示每次处理的状态与时间。</td>
-                </tr>
+              {!data ? (
+                <RpSkeletonRows colSpan={6} />
+              ) : filteredHistory.length === 0 ? (
+                <RpEmptyState
+                  colSpan={6}
+                  title="还没有处理记录"
+                  description="上传或导入图片后，这里会显示每次处理的状态、失败原因与快捷操作。"
+                  action={
+                    <Link className="rp-btn rp-btn-primary rp-btn-sm" href="/realphotos/batch">
+                      去批量原图
+                    </Link>
+                  }
+                />
               ) : (
                 filteredHistory.map((item) => (
                   <tr
@@ -468,6 +490,7 @@ export default function RealphotosWorkspacePage() {
               )}
             </tbody>
           </table>
+          </RpTableScroll>
           <div className="flex items-center gap-2 text-sm">
             <button
               className="rp-btn border px-2 py-1"
