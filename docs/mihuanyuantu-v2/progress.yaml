@@ -1172,11 +1172,11 @@ ux_p2_2026_11_18:
   next: "UX 清单 18 项已完成；可按需安排弹窗全站统一或新需求"
 
 ux_audit_2026_11_18:
-  stage: U2_completed_report_pending_admin_confirm
-  scope: "全系统 UI/UX 与数据一致性只读审计（U1–U2）"
+  stage: U6_deployed_pending_admin_acceptance
+  scope: "全系统 UI/UX 与数据一致性审计（U1–U2）+ 修复（U3–U6）"
   baseline_main: 5dc847b
-  production_head: 5dc847b
-  build_id: qwEgDCl-fNzI3U75NAlRx
+  production_head: 3386a3a
+  build_id: xRRVDsErSitXP_hPKD85c
   instruction: docs/mihuanyuantu-v2/input/蜜獾原图-全系统UX与数据一致性审计指令-2026-11-18.md
   report: docs/mihuanyuantu-v2/input/蜜獾原图-UX与数据一致性审计报告-2026-11-18.md
   findings:
@@ -1187,20 +1187,47 @@ ux_audit_2026_11_18:
     task_no: "list 50/50, detail 5/5, ledger 50/50, inbox 91/91, generation 7/7"
     wallet: pass
     preset_fields: pass
-    preset_names: fail_UXA_004
+    preset_names: fixed_U3
     tenant_name: pass
-    tenant_last_active: fail_UXA_003
+    tenant_last_active: fixed_U3
+  fixes:
+    demo_routes: "removed nav + BusinessRouteGuard redirect"
+    topbar: "single identity block + neutral default avatar; role labels"
+    last_login: "realphotos login writes last_login_at"
+    presets: "405 -> 131 unique brand+model on merchant; snapshot names"
+    upload_names: "single/batch send original file.name"
+    e2e_cleanup: "3 tickets, 1 template, 3 assets, 5 tasks, tenant #6 soft-deleted"
+    p2: "ticket duration/nowrap, prompt labels, API copy, batch empty state, thumbnails, dock padding, contract note"
   test_pollution:
     tickets: 3
     prompt_templates: 1
     e2e_assets: 3
-    e2e_tasks: 4
+    e2e_tasks: 5
     leftover_test_tenant: 1
     user_name_pollution: 0
-  no_code_changes: true
-  no_production_data_changes: true
+  production_after:
+    tickets_e2e: 0
+    prompt_e2e: 0
+    assets_e2e: 0
+    tasks_e2e: 0
+    test_tenant: 0
+    tenants: 5
+    enabled_presets_db: 405
+    unique_brand_model: 131
+  checks:
+    backend: "ruff pass; 19 tests pass"
+    frontend: "typecheck + build pass"
+    production: "20/20 UI/API checks pass"
+  no_code_changes: false
+  no_production_data_changes: false
   production_billing: false
-  next: "等待管理员确认 UXA-001 演示页、405 条预设归并、E2E 数据清理、顶栏布局后进入 U3–U7"
+  residuals:
+    - "用户管理创建/删除/操作弹窗仍是自定义遮罩，未统一 RpDialog"
+    - "系统日志身份列仍多行，行高偏大"
+    - "历史 local_upload_* 文件名不可还原"
+    - "管理员设备预设台账仍 405 条，仅商家侧去重"
+  next: "等待管理员验收；如需要再处理 P2 残留"
+
 
 
 
