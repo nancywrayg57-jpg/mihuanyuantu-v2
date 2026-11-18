@@ -1096,3 +1096,36 @@ ux_p0_2026_11_18:
     - "流水时间区间筛选留待列表统一排序迭代"
   next: "P1+P2 迭代 2，等待管理员确认"
 
+ux_p1_2026_11_18:
+  requirement_source: "桌面《蜜獾原图-UX优化建议-2026-11-17.md》（不入库）"
+  scope: [P1-1_list_density_sort, P1-2_task_toolbar, P1-3_ticket_time, P1-4_tenant_detail, P1-5_message_group, P1-6_recent_generation, P1-7_workspace_history]
+  branch: cursor/ux-p1-9973
+  pr: 74
+  squash_commit: b93f295
+  followup_pr: 75
+  followup_commit: 60a8038
+  followup_scope: "消息源图被清理时回退显示资源编号"
+  build_id: 2EG6HqaZ9p6c0dqtZkk3Q
+  deploy:
+    target: "47.242.28.49 / https://exif-demo.honeybadgersoft.com"
+    release_head: 60a8038
+    frontend_build_head: b93f295
+    units: "realphotos-api active; realphotos-web active"
+    health: 200
+    db_migration: none
+  verification:
+    local_ruff: pass
+    local_pytest_ux_p1: "3 passed"
+    local_pytest_p0_p1_s5_s6: "25 passed"
+    local_typecheck: pass
+    local_frontend_test: "16 passed"
+    local_build: pass
+    ci_gate: pass
+    prod_api_dom_checks: "30 pass / 0 fail"
+    evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-UX-P1-2026-11-18.md
+  production_billing: false
+  residuals:
+    - "P2 六项未做"
+  next: "P2 六项，等待管理员确认"
+
+
