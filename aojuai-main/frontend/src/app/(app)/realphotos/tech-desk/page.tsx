@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
+import { RpDialog, RpEmptyState, RpSkeletonRows, RpTableScroll } from '@/components/realphotos/rp-table'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import {
@@ -72,6 +73,7 @@ export default function RealphotosTechDeskPage() {
   const [ticketPageSize, setTicketPageSize] = useState(10)
   const [ticketSort, setTicketSort] = useState('waiting')
   const [ticketOpenTotal, setTicketOpenTotal] = useState(0)
+  const [loadingTickets, setLoadingTickets] = useState(true)
   const [reason, setReason] = useState('')
   const [appealReason, setAppealReason] = useState('')
   const [resolveNote, setResolveNote] = useState('')
@@ -92,21 +94,26 @@ export default function RealphotosTechDeskPage() {
   const [deskTab, setDeskTab] = useState<DeskTab>('appeals')
 
   async function loadTickets(page = ticketPage) {
-    const data = await apiFetch<{
-      items: Ticket[]
-      page?: number
-      pageSize?: number
-      total?: number
-      openTotal?: number
-    }>(
-      `/api/v1/realphotos/support-tickets?page=${page}&pageSize=10&sort=${encodeURIComponent(ticketSort)}`,
-    )
-    setItems(Array.isArray(data?.items) ? data.items : [])
-    setTicketPage(Number(data?.page) || page)
-    setTicketPageSize(Number(data?.pageSize) || 10)
-    setTicketTotal(Number(data?.total) || (Array.isArray(data?.items) ? data.items.length : 0))
-    setTicketOpenTotal(Number(data?.openTotal) || 0)
-    setCanUnfreeze(true)
+    setLoadingTickets(true)
+    try {
+      const data = await apiFetch<{
+        items: Ticket[]
+        page?: number
+        pageSize?: number
+        total?: number
+        openTotal?: number
+      }>(
+        `/api/v1/realphotos/support-tickets?page=${page}&pageSize=10&sort=${encodeURIComponent(ticketSort)}`,
+      )
+      setItems(Array.isArray(data?.items) ? data.items : [])
+      setTicketPage(Number(data?.page) || page)
+      setTicketPageSize(Number(data?.pageSize) || 10)
+      setTicketTotal(Number(data?.total) || (Array.isArray(data?.items) ? data.items.length : 0))
+      setTicketOpenTotal(Number(data?.openTotal) || 0)
+      setCanUnfreeze(true)
+    } finally {
+      setLoadingTickets(false)
+    }
   }
 
   async function loadHeld(page = heldPage) {
@@ -409,9 +416,10 @@ export default function RealphotosTechDeskPage() {
             <button
               className="rp-btn rp-btn-sm"
               type="button"
+              disabled={loadingTickets}
               onClick={() => void loadDesk()}
             >
-              刷新
+              {loadingTickets ? '刷新中…' : '刷新'}
             </button>
             <span className="text-xs text-muted-foreground">每 30 秒自动刷新</span>
           </>
@@ -468,6 +476,7 @@ export default function RealphotosTechDeskPage() {
               </select>
             </label>
           </div>
+          <RpTableScroll>
           <table className="rp-table">
             <thead>
               <tr>
@@ -483,12 +492,14 @@ export default function RealphotosTechDeskPage() {
               </tr>
             </thead>
             <tbody>
-              {visible.length === 0 ? (
-                <tr>
-                  <td className="rp-empty" colSpan={9}>
-                    还没有工单。商家提交图片申诉后会进入这里。
-                  </td>
-                </tr>
+              {loadingTickets ? (
+                <RpSkeletonRows colSpan={9} />
+              ) : visible.length === 0 ? (
+                <RpEmptyState
+                  colSpan={9}
+                  title="还没有工单"
+                  description="商家提交图片申诉后会进入这里；列表每 30 秒自动刷新。"
+                />
               ) : (
                 visible.map((item) => (
                   <tr key={item.id}>
@@ -516,6 +527,7 @@ export default function RealphotosTechDeskPage() {
               )}
             </tbody>
           </table>
+          </RpTableScroll>
           <div className="flex items-center gap-2 text-sm">
             <button
               className="rp-btn rp-btn-sm"
@@ -561,6 +573,7 @@ export default function RealphotosTechDeskPage() {
           <p className="text-xs text-muted-foreground">
             按租户展示 held 合计；FIFO 消耗预留直到达到本次释放金额，须写原因。每页 {heldPageSize} 条。
           </p>
+          <RpTableScroll>
           <table className="rp-table">
             <thead>
               <tr>
@@ -620,6 +633,7 @@ export default function RealphotosTechDeskPage() {
               )}
             </tbody>
           </table>
+          </RpTableScroll>
           <div className="flex items-center gap-2 text-sm">
             <button
               className="rp-btn rp-btn-sm"
@@ -645,117 +659,101 @@ export default function RealphotosTechDeskPage() {
       ) : null}
 
       {detail ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => closeHandle()}
-          role="dialog"
-          aria-modal="true"
-          aria-label={`处理工单 ${detail.id}`}
+        <RpDialog
+          title={`工单 ${detail.id}`}
+          label={`处理工单 ${detail.id}`}
+          closeOnBackdrop={false}
+          onClose={closeHandle}
         >
-          <div
-            className="max-h-[90vh] w-full max-w-lg space-y-3 overflow-y-auto rp-card p-4 text-sm shadow"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex justify-between gap-2">
-              <strong>工单 {detail.id}</strong>
+          <p>类型：{ticketTypeLabel(detail.ticketType)}</p>
+          <p>状态：{ticketStatusLabel(detail.status)}</p>
+          <p>
+            关联账号：{tenantLabel(detail)} / {accountLabel(detail)}
+          </p>
+          <p>原因：{detail.reason}</p>
+          <p>时间：{formatDateTimeShort(detail.createdAt) || '（无）'}</p>
+          {detail.ticketType === 'image_appeal' ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">关联图片</span>
               <button
-                type="button"
                 className="rp-btn rp-btn-sm"
-                onClick={() => closeHandle()}
+                type="button"
+                onClick={() => void unlockTicketImage()}
               >
-                关闭
+                解锁图片
+              </button>
+              {thumbUrl ? (
+                <button type="button" className="block" onClick={() => void openLarge()}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={thumbUrl} alt="关联图片缩略图" className="h-24 w-24 rounded border object-cover" />
+                </button>
+              ) : (
+                <span className="text-xs text-muted-foreground">（无可用图片）</span>
+              )}
+            </div>
+          ) : null}
+          {detail.resolvedAt ? (
+            <p>
+              办结：{detail.resolvedAt} / {detail.resolutionOutcome} / {detail.resolutionNote}
+            </p>
+          ) : null}
+          {canUnfreeze && detail.status === 'open' && detail.ticketType === 'image_appeal' ? (
+            <div className="space-y-2 border-t pt-2">
+              <p className="font-medium">标记已处理（可同时解锁图片）</p>
+              <select
+                className="rp-input"
+                value={resolveOutcome}
+                onChange={(event) => setResolveOutcome(event.target.value)}
+              >
+                <option value="accepted">通过/接受</option>
+                <option value="rejected">驳回</option>
+                <option value="resolved">已处理</option>
+              </select>
+              <input
+                className="rp-input ml-2 w-64"
+                placeholder="办结原因"
+                value={resolveNote}
+                onChange={(event) => setResolveNote(event.target.value)}
+              />
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={unlockOnResolve}
+                  onChange={(event) => setUnlockOnResolve(event.target.checked)}
+                />
+                办结同时解除该图片锁定
+              </label>
+              <button
+                className="rp-btn ml-2"
+                type="button"
+                onClick={() => void resolveDetail()}
+              >
+                提交
               </button>
             </div>
-            <p>类型：{ticketTypeLabel(detail.ticketType)}</p>
-            <p>状态：{ticketStatusLabel(detail.status)}</p>
-            <p>
-              关联账号：{tenantLabel(detail)} / {accountLabel(detail)}
-            </p>
-            <p>原因：{detail.reason}</p>
-            <p>时间：{formatDateTimeShort(detail.createdAt) || '（无）'}</p>
-            {detail.ticketType === 'image_appeal' ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">关联图片</span>
-                <button
-                  className="rp-btn rp-btn-sm"
-                  type="button"
-                  onClick={() => void unlockTicketImage()}
-                >
-                  解锁图片
-                </button>
-                {thumbUrl ? (
-                  <button type="button" className="block" onClick={() => void openLarge()}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={thumbUrl} alt="关联图片缩略图" className="h-24 w-24 rounded border object-cover" />
-                  </button>
-                ) : (
-                  <span className="text-xs text-muted-foreground">（无可用图片）</span>
-                )}
-              </div>
-            ) : null}
-            {detail.resolvedAt ? (
-              <p>
-                办结：{detail.resolvedAt} / {detail.resolutionOutcome} / {detail.resolutionNote}
+          ) : null}
+          {canUnfreeze && detail.ticketType === 'account_freeze' && detail.status === 'open' ? (
+            <div className="space-y-2 border-t pt-2">
+              <p className="font-medium">解除预审冻结</p>
+              <p className="text-xs text-muted-foreground">
+                目标已锁定：{tenantLabel(detail)} / {accountLabel(detail)}
               </p>
-            ) : null}
-            {canUnfreeze && detail.status === 'open' && detail.ticketType === 'image_appeal' ? (
-              <div className="space-y-2 border-t pt-2">
-                <p className="font-medium">标记已处理（可同时解锁图片）</p>
-                <select
-                  className="rp-input"
-                  value={resolveOutcome}
-                  onChange={(event) => setResolveOutcome(event.target.value)}
-                >
-                  <option value="accepted">通过/接受</option>
-                  <option value="rejected">驳回</option>
-                  <option value="resolved">已处理</option>
-                </select>
-                <input
-                  className="rp-input ml-2 w-64"
-                  placeholder="办结原因"
-                  value={resolveNote}
-                  onChange={(event) => setResolveNote(event.target.value)}
-                />
-                <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    checked={unlockOnResolve}
-                    onChange={(event) => setUnlockOnResolve(event.target.checked)}
-                  />
-                  办结同时解除该图片锁定
-                </label>
-                <button
-                  className="rp-btn ml-2"
-                  type="button"
-                  onClick={() => void resolveDetail()}
-                >
-                  提交
-                </button>
-              </div>
-            ) : null}
-            {canUnfreeze && detail.ticketType === 'account_freeze' && detail.status === 'open' ? (
-              <div className="space-y-2 border-t pt-2">
-                <p className="font-medium">解除预审冻结</p>
-                <p className="text-xs text-muted-foreground">
-                  目标已锁定：{tenantLabel(detail)} / {accountLabel(detail)}
-                </p>
-                <input
-                  className="rp-input w-full"
-                  placeholder="解冻原因（必填）"
-                  value={reason}
-                  onChange={(event) => setReason(event.target.value)}
-                />
-                <button
-                  className="rp-btn"
-                  type="button"
-                  onClick={() => void unfreezeFromDetail()}
-                >
-                  解冻
-                </button>
-              </div>
-            ) : null}
-          </div>
-        </div>
+              <input
+                className="rp-input w-full"
+                placeholder="解冻原因（必填）"
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+              />
+              <button
+                className="rp-btn"
+                type="button"
+                onClick={() => void unfreezeFromDetail()}
+              >
+                解冻
+              </button>
+            </div>
+          ) : null}
+        </RpDialog>
       ) : null}
       {previewOpen && largeUrl ? (
         <div

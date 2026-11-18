@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
+import { RpEmptyState, RpSkeletonRows, RpTableScroll } from '@/components/realphotos/rp-table'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch } from '@/lib/api'
 import { ledgerEntryTypeLabel } from '@/lib/realphotos-labels'
@@ -56,15 +57,21 @@ export default function RealphotosWalletPage() {
   const [ledgerPage, setLedgerPage] = useState(1)
   const [ledgerTotal, setLedgerTotal] = useState(0)
   const [exporting, setExporting] = useState(false)
+  const [ledgerLoading, setLedgerLoading] = useState(true)
 
   async function reload() {
-    const data = await apiFetch<Wallet>('/api/v1/realphotos/wallet')
-    setWallet(data)
-    const page = await apiFetch<PageData>(
-      `/api/v1/realphotos/wallet/ledger?currentPage=${ledgerPage}&pageSize=${LEDGER_PAGE_SIZE}`,
-    )
-    setLedger(page.list || [])
-    setLedgerTotal(Number(page.total || 0))
+    setLedgerLoading(true)
+    try {
+      const data = await apiFetch<Wallet>('/api/v1/realphotos/wallet')
+      setWallet(data)
+      const page = await apiFetch<PageData>(
+        `/api/v1/realphotos/wallet/ledger?currentPage=${ledgerPage}&pageSize=${LEDGER_PAGE_SIZE}`,
+      )
+      setLedger(page.list || [])
+      setLedgerTotal(Number(page.total || 0))
+    } finally {
+      setLedgerLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -255,6 +262,7 @@ export default function RealphotosWalletPage() {
           处理任务提交时先从可用余额冻结，检测/交付时从冻结里消费，因此「消费」类记录的可用变动为 0、冻结变动为负；
           「变动后」列展示该笔之后的可用 / 冻结余额。
         </p>
+        <RpTableScroll>
         <table className="rp-table">
           <thead>
             <tr>
@@ -269,27 +277,38 @@ export default function RealphotosWalletPage() {
             </tr>
           </thead>
           <tbody>
-            {visibleLedger.map((row) => (
-              <tr key={row.id}>
-                <td>{row.id}</td>
-                <td>{ledgerEntryTypeLabel(row.entryType)}</td>
-                <td>{signed(row.deltaAvailable)}</td>
-                <td>{signed(row.deltaReserved)}</td>
-                <td>
-                  {row.afterAvailable ?? '—'} / {row.afterReserved ?? '—'}
-                </td>
-                <td className="whitespace-nowrap">{taskRef(row)}</td>
-                <td>{row.operatorDisplay || row.operatorUserId || ''}</td>
-                <td className="whitespace-nowrap">{formatDateTimeShort(row.createdAt)}</td>
-              </tr>
-            ))}
+            {ledgerLoading ? (
+              <RpSkeletonRows colSpan={8} />
+            ) : visibleLedger.length === 0 ? (
+              <RpEmptyState
+                colSpan={8}
+                title="暂无流水"
+                description="充值到账、任务冻结/消费/释放后会在这里逐笔记录。"
+              />
+            ) : (
+              visibleLedger.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.id}</td>
+                  <td>{ledgerEntryTypeLabel(row.entryType)}</td>
+                  <td>{signed(row.deltaAvailable)}</td>
+                  <td>{signed(row.deltaReserved)}</td>
+                  <td>
+                    {row.afterAvailable ?? '—'} / {row.afterReserved ?? '—'}
+                  </td>
+                  <td className="whitespace-nowrap">{taskRef(row)}</td>
+                  <td>{row.operatorDisplay || row.operatorUserId || ''}</td>
+                  <td className="whitespace-nowrap">{formatDateTimeShort(row.createdAt)}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
+        </RpTableScroll>
         <div className="flex items-center gap-2 text-sm">
           <button
             className="rp-btn rp-btn-sm"
             type="button"
-            disabled={ledgerPage <= 1}
+            disabled={ledgerPage <= 1 || ledgerLoading}
             onClick={() => setLedgerPage((p) => Math.max(1, p - 1))}
           >
             上一页
@@ -300,7 +319,7 @@ export default function RealphotosWalletPage() {
           <button
             className="rp-btn rp-btn-sm"
             type="button"
-            disabled={ledgerPage >= Math.max(1, Math.ceil(ledgerTotal / LEDGER_PAGE_SIZE))}
+            disabled={ledgerPage >= Math.max(1, Math.ceil(ledgerTotal / LEDGER_PAGE_SIZE)) || ledgerLoading}
             onClick={() => setLedgerPage((p) => p + 1)}
           >
             下一页
