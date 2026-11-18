@@ -13,11 +13,37 @@ from app.capabilities.realphotos.schemas.auth import ChallengeCreate, LoginReque
 from app.capabilities.realphotos.services.auth_service import RealphotosAuthService
 from app.core.auth_cookies import set_auth_cookies, should_use_secure_auth_cookie
 from app.core.config import settings
+from app.core.exceptions import AOJUException, TooManyRequestsError
 from app.core.response import SuccessResponse
 from app.domain.users.models import User
 from app.domain.users.service import UserService
+from app.infrastructure.cache.runtime_cache import get_json, set_json
 
 router = APIRouter(prefix="/auth")
+
+_CHALLENGE_RATE_LIMIT = 40
+_CHALLENGE_RATE_WINDOW_SECONDS = 300
+_REGISTER_RATE_LIMIT = 10
+_REGISTER_RATE_WINDOW_SECONDS = 3600
+
+
+def _client_ip(request: Request) -> str:
+    if request.client and request.client.host:
+        return str(request.client.host)
+    return "unknown"
+
+
+async def _enforce_ip_rate_limit(*, bucket: str, ip: str, limit: int, window_seconds: int) -> None:
+    """SEC-D02：challenge/register 简易 IP 滑动窗口（进程内 + Redis）。"""
+    key = f"rp:auth:rl:{bucket}:{ip}"
+    current = await get_json(key)
+    count = int((current or {}).get("n") or 0) + 1
+    if count > limit:
+        raise TooManyRequestsError(
+            message="请求过于频繁，请稍后再试",
+            details={"code": "RATE_LIMITED", "retryAfterSeconds": window_seconds},
+        )
+    await set_json(key, {"n": count}, ttl_seconds=window_seconds)
 
 
 async def _build_cookie_session_payload(*, db: DBSession, user: Any, expires: datetime | None) -> dict[str, Any]:
@@ -48,11 +74,23 @@ async def _build_cookie_session_payload(*, db: DBSession, user: Any, expires: da
     }
 
 
+async def _commit_auth_side_effects(db: DBSession) -> None:
+    """SEC-A00：失败路径也须落库验证码消费与锁定计数，否则 get_db 回滚会抵消。"""
+    await db.commit()
+
+
 @router.post("/challenges")
 async def create_challenge(
+    http_request: Request,
     db: DBSession,
     body: ChallengeCreate | None = None,
 ) -> dict[str, Any]:
+    await _enforce_ip_rate_limit(
+        bucket="challenge",
+        ip=_client_ip(http_request),
+        limit=_CHALLENGE_RATE_LIMIT,
+        window_seconds=_CHALLENGE_RATE_WINDOW_SECONDS,
+    )
     payload = body or ChallengeCreate()
     data = await RealphotosAuthService(db).create_challenge(client_key=payload.client_key)
     await db.commit()
@@ -62,16 +100,28 @@ async def create_challenge(
 @router.post("/register")
 async def register(
     body: RegisterRequest,
+    http_request: Request,
     db: DBSession,
 ) -> dict[str, Any]:
     """商家自助开户：验证码 + 用户名密码 → 新建租户与 rp_merchant（架构 §9.2 / FR-001）。"""
-    data = await RealphotosAuthService(db).register(
-        username=body.username,
-        password=body.password,
-        nickname=body.nickname,
-        challenge_id=body.challenge_id,
-        challenge_code=body.challenge_code,
+    await _enforce_ip_rate_limit(
+        bucket="register",
+        ip=_client_ip(http_request),
+        limit=_REGISTER_RATE_LIMIT,
+        window_seconds=_REGISTER_RATE_WINDOW_SECONDS,
     )
+    try:
+        data = await RealphotosAuthService(db).register(
+            username=body.username,
+            password=body.password,
+            nickname=body.nickname,
+            challenge_id=body.challenge_id,
+            challenge_code=body.challenge_code,
+        )
+    except AOJUException:
+        # 验证码已消费等副作用必须保留
+        await _commit_auth_side_effects(db)
+        raise
     await db.commit()
     return SuccessResponse(data=data, message="注册成功，请登录")
 
@@ -82,13 +132,19 @@ async def login(
     http_request: Request,
     db: DBSession,
 ) -> dict[str, Any]:
-    """Web 登录：用户名 + 密码 + 验证码；写入与平台一致的 cookie 会话（绝对 30 天 refresh）。"""
-    token_data = await RealphotosAuthService(db).login(
-        username=body.username,
-        password=body.password,
-        challenge_id=body.challenge_id,
-        challenge_code=body.challenge_code,
-    )
+    """Web 登录：用户名 + 密码 + 验证码；仅 HttpOnly Cookie 回传会话（SEC-A05）。"""
+    try:
+        token_data = await RealphotosAuthService(db).login(
+            username=body.username,
+            password=body.password,
+            challenge_id=body.challenge_id,
+            challenge_code=body.challenge_code,
+        )
+    except AOJUException:
+        # SEC-A00：对齐底座登录——抛错前 commit，避免 challenge/guard 被回滚
+        await _commit_auth_side_effects(db)
+        raise
+
     user_id = int(token_data["user"]["id"])
     user = (
         await db.execute(
@@ -101,12 +157,10 @@ async def login(
     session_payload = await _build_cookie_session_payload(db=db, user=user, expires=expires)
     access_token = str(token_data["accessToken"])
     refresh_token = str(token_data["refreshToken"])
-    # 保证根级 expires 与 session_payload 同为 ISO 字符串，避免前端 Invalid cookie-backed session payload
+    # 管理员确认：body 不回 accessToken/refreshToken，仅 Cookie
     api_response = SuccessResponse(
         data={
             **session_payload,
-            "accessToken": access_token,
-            "refreshToken": refresh_token,
             "expires": session_payload["expires"],
             "absoluteSessionDays": SESSION_ABSOLUTE_DAYS,
             "user": token_data["user"],

@@ -19,6 +19,7 @@ from app.core.exceptions import AOJUException
 from app.core.logger import get_logger, setup_logging
 from app.core.response import AppORJSONResponse
 from app.core.scheduler import start_scheduler, stop_scheduler
+from app.core.security import assert_jwt_secret_safe_for_env
 from app.core.security_headers import apply_security_headers
 from app.core.trusted_proxy import enforce_trusted_proxy, resolve_requested_host
 from app.domain.credits.schema_compat import ensure_credit_transaction_idempotency_schema
@@ -36,6 +37,9 @@ async def lifespan(app: FastAPI):
     """Application lifespan events"""
     # Startup
     is_pytest = settings.is_pytest_runtime
+    # SEC-A08：生产默认 JWT 占位密钥直接拒绝启动（pytest 除外）
+    if not is_pytest:
+        assert_jwt_secret_safe_for_env()
     # DB 前的业务模块启动准备。**这里不出现业务名**——装什么归组合层（app/plugins，纯 base 没有）
     await run_lifecycle_phase("run_plugin_startup", app)
 

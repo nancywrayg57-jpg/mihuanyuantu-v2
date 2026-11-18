@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.capabilities.realphotos.constants import (
@@ -300,40 +301,48 @@ class RealphotosCreditService:
             if after_available < 0 or after_reserved < 0:
                 raise BusinessError(message="余额或冻结额不足", code="INSUFFICIENT_CREDITS")
             expected = int(account.version)
-            updated = await self.db.execute(
-                update(RealphotosCreditAccount)
-                .where(
-                    RealphotosCreditAccount.id == int(account.id),
-                    RealphotosCreditAccount.version == expected,
-                )
-                .values(
-                    available_integer=after_available,
-                    reserved_integer=after_reserved,
-                    version=expected + 1,
-                )
-            )
-            if int(getattr(updated, "rowcount", 0) or 0) != 1:
+            try:
+                async with self.db.begin_nested():
+                    updated = await self.db.execute(
+                        update(RealphotosCreditAccount)
+                        .where(
+                            RealphotosCreditAccount.id == int(account.id),
+                            RealphotosCreditAccount.version == expected,
+                        )
+                        .values(
+                            available_integer=after_available,
+                            reserved_integer=after_reserved,
+                            version=expected + 1,
+                        )
+                    )
+                    if int(getattr(updated, "rowcount", 0) or 0) != 1:
+                        raise RuntimeError("credit_version_conflict")
+                    self.db.add(
+                        RealphotosCreditLedgerEntry(
+                            tenant_id=int(tenant_id),
+                            event_key=key,
+                            entry_type=entry_type,
+                            delta_available=int(delta_available),
+                            delta_reserved=int(delta_reserved),
+                            before_available=before_available,
+                            after_available=after_available,
+                            before_reserved=before_reserved,
+                            after_reserved=after_reserved,
+                            operator_user_id=int(operator_user_id),
+                            target_user_id=int(target_user_id) if target_user_id else None,
+                            reason=entry_type,
+                            reference=dict(reference or {}),
+                        )
+                    )
+                    await self.db.flush()
+            except IntegrityError:
+                # SEC-D01：并发同 event_key → 幂等返回当前钱包
+                return await self.get_wallet(tenant_id=tenant_id)
+            except RuntimeError as exc:
+                if str(exc) != "credit_version_conflict":
+                    raise
                 self.db.expire(account)
                 continue
-            await self.db.refresh(account)
-            self.db.add(
-                RealphotosCreditLedgerEntry(
-                    tenant_id=int(tenant_id),
-                    event_key=key,
-                    entry_type=entry_type,
-                    delta_available=int(delta_available),
-                    delta_reserved=int(delta_reserved),
-                    before_available=before_available,
-                    after_available=after_available,
-                    before_reserved=before_reserved,
-                    after_reserved=after_reserved,
-                    operator_user_id=int(operator_user_id),
-                    target_user_id=int(target_user_id) if target_user_id else None,
-                    reason=entry_type,
-                    reference=dict(reference or {}),
-                )
-            )
-            await self.db.flush()
             return await self.get_wallet(tenant_id=tenant_id)
         raise BusinessError(message="积分版本冲突", code="VERSION_CONFLICT")
 

@@ -338,8 +338,8 @@ class Settings(BaseSettings):
     REALPHOTOS_OSS_PREFIX: str = ""
     # Legacy staging gate (no longer required for import; kept for env compatibility).
     REALPHOTOS_IMPORT_STAGING: str = ""
-    # Default base URL for duty=import when contract/env seed needs a fallback.
-    REALPHOTOS_IMPORT_BASE_URL: str = "http://47.85.47.252"
+    # SEC-F03：导入供应商 Base URL；空则运行时 SERVICE_NOT_CONFIGURED（禁止硬编码公网默认）。
+    REALPHOTOS_IMPORT_BASE_URL: str = ""
     # duty|model_id → {unit_cost, currency, unit_name}; empty = no known unit price.
     REALPHOTOS_UNIT_COSTS_JSON: str = ""
     # E2E only: force notify outbox deliver to fail for the first N attempts.

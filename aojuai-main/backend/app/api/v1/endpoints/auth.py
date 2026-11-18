@@ -16,6 +16,7 @@ from app.core.logger import get_logger
 from app.core.response import ErrorResponse, SuccessResponse
 from app.core.schemas import ResponseBase
 from app.core.security import (
+    assert_absolute_session_valid,
     create_access_token,
     create_refresh_token,
     decode_invite_code,
@@ -23,6 +24,7 @@ from app.core.security import (
     get_token_expiry,
     verify_password,
 )
+from app.core.token_revocation import is_token_revoked, revoke_token
 from app.domain.auth.schemas import get_registration_basic_fields_config
 from app.domain.auth.service import TenantService
 from app.domain.invitations.schemas import InvitationConfig, get_invitation_config
@@ -430,6 +432,10 @@ async def refresh_token(
 
     if payload.get("type") != "refresh":
         raise UnauthorizedError(message="Invalid refresh token")
+    if await is_token_revoked(refresh_token_value, payload=payload):
+        raise UnauthorizedError(message="Refresh token has been revoked")
+    # SEC-A07：校验绝对会话边界并在轮换时原样下传
+    assert_absolute_session_valid(payload)
 
     user_id = payload.get("sub")
     if not user_id:
@@ -446,11 +452,24 @@ async def refresh_token(
     expires = datetime.now(UTC) + timedelta(
         minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
     )
+    access_extra: dict[str, Any] = {"tenant_id": user.tenant_id}
+    refresh_extra: dict[str, Any] = {}
+    if payload.get("rp_abs_exp") is not None:
+        access_extra["rp_abs_exp"] = int(payload["rp_abs_exp"])
+        access_extra["rp_session"] = True
+        refresh_extra["rp_abs_exp"] = int(payload["rp_abs_exp"])
+    if payload.get("tenant_id") is not None and "tenant_id" not in access_extra:
+        access_extra["tenant_id"] = payload.get("tenant_id")
     new_access_token = create_access_token(
         subject=user.id,
-        extra_data={"tenant_id": user.tenant_id},
+        extra_data=access_extra,
     )
-    new_refresh_token = create_refresh_token(subject=user.id)
+    new_refresh_token = create_refresh_token(
+        subject=user.id,
+        extra_data=refresh_extra or None,
+    )
+    # SEC-A03/A07：轮换后吊销旧 refresh，防止双持
+    await revoke_token(refresh_token_value)
     session_payload = await _build_auth_session_payload(db=db, user=user, expires=expires)
 
     api_response = SuccessResponse(
@@ -510,7 +529,15 @@ async def logout(
     """
     Logout current user.
     Always clears auth cookies so stale sessions can exit cleanly.
+    SEC-A03：吊销当前 access/refresh，使窃取的 Bearer 在过期前失效。
     """
+    access_token = get_access_cookie(http_request)
+    refresh_token_value = get_refresh_cookie(http_request)
+    auth_header = str(http_request.headers.get("authorization") or "").strip()
+    if auth_header.lower().startswith("bearer "):
+        access_token = access_token or auth_header[7:].strip()
+    await revoke_token(access_token)
+    await revoke_token(refresh_token_value)
     if current_user:
         actor = snapshot_current_user(current_user)
         logger.info(

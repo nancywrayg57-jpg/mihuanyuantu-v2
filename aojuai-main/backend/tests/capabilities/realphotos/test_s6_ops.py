@@ -421,9 +421,18 @@ async def test_held_list_includes_tasks_without_reservation(db):
 @pytest.mark.asyncio
 async def test_user_admin_log_preset_and_metrics(db):
     ctx = await _funded(db)
+    with pytest.raises(ForbiddenError):
+        await ctx["ops"].create_user(
+            actor_role_codes={ROLE_TECH_SUPPORT},
+            operator_user_id=ctx["tech"],
+            tenant_id=ctx["tenant"],
+            username="rp_s6_extra_tech",
+            password="S6User@abc",
+            role_code=ROLE_MERCHANT,
+        )
     created = await ctx["ops"].create_user(
-        actor_role_codes={ROLE_TECH_SUPPORT},
-        operator_user_id=ctx["tech"],
+        actor_role_codes={ROLE_ADMIN},
+        operator_user_id=ctx["admin"],
         tenant_id=ctx["tenant"],
         username="rp_s6_extra",
         password="S6User@abc",
@@ -473,15 +482,23 @@ async def test_user_admin_log_preset_and_metrics(db):
     )
     with pytest.raises(BusinessError):
         await ctx["ops"].reset_password(
-            actor_role_codes={ROLE_TECH_SUPPORT},
-            operator_user_id=ctx["tech"],
+            actor_role_codes={ROLE_ADMIN},
+            operator_user_id=ctx["admin"],
             user_id=int(created["id"]),
             password="S6Reset@abc",
             confirm="other",
         )
+    with pytest.raises(ForbiddenError):
+        await ctx["ops"].reset_password(
+            actor_role_codes={ROLE_TECH_SUPPORT},
+            operator_user_id=ctx["tech"],
+            user_id=int(created["id"]),
+            password="S6Reset@abc",
+            confirm="S6Reset@abc",
+        )
     await ctx["ops"].reset_password(
-        actor_role_codes={ROLE_TECH_SUPPORT},
-        operator_user_id=ctx["tech"],
+        actor_role_codes={ROLE_ADMIN},
+        operator_user_id=ctx["admin"],
         user_id=int(created["id"]),
         password="S6Reset@abc",
         confirm="S6Reset@abc",
@@ -623,8 +640,8 @@ async def test_user_admin_log_preset_and_metrics(db):
 async def test_list_tenants_and_tenant_scoped_users(db):
     ctx = await _funded(db)
     created = await ctx["ops"].create_user(
-        actor_role_codes={ROLE_TECH_SUPPORT},
-        operator_user_id=ctx["tech"],
+        actor_role_codes={ROLE_ADMIN},
+        operator_user_id=ctx["admin"],
         tenant_id=ctx["tenant"],
         username="rp_s6_tenant_row",
         password="S6User@abc",

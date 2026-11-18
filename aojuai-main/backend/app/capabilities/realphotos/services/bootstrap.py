@@ -170,6 +170,11 @@ async def _ensure_user(
 
 async def bootstrap_s0_accounts(db: AsyncSession) -> dict[str, dict]:
     """幂等创建 S0 验收账号与角色；返回 username -> 摘要。"""
+    from app.core.config import settings
+
+    # SEC-F01：生产禁止写入已知默认种子口令账号
+    if str(getattr(settings, "ENV", "") or "").strip().lower() == "production":
+        raise RuntimeError("bootstrap_s0_accounts is forbidden when ENV=production")
     tenants: dict[str, Tenant] = {}
     for account in S0_ACCOUNTS:
         if account.tenant_code not in tenants:

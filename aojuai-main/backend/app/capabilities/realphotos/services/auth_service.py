@@ -14,6 +14,7 @@ from app.capabilities.realphotos.constants import (
     ACCESS_TOKEN_MINUTES,
     CHALLENGE_CODE_LENGTH,
     CHALLENGE_TTL_SECONDS,
+    LOCKOUT_MINUTES,
     MAX_FAILED_LOGINS,
     SESSION_ABSOLUTE_DAYS,
     allow_dev_captcha,
@@ -31,7 +32,7 @@ from app.capabilities.realphotos.services.bootstrap import (
 )
 from app.capabilities.realphotos.services.captcha_image import render_captcha_data_url
 from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
-from app.core.exceptions import BusinessError, UnauthorizedError
+from app.core.exceptions import BusinessError, TooManyRequestsError, UnauthorizedError
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -100,10 +101,11 @@ class RealphotosAuthService:
             expires = expires.replace(tzinfo=UTC)
         if expires < _utcnow():
             raise BusinessError(message="验证码已过期", code="INPUT_INVALID")
-        if not secrets.compare_digest(challenge.code_hash, _hash_code(str(code or "").strip())):
-            raise BusinessError(message="验证码错误", code="INPUT_INVALID")
+        # SEC-A01：无论对错均一次性消费，防止同 challenge 爆破试码
         challenge.consumed_at = _utcnow()
         await self.db.flush()
+        if not secrets.compare_digest(challenge.code_hash, _hash_code(str(code or "").strip())):
+            raise BusinessError(message="验证码错误", code="INPUT_INVALID")
 
     async def _get_or_create_guard(self, username_normalized: str) -> RealphotosAuthGuard:
         result = await self.db.execute(
@@ -138,7 +140,7 @@ class RealphotosAuthService:
                 code="INPUT_INVALID",
             )
         try:
-            password_clean = _validate_password_strength(str(password or ""))
+            password_clean = _validate_password_strength(str(password or ""), username=username_clean)
         except ValueError as exc:
             raise BusinessError(message=str(exc), code="INPUT_INVALID") from exc
 
@@ -241,12 +243,21 @@ class RealphotosAuthService:
             locked_until = guard.locked_until
             if locked_until.tzinfo is None:
                 locked_until = locked_until.replace(tzinfo=UTC)
-            if locked_until > _utcnow():
-                raise BusinessError(message="账号已锁定，请联系客服", code="ACCOUNT_LOCKED")
+            now = _utcnow()
+            if locked_until > now:
+                retry_after = max(1, int((locked_until - now).total_seconds()))
+                raise TooManyRequestsError(
+                    message="登录失败次数过多，账号已暂时锁定",
+                    details={
+                        "code": "ACCOUNT_LOCKED",
+                        "retryAfterSeconds": retry_after,
+                        "lockedUntil": locked_until.isoformat(),
+                    },
+                )
 
         result = await self.db.execute(
             select(User).where(
-                User.username == username.strip(),
+                func.lower(User.username) == username_normalized,
                 User.deleted_at.is_(None),
             )
         )
@@ -255,7 +266,17 @@ class RealphotosAuthService:
             guard.failed_count = int(guard.failed_count or 0) + 1
             guard.last_failure_at = _utcnow()
             if guard.failed_count >= MAX_FAILED_LOGINS:
-                guard.locked_until = _utcnow() + timedelta(minutes=30)
+                guard.locked_until = _utcnow() + timedelta(minutes=LOCKOUT_MINUTES)
+                await self.db.flush()
+                retry_after = LOCKOUT_MINUTES * 60
+                raise TooManyRequestsError(
+                    message="登录失败次数过多，账号已暂时锁定",
+                    details={
+                        "code": "ACCOUNT_LOCKED",
+                        "retryAfterSeconds": retry_after,
+                        "lockedUntil": guard.locked_until.isoformat() if guard.locked_until else None,
+                    },
+                )
             await self.db.flush()
             raise UnauthorizedError(message="Invalid username or password")
 
@@ -287,20 +308,21 @@ class RealphotosAuthService:
             self.db.add(profile)
             await self.db.flush()
 
+        abs_exp = int((_utcnow() + timedelta(days=SESSION_ABSOLUTE_DAYS)).timestamp())
         access_token = create_access_token(
             subject=user.id,
             expires_delta=timedelta(minutes=ACCESS_TOKEN_MINUTES),
             extra_data={
                 "tenant_id": int(user.tenant_id),
                 "rp_session": True,
-                "rp_abs_exp": int(
-                    (_utcnow() + timedelta(days=SESSION_ABSOLUTE_DAYS)).timestamp()
-                ),
+                "rp_abs_exp": abs_exp,
             },
         )
+        # SEC-A07：refresh 同样携带绝对边界，供 /auth/refresh-token 校验
         refresh_token = create_refresh_token(
             subject=user.id,
             expires_delta=timedelta(days=SESSION_ABSOLUTE_DAYS),
+            extra_data={"rp_abs_exp": abs_exp, "tenant_id": int(user.tenant_id)},
         )
         role_codes = sorted(
             {str(getattr(role, "code", "") or "") for role in (user.roles or []) if getattr(role, "code", None)}

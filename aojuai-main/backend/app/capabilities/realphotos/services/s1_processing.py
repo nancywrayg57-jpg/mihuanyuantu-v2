@@ -983,12 +983,17 @@ class RealphotosS1Service:
         await self.db.flush()
         return task
 
-    async def soft_delete_asset(self, *, tenant_id: int, asset_id: int) -> None:
+    async def soft_delete_asset(
+        self, *, tenant_id: int, asset_id: int, owner_account_id: int | None = None
+    ) -> None:
         """Soft-delete library row and purge the LocalDisk object copy (PRD §9.3).
 
         Idempotent on the file: missing object still succeeds after deleted_at is set.
+        SEC-C07：默认强制 owner；管理员路径可显式传 owner_account_id=None 仅租户校验（当前 API 不开放）。
         """
         asset = await self._asset(tenant_id=tenant_id, asset_id=asset_id)
+        if owner_account_id is not None and int(asset.owner_account_id) != int(owner_account_id):
+            raise NotFoundError(message="资源不存在")
         running = await self.db.execute(
             select(RealphotosImageTask.id).where(
                 RealphotosImageTask.tenant_id == int(tenant_id),

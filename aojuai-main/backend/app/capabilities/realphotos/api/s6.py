@@ -411,7 +411,7 @@ async def delete_tenant(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
-    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
 ) -> dict[str, Any]:
     """2026-11-17：管理员删除租户；仅允许删除无业务数据的租户。"""
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
@@ -450,7 +450,7 @@ async def create_user(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
-    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     payload = await RealphotosOpsService(db).create_user(
@@ -471,7 +471,7 @@ async def adjust_credits(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
-    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     payload = await RealphotosOpsService(db).adjust_credits(
@@ -494,7 +494,7 @@ async def set_roles(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
-    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     payload = await RealphotosOpsService(db).set_roles(
@@ -515,7 +515,7 @@ async def set_status(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
-    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     payload = await RealphotosOpsService(db).set_status(
@@ -535,7 +535,7 @@ async def reset_password(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
-    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     payload = await RealphotosOpsService(db).reset_password(
@@ -556,7 +556,7 @@ async def delete_user(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
-    _: None = Depends(PermissionChecker([TECH_DESK_READ])),
+    _: None = Depends(PermissionChecker([ADMIN_READ])),
 ) -> dict[str, Any]:
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     payload = await RealphotosOpsService(db).delete_user(

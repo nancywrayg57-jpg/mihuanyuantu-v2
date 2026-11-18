@@ -36,7 +36,7 @@ from app.capabilities.realphotos.models import (
     RealphotosReviewStreak,
     RealphotosSupportTicket,
 )
-from app.capabilities.realphotos.permissions import ROLE_ADMIN, ROLE_ORDER_SUPPORT, ROLE_TECH_SUPPORT
+from app.capabilities.realphotos.permissions import ROLE_ADMIN, ROLE_MERCHANT, ROLE_ORDER_SUPPORT, ROLE_TECH_SUPPORT
 from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
 from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
 from app.capabilities.realphotos.services.s1_upload import inspect_upload
@@ -46,6 +46,7 @@ from app.core.security import hash_password
 from app.domain.auth.models import Tenant
 from app.domain.roles.models import Role
 from app.domain.users.models import User, UserRole, UserStatus
+from app.domain.users.schemas import _validate_password_strength
 
 FIXTURE_PROVIDER = "fixture"
 UNCONFIGURED_PROVIDER = "unconfigured"
@@ -1364,10 +1365,15 @@ class RealphotosOpsService:
         password: str,
         role_code: str,
     ) -> dict[str, Any]:
-        self._require_tech_or_admin(actor_role_codes)
+        self._require_admin(actor_role_codes)
         name = str(username or "").strip()
         if not name or not str(password or ""):
             raise BusinessError(message="用户名和密码必填", code="INPUT_INVALID")
+        self._assert_assignable_roles(actor_role_codes, [role_code])
+        try:
+            password_clean = _validate_password_strength(str(password or ""), username=name)
+        except ValueError as exc:
+            raise BusinessError(message=str(exc), code="INPUT_INVALID") from exc
         exists = (
             await self.db.execute(select(User).where(User.username == name, User.deleted_at.is_(None)))
         ).scalar_one_or_none()
@@ -1377,7 +1383,7 @@ class RealphotosOpsService:
         user = User(
             tenant_id=int(tenant_id),
             username=name,
-            password_hash=hash_password(password),
+            password_hash=hash_password(password_clean),
             nickname=name,
             status=int(UserStatus.ENABLED),
         )
@@ -1410,10 +1416,12 @@ class RealphotosOpsService:
         reason: str,
         event_key: str,
     ) -> dict[str, Any]:
-        self._require_tech_or_admin(actor_role_codes)
+        self._require_admin(actor_role_codes)
         if isinstance(delta, bool) or not isinstance(delta, int):
             raise BusinessError(message="积分必须是整数", code="INPUT_INVALID")
         target = await self._managed_user(actor_role_codes, operator_user_id, user_id, allow_self=True)
+        if int(target.tenant_id) != int(tenant_id):
+            raise ForbiddenError(message="用户与租户不匹配")
         before = int((await RealphotosCreditService(self.db).get_wallet(tenant_id=tenant_id))["availableInteger"])
         await RealphotosCreditService(self.db).admin_adjust(
             tenant_id=int(tenant_id),
@@ -1443,8 +1451,11 @@ class RealphotosOpsService:
         user_id: int,
         role_codes: list[str],
     ) -> dict[str, Any]:
-        self._require_tech_or_admin(actor_role_codes)
+        self._require_admin(actor_role_codes)
         target = await self._managed_user(actor_role_codes, operator_user_id, user_id, allow_self=False)
+        if int(target.tenant_id) != int(tenant_id):
+            raise ForbiddenError(message="用户与租户不匹配")
+        self._assert_assignable_roles(actor_role_codes, list(role_codes or []))
         before = await self._role_codes(int(target.id), int(target.tenant_id))
         await self.db.execute(
             delete(UserRole).where(
@@ -1475,7 +1486,7 @@ class RealphotosOpsService:
         user_id: int,
         enabled: bool,
     ) -> dict[str, Any]:
-        self._require_tech_or_admin(actor_role_codes)
+        self._require_admin(actor_role_codes)
         target = await self._managed_user(actor_role_codes, operator_user_id, user_id, allow_self=False)
         before = int(target.status)
         target.status = int(UserStatus.ENABLED if enabled else UserStatus.DISABLED)
@@ -1499,11 +1510,15 @@ class RealphotosOpsService:
         password: str,
         confirm: str,
     ) -> dict[str, Any]:
-        self._require_tech_or_admin(actor_role_codes)
+        self._require_admin(actor_role_codes)
         if str(password or "") == "" or str(password) != str(confirm or ""):
             raise BusinessError(message="两次密码不一致", code="INPUT_INVALID")
         target = await self._managed_user(actor_role_codes, operator_user_id, user_id, allow_self=True)
-        target.password_hash = hash_password(password)
+        try:
+            password_clean = _validate_password_strength(str(password), username=str(target.username or ""))
+        except ValueError as exc:
+            raise BusinessError(message=str(exc), code="INPUT_INVALID") from exc
+        target.password_hash = hash_password(password_clean)
         await self.db.flush()
         await self._log(
             operator_user_id=operator_user_id,
@@ -1523,7 +1538,7 @@ class RealphotosOpsService:
         user_id: int,
         confirm_username: str,
     ) -> dict[str, Any]:
-        self._require_tech_or_admin(actor_role_codes)
+        self._require_admin(actor_role_codes)
         target = await self._managed_user(actor_role_codes, operator_user_id, user_id, allow_self=False)
         if str(confirm_username or "").strip() != target.username:
             raise BusinessError(message="须输入登录名确认删除", code="INPUT_INVALID")
@@ -2215,12 +2230,36 @@ class RealphotosOpsService:
         )
         await self.db.flush()
 
+    # SEC-C01/C02：技术客服账号面只读；写操作仅平台管理员
+    _ASSIGNABLE_ROLES = frozenset(
+        {ROLE_MERCHANT, ROLE_ORDER_SUPPORT, ROLE_TECH_SUPPORT, ROLE_ADMIN, "admin"}
+    )
+
     def _require_tech_or_admin(self, roles: set[str]) -> None:
         if ROLE_TECH_SUPPORT in roles or ROLE_ADMIN in roles or "admin" in roles:
             return
         if ROLE_ORDER_SUPPORT in roles:
             raise ForbiddenError(message="订单客服不能做这项操作")
         raise ForbiddenError(message="没有这项权限")
+
+    def _require_admin(self, roles: set[str]) -> None:
+        if ROLE_ADMIN in roles or "admin" in roles:
+            return
+        if ROLE_TECH_SUPPORT in roles:
+            raise ForbiddenError(message="技术客服仅可只读查看账号与租户")
+        if ROLE_ORDER_SUPPORT in roles:
+            raise ForbiddenError(message="订单客服不能做这项操作")
+        raise ForbiddenError(message="只有平台管理员可以执行此操作")
+
+    def _assert_assignable_roles(self, actor_roles: set[str], role_codes: list[str]) -> None:
+        codes = [str(c or "").strip() for c in role_codes if str(c or "").strip()]
+        if not codes:
+            raise BusinessError(message="至少指定一个角色", code="INPUT_INVALID")
+        for code in codes:
+            if code not in self._ASSIGNABLE_ROLES:
+                raise ForbiddenError(message=f"不允许分配角色: {code}")
+            if code in {ROLE_ADMIN, "admin"} and ROLE_ADMIN not in actor_roles and "admin" not in actor_roles:
+                raise ForbiddenError(message="不能提升为平台管理员")
 
     @staticmethod
     def _review_payload(row: RealphotosContentReview, *, locked: bool, frozen: bool, ticket_id: int | None) -> dict:

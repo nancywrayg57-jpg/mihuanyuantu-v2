@@ -8,12 +8,15 @@ from app.core.config import settings
 
 # 会话：架构推荐绝对有效期 30 天（底座默认 refresh=7，本包登录路径单独钉死）
 SESSION_ABSOLUTE_DAYS = 30
-ACCESS_TOKEN_MINUTES = max(int(settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES or 180), 1)
+# 短 access：默认 30 分钟，硬顶 60（SEC-A05）
+ACCESS_TOKEN_MINUTES = max(1, min(int(settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES or 30), 60))
 
 # 验证码
 CHALLENGE_TTL_SECONDS = 300
 CHALLENGE_CODE_LENGTH = 6
 MAX_FAILED_LOGINS = 5
+# 工单 S3：5 次失败锁 15 分钟
+LOCKOUT_MINUTES = 15
 
 # 队列状态（对齐 QueuePolicy 默认可覆盖）
 JOB_STATUS_QUEUED = "queued"
@@ -119,7 +122,10 @@ SEED_OBJECT_BYTES = b"realphotos-s0-seed-gateway-ok\n"
 
 
 def allow_dev_captcha() -> bool:
-    """开发验证码可：pytest / DEBUG / 显式 Settings 开关。"""
+    """开发验证码可：pytest / DEBUG / 显式 Settings 开关。生产环境强制关闭（SEC-A07）。"""
+    env = str(getattr(settings, "ENV", "") or "").strip().lower()
+    if env == "production":
+        return False
     raw = str(settings.REALPHOTOS_ALLOW_DEV_CAPTCHA or "").strip().lower()
     if raw in {"1", "true", "yes", "on"}:
         return True

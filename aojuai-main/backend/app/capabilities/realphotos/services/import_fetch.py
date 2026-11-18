@@ -15,7 +15,6 @@ from app.capabilities.realphotos.constants import MAX_UPLOAD_BYTES
 from app.core.config import settings
 from app.core.exceptions import BusinessError
 
-DEFAULT_IMPORT_BASE_URL = "http://47.85.47.252"
 IMPORT_FETCH_TIMEOUT_SECONDS = 30.0
 MAX_REDIRECTS = 3
 
@@ -25,14 +24,20 @@ _FILENAME_RE = re.compile(
 
 
 def default_import_base_url() -> str:
+    """SEC-F03：未配置 REALPHOTOS_IMPORT_BASE_URL 时拒绝隐式出站。"""
     raw = str(getattr(settings, "REALPHOTOS_IMPORT_BASE_URL", "") or "").strip()
     if raw:
         return raw.rstrip("/")
-    return DEFAULT_IMPORT_BASE_URL
+    raise BusinessError(
+        message="未配置导入供应商 Base URL（REALPHOTOS_IMPORT_BASE_URL）",
+        code="SERVICE_NOT_CONFIGURED",
+    )
 
 
 def normalize_import_base_url(base_url: str | None) -> str:
-    text = str(base_url or "").strip() or default_import_base_url()
+    text = str(base_url or "").strip()
+    if not text:
+        text = default_import_base_url()
     parsed = urlparse(text)
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         raise BusinessError(message="导入供应商 Base URL 无效", code="SERVICE_NOT_CONFIGURED")

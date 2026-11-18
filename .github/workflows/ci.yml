@@ -72,6 +72,14 @@ jobs:
           pip install -e .
       - name: Ruff
         run: ruff check .
+      - name: Security regression (sqlite)
+        env:
+          DB_DRIVER: sqlite
+          AOJ_ENABLED_MODULES: realphotos
+          SQLITE_PATH: /tmp/aoju-ci-security.db
+        run: |
+          rm -f /tmp/aoju-ci-security.db
+          pytest tests/security -q
       - name: Pytest (sqlite)
         env:
           DB_DRIVER: sqlite
