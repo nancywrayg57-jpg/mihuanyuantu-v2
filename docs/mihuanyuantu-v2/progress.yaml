@@ -1172,11 +1172,11 @@ ux_p2_2026_11_18:
   next: "UX 清单 18 项已完成；可按需安排弹窗全站统一或新需求"
 
 ux_audit_2026_11_18:
-  stage: U6_completed_p2_done_pending_admin_acceptance
-  scope: "全系统 UI/UX 与数据一致性审计（U1–U2）+ 修复（U3–U6）+ P2 收尾"
+  stage: U6_completed_p2_done_presets_restored_pending_admin_acceptance
+  scope: "全系统 UI/UX 与数据一致性审计（U1–U2）+ 修复（U3–U6）+ P2 收尾 + 旧版预设恢复"
   baseline_main: 5dc847b
-  production_head: a715ea4
-  build_id: iPkxpMi1g3--NGWkAlrzb
+  production_head: b99d5af
+  build_id: kQ8hpjwOoTqpjU46b1-7-
   instruction: docs/mihuanyuantu-v2/input/蜜獾原图-全系统UX与数据一致性审计指令-2026-11-18.md
   report: docs/mihuanyuantu-v2/input/蜜獾原图-UX与数据一致性审计报告-2026-11-18.md
   findings:
@@ -1194,8 +1194,8 @@ ux_audit_2026_11_18:
     demo_routes: "removed nav + BusinessRouteGuard redirect"
     topbar: "single identity block + neutral default avatar; role labels"
     last_login: "realphotos login writes last_login_at"
-    presets: "405 -> 131 unique brand+model globally; snapshot names"
-    preset_dedupe: "274 duplicates soft-deleted; canonical admin/catalog then newest id"
+    presets: "405 legacy variants restored; code-only dedupe; snapshot names"
+    preset_restore: "274 soft-deleted rows restored after brand+model proved too coarse"
     upload_names: "single/batch send original file.name"
     e2e_cleanup: "3 tickets, 1 template, 3 assets, 5 tasks, tenant #6 soft-deleted"
     p2: "ticket duration/nowrap, prompt labels, API copy, batch empty state, thumbnails, dock padding, contract note, user dialogs RpDialog, compact log identities"
@@ -1213,7 +1213,7 @@ ux_audit_2026_11_18:
     tasks_e2e: 0
     test_tenant: 0
     tenants: 5
-    enabled_presets_db: 131
+    enabled_presets_db: 405
     unique_brand_model: 131
   checks:
     backend: "ruff pass; 19 tests pass"
@@ -1224,7 +1224,7 @@ ux_audit_2026_11_18:
   production_billing: false
   residuals:
     - "历史 local_upload_* 文件名不可还原"
-  next: "P2 已收尾；等待管理员验收，可开始独立安全审计工单"
+  next: "P2 收尾、旧版 405 预设已恢复；等待管理员验收"
 
 
 
