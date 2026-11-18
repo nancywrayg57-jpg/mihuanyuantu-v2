@@ -41,12 +41,12 @@ from app.capabilities.realphotos.services.credit_service import RealphotosCredit
 from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
 from app.capabilities.realphotos.services.s1_upload import inspect_upload
 from app.core.exceptions import BusinessError, ForbiddenError, NotFoundError
-from app.domain.users.schemas import _validate_password_strength
 from app.core.logger import get_logger
 from app.core.security import hash_password
 from app.domain.auth.models import Tenant
 from app.domain.roles.models import Role
 from app.domain.users.models import User, UserRole, UserStatus
+from app.domain.users.schemas import _validate_password_strength
 
 FIXTURE_PROVIDER = "fixture"
 UNCONFIGURED_PROVIDER = "unconfigured"
