@@ -1143,5 +1143,34 @@ task_actions_2026_11_18:
   evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-UX-P1-2026-11-18.md#6-追加修正2026-11-18-任务操作按钮
   production_billing: false
 
+ux_p2_2026_11_18:
+  requirement_source: "桌面《蜜獾原图-UX优化建议-2026-11-17.md》（不入库）"
+  scope: [P2-1_mobile_table_scroll, P2-2_empty_states, P2-3_contract_table, P2-4_dialog_a11y, P2-5_loading_feedback, P2-6_help_menu]
+  branch: cursor/ux-p2-9973
+  pr: 79
+  squash_commit: ca5dcba
+  followup_pr: 80
+  followup_commit: 9b985f1
+  followup_scope: "模型合同表宽度修正，缺口列完整展示"
+  build_id: qwEgDCl-fNzI3U75NAlRx
+  deploy:
+    target: "47.242.28.49 / https://exif-demo.honeybadgersoft.com"
+    release_head: 9b985f1
+    units: "realphotos-api active; realphotos-web active"
+    health: 200
+    db_migration: none
+  verification:
+    local_typecheck: pass
+    local_frontend_test: "16 passed"
+    local_build: pass
+    ci_gate: pass
+    prod_dom_checks: "13 pass / 0 fail"
+    evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-UX-P2-2026-11-18.md
+  production_billing: false
+  residuals:
+    - "用户管理创建/删除/操作弹窗仍为自定义遮罩，未纳入 P2-4 点名的三类"
+  next: "UX 清单 18 项已完成；可按需安排弹窗全站统一或新需求"
+
+
 
 
