@@ -245,10 +245,13 @@ async def get_workspace(
             ).scalars().all()
         }
         task_service = RealphotosS1Service(db)
+        failed_statuses = {"FAILED", "PRE_REVIEW_FAILED", "IMAGE_LOCKED"}
         for row in recent_processing:
-            failure = await task_service.failure_detail_payload(
-                tenant_id=tenant_id, task_id=int(row.id)
-            )
+            failure = None
+            if row.failure_class or str(row.status) in failed_statuses:
+                failure = await task_service.failure_detail_payload(
+                    tenant_id=tenant_id, task_id=int(row.id)
+                )
             asset = assets.get(int(row.asset_id))
             snapshot = dict(row.preset_snapshot or {})
             legacy = snapshot.get("legacyParameters") if isinstance(snapshot.get("legacyParameters"), dict) else {}
