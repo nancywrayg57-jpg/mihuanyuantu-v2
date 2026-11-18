@@ -71,6 +71,7 @@ ACCOUNT_LOG_ACTION_ZH = {
     "delete": "删除账号",
     "reset_password": "重置密码",
     "permission": "调整权限",
+    "resource_import": "资源导入",
 }
 ACCOUNT_LOG_RESULT_ZH = {
     "success": "成功",
@@ -1060,6 +1061,14 @@ class RealphotosOpsService:
         from app.capabilities.realphotos.services.gps_write import gps_writability
 
         items: list[dict] = []
+        seen_codes: set[str] = set()
+        seen_keys: set[str] = set()
+
+        def identity(payload: dict) -> str:
+            brand = str(payload.get("brand") or "").strip().lower()
+            model = str(payload.get("model") or "").strip().lower()
+            return f"{brand}|{model}" if brand or model else f"code|{payload.get('code')}"
+
         if INJECT_S1_CATALOG_INTO_ENABLED:
             disabled = {
                 row.code
@@ -1079,7 +1088,12 @@ class RealphotosOpsService:
                 payload["gpsWritable"] = bool(writable["gpsWritable"])
                 payload["gpsWillSkip"] = bool(writable.get("gpsWillSkip"))
                 payload["gpsWritableReason"] = str(writable["gpsWritableReason"] or "")
+                if identity(payload) in seen_keys:
+                    continue
                 items.append(payload)
+                seen_codes.add(str(payload["code"]))
+                seen_keys.add(identity(payload))
+
         extra = (
             await self.db.execute(
                 select(RealphotosDevicePreset).where(
@@ -1089,7 +1103,32 @@ class RealphotosOpsService:
                 )
             )
         ).scalars().all()
-        seen = {item["code"] for item in items}
+        # 2026-11-18 UX audit：按品牌+型号去重；管理员/目录来源优先，其次最新 id。
+        source_priority = {"admin": 0, "catalog": 1, "legacy_import": 2}
+        extra = sorted(
+            extra,
+            key=lambda row: (source_priority.get(str(row.source), 3), -int(row.id)),
+        )
+        codes = [str(row.code) for row in extra if str(row.code) not in seen_codes]
+        snapshots: dict[str, dict[str, Any]] = {}
+        if codes:
+            version_rows = (
+                await self.db.execute(
+                    select(RealphotosPresetVersion)
+                    .where(
+                        RealphotosPresetVersion.preset_code.in_(codes),
+                        RealphotosPresetVersion.deleted_at.is_(None),
+                    )
+                    .order_by(
+                        RealphotosPresetVersion.preset_code.asc(),
+                        RealphotosPresetVersion.version_no.asc(),
+                    )
+                )
+            ).scalars().all()
+            for version in version_rows:
+                if isinstance(version.snapshot, dict):
+                    snapshots[str(version.preset_code)] = dict(version.snapshot)
+
         catalog_codes = {item["code"] for item in S1_ENABLED_PRESETS}
         for row in extra:
             # Skip catalog / Honeybadger placeholders (R1: no demo brand in merchant list).
@@ -1103,9 +1142,21 @@ class RealphotosOpsService:
                 # Historical placeholder code prefixes — hide unless real legacy_import.
                 if str(row.source) != "legacy_import":
                     continue
-            if row.code not in seen:
-                gps_config = await self._latest_gps_config(row.code)
-                items.append(self._preset_dict(row, gps_config=gps_config))
+            if row.code in seen_codes:
+                continue
+            snap = snapshots.get(str(row.code), {})
+            gps_config = dict(snap["gpsConfig"]) if isinstance(snap.get("gpsConfig"), dict) else None
+            legacy = snap.get("legacyParameters") if isinstance(snap.get("legacyParameters"), dict) else {}
+            display_name = str((legacy or {}).get("name") or snap.get("name") or "").strip()
+            payload = self._preset_dict(
+                row, gps_config=gps_config, name=display_name or None
+            )
+            key = identity(payload)
+            if key in seen_keys:
+                continue
+            items.append(payload)
+            seen_codes.add(str(row.code))
+            seen_keys.add(key)
         return items
 
     async def save_preset(

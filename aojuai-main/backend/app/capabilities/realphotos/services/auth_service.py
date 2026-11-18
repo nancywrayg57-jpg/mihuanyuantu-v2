@@ -265,6 +265,8 @@ class RealphotosAuthService:
         guard.failed_count = 0
         guard.locked_until = None
         guard.user_id = int(user.id)
+        # 2026-11-18 UX audit：真实登录必须更新最近活跃；否则用户管理永远显示“从未登录”。
+        user.last_login_at = _utcnow()
         await self.db.flush()
 
         # 确保商家档案存在（客服/管理员也可有档案行，pre_review_frozen 默认 false）

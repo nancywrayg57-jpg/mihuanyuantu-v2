@@ -49,16 +49,21 @@ function accountLabel(item: { ownerAccountId: number; username?: string | null }
   return name ? `${name}（#${item.ownerAccountId}）` : `#${item.ownerAccountId}`
 }
 
-/** 2026-11-18 UX-P1-3：等待时长（未办结算到当前，已办结显示已办结）。 */
+/** 2026-11-18 UX audit：等待/处理时长；已办结显示从创建到办结的实际耗时。 */
 function waitingText(item: Ticket): string {
-  if (item.status !== 'open') return '已办结'
   const start = item.createdAt ? new Date(item.createdAt).getTime() : NaN
   if (!Number.isFinite(start)) return '—'
-  const minutes = Math.max(0, Math.floor((Date.now() - start) / 60000))
-  if (minutes < 60) return `${minutes} 分钟`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours} 小时`
-  return `${Math.floor(hours / 24)} 天`
+  const closed = item.status !== 'open'
+  const end = closed && item.resolvedAt ? new Date(item.resolvedAt).getTime() : Date.now()
+  if (!Number.isFinite(end)) return closed ? '已办结' : '—'
+  const minutes = Math.max(0, Math.floor((end - start) / 60000))
+  const duration =
+    minutes < 60
+      ? `${minutes} 分钟`
+      : Math.floor(minutes / 60) < 24
+        ? `${Math.floor(minutes / 60)} 小时`
+        : `${Math.floor(minutes / 1440)} 天`
+  return closed ? `已办结 · ${duration}` : duration
 }
 
 export default function RealphotosTechDeskPage() {
@@ -506,8 +511,8 @@ export default function RealphotosTechDeskPage() {
                     <td>{item.id}</td>
                     <td>{tenantLabel(item)}</td>
                     <td>{accountLabel(item)}</td>
-                    <td>{ticketTypeLabel(item.ticketType)}</td>
-                    <td>{ticketStatusLabel(item.status)}</td>
+                    <td className="whitespace-nowrap">{ticketTypeLabel(item.ticketType)}</td>
+                    <td className="whitespace-nowrap">{ticketStatusLabel(item.status)}</td>
                     <td className="max-w-md truncate" title={item.reason}>
                       {item.reason}
                     </td>

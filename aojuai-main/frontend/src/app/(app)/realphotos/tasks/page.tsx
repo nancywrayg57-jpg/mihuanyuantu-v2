@@ -386,20 +386,22 @@ export default function RealphotosTasksPage() {
         for (const url of Object.values(prev)) URL.revokeObjectURL(url)
         return {}
       })
-      for (const item of procThumbTargets) {
-        if (cancelled || !item.key) continue
-        try {
-          const blob = await apiFetchBlob(
-            `/api/v1/realphotos/gateway/objects/${item.key.split('/').map(encodeURIComponent).join('/')}`,
-          )
-          if (cancelled) return
-          const url = URL.createObjectURL(blob)
-          created.push(url)
-          setThumbs((prev) => ({ ...prev, [item.id]: url }))
-        } catch {
-          // gateway miss → leave blank cell
-        }
-      }
+      await Promise.all(
+        procThumbTargets.map(async (item) => {
+          if (cancelled || !item.key) return
+          try {
+            const blob = await apiFetchBlob(
+              `/api/v1/realphotos/gateway/objects/${item.key.split('/').map(encodeURIComponent).join('/')}`,
+            )
+            if (cancelled) return
+            const url = URL.createObjectURL(blob)
+            created.push(url)
+            setThumbs((prev) => ({ ...prev, [item.id]: url }))
+          } catch {
+            // gateway miss → placeholder stays
+          }
+        }),
+      )
     }
 
     void loadThumbs()
@@ -814,7 +816,12 @@ export default function RealphotosTasksPage() {
                           <img src={thumbs[item.id]} alt="" className="h-10 w-10 border object-cover" />
                         </button>
                       ) : (
-                        <span className="inline-block h-10 w-10" aria-hidden />
+                        <span
+                          className="inline-flex h-10 w-10 items-center justify-center border text-[10px] text-muted-foreground"
+                          title={item.outputObjectKey ? '缩略图加载中' : '暂无结果'}
+                        >
+                          {item.outputObjectKey ? '加载中' : '—'}
+                        </span>
                       )}
                     </td>
                     <td>{`处理 #${item.taskNo ?? item.id}`}</td>

@@ -443,7 +443,7 @@ export function RealphotosSystemClient() {
 
   return (
     <main className="space-y-6 p-6">
-      <RpPageHeader title="系统管理" />
+      <RpPageHeader title={isAdmin ? '系统管理' : '自动重做设置'} />
       <p className="text-sm">{message}</p>
       <div className="flex flex-wrap gap-2 text-sm">
         <button className={`rp-btn ${tab === 'redo' ? 'bg-muted' : ''}`} type="button" onClick={() => setTab('redo')}>

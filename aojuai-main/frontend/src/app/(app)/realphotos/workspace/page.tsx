@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { RpEmptyState, RpSkeletonRows, RpTableScroll } from '@/components/realphotos/rp-table'
 import { toastTask } from '@/components/realphotos/surface'
+import { useAuth } from '@/hooks/useAuth'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { formatRate } from '@/lib/format-rate'
 import { failureClassLabelForTask, taskStatusLabel, ticketTypeLabel } from '@/lib/realphotos-labels'
@@ -95,6 +96,7 @@ function costCell(cost: number | null | undefined, reason: string | null | undef
 
 export default function RealphotosWorkspacePage() {
   const router = useRouter()
+  const { session } = useAuth()
   const [data, setData] = useState<WorkspacePayload | null>(null)
   const [message, setMessage] = useState('')
   const [thumbs, setThumbs] = useState<Record<string, string>>({})
@@ -117,7 +119,15 @@ export default function RealphotosWorkspacePage() {
     )
   }, [])
 
-  const view = data?.viewKind || (data?.merchantCards ? 'merchant' : 'admin')
+  const roleView = (() => {
+    const roles = new Set(session?.roles || [])
+    if (session?.isSuperuser || roles.has('rp_admin') || roles.has('admin')) return 'admin'
+    if (roles.has('rp_order_support')) return 'order_support'
+    if (roles.has('rp_tech_support')) return 'tech_support'
+    return 'merchant'
+  })()
+  // 2026-11-18 UX audit：首屏按会话角色显示，避免数据未到时短暂出现“平台运营概览”。
+  const view = data?.viewKind || roleView
   // 2026-11-17: 工作台删除搜索框；列表直接展示后端数据。最近历史按 10 条一页。
   const filteredOrders = data?.orderSupportDesk?.items || []
   const filteredTechTickets = data?.techSupportDesk?.items || []

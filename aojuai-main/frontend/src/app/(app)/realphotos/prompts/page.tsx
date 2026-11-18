@@ -17,6 +17,15 @@ type Template = {
 }
 
 const PAGE_SIZE = 10
+const MODE_LABELS: Record<string, string> = {
+  general: '通用',
+  text_to_image: '文生图',
+  image_to_image: '图生图',
+}
+const SCOPE_LABELS: Record<string, string> = {
+  tenant: '租户内',
+  platform: '平台',
+}
 
 export default function RealphotosPromptsPage() {
   const [items, setItems] = useState<Template[]>([])
@@ -128,10 +137,10 @@ export default function RealphotosPromptsPage() {
               pageItems.map((item) => (
                 <tr key={item.id}>
                   <td>{item.name}</td>
-                  <td>{item.mode}</td>
+                  <td>{MODE_LABELS[item.mode] || item.mode}</td>
                   <td className="max-w-xs truncate">{item.positivePrompt}</td>
                   <td className="max-w-xs truncate">{item.negativePrompt || ''}</td>
-                  <td>{item.scope}</td>
+                  <td>{SCOPE_LABELS[item.scope] || item.scope}</td>
                 </tr>
               ))
             )}
@@ -165,7 +174,7 @@ export default function RealphotosPromptsPage() {
             <label className="block text-sm">
               范围
               <select className="rp-input mt-1 block" value={scope} onChange={(event) => setScope(event.target.value)}>
-                <option value="tenant">租户</option>
+                <option value="tenant">租户内</option>
                 <option value="platform">平台</option>
               </select>
             </label>

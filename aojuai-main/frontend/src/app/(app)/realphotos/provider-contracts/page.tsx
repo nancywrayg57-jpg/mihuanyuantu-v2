@@ -204,10 +204,12 @@ export default function RealphotosProviderContractsPage() {
             </tbody>
           </RpTable>
           {capabilityTarget.gapNote ? (
-            <div className="rounded-md border bg-muted/30 p-3 text-xs">
-              <div className="mb-1 font-medium">关键限制 / 缺口</div>
-              {capabilityTarget.gapNote}
-            </div>
+            <details className="rounded-md border bg-muted/30 p-3 text-xs">
+              <summary className="cursor-pointer font-medium">关键限制 / 缺口（技术备注）</summary>
+              <div className="mt-2 max-h-40 overflow-y-auto whitespace-pre-wrap text-muted-foreground">
+                {capabilityTarget.gapNote}
+              </div>
+            </details>
           ) : null}
         </RpDialog>
       ) : null}

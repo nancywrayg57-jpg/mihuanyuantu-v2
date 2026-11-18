@@ -157,7 +157,7 @@ export default function RealphotosApiKeysPage() {
     <main className="space-y-6 p-6">
       <RpPageHeader
         title="业务 API"
-        description="给 ERP / 自建系统签发 image_processing 凭证；明文只在创建或重新生成时显示一次。"
+        description="给 ERP / 自建系统签发业务 API 凭证；明文只在创建或重新生成时显示一次，之后不可再查看。"
       />
       <p className="text-sm text-muted-foreground">{message}</p>
 
@@ -250,7 +250,7 @@ export default function RealphotosApiKeysPage() {
           </RpButton>
         </div>
         <p className="text-xs text-muted-foreground">
-          能力固定为 image_processing：只允许上传资源、读取预设、提交处理、查询任务与下载结果；不能签发/吊销其他 Key，也不能调用生图与提示词接口。
+          该凭证只能调用图片处理相关接口（上传资源、读取预设、提交处理、查询任务、下载结果）；不能签发/吊销其他凭证，也不能调用生图与提示词接口。
         </p>
       </section>
 
@@ -268,14 +268,24 @@ export default function RealphotosApiKeysPage() {
           </RpButton>
         </div>
         <ol className="list-inside list-decimal space-y-1 text-xs text-muted-foreground">
-          <li>请求头带 `X-API-Key: &lt;创建时返回的明文&gt;`。</li>
-          <li>先上传图片到 `POST /api/v1/realphotos/assets`，拿到资源 id。</li>
-          <li>用资源 id + 预设 code 提交批次，再轮询任务详情直到 `DELIVERED`。</li>
-          <li>用 `POST /api/v1/realphotos/processing-tasks/&#123;id&#125;/selected-downloads` 获取下载清单。</li>
+          <li>
+            请求头带 <code className="font-mono">X-API-Key: &lt;创建时返回的明文&gt;</code>。
+          </li>
+          <li>
+            先上传图片到 <code className="font-mono">POST /api/v1/realphotos/assets</code>，拿到资源 id。
+          </li>
+          <li>用资源 id + 预设提交批次，再轮询任务详情，直到处理完成。</li>
+          <li>
+            用{' '}
+            <code className="font-mono">
+              POST /api/v1/realphotos/processing-tasks/&#123;id&#125;/selected-downloads
+            </code>{' '}
+            获取下载清单。
+          </li>
         </ol>
         <pre className="overflow-x-auto rounded-md border bg-muted/30 p-3 text-xs">{example}</pre>
         <p className="text-xs text-muted-foreground">
-          更多字段与响应说明见 OpenAPI 工件；接口版本 {contract?.version || '—'}。
+          更多字段与响应说明见 OpenAPI 工件。
         </p>
       </section>
 
