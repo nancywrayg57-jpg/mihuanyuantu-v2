@@ -1136,6 +1136,10 @@ task_actions_2026_11_18:
   ui:
     copy_label: "按原参数复制"
     reprocess_label: "重新处理"
+  pr: 77
+  squash_commit: 8d4b583
+  build_id: d3vjlWd4J14M-wLf081d5
+  prod_dom_checks: "5 pass / 0 fail"
   evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-UX-P1-2026-11-18.md#6-追加修正2026-11-18-任务操作按钮
   production_billing: false
 
