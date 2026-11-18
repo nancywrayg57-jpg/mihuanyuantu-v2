@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { ListSearch, matchSearchText } from '@/components/realphotos/list-search'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
-import { RpEmptyState, RpSkeletonRows, RpTableScroll } from '@/components/realphotos/rp-table'
+import { RpEmptyState, RpSkeletonRows, RpTableScroll, RpDialog } from '@/components/realphotos/rp-table'
 import { ApiError, apiFetch } from '@/lib/api'
 import { formatDateTimeShort } from '@/lib/realphotos-time'
 
@@ -614,125 +614,78 @@ export default function RealphotosUsersPage() {
       ) : null}
 
       {createOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setCreateOpen(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="创建账号"
+        <RpDialog
+          title={`创建账号 · ${tenantLabel(createOpen)}`}
+          label="创建账号"
+          closeOnBackdrop={false}
+          onClose={() => setCreateOpen(null)}
         >
-          <div
-            className="rp-card w-full max-w-md space-y-3 p-4 text-sm"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="font-medium">创建账号 · {tenantLabel(createOpen)}</h2>
-              <button
-                className="rp-btn rp-btn-sm"
-                type="button"
-                onClick={() => setCreateOpen(null)}
-              >
-                关闭
-              </button>
-            </div>
-            <p className="text-xs text-muted-foreground">租户编号 {createOpen.tenantId}（已锁定，不可改）</p>
-            <input
-              className="rp-input w-full"
-              placeholder="登录名"
-              value={newUsername}
-              onChange={(e) => setNewUsername(e.target.value)}
-            />
-            <input
-              className="rp-input w-full"
-              type="password"
-              placeholder="初始密码"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-            <select className="rp-input w-full" value={newRole} onChange={(e) => setNewRole(e.target.value)}>
-              {ROLE_OPTIONS.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </select>
-            <button
-              className="rp-btn"
-              type="button"
-              onClick={() => void createUser()}
-            >
-              创建
-            </button>
-          </div>
-        </div>
+          <p className="text-xs text-muted-foreground">租户编号 {createOpen.tenantId}（已锁定，不可改）</p>
+          <input
+            className="rp-input w-full"
+            placeholder="登录名"
+            value={newUsername}
+            onChange={(e) => setNewUsername(e.target.value)}
+          />
+          <input
+            className="rp-input w-full"
+            type="password"
+            placeholder="初始密码"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <select className="rp-input w-full" value={newRole} onChange={(e) => setNewRole(e.target.value)}>
+            {ROLE_OPTIONS.map((role) => (
+              <option key={role} value={role}>
+                {role}
+              </option>
+            ))}
+          </select>
+          <button className="rp-btn" type="button" onClick={() => void createUser()}>
+            创建
+          </button>
+        </RpDialog>
       ) : null}
 
       {deleteOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setDeleteOpen(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="删除租户"
+        <RpDialog
+          title={`删除租户 · ${tenantLabel(deleteOpen)}`}
+          label="删除租户"
+          closeOnBackdrop={false}
+          onClose={() => setDeleteOpen(null)}
         >
-          <div
-            className="rp-card w-full max-w-md space-y-3 p-4 text-sm"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="font-medium">删除租户 · {tenantLabel(deleteOpen)}</h2>
-              <button className="rp-btn rp-btn-sm" type="button" onClick={() => setDeleteOpen(null)}>
-                关闭
-              </button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              删除后该租户不再出现在列表中，且无法恢复。仅允许删除没有账号、图片、任务、充值单、工单且余额为零的租户。
-            </p>
-            <input
-              className="rp-input w-full"
-              placeholder="输入租户编码或名称确认"
-              value={tenantConfirm}
-              onChange={(e) => setTenantConfirm(e.target.value)}
-            />
-            <div className="flex justify-end gap-2">
-              <button className="rp-btn rp-btn-sm" type="button" onClick={() => setDeleteOpen(null)}>
-                取消
-              </button>
-              <button
-                className="rp-btn rp-btn-sm rp-btn-danger"
-                type="button"
-                disabled={deleteBusy}
-                onClick={() => void deleteTenantRow()}
-              >
-                {deleteBusy ? '删除中…' : '确认删除'}
-              </button>
-            </div>
+          <p className="text-xs text-muted-foreground">
+            删除后该租户不再出现在列表中，且无法恢复。仅允许删除没有账号、图片、任务、充值单、工单且余额为零的租户。
+          </p>
+          <input
+            className="rp-input w-full"
+            placeholder="输入租户编码或名称确认"
+            value={tenantConfirm}
+            onChange={(e) => setTenantConfirm(e.target.value)}
+          />
+          <div className="flex justify-end gap-2">
+            <button className="rp-btn rp-btn-sm" type="button" onClick={() => setDeleteOpen(null)}>
+              取消
+            </button>
+            <button
+              className="rp-btn rp-btn-sm rp-btn-danger"
+              type="button"
+              disabled={deleteBusy}
+              onClick={() => void deleteTenantRow()}
+            >
+              {deleteBusy ? '删除中…' : '确认删除'}
+            </button>
           </div>
-        </div>
+        </RpDialog>
       ) : null}
 
       {opOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setOpOpen(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="账号操作"
+        <RpDialog
+          title={`操作 · ${tenantLabel(opOpen)}`}
+          label="账号操作"
+          closeOnBackdrop={false}
+          onClose={() => setOpOpen(null)}
         >
-          <div
-            className="rp-card w-full max-w-lg space-y-3 p-4 text-sm"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="font-medium">操作 · {tenantLabel(opOpen)}</h2>
-              <button
-                className="rp-btn rp-btn-sm"
-                type="button"
-                onClick={() => setOpOpen(null)}
-              >
-                关闭
-              </button>
-            </div>
 
             <label className="block space-y-1">
               <span className="text-xs text-muted-foreground">操作类型</span>
@@ -836,8 +789,7 @@ export default function RealphotosUsersPage() {
             >
               提交
             </button>
-          </div>
-        </div>
+        </RpDialog>
       ) : null}
     </main>
   )
