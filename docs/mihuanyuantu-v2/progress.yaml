@@ -1070,10 +1070,13 @@ ux_p0_2026_11_18:
   followup_pr: 71
   followup_commit: b72f8dc
   followup_scope: "积分流水 chainId -> 租户内任务号"
+  docs_pr: 72
+  docs_commit: 3f2e1fb
   build_id: jt29D1SjD50Z04iLb2iw1
   deploy:
     target: "47.242.28.49 / https://exif-demo.honeybadgersoft.com"
-    release_head: b72f8dc
+    release_head: 3f2e1fb
+    runtime_backend: b72f8dc
     units: "realphotos-api active; realphotos-web active"
     health: 200
     db_migration: none

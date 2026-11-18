@@ -2,8 +2,8 @@
 
 - 需求来源：`C:\Users\Administrator\Desktop\蜜獾原图文件\蜜獾原图-UX优化建议-2026-11-17.md`（桌面文档，不入库）
 - 范围：P0-1 ～ P0-5（P1/P2 留待管理员确认后进入下一轮）
-- 代码：PR #70（squash `5abdffe`）+ PR #71（`b72f8dc`，链式流水补任务号）
-- 生产：`https://exif-demo.honeybadgersoft.com` / `/root/蜜獾原图-v2/releases`（`current` 已指向 `b72f8dc`）
+- 代码：PR #70（squash `5abdffe`）+ PR #71（`b72f8dc`，链式流水补任务号）+ PR #72（`3f2e1fb`，本记录）
+- 生产：`https://exif-demo.honeybadgersoft.com` / `/root/蜜獾原图-v2/releases`（`current` 已指向 `3f2e1fb`；运行时后端代码为 `b72f8dc`）
 - 前端 BUILD_ID：`jt29D1SjD50Z04iLb2iw1`（PR #71 仅后端，前端构建沿用）
 - 口径：`production_billing=false`；本轮不改变计费政策，只改展示与操作反馈
 
