@@ -1060,3 +1060,36 @@ next_action:
     s4_tree_matches_main: "d8345ca == dae37a3"
     s4_pushed: "origin/main dae37a3 squash of d8345ca"
     s4_sample: "/tmp/s4-pg-e2e.log S4_PG_E2E_PASS partial_tasks=40,41 two_pass_consumed=20 technical_task=44 detector=fixture sample_is_not_public_pass=true"
+
+ux_p0_2026_11_18:
+  requirement_source: "桌面《蜜獾原图-UX优化建议-2026-11-17.md》（不入库）"
+  scope: [P0-1_preset_readonly, P0-2_business_api_keys, P0-3_batch_credit_confirm, P0-4_ledger_detail_export, P0-5_task_no_prefix]
+  branch: cursor/ux-p0-9973
+  pr: 70
+  squash_commit: 5abdffe
+  followup_pr: 71
+  followup_commit: b72f8dc
+  followup_scope: "积分流水 chainId -> 租户内任务号"
+  build_id: jt29D1SjD50Z04iLb2iw1
+  deploy:
+    target: "47.242.28.49 / https://exif-demo.honeybadgersoft.com"
+    release_head: b72f8dc
+    units: "realphotos-api active; realphotos-web active"
+    health: 200
+    db_migration: none
+  verification:
+    local_ruff: pass
+    local_pytest_ux_p0: "3 passed"
+    local_typecheck: pass
+    local_frontend_test: "16 passed"
+    local_build: pass
+    ci_gate: pass
+    prod_api_dom_checks: "27 pass / 0 fail"
+    evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-UX-P0-2026-11-18.md
+  production_billing: false
+  residuals:
+    - "P1 七项未做"
+    - "P2 六项未做"
+    - "流水时间区间筛选留待列表统一排序迭代"
+  next: "P1+P2 迭代 2，等待管理员确认"
+

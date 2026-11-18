@@ -150,3 +150,13 @@
 - The sidebar used to render every root as a collapsible group header plus children. Rendering only leaf links (no headers/chevron) is what "no second-level menus" means in practice.
 - Lesson: never build a JS template literal through PowerShell string replacement; `${...}` is interpolated away and the build fails with "Unknown regular expression flags". Use the edit tool for code with `${}`.
 - Playwright visual/DOM verification works well here: log in through the API, copy the `aoju_access_token` cookie into the browser context, then assert on `inner_text` and screenshots.
+
+### UX P0 iteration 1 (2026-11-18)
+
+- Scope: P0-1..P0-5 from the desktop UX review; P1/P2 deferred pending admin confirmation. Evidence: `docs/mihuanyuantu-v2/input/REALPHOTOS-UX-P0-2026-11-18.md`; production `b72f8dc`, BUILD_ID `jt29D1SjD50Z04iLb2iw1`, 27/27 API+DOM checks.
+- Preset page is now permission-aware: non-admin gets a read-only list from `GET /presets` (never `GET /device-presets`), and the sidebar filter drops admin-only paths even if a stale `role_menus` grant still exists. The reconciler only adds grants, so front-end filtering is the safe guard.
+- Business keys: list/rotate/revoke live under `/business-api-keys`; plaintext is returned only by create/rotate. Rotation revokes the old row in the same transaction before creating the new one.
+- Ledger: processing batch settlement writes `{chainId}` (not `taskId`), so the API resolves `chainId -> min(task.id)` per tenant before computing tenant task numbers. Without this, consume rows show `—` even though freeze rows show a number.
+- Tenant task numbers: `services/task_numbering.py` is the single source; it uses a window function on PostgreSQL and a Python fallback on SQLite. Dialect checks must go through `infrastructure.database.dialect.get_dialect()` — the portability governance test rejects `settings.IS_SQLITE` in app code.
+- Verification lesson: API assertions alone miss display regressions. The wallet screenshot caught the missing chain task number that the API sample check initially tolerated; always inspect the rendered table, not just a JSON field.
+
