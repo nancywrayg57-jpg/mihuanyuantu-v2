@@ -67,7 +67,7 @@ a:hover{text-decoration:underline}
   <h1>蜜獾原图 v2｜后续产品优化与演进建议</h1>
   <div class="meta">离线文档 · 双击即可打开 · 支持打印 PDF</div>
   <input id="q" type="search" placeholder="过滤目录…" oninput="filterNav(this.value)"/>
-  <nav id="toc"><a class="h2" href="#总览矩阵">总览矩阵</a><a class="h2" href="#P0当前版本高优先级不足">P0｜当前版本高优先级不足</a><a class="h3" href="#P0-1-最终检测依赖临期第三方出口">P0-1 最终检测依赖临期第三方出口</a><a class="h3" href="#P0-2-验收演示账号仍为种子口令">P0-2 验收/演示账号仍为种子口令</a><a class="h2" href="#P1当前版本可改进非阻断">P1｜当前版本可改进（非阻断）</a><a class="h2" href="#P2规模化与商用前准备当前能力边界">P2｜规模化与商用前准备（当前能力边界）</a><a class="h3" href="#P2-1-同机部署的容量与单点上限">P2-1 同机部署的容量与单点上限</a><a class="h2" href="#已关闭2026-11-20-须合入部署双证">已关闭（2026-11-20 · 须合入+部署双证）</a><a class="h2" href="#结语">结语</a></nav>
+  <nav id="toc"><a class="h2" href="#总览矩阵">总览矩阵</a><a class="h2" href="#P0当前版本高优先级不足">P0｜当前版本高优先级不足</a><a class="h3" href="#P0-1-最终检测依赖临期第三方出口">P0-1 最终检测依赖临期第三方出口</a><a class="h3" href="#P0-2-验收演示账号仍为种子口令">P0-2 验收/演示账号仍为种子口令</a><a class="h2" href="#P2规模化与商用前准备当前能力边界">P2｜规模化与商用前准备（当前能力边界）</a><a class="h3" href="#P2-1-同机部署的容量与单点上限">P2-1 同机部署的容量与单点上限</a><a class="h2" href="#结语">结语</a></nav>
   <div class="navlinks">
     <a href="index.html">← 总览门户</a><br/>
     <a href="01_开发会话复盘与成败经验.html">01 复盘</a><br/>
@@ -82,8 +82,6 @@ a:hover{text-decoration:underline}
     <div class="badges"><span class="badge">HEAD f5bc1f8</span><span class="badge">commits 94</span><span class="badge">PRs 87</span><span class="badge amber">production_billing=false</span></div>
   </header>
   <article class="content">
-<blockquote><p>取证基线：<code>origin/main</code> <code>f5bc1f8</code>（2026-11-20）；<code>production_billing=false</code>。  </p></blockquote>
-<blockquote><p>本文件只列<strong>现行仍在的产品缺口</strong>；已由 PROD-GAP-4PACK / 导入页客户化关闭的项见文末「已关闭」。</p></blockquote>
 <h2 id="总览矩阵">总览矩阵</h2>
 <table><thead><tr><th>级别</th><th>主题</th><th>为何仍算「当前不足」</th></tr></thead><tbody>
 <tr><td>P0</td><td>检测外呼临期依赖、种子口令未商用化</td><td>直接影响检测可用性或商用可信</td></tr>
@@ -109,10 +107,6 @@ a:hover{text-decoration:underline}
 <li>- <strong>状态</strong>：未授权开工。</li>
 </ul>
 <hr/>
-<h2 id="P1当前版本可改进非阻断">P1｜当前版本可改进（非阻断）</h2>
-<p>本轮 PROD-GAP-4PACK 已关闭原 P1-1（JSON <code>name</code> 提示）、原 P1-2（排队文案 + 受控并发=2 灰度）、原 P1-3（管理端策略摘要）。  </p>
-<p>若后续要再升 process 并发或做大批次墙钟对比，须<strong>另行授权</strong>，不自动视为本文件必做项。</p>
-<hr/>
 <h2 id="P2规模化与商用前准备当前能力边界">P2｜规模化与商用前准备（当前能力边界）</h2>
 <h3 id="P2-1-同机部署的容量与单点上限">P2-1 同机部署的容量与单点上限</h3>
 <ul>
@@ -121,14 +115,6 @@ a:hover{text-decoration:underline}
 <li>- <strong>收益</strong>：量上来时有明确扩容选项。  </li>
 <li>- <strong>风险与工作量</strong>：高；<strong>单独立项</strong>。</li>
 </ul>
-<hr/>
-<h2 id="已关闭2026-11-20-须合入部署双证">已关闭（2026-11-20 · 须合入+部署双证）</h2>
-<table><thead><tr><th>原编号</th><th>主题</th><th>关闭依据</th></tr></thead><tbody>
-<tr><td>原 P0-2</td><td>资源 URL 导入未正式启用</td><td>W1：导入合同启用 + 对象级验收；#94；生产部署</td></tr>
-<tr><td>原 P1-1</td><td>JSON 导入缺 <code>name</code> 提示</td><td>W2：提示 + 失败明细；#94；#98 客户文案规整</td></tr>
-<tr><td>原 P1-2</td><td>单 worker / 大批次等待不透明</td><td>W3-A 排队预计文案；W3-B 受控并发=2（#95/#96）；统一部署</td></tr>
-<tr><td>原 P1-3</td><td>检测/处理默认策略不直观</td><td>W4：模型合同页只读策略摘要；#94</td></tr>
-</tbody></table>
 <hr/>
 <h2 id="结语">结语</h2>
 <p>现行仍跟踪的产品缺口收敛为：<strong>检测出口临期（R7）</strong>、<strong>种子口令商用化（R6）</strong>，以及单点容量与收费就绪（P2）。已关闭项不得再写成「当前不足」。</p>
