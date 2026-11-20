@@ -1,0 +1,26 @@
+REALPHOTOS-PROD-GAP-4PACK unified deploy · 2026-11-20
+production: https://exif-demo.honeybadgersoft.com
+release_head: b97eb2f (#94 + #95 + #96)
+build_id: wnffbIk32tEY40osET_fX
+production_billing: false
+
+== Git / units ==
+BEFORE: d8870f1
+AFTER: b97eb2f
+units: api/web/process/notify/cleanup = active
+local_health=200 local_web=200 public_health=200
+imports page: build_id_in_html=yes; name-hint present
+
+== W3-B concurrency ==
+REALPHOTOS_PROCESS_CONCURRENCY=2 (backend .env + shared/backend.env)
+process log: worker_started concurrency=2 (2026-11-20T11:42:20Z)
+resolve_concurrency(realphotos_heartbeat)=2
+lease: PROCESS_JOB_LEASE_SECONDS=1800 (from #95)
+rollback: set REALPHOTOS_PROCESS_CONCURRENCY=1 + systemctl restart realphotos-process
+
+== PR chain ==
+#94 PROD-GAP-4PACK W2/W3-A/W4/W1 docs → merged 0a8b1e6
+#95 W3-B concurrency+lease → merged 89f86cf
+#96 run_worker honors REALPHOTOS_PROCESS_CONCURRENCY → merged b97eb2f
+
+marker: PROD_GAP_4PACK_UNIFIED_DEPLOY_PASS=true

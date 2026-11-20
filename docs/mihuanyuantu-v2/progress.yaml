@@ -620,11 +620,12 @@ prod_gap_4pack_2026_11_20:
   w4_strategy_summary: done_merged
   w3a_queue_wait_copy: done_merged
   w3b_multi_worker:
-    status: coding
+    status: deployed
     branch: cursor/prod-gap-w3b-9973
+    prs: ["https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/95", "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/96"]
     admin_auth: "2026-11-20 session: allow W3-B + unified deploy"
     concurrency_default: 1
-    concurrency_gray: 2
+    concurrency_prod: 2
     lease_seconds: 1800
     evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-W3B-e2e-2026-11-20.txt
   w1_url_import_formal:
@@ -633,19 +634,23 @@ prod_gap_4pack_2026_11_20:
     formal_supplier: true
     sample_asset_line: 138
     sample_asset_json: 139
+  deploy:
+    release_head: b97eb2f
+    build_id: wnffbIk32tEY40osET_fX
+    evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-deploy-2026-11-20.txt
+    marker: PROD_GAP_4PACK_UNIFIED_DEPLOY_PASS
   evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-e2e-2026-11-20.txt
   closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-closeout-2026-11-20.md
   production_billing: false
   pass_score_unchanged: true
-  next: "W3-B PR → Owner 非作者合入 → 统一部署 #94+#W3B（concurrency=2）"
+  next: "四包已统一部署；可选抽检大批次墙钟对比。R7/R6 另排。"
 
 next_action:
-  owner: collaborator_w3b_then_owner_merge_deploy
-  action: "W3-B 已授权：实现受控并发（lease 1800 + REALPHOTOS_PROCESS_CONCURRENCY）。合入后统一部署 #94 UI + W3-B concurrency=2。收费 false。"
+  owner: admin_optional_smoke
+  action: "PROD-GAP-4PACK 已统一部署到 b97eb2f（含 W3-B concurrency=2）。可选大批次抽检对比墙钟；R7/R6 不做。收费 false。"
   work_order: "REALPHOTOS-PROD-GAP-4PACK-2026-11-20"
-  branch: cursor/prod-gap-w3b-9973
-  prior_merged_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/94"
-  evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-W3B-e2e-2026-11-20.txt
+  release_head: b97eb2f
+  deploy_evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-deploy-2026-11-20.txt
   production_billing: false
   prior_work_order: "REALPHOTOS-PRELAUNCH-E2E-2026-11-15（#65 merged）；UI polish #64；OPS-DESK-UX-FIX #60；OPS-DESK-UX #59"
   prior_branch: cursor/prelaunch-e2e-9973
