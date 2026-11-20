@@ -67,7 +67,7 @@ a:hover{text-decoration:underline}
   <h1>蜜獾原图 v2｜开发过程复盘与成败经验</h1>
   <div class="meta">离线文档 · 双击即可打开 · 支持打印 PDF</div>
   <input id="q" type="search" placeholder="过滤目录…" oninput="filterNav(this.value)"/>
-  <nav id="toc"><a class="h2" href="#0-取证口径说明">0. 取证口径说明</a><a class="h2" href="#1-九章全景演进表">1. 九章全景演进表</a><a class="h3" href="#第-2-章-S1S2-单张闭环与五层算法">第 2 章 · S1–S2 单张闭环与五层算法</a><a class="h3" href="#第-3-章-S3S4-真检测与按张批次">第 3 章 · S3–S4 真检测与按张批次</a><a class="h3" href="#第-4-章-S5-增长能力">第 4 章 · S5 增长能力</a><a class="h3" href="#第-5-章-S6-运营完备与缺口收口">第 5 章 · S6 运营完备与缺口收口</a><a class="h3" href="#第-6-章-检测质量止血与默认光学参数">第 6 章 · 检测质量止血与默认光学参数</a><a class="h3" href="#第-7-章-上线前端测与-S7-生产部署">第 7 章 · 上线前端测与 S7 生产部署</a><a class="h3" href="#第-8-章-生产后体验安全与预设治理">第 8 章 · 生产后体验、安全与预设治理</a><a class="h2" href="#2-成功经验可固化">2. 成功经验（可固化）</a><a class="h3" href="#21-里程碑端测门禁">2.1 里程碑端测门禁</a><a class="h3" href="#22-积分与批次按张可对账">2.2 积分与批次按张可对账</a><a class="h3" href="#23-先清单后编码小步合入">2.3 先清单后编码、小步合入</a><a class="h3" href="#24-合同权威顺序">2.4 合同权威顺序</a><a class="h2" href="#3-失败教训与返工类型">3. 失败教训与返工类型</a><a class="h3" href="#教训-1环境错位导致的假完成">教训 1：环境错位导致的「假完成」</a><a class="h3" href="#教训-2话术跑赢能力">教训 2：话术跑赢能力</a><a class="h3" href="#教训-3有台无实-不诚实占位">教训 3：有台无实 / 不诚实占位</a><a class="h3" href="#教训-4批次积分若按整批感觉验收必翻车">教训 4：批次积分若按「整批感觉」验收必翻车</a><a class="h3" href="#教训-5生产依赖临期">教训 5：生产依赖临期</a><a class="h3" href="#教训-6显示回归被-API-断言放过">教训 6：显示回归被 API 断言放过</a><a class="h2" href="#4-同类-AI-协同交付避坑清单SOP-摘要">4. 同类 AI 协同交付｜避坑清单（SOP 摘要）</a><a class="h2" href="#5-结语">5. 结语</a></nav>
+  <nav id="toc"><a class="h2" href="#0-取证口径说明">0. 取证口径说明</a><a class="h2" href="#1-九章全景演进表">1. 九章全景演进表</a><a class="h3" href="#第-2-章-S1S2-单张闭环与五层算法">第 2 章 · S1–S2 单张闭环与五层算法</a><a class="h3" href="#第-3-章-S3S4-真检测与按张批次">第 3 章 · S3–S4 真检测与按张批次</a><a class="h3" href="#第-4-章-S5-增长能力">第 4 章 · S5 增长能力</a><a class="h3" href="#第-5-章-S6-运营完备与缺口收口">第 5 章 · S6 运营完备与缺口收口</a><a class="h3" href="#第-6-章-检测质量止血与默认光学参数">第 6 章 · 检测质量止血与默认光学参数</a><a class="h3" href="#第-7-章-上线前端测与-S7-生产部署">第 7 章 · 上线前端测与 S7 生产部署</a><a class="h3" href="#第-8-章-生产后体验安全与预设治理">第 8 章 · 生产后体验、安全与预设治理</a><a class="h3" href="#第-9-章-PROD-GAP-4PACK-与导入页客户化">第 9 章 · PROD-GAP-4PACK 与导入页客户化</a><a class="h2" href="#2-成功经验可固化">2. 成功经验（可固化）</a><a class="h3" href="#21-里程碑端测门禁">2.1 里程碑端测门禁</a><a class="h3" href="#22-积分与批次按张可对账">2.2 积分与批次按张可对账</a><a class="h3" href="#23-先清单后编码小步合入">2.3 先清单后编码、小步合入</a><a class="h3" href="#24-合同权威顺序">2.4 合同权威顺序</a><a class="h2" href="#3-失败教训与返工类型">3. 失败教训与返工类型</a><a class="h3" href="#教训-1环境错位导致的假完成">教训 1：环境错位导致的「假完成」</a><a class="h3" href="#教训-2话术跑赢能力">教训 2：话术跑赢能力</a><a class="h3" href="#教训-3有台无实-不诚实占位">教训 3：有台无实 / 不诚实占位</a><a class="h3" href="#教训-4批次积分若按整批感觉验收必翻车">教训 4：批次积分若按「整批感觉」验收必翻车</a><a class="h3" href="#教训-5生产依赖临期">教训 5：生产依赖临期</a><a class="h3" href="#教训-6显示回归被-API-断言放过">教训 6：显示回归被 API 断言放过</a><a class="h2" href="#4-同类-AI-协同交付避坑清单SOP-摘要">4. 同类 AI 协同交付｜避坑清单（SOP 摘要）</a><a class="h2" href="#5-结语">5. 结语</a></nav>
   <div class="navlinks">
     <a href="index.html">← 总览门户</a><br/>
     <a href="01_开发会话复盘与成败经验.html">01 复盘</a><br/>
@@ -79,15 +79,16 @@ a:hover{text-decoration:underline}
   <header class="hero">
     <p class="eyebrow">开发过程复盘 · 成败经验</p>
     <h1>蜜獾原图 v2｜开发过程复盘与成败经验</h1>
-    <div class="badges"><span class="badge">HEAD b99d5af</span><span class="badge">commits 86</span><span class="badge">PRs 80</span><span class="badge amber">production_billing=false</span></div>
+    <div class="badges"><span class="badge">HEAD f5bc1f8</span><span class="badge">commits 94</span><span class="badge">PRs 87</span><span class="badge amber">production_billing=false</span></div>
   </header>
   <article class="content">
 <h2 id="0-取证口径说明">0. 取证口径说明</h2>
 <table><thead><tr><th>指标</th><th>实测值</th><th>来源</th></tr></thead><tbody>
-<tr><td>Git 提交数（<code>origin/main</code>）</td><td>86</td><td><code>git rev-list --count origin/main</code></td></tr>
-<tr><td>已合入 PR（base=<code>main</code>）</td><td>80</td><td><code>gh pr list --state merged</code></td></tr>
+<tr><td>Git 提交数（<code>origin/main</code>）</td><td>94</td><td><code>git rev-list --count origin/main</code>（HEAD <code>f5bc1f8</code>）</td></tr>
+<tr><td>已合入 PR（base=<code>main</code>）</td><td>87</td><td><code>gh pr list --state merged</code>（含 #92–#98）</td></tr>
 <tr><td>最近 Tag</td><td><code>v2.0.1</code></td><td><code>git tag</code>；指向安全加固相关合入附近</td></tr>
 <tr><td>公网入口</td><td>已切到应用</td><td>生产验证记录 / progress 收口</td></tr>
+<tr><td><code>production_billing</code></td><td>false</td><td>未改；与「部署成功」解耦</td></tr>
 </tbody></table>
 <hr/>
 <h2 id="1-九章全景演进表">1. 九章全景演进表</h2>
@@ -153,6 +154,14 @@ a:hover{text-decoration:underline}
 <tr><td>暴露问题</td><td>只看 API/字段绿会漏显示回归；文案与计费语义易漂移</td></tr>
 <tr><td>解决方式</td><td>以渲染页验收 + 每轮留验证记录；流水任务号等专项返修（如 #71）</td></tr>
 <tr><td>教训</td><td>上线后体验用迭代 + 证据包推进，禁止「感觉差不多」</td></tr>
+</tbody></table>
+<h3 id="第-9-章-PROD-GAP-4PACK-与导入页客户化">第 9 章 · PROD-GAP-4PACK 与导入页客户化</h3>
+<table><thead><tr><th>项</th><th>内容</th></tr></thead><tbody>
+<tr><td>目标</td><td>关闭生产可用缺口四包：正式 URL 导入、JSON <code>name</code> 提示与失败明细、排队等待文案、管理端策略摘要；经授权后灰度 process 并发=2；导入页对商家去掉内部错误码与默认展开示例</td></tr>
+<tr><td>关键证据（PR / Commit / Log）</td><td>#94 <code>0a8b1e6</code>（W1/W2/W3-A/W4）；#95 <code>89f86cf</code> + #96 <code>b97eb2f</code>（W3-B 并发与 worker 接线）；#97 部署证据；#98 <code>f5bc1f8</code>（导入页客户文案/布局）。生产统一部署证据：<code>docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-deploy-2026-11-20.txt</code>；生产 HEAD 曾钉 <code>b97eb2f</code> 再前进至 <code>f5bc1f8</code>；process 日志确认 concurrency=2</td></tr>
+<tr><td>暴露问题</td><td>缺口文档仍写「导入停用 / 缺 name 提示 / 单 worker」时，对外复盘会滞后；内部错误码与示例 JSON 默认展开不适合商家页</td></tr>
+<tr><td>解决方式</td><td>以工单包拆 PR、非作者审合、统一部署后再改复盘口径；商家页默认折叠示例、去掉填写栏 placeholder 与 <code>SERVICE_NOT_CONFIGURED</code> / <code>failed[]</code> 等对客展示</td></tr>
+<tr><td>教训</td><td>「复盘缺口表」必须随已合入 + 已部署事实滚动关闭；未授权项（R7/R6、再升并发）不得写成已完成</td></tr>
 </tbody></table>
 <hr/>
 <h2 id="2-成功经验可固化">2. 成功经验（可固化）</h2>
@@ -229,11 +238,13 @@ a:hover{text-decoration:underline}
 <li>10. <strong>复盘数字以采集 JSON 为准</strong>，不用过期 handoff 口述改数。</li>
 <li>11. <strong>合入纪律抽象化</strong>：PR 进 <code>main</code>、禁止直接推保护分支、关键门禁必过（细节见仓库 <code>AGENTS.md</code>，本文不展开账号争议）。</li>
 <li>12. <strong>密钥与主机信息不进复盘正文</strong>。</li>
+<li>13. <strong>缺口关闭以「合入 + 部署」双证为准</strong>；复盘《03》不得长期保留已交付仍标「当前不足」的条目。</li>
+<li>14. <strong>商家页禁止堆内部错误码/契约字段名</strong>；示例与调试材料默认折叠、按需展开。</li>
 </ol>
 <hr/>
 <h2 id="5-结语">5. 结语</h2>
-<p>蜜獾原图 v2 从合同门禁到 S0–S7 再至生产后 UX，质量来自 <strong>门禁化推进</strong>，而不是单次「感觉做完」。</p>
-<p>（文档对齐 <code>origin/main</code> <code>b99d5af</code>；机器可读映射见 <code>pr_stage_map.json</code>。HTML 版待正文确认后再制。）</p>
+<p>蜜獾原图 v2 从合同门禁到 S0–S7、生产后 UX，再到 PROD-GAP-4PACK，质量来自 <strong>门禁化推进</strong>，而不是单次「感觉做完」。</p>
+<p>（文档对齐 <code>origin/main</code> <code>f5bc1f8</code>；机器可读映射见 <code>pr_stage_map.json</code>。HTML 版待正文确认后再制。）</p>
   </article>
   <p class="footer">由 Markdown 生成 · 证据见 evidence_metrics.json / pr_stage_map.json · 公网 https://exif-demo.honeybadgersoft.com</p>
 </main>
