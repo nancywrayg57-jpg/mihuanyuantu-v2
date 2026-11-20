@@ -1226,6 +1226,36 @@ ux_audit_2026_11_18:
     - "历史 local_upload_* 文件名不可还原"
   next: "P2 收尾、旧版 405 预设已恢复；等待管理员验收"
 
+copy_latch_hotfix_20261120:
+  stage: deployed
+  issue: "商家选择图片/预设提交处理提示“复制任务进行中”"
+  root_cause: >-
+    copy_processing_task 交付时在 task.status 置为 DELIVERED 之前调用
+    _maybe_clear_copy_latch；_maybe_clear_copy_latch 看到任务仍非终态，guard 不释放。
+    lease_until 首版按合同 deferred，导致残留 active guard 永久阻塞账号。
+  observed:
+    guard_id: 1
+    tenant_id: 2
+    owner_account_id: 3
+    batch_id: 75
+    related_task_id: 97
+    related_task_status: DELIVERED
+    note: "task 97 在 E2E 清理中被软删；guard 仍 active"
+  fix:
+    - "guard 释放移动到各终态赋值之后；auto-redo 在 redo 任务入队后再判断"
+    - "reject_if_busy 自愈：batch 无未终态任务（含任务被清理）时释放 stale guard"
+    - "新增 stale guard 回归测试；busy 测试保留真实活跃任务"
+  production_data_repair: "guard #1 state=released, version+1; active_guards=0"
+  code: "27093cb"
+  pr: "#92"
+  build_id: "kQ8hpjwOoTqpjU46b1-7-"
+  checks:
+    backend: "guard 相关 6 项测试通过；ruff 通过"
+    production: "/health=200；active_guards=0"
+  production_billing: false
+  next: "等待商家复测提交；若仍复现，查 guard 是否重新进入 active"
+
+
 
 
 
