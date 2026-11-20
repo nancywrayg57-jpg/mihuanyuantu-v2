@@ -1,6 +1,8 @@
-# 开发机示例 · 非 S7。复制前改路径与 EnvironmentFile。
+# 开发机 / 生产示例。复制前改路径与 EnvironmentFile。
+# W3-B 运维开关：REALPHOTOS_PROCESS_CONCURRENCY=1|2|3|4（默认 1；灰度建议 2）
+# 回滚：改回 1 后 systemctl restart realphotos-process
 [Unit]
-Description=realphotos process worker (AD-001)
+Description=realphotos process worker (AD-001 / W3-B concurrency switch)
 After=network.target postgresql.service
 
 [Service]
@@ -9,6 +11,8 @@ User=hbs
 WorkingDirectory=/home/hbs/hbs-projects/mihuanyuantu-v2/aojuai-main/backend
 EnvironmentFile=-/home/hbs/hbs-projects/mihuanyuantu-v2/aojuai-main/backend/.env
 Environment=AOJ_ENABLED_MODULES=realphotos
+# 生产灰度示例（同机资源有限时勿超过 2–3）：
+# Environment=REALPHOTOS_PROCESS_CONCURRENCY=2
 ExecStart=/home/hbs/hbs-projects/mihuanyuantu-v2/aojuai-main/backend/.venv/bin/python -m scripts.run_realphotos_process_worker
 Restart=on-failure
 RestartSec=3

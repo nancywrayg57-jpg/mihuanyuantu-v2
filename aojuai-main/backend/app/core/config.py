@@ -344,6 +344,9 @@ class Settings(BaseSettings):
     REALPHOTOS_UNIT_COSTS_JSON: str = ""
     # E2E only: force notify outbox deliver to fail for the first N attempts.
     REALPHOTOS_NOTIFY_FORCE_FAIL_UNTIL: str = ""
+    # W3-B：process worker 进程内并发槽位数（1–4）。默认 1 可回滚；生产灰度可设 2。
+    # 多槽依赖 SKIP LOCKED 认领；lease 须覆盖单张处理墙钟（见 job_service.QUEUE_POLICY）。
+    REALPHOTOS_PROCESS_CONCURRENCY: int = 1
     # ALIGN Layer0 img2img. Default "0" skips (same pixels as no img2img).
     # "1" calls the supplier; "auto" stays on only when a generation key exists.
     ALIGN_LAYER0_IMG2IMG: str = "0"

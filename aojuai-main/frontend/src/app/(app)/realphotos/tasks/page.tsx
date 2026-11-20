@@ -55,6 +55,7 @@ type Detection = {
 
 type QueueSummary = {
   aheadCount?: number | null
+  processConcurrency?: number | null
   estimatedWaitMinutesMin?: number | null
   estimatedWaitMinutesMax?: number | null
   processingMode?: string | null
@@ -693,7 +694,7 @@ export default function RealphotosTasksPage() {
       {tab === 'processing' ? (
         <section className="rp-card space-y-3 p-4">
           <p className="text-xs text-muted-foreground" data-testid="queue-wait-copy">
-            {formatQueueWaitCopy(queueSummary?.aheadCount)}
+            {formatQueueWaitCopy(queueSummary?.aheadCount, queueSummary?.processConcurrency)}
           </p>
           {myTickets.length > 0 ? (
             <details className="rp-card p-3 text-sm">
@@ -895,7 +896,10 @@ export default function RealphotosTasksPage() {
                   <dd>{taskStatusLabel(detail.status)}</dd>
                   <dt>队列 / 预计等待</dt>
                   <dd data-testid="task-queue-wait">
-                    {formatQueueWaitCopy(detail.queueSummary?.aheadCount ?? queueSummary?.aheadCount)}
+                    {formatQueueWaitCopy(
+                      detail.queueSummary?.aheadCount ?? queueSummary?.aheadCount,
+                      detail.queueSummary?.processConcurrency ?? queueSummary?.processConcurrency,
+                    )}
                   </dd>
                   <dt>预设名称</dt>
                   <dd>{presetDisplayName(detail)}</dd>

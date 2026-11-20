@@ -75,6 +75,7 @@ export function RealphotosBatchClient() {
   const [presetDetail, setPresetDetail] = useState<Preset | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [processConcurrency, setProcessConcurrency] = useState(1)
   const gatewayPreviewUrls = useRef<Set<string>>(new Set())
 
   useEffect(() => {
@@ -93,6 +94,14 @@ export function RealphotosBatchClient() {
         }
       })
       .catch((error: unknown) => setNotice(error instanceof ApiError ? error.message : '预设加载失败'))
+    void apiFetch<{ queueSummary?: { processConcurrency?: number | null } }>(
+      '/api/v1/realphotos/processing-tasks?page=1&page_size=1',
+    )
+      .then((data) => {
+        const n = Number(data.queueSummary?.processConcurrency || 1)
+        setProcessConcurrency(Number.isFinite(n) && n >= 1 ? Math.min(4, Math.floor(n)) : 1)
+      })
+      .catch(() => setProcessConcurrency(1))
   }, [])
 
   useEffect(() => {
@@ -323,7 +332,7 @@ export function RealphotosBatchClient() {
       )
       window.sessionStorage.setItem('realphotos.s4.batchId', data.batchId)
       if (data.tasks[0]) window.sessionStorage.setItem('realphotos.s1.taskId', data.tasks[0].id)
-      const wait = formatBatchSubmitWaitCopy(data.tasks.length)
+      const wait = formatBatchSubmitWaitCopy(data.tasks.length, processConcurrency)
       const text = `批次 ${data.batchId} 已提交，共 ${data.tasks.length} 张。${wait}到任务详情查看。`
       setNotice(text)
       toastTask(text, true)
@@ -587,7 +596,7 @@ export function RealphotosBatchClient() {
           </dl>
           <p className="text-xs text-muted-foreground">
             提交后按张冻结；检测未通过或处理失败时按规则释放或走申诉，具体以任务详情与积分流水为准。
-            {formatBatchSubmitWaitCopy(library.length)}
+            {formatBatchSubmitWaitCopy(library.length, processConcurrency)}
           </p>
           <div className="flex flex-wrap gap-2">
             <RpButton variant="primary" type="button" disabled={submitting} onClick={() => void submitBatch()}>

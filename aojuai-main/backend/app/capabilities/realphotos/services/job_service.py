@@ -25,9 +25,14 @@ from app.core.config import settings
 from app.core.exceptions import BusinessError, NotFoundError
 from app.core.task_queue import QueuePolicy, claim_one
 
+# W3-B：单张处理墙钟约 1.5–3 分钟，极端可达十余分钟。并发>1 时若 lease 过短，
+# 另一槽会按 at_least_once 回收 running 行导致双消费/重复扣费风险。
+# 首版用长租约覆盖单次执行（不做 heartbeat renew，与 LEASE_TTL_DEFERRED 运维口径一致）。
+PROCESS_JOB_LEASE_SECONDS = 1800
+
 QUEUE_POLICY = QueuePolicy(
     delivery="at_least_once",
-    lease_seconds=60,
+    lease_seconds=PROCESS_JOB_LEASE_SECONDS,
     max_attempts=3,
     retry_backoff_seconds=(2, 5, 10),
     fairness_key=None,
