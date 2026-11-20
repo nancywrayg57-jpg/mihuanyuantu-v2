@@ -213,14 +213,13 @@ def resolve_concurrency(definition: WorkerDefinition) -> int:
 
     configured = parse_concurrency_map(getattr(settings, "AOJ_WORKER_CONCURRENCY", ""))
     value = configured.get(definition.code, definition.default_concurrency)
-    # W3-B：生产兼容入口 `realphotos_heartbeat` / process 角色读专用开关。
+    # W3-B：realphotos process 读专用 env（钳位写在 kernel，避免 GOV-14 反向依赖 capability）。
     if str(definition.module_code or "") == "realphotos" and str(definition.code or "").startswith("realphotos"):
         try:
-            from app.capabilities.realphotos.process_concurrency import clamp_process_concurrency
-
-            value = clamp_process_concurrency(getattr(settings, "REALPHOTOS_PROCESS_CONCURRENCY", None))
-        except Exception:  # noqa: BLE001 - 配置解析失败时回退通用路径
-            pass
+            specialized = int(getattr(settings, "REALPHOTOS_PROCESS_CONCURRENCY", 1) or 1)
+        except (TypeError, ValueError):
+            specialized = 1
+        value = max(1, min(4, specialized))
     return max(1, min(value, definition.max_concurrency))
 
 
