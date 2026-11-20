@@ -1,0 +1,24 @@
+REALPHOTOS-PROD-GAP-4PACK W3-B evidence · 2026-11-20
+baseline_main: 0a8b1e6 (#94 merged)
+branch: cursor/prod-gap-w3b-9973
+admin_auth: explicit W3-B + unified deploy this session
+production_billing: false
+PASS_SCORE: unchanged
+
+== Design ==
+- Multi-slot in one process worker via PollingWorker concurrency
+- Claim: PostgreSQL SKIP LOCKED (existing claim_one); no double consume
+- Lease: PROCESS_JOB_LEASE_SECONDS=1800 (was 60) so concurrent slots cannot reclaim mid-job
+- Switch: REALPHOTOS_PROCESS_CONCURRENCY clamp 1-4; default 1; gray = 2
+- Rollback: set env=1 + restart realphotos-process
+- Credits: unchanged per-image freeze/settle/release paths
+
+== Local tests ==
+frontend pnpm test: 22 passed (incl. W3-B wait copy)
+backend pytest test_process_concurrency + test_queue_summary: 5 passed
+
+== Docs ==
+WORKER_TOPOLOGY.md W3-B section
+deploy-examples/realphotos-process.service concurrency comments
+
+marker: PROD_GAP_4PACK_W3B_PASS=true (code+unit; prod gray after deploy)

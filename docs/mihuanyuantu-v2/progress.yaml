@@ -612,12 +612,21 @@ prod_gap_4pack_2026_11_20:
   work_order_file: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-work-order-2026-11-20.md
   branch: cursor/prod-gap-4pack-9973
   baseline_main: d8870f1
+  merged_main: 0a8b1e6
   tip: b1c8403
   pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/94"
-  w2_json_name_hints: done
-  w4_strategy_summary: done_code
-  w3a_queue_wait_copy: done_code
-  w3b_multi_worker: not_authorized_skipped
+  pr_merged: true
+  w2_json_name_hints: done_merged
+  w4_strategy_summary: done_merged
+  w3a_queue_wait_copy: done_merged
+  w3b_multi_worker:
+    status: coding
+    branch: cursor/prod-gap-w3b-9973
+    admin_auth: "2026-11-20 session: allow W3-B + unified deploy"
+    concurrency_default: 1
+    concurrency_gray: 2
+    lease_seconds: 1800
+    evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-W3B-e2e-2026-11-20.txt
   w1_url_import_formal:
     status: enabled_on_prod
     base_url: "http://47.85.47.252"
@@ -628,19 +637,16 @@ prod_gap_4pack_2026_11_20:
   closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-closeout-2026-11-20.md
   production_billing: false
   pass_score_unchanged: true
-  next: "Owner 非作者审合 PR #94；确认后发布前后端使 W2/W3-A/W4 上生产"
+  next: "W3-B PR → Owner 非作者合入 → 统一部署 #94+#W3B（concurrency=2）"
 
 next_action:
-  owner: owner_merge
-  action: "PROD-GAP-4PACK PR #94 待非作者 Owner squash；管理员确认后再发前后端（W2/W3-A/W4）。W1 生产已启用。W3-B/R7/R6 不做。收费 false。"
+  owner: collaborator_w3b_then_owner_merge_deploy
+  action: "W3-B 已授权：实现受控并发（lease 1800 + REALPHOTOS_PROCESS_CONCURRENCY）。合入后统一部署 #94 UI + W3-B concurrency=2。收费 false。"
   work_order: "REALPHOTOS-PROD-GAP-4PACK-2026-11-20"
-  branch: cursor/prod-gap-4pack-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/94"
-  evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-e2e-2026-11-20.txt
-  closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-closeout-2026-11-20.md
+  branch: cursor/prod-gap-w3b-9973
+  prior_merged_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/94"
+  evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-W3B-e2e-2026-11-20.txt
   production_billing: false
-  prior_work_order: "REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16"
-  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/68"
   prior_work_order: "REALPHOTOS-PRELAUNCH-E2E-2026-11-15（#65 merged）；UI polish #64；OPS-DESK-UX-FIX #60；OPS-DESK-UX #59"
   prior_branch: cursor/prelaunch-e2e-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/65"

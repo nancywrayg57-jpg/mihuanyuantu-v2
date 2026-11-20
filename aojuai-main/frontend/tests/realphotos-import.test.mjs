@@ -6,7 +6,6 @@ import { fileURLToPath } from 'node:url'
 
 /**
  * Mirror of src/lib/realphotos-import.ts for node:test without TS strip loader.
- * Sync gate below fails if the TypeScript source drifts from these contracts.
  */
 
 const IMPORT_JSON_EXAMPLE = `[
@@ -67,24 +66,40 @@ function summarizeImportResult(data) {
   return `已入库 ${imported} 条；失败 ${failed.length}：${reasons}`
 }
 
-function formatQueueWaitCopy(aheadCount) {
+function normalizeConcurrency(raw) {
+  const n = Math.floor(Number(raw))
+  if (!Number.isFinite(n) || n < 1) return 1
+  return Math.min(4, n)
+}
+
+function processingModeLabel(concurrency) {
+  return concurrency > 1 ? `受控并发 ${concurrency} 槽` : '单 worker 顺序处理'
+}
+
+function formatQueueWaitCopy(aheadCount, processConcurrency = 1) {
+  const concurrency = normalizeConcurrency(processConcurrency)
+  const mode = processingModeLabel(concurrency)
   if (aheadCount == null || Number.isNaN(Number(aheadCount))) {
-    return '排队信息暂不可用；当前为单 worker 顺序处理，单张约 1.5–3 分钟。'
+    return `排队信息暂不可用；当前为${mode}，单张约 1.5–3 分钟。`
   }
   const n = Math.max(0, Math.floor(Number(aheadCount)))
   if (n <= 0) {
-    return '当前无排队。提交后按顺序处理，单张约 1.5–3 分钟。'
+    return `当前无排队。提交后按${mode}，单张约 1.5–3 分钟。`
   }
-  const minM = Math.ceil(n * 1.5)
-  const maxM = Math.ceil(n * 3)
-  return `前方约 ${n} 单，预计等待约 ${minM}–${maxM} 分钟（单 worker 顺序处理）。`
+  const waves = Math.ceil(n / concurrency)
+  const minM = Math.ceil(waves * 1.5)
+  const maxM = Math.ceil(waves * 3)
+  return `前方约 ${n} 单，预计等待约 ${minM}–${maxM} 分钟（${mode}）。`
 }
 
-function formatBatchSubmitWaitCopy(imageCount) {
+function formatBatchSubmitWaitCopy(imageCount, processConcurrency = 1) {
+  const concurrency = normalizeConcurrency(processConcurrency)
+  const mode = processingModeLabel(concurrency)
   const n = Math.max(1, Math.floor(Number(imageCount) || 1))
-  const minM = Math.ceil(n * 1.5)
-  const maxM = Math.ceil(n * 3)
-  return `当前为单 worker 顺序处理；本批 ${n} 张预计约 ${minM}–${maxM} 分钟（单张约 1.5–3 分钟）。`
+  const waves = Math.ceil(n / concurrency)
+  const minM = Math.ceil(waves * 1.5)
+  const maxM = Math.ceil(waves * 3)
+  return `当前为${mode}；本批 ${n} 张预计约 ${minM}–${maxM} 分钟（单张约 1.5–3 分钟）。`
 }
 
 const frontendRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -116,6 +131,13 @@ test('W3-A queue wait copy honest empty and estimated range', () => {
   assert.match(formatBatchSubmitWaitCopy(10), /本批 10 张/)
 })
 
+test('W3-B wait copy divides by process concurrency', () => {
+  assert.match(formatQueueWaitCopy(4, 2), /受控并发 2 槽/)
+  assert.match(formatQueueWaitCopy(4, 2), /3–6 分钟/)
+  assert.match(formatBatchSubmitWaitCopy(10, 2), /受控并发 2 槽/)
+  assert.match(formatBatchSubmitWaitCopy(10, 2), /8–15 分钟/)
+})
+
 test('sync gate: TypeScript source still exports W2/W3 helpers', async () => {
   const src = await readFile(path.join(frontendRoot, 'src/lib/realphotos-import.ts'), 'utf8')
   assert.match(src, /export function precheckImportPayload/)
@@ -123,5 +145,6 @@ test('sync gate: TypeScript source still exports W2/W3 helpers', async () => {
   assert.match(src, /export function summarizeImportResult/)
   assert.match(src, /export function formatQueueWaitCopy/)
   assert.match(src, /export function formatBatchSubmitWaitCopy/)
+  assert.match(src, /processConcurrency/)
   assert.match(src, /IMPORT_JSON_EXAMPLE/)
 })

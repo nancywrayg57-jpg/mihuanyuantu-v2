@@ -24,7 +24,8 @@ WORKER = WorkerDefinition(
     poll_interval=1.0,
     queue=QueuePolicy(
         delivery="at_least_once",
-        lease_seconds=60,
+        # 与 job_service.PROCESS_JOB_LEASE_SECONDS 对齐，避免并发槽误回收。
+        lease_seconds=1800,
         max_attempts=3,
         retry_backoff_seconds=(2, 5, 10),
     ),

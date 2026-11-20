@@ -132,7 +132,7 @@ async def _tenant_task_no_map(db, *, tenant_id: int, task_ids: list[int]) -> dic
     return await processing_task_no_map(db, tenant_id=tenant_id, task_ids=task_ids)
 
 
-# W3-A：单 worker 顺序处理的产品可见性口径（与生产实测 1.5–3 分钟/张对齐）。
+# W3-A/B：单张墙钟约 1.5–3 分钟；预计等待按 processConcurrency 分摊。
 _QUEUE_MINUTES_PER_IMAGE_MIN = 1.5
 _QUEUE_MINUTES_PER_IMAGE_MAX = 3.0
 
@@ -140,6 +140,7 @@ _QUEUE_MINUTES_PER_IMAGE_MAX = 3.0
 async def _queue_summary(db) -> dict[str, Any]:
     """全局 queued+running 作业数 → 前方约 N 单 / 预计等待；无数据亦返回诚实字段。"""
     from app.capabilities.realphotos.models import RealphotosExecutionJob
+    from app.capabilities.realphotos.process_concurrency import clamp_process_concurrency
 
     ahead = int(
         await db.scalar(
@@ -152,13 +153,17 @@ async def _queue_summary(db) -> dict[str, Any]:
         )
         or 0
     )
+    concurrency = clamp_process_concurrency()
+    waves = int(math.ceil(ahead / concurrency)) if ahead > 0 else 0
+    mode = "parallel_process_slots" if concurrency > 1 else "sequential_single_worker"
     return {
         "aheadCount": ahead,
-        "estimatedWaitMinutesMin": int(math.ceil(ahead * _QUEUE_MINUTES_PER_IMAGE_MIN)) if ahead > 0 else 0,
-        "estimatedWaitMinutesMax": int(math.ceil(ahead * _QUEUE_MINUTES_PER_IMAGE_MAX)) if ahead > 0 else 0,
+        "processConcurrency": concurrency,
+        "estimatedWaitMinutesMin": int(math.ceil(waves * _QUEUE_MINUTES_PER_IMAGE_MIN)) if waves > 0 else 0,
+        "estimatedWaitMinutesMax": int(math.ceil(waves * _QUEUE_MINUTES_PER_IMAGE_MAX)) if waves > 0 else 0,
         "minutesPerImageMin": _QUEUE_MINUTES_PER_IMAGE_MIN,
         "minutesPerImageMax": _QUEUE_MINUTES_PER_IMAGE_MAX,
-        "processingMode": "sequential_single_worker",
+        "processingMode": mode,
         "available": True,
     }
 
