@@ -560,6 +560,7 @@ class RealphotosS1Service:
                 task.status = TASK_PRE_REVIEW_FAILED
                 task.failure_class = "precheck"
                 await self._release(task, disposition="released_precheck")
+                await self._maybe_clear_copy_latch(task)
             else:
                 await self.jobs.enqueue_process(
                     tenant_id=int(tenant_id),
@@ -836,6 +837,7 @@ class RealphotosS1Service:
         await self._release(task, disposition="released_pre_review_reject")
         task.status = TASK_PRE_REVIEW_FAILED
         task.failure_class = "pre_review"
+        await self._maybe_clear_copy_latch(task)
         await self._notify(task, title="预审未通过", body="内容预审未通过，未扣处理积分。")
         await self.db.flush()
         return task
@@ -885,6 +887,7 @@ class RealphotosS1Service:
             await self._release(task, disposition="released_pre_review_reject")
             task.status = TASK_PRE_REVIEW_FAILED
             task.failure_class = "pre_review"
+            await self._maybe_clear_copy_latch(task)
             await self._notify(task, title="预审未通过", body="占位预审被管理员拒绝，未扣处理积分。")
             await self.db.flush()
             return task
@@ -958,12 +961,14 @@ class RealphotosS1Service:
             report = _report(passed=True, total=90, each=90, reason=None)
             await self._consume(task, disposition="consumed_detection_pass")
             task.status = TASK_DELIVERED
+            await self._maybe_clear_copy_latch(task)
             await self._notify(task, title="处理完成", body="单张处理已交付，已结算 10 积分。")
         else:
             report = _report(passed=False, total=60, each=40, reason="规则替身：未达通过线")
             await self._release(task, disposition="released_detection_not_passed")
             task.status = TASK_FAILED
             task.failure_class = "detection_not_passed"
+            await self._maybe_clear_copy_latch(task)
             await self._notify(task, title="检测未通过", body="有效结果可下载，该张处理费为 0。")
         self.db.add(
             RealphotosDetectionResult(
@@ -1575,16 +1580,19 @@ class RealphotosS1Service:
             else:
                 task.status = TASK_AUTO_REPROCESS_PENDING
             await self._enqueue_redo(task)
+            await self._maybe_clear_copy_latch(task)
             await self.db.flush()
             return task
         if passed_now:
             await self._consume_chain(task, disposition="consumed_detection_pass")
             task.status = TASK_DELIVERED
+            await self._maybe_clear_copy_latch(task)
             await self._notify(task, title="处理完成", body="最终检测通过，已结算 10 积分。")
         else:
             await self._release_chain(task, disposition="released_detection_not_passed")
             task.status = TASK_FAILED
             task.failure_class = "detection_not_passed"
+            await self._maybe_clear_copy_latch(task)
             await self._notify(task, title="检测未通过", body="有效结果可下载，该张处理费为 0。")
         await self.db.flush()
         return task
@@ -1833,7 +1841,6 @@ class RealphotosS1Service:
     async def _release_chain(self, task: RealphotosImageTask, *, disposition: str) -> None:
         if str(getattr(task, "billing_mode", "normal") or "normal") == "copy_no_reserve":
             task.credit_disposition = disposition
-            await self._maybe_clear_copy_latch(task)
             return
         reservation = await self._chain_reservation(task)
         if reservation is None or reservation.state != "reserved":
@@ -1851,7 +1858,6 @@ class RealphotosS1Service:
     async def _release(self, task: RealphotosImageTask, *, disposition: str) -> None:
         if str(getattr(task, "billing_mode", "normal") or "normal") == "copy_no_reserve":
             task.credit_disposition = disposition
-            await self._maybe_clear_copy_latch(task)
             return
         reservation = await self._reservation(task)
         if reservation is None or reservation.state != "reserved":
@@ -1896,7 +1902,6 @@ class RealphotosS1Service:
             allow_during_copy_guard=True,
         )
         task.credit_disposition = disposition
-        await self._maybe_clear_copy_latch(task)
 
     async def _maybe_clear_copy_latch(self, task: RealphotosImageTask) -> None:
         """批次子项全部终态后解除 AD-005 guard（函数名保留兼容调用点）。"""

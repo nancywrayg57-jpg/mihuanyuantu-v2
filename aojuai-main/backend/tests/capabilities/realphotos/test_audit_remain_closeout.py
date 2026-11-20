@@ -8,7 +8,11 @@ import pytest
 from PIL import Image
 from sqlalchemy import select
 
-from app.capabilities.realphotos.models import RealphotosAsset, RealphotosMerchantProfile
+from app.capabilities.realphotos.models import (
+    RealphotosAsset,
+    RealphotosImageTask,
+    RealphotosMerchantProfile,
+)
 from app.capabilities.realphotos.services.bootstrap import bootstrap_s0_accounts
 from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
 from app.capabilities.realphotos.services.s5_growth import RealphotosGrowthService
@@ -134,6 +138,21 @@ async def test_b2_lease_deferred_and_busy_code(db) -> None:
     await guard_svc.force_clear_active(tenant_id=tenant, owner_account_id=user)
     guard = await guard_svc.acquire(tenant_id=tenant, owner_account_id=user, batch_id=42)
     assert guard.lease_until is None
+    # 2026-11-20: guard 现在会在 batch 无未终态任务时自愈；测试必须放入一个真实活跃任务。
+    db.add(
+        RealphotosImageTask(
+            tenant_id=tenant,
+            owner_account_id=user,
+            batch_id=42,
+            chain_id=42,
+            asset_id=1,
+            status="SUBMITTED",
+            preset_code="audit-b2",
+            preset_snapshot={},
+            idempotency_key="audit-b2-active-task",
+        )
+    )
+    await db.flush()
     with pytest.raises(BusinessError) as busy:
         await RealphotosCreditService(db).freeze(
             tenant_id=tenant,

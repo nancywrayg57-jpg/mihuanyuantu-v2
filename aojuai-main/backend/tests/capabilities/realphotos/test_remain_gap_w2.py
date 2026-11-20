@@ -21,7 +21,7 @@ from app.capabilities.realphotos.services.copy_execution_guard import (
 )
 from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
 from app.capabilities.realphotos.services.s1_catalog import S1_ENABLED_PRESETS
-from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
+from app.capabilities.realphotos.services.s1_processing import TASK_DELIVERED, RealphotosS1Service
 from app.capabilities.realphotos.services.s1_recharge import RealphotosRechargeService
 from app.core.exceptions import BusinessError
 
@@ -96,6 +96,50 @@ async def test_r4_second_copy_returns_account_spend_busy(db) -> None:
     assert "COPY_LATCH_ACTIVE" not in {exc.value.code, freeze_exc.value.code}
     assert await db.scalar(select(func.count()).select_from(RealphotosCopyExecutionGuard)) >= 1
     assert await db.scalar(select(func.count()).select_from(RealphotosImageTask)) >= 2
+
+
+@pytest.mark.asyncio
+async def test_r4_stale_guard_releases_when_batch_is_terminal(db) -> None:
+    """2026-11-20 hotfix：交付后 guard 未释放时，下一次提交应自愈而不是永久 ACCOUNT_SPEND_BUSY。"""
+    summary = await bootstrap_s0_accounts(db)
+    tenant = int(summary["rp_merchant_a1"]["tenantId"])
+    user = int(summary["rp_merchant_a1"]["userId"])
+    support = int(summary["rp_order_support"]["userId"])
+    recharge = RealphotosRechargeService(db)
+    order = await recharge.create_order(
+        tenant_id=tenant,
+        requester_user_id=user,
+        tier_yuan=100,
+        voucher_note="stale-guard",
+        idempotency_key="stale-guard-recharge",
+    )
+    await recharge.confirm(order_id=int(order.id), operator_user_id=support)
+    loop = RealphotosS1Service(db)
+    asset = await loop.upload(tenant_id=tenant, owner_account_id=user, data=_jpeg())
+    source = await loop.submit_single(
+        tenant_id=tenant,
+        owner_account_id=user,
+        actor_role_codes={ROLE_MERCHANT},
+        asset_id=int(asset.id),
+        preset_code=S1_ENABLED_PRESETS[0]["code"],
+        idempotency_key="stale-guard-src",
+        detection_mode="gemini",
+    )
+    copied = await loop.copy_processing_task(
+        tenant_id=tenant,
+        owner_account_id=user,
+        source_task_id=int(source.id),
+        idempotency_key="stale-guard-copy",
+        actor_role_codes={ROLE_MERCHANT},
+        detection_mode="gemini",
+    )
+    guard_svc = RealphotosCopyExecutionGuardService(db)
+    assert await guard_svc.get_active(tenant_id=tenant, owner_account_id=user) is not None
+
+    copied.status = TASK_DELIVERED
+    await db.flush()
+    await guard_svc.reject_if_busy(tenant_id=tenant, owner_account_id=user)
+    assert await guard_svc.get_active(tenant_id=tenant, owner_account_id=user) is None
 
 
 def _jpeg() -> bytes:
