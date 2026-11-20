@@ -46,24 +46,23 @@ function precheckImportPayload(raw) {
   return []
 }
 
+function formatFailedBrief(failed, limit = 5) {
+  return failed
+    .slice(0, limit)
+    .map((row) => `#${Number(row.index) + 1} ${row.message}`)
+    .join('；')
+}
+
 function summarizeImportResult(data) {
   if (!data) return '导入失败'
   const imported = Number(data.imported || 0)
   const failed = Array.isArray(data.failed) ? data.failed : []
   if (imported <= 0 && failed.length === 0) return '未导入'
   if (imported <= 0) {
-    const reasons = failed
-      .slice(0, 5)
-      .map((row) => `#${row.index + 1} ${row.code}:${row.message}`)
-      .join('；')
-    return `未导入（失败 ${failed.length}）：${reasons}`
+    return `未导入（失败 ${failed.length}）：${formatFailedBrief(failed)}`
   }
   if (failed.length === 0) return `已入库 ${imported} 条`
-  const reasons = failed
-    .slice(0, 5)
-    .map((row) => `#${row.index + 1} ${row.code}:${row.message}`)
-    .join('；')
-  return `已入库 ${imported} 条；失败 ${failed.length}：${reasons}`
+  return `已入库 ${imported} 条；失败 ${failed.length}：${formatFailedBrief(failed)}`
 }
 
 function normalizeConcurrency(raw) {
@@ -114,14 +113,23 @@ test('W2 precheck accepts example JSON', () => {
   assert.deepEqual(precheckImportPayload(IMPORT_JSON_EXAMPLE), [])
 })
 
-test('W2 summarize surfaces failed[] index/code/message', () => {
+test('W2 summarize surfaces failed[] index/message without internal codes', () => {
   const text = summarizeImportResult({
     imported: 0,
     failed: [{ index: 0, code: 'INPUT_INVALID', message: '缺少 name' }],
   })
   assert.match(text, /缺少 name/)
-  assert.match(text, /INPUT_INVALID/)
   assert.match(text, /#1/)
+  assert.doesNotMatch(text, /INPUT_INVALID/)
+})
+
+test('import page hides JSON example by default and has no textarea placeholder', async () => {
+  const src = await readFile(path.join(frontendRoot, 'src/app/(app)/realphotos/imports/page.tsx'), 'utf8')
+  assert.match(src, /showExample/)
+  assert.match(src, /查看 JSON 示例/)
+  assert.doesNotMatch(src, /placeholder=\{IMPORT_JSON_EXAMPLE\}/)
+  assert.doesNotMatch(src, /SERVICE_NOT_CONFIGURED<\/code>/)
+  assert.doesNotMatch(src, /失败明细（failed\[\]）/)
 })
 
 test('W3-A queue wait copy honest empty and estimated range', () => {
