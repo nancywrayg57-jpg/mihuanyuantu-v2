@@ -208,6 +208,8 @@
 - Preset dedupe lesson: brand+model is too coarse (Nikon D850 has 10 distinct scene/lens variants). The first pass 405 → 131 was reverted on 2026-11-18: all 274 soft-deleted rows restored, and `list_enabled_presets` now dedupes by unique `code` only. Merchant/admin show 405; names come from version snapshots.
 - Single and batch upload send `file.name`; batch endpoint accepts repeated `names`. Historical `local_upload_*` cannot be recovered.
 - E2E cleanup was a one-off soft delete: 3 tickets, 1 template, 3 assets (#123/#126/#127), 5 tasks, tenant #6, plus inbox/outbox/snapshots/reservations. Ledger rows stay for audit. The earlier `assets_e2e=3` query had a false positive: asset #63's object-key hash contains `e2e`.
+- Copy guard hotfix (2026-11-20): `_consume_copy` cleared the latch before `task.status` became `DELIVERED`, so `_maybe_clear_copy_latch` always saw a non-terminal task and the guard never released. Move the clear after every terminal status; for auto-redo call it after the redo task is enqueued. Also reconcile stale guards in `reject_if_busy` when the batch has no non-terminal tasks, otherwise old active rows block the account forever (lease TTL was deferred). Production guard #1/batch 75/task 97 was released manually.
+
 
 
 
