@@ -84,7 +84,12 @@ def main() -> int:
             build_task_source(definition),
             name=definition.code,
             poll_interval=options.poll_interval or definition.poll_interval,
-            concurrency=options.concurrency or resolve_concurrency(definition),
+            # W3-B：realphotos 以 REALPHOTOS_PROCESS_CONCURRENCY 为准；CLI --concurrency 仅作非 realphotos 覆盖。
+            concurrency=(
+                resolve_concurrency(definition)
+                if str(definition.module_code or "") == "realphotos"
+                else (options.concurrency or resolve_concurrency(definition))
+            ),
             max_concurrency=definition.max_concurrency,
             once=options.once,
         )
