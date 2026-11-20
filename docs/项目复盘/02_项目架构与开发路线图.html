@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>蜜獾原图 v2｜项目系统架构全景与开发路线图</title>
+<style>
+:root{
+  --ink:#17202c;--ink-soft:#314052;--muted:#6f7a86;
+  --paper:#f5f3ee;--panel:#fff;--line:#dde3e5;
+  --teal:#1aa89a;--teal-deep:#0e766d;--amber:#f3be5a;--coral:#ee8066;
+  --sidebar:#101924;--sidebar-soft:#1c2a39;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:Inter,"PingFang SC","Microsoft YaHei",sans-serif;
+  --display:"Noto Serif SC","Songti SC",Georgia,serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.65}
+a{color:var(--teal-deep);text-decoration:none}
+a:hover{text-decoration:underline}
+.layout{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;overflow:auto;background:var(--sidebar);color:#e8eef4;padding:20px 16px}
+.sidebar .brand{font-family:var(--display);font-size:1.05rem;color:var(--amber);margin:0 0 4px}
+.sidebar h1{font-size:.95rem;margin:0 0 8px;line-height:1.35;color:#fff;font-weight:600}
+.sidebar .meta{font-size:.72rem;opacity:.8;margin-bottom:12px;color:#b7c4d2}
+.sidebar input{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #2a3a4c;background:var(--sidebar-soft);color:#fff;margin-bottom:12px}
+.sidebar nav a{display:block;color:#c9d6e4;padding:6px 8px;border-radius:8px;font-size:.84rem;margin:2px 0}
+.sidebar nav a:hover{background:#243447;text-decoration:none;color:#fff}
+.sidebar nav a.h2{font-weight:600;color:#fff}
+.sidebar nav a.h3{padding-left:16px;font-size:.78rem;opacity:.9}
+.sidebar .navlinks{margin-top:16px;padding-top:12px;border-top:1px solid #2a3a4c;font-size:.8rem}
+.sidebar .navlinks a{color:var(--amber)}
+.main{padding:28px 36px 64px;max-width:1080px}
+.hero{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin-bottom:22px;box-shadow:0 12px 36px rgba(18,34,51,.06)}
+.hero .eyebrow{color:var(--teal-deep);font-size:.78rem;font-weight:600;letter-spacing:.04em;margin:0 0 6px}
+.hero h1{margin:0 0 8px;font-size:1.65rem;font-family:var(--display);color:var(--ink)}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+.badge{display:inline-flex;padding:4px 10px;border-radius:999px;background:#eef8f6;color:var(--teal-deep);font-size:.76rem;border:1px solid #c9e8e3}
+.badge.amber{background:#fff6e5;color:#8a6a1a;border-color:#f0d9a0}
+.content h2{margin-top:2rem;padding-top:.5rem;border-top:1px solid var(--line);color:var(--ink);font-size:1.28rem;font-family:var(--display)}
+.content h3{color:var(--ink-soft);margin-top:1.35rem;font-size:1.05rem}
+.content p,.content li{font-size:.95rem}
+.content table{width:100%;border-collapse:collapse;margin:12px 0 18px;font-size:.86rem;background:var(--panel)}
+.content th,.content td{border:1px solid var(--line);padding:8px 10px;vertical-align:top;text-align:left}
+.content th{background:#eef6f4;color:var(--teal-deep)}
+.content tr:nth-child(even) td{background:#fafbf9}
+.content code{font-family:var(--mono);font-size:.84em;background:#eef2f4;padding:1px 5px;border-radius:4px}
+.content pre{background:#101924;color:#e7eef7;padding:14px 16px;border-radius:12px;overflow:auto;font-family:var(--mono);font-size:.78rem;line-height:1.5}
+.content blockquote{margin:12px 0;padding:10px 14px;border-left:4px solid var(--teal);background:#f0f7f5;color:var(--muted)}
+.content hr{border:none;border-top:1px solid var(--line);margin:24px 0}
+.content ul{padding-left:1.2rem}
+.arch{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:16px 0}
+.arch svg{width:100%;height:auto;display:block}
+.footer{margin-top:40px;color:var(--muted);font-size:.82rem}
+@media (max-width:960px){.layout{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.main{padding:18px}}
+@media print{
+  body{background:#fff}.sidebar{display:none}.layout{display:block}.main{max-width:none;padding:0}
+  a{color:inherit;text-decoration:none}.content h2{break-before:page}.content h2:first-of-type{break-before:auto}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">蜜獾原图 v2</div>
+  <h1>蜜獾原图 v2｜项目系统架构全景与开发路线图</h1>
+  <div class="meta">离线文档 · 双击即可打开 · 支持打印 PDF</div>
+  <input id="q" type="search" placeholder="过滤目录…" oninput="filterNav(this.value)"/>
+  <nav id="toc"><a class="h2" href="#1-总体系统架构">1. 总体系统架构</a><a class="h3" href="#11-逻辑架构文字同构">1.1 逻辑架构（文字同构）</a><a class="h2" href="#2-核心子系统架构详述">2. 核心子系统架构详述</a><a class="h3" href="#21-前端与角色信息架构">2.1 前端与角色信息架构</a><a class="h3" href="#22-租户RBAC-与积分">2.2 租户、RBAC 与积分</a><a class="h3" href="#23-图片处理五层与检测">2.3 图片处理、五层与检测</a><a class="h3" href="#24-增长能力与对外-API">2.4 增长能力与对外 API</a><a class="h3" href="#25-运营完备S6">2.5 运营完备（S6）</a><a class="h3" href="#26-安全与受控访问">2.6 安全与受控访问</a><a class="h2" href="#3-开发路线图全景Past-Future">3. 开发路线图全景（Past + Future）</a><a class="h3" href="#31-已交付里程碑时间轴对齐已合入-main">3.1 已交付里程碑时间轴（对齐已合入 `main`）</a><a class="h3" href="#32-下一阶段仅合同内">3.2 下一阶段（仅合同内）</a><a class="h2" href="#4-权威与证据索引">4. 权威与证据索引</a></nav>
+  <div class="navlinks">
+    <a href="index.html">← 总览门户</a><br/>
+    <a href="01_开发会话复盘与成败经验.html">01 复盘</a><br/>
+    <a href="02_项目架构与开发路线图.html">02 架构</a><br/>
+    <a href="03_后续优化与演进建议.html">03 演进</a>
+  </div>
+</aside>
+<main class="main">
+  <header class="hero">
+    <p class="eyebrow">架构全景 · 开发路线图</p>
+    <h1>蜜獾原图 v2｜项目系统架构全景与开发路线图</h1>
+    <div class="badges"><span class="badge">HEAD b99d5af</span><span class="badge">commits 86</span><span class="badge">PRs 80</span><span class="badge amber">production_billing=false</span></div>
+  </header>
+  <article class="content">
+<blockquote><p>独立可读摘要。产品行为听 <code>docs/蜜獾原图-v2-PRD-v2.0.md</code>；落地结构听 <code>docs/蜜獾原图-v2-项目架构-v1.0.md</code>；阶段听 <code>docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md</code>。  </p></blockquote>
+<blockquote><p>取证基线：<code>origin/main</code> <code>b99d5af</code>；已合入 PR 80；Tag <code>v2.0.1</code>；公网入口 <code>https://exif-demo.honeybadgersoft.com</code>；<code>production_billing=false</code>（事实）。  </p></blockquote>
+<blockquote><p>指标见 <code>evidence_metrics.json</code>；阶段↔PR 见 <code>pr_stage_map.json</code>。本文不写内网主机/口令/环境变量名。</p></blockquote>
+<h2 id="1-总体系统架构">1. 总体系统架构</h2>
+<h3 id="11-逻辑架构文字同构">1.1 逻辑架构（文字同构）</h3>
+<div class="arch">
+<svg viewBox="0 0 960 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="蜜獾原图系统架构图">
+  <rect width="960" height="460" fill="#f8faf9"/>
+  <rect x="40" y="24" width="880" height="64" rx="14" fill="#101924"/>
+  <text x="480" y="52" text-anchor="middle" fill="#f3be5a" font-size="16" font-family="Segoe UI, Microsoft YaHei, sans-serif">Browser · Next.js / React · realphotos 角色菜单</text>
+  <text x="480" y="74" text-anchor="middle" fill="#9fb0c0" font-size="12" font-family="Segoe UI, Microsoft YaHei, sans-serif">HTTPS · exif-demo.honeybadgersoft.com</text>
+  <rect x="400" y="100" width="160" height="36" rx="10" fill="#1aa89a"/>
+  <text x="480" y="123" text-anchor="middle" fill="#fff" font-size="13" font-family="Segoe UI, Microsoft YaHei, sans-serif">Nginx + TLS</text>
+  <rect x="40" y="154" width="880" height="110" rx="14" fill="#0e766d"/>
+  <text x="480" y="188" text-anchor="middle" fill="#fff" font-size="15" font-family="Segoe UI, Microsoft YaHei, sans-serif">FastAPI · aojuai + capability realphotos</text>
+  <text x="480" y="214" text-anchor="middle" fill="#d7f3ee" font-size="12" font-family="Segoe UI, Microsoft YaHei, sans-serif">会话/RBAC · 积分流水 · 任务批次检测 · 生图 · 业务 API · 受控网关 · 运营台</text>
+  <text x="480" y="238" text-anchor="middle" fill="#d7f3ee" font-size="12" font-family="Segoe UI, Microsoft YaHei, sans-serif">供应商合同（duty）· OpenAPI</text>
+  <rect x="80" y="292" width="360" height="70" rx="12" fill="#17202c"/>
+  <text x="260" y="322" text-anchor="middle" fill="#fff" font-size="14" font-family="Segoe UI, Microsoft YaHei, sans-serif">PostgreSQL</text>
+  <text x="260" y="344" text-anchor="middle" fill="#9fb0c0" font-size="12" font-family="Segoe UI, Microsoft YaHei, sans-serif">任务队列 · 账本 · 业务表</text>
+  <rect x="520" y="292" width="360" height="70" rx="12" fill="#314052"/>
+  <text x="700" y="322" text-anchor="middle" fill="#fff" font-size="14" font-family="Segoe UI, Microsoft YaHei, sans-serif">LocalDisk + 网关</text>
+  <text x="700" y="344" text-anchor="middle" fill="#c9d6e4" font-size="12" font-family="Segoe UI, Microsoft YaHei, sans-serif">upload / phy-export / export · 禁裸路径</text>
+  <rect x="140" y="386" width="680" height="48" rx="12" fill="#1c2a39"/>
+  <text x="480" y="416" text-anchor="middle" fill="#e8eef4" font-size="13" font-family="Segoe UI, Microsoft YaHei, sans-serif">process / notify / cleanup workers · 预审 · 生图 · 文本 · Gemini 检测 · 导入</text>
+</svg>
+</div>
+<pre><code>┌──────────── Browser (Next.js / React realphotos UI) ────────────┐
+│ 商家 / 订单客服 / 技术客服 / 管理员 · 角色裁剪菜单 · 任务/图库/运营台 │
+└────────────────────────── HTTPS ────────────────────────────────┘
+                              │
+                     Nginx + TLS 反向代理
+                              │
+┌──────────── FastAPI (aojuai + capability: realphotos) ──────────┐
+│ 会话登录 / 租户 / RBAC │ 整数积分流水 │ 任务/批次/检测 │ 生图入库     │
+│ 业务 API (X-API-Key)   │ 受控图片网关 │ 运营台 / 预设 / 工单 / 日志   │
+│ 供应商合同（按职责 duty）│ OpenAPI                                     │
+└───────┬───────────────────────────────┬─────────────────────────┘
+        │                               │
+   PostgreSQL 持久库              LocalDisk（受控网关读；禁止裸路径）
+   任务队列 + 账本 + 业务表        upload / phy-export / export …
+        │
+   独立进程：process worker / notify / cleanup
+        │
+   模型适配器（按职责）：预审 · 生图 · 文本优化 · Gemini 检测 · URL 导入 …</code></pre>
+<p><strong>部署形态（已合入事实）</strong>：Linux + systemd 多单元（api / web / process / notify / cleanup）+ Nginx 切流；经济起步同机 PostgreSQL（单点风险已书面接受）。出口可达性依赖受控代理链路（有到期风险，见《01》第 7 章）。</p>
+<p><strong>质量门禁</strong>：GitHub PR → CI gate（密钥扫描 / 后端 / 前端 / 文档）→ 非作者审合；里程碑另需指定环境端测证据。</p>
+<h2 id="2-核心子系统架构详述">2. 核心子系统架构详述</h2>
+<h3 id="21-前端与角色信息架构">2.1 前端与角色信息架构</h3>
+<ul>
+<li>- <strong>技术</strong>：Next.js / React / TypeScript（<code>aojuai-main/frontend</code>），业务页集中在 <code>realphotos/*</code>。  </li>
+<li>- <strong>角色</strong>：商家、订单客服（A 档）、技术客服、平台管理员；菜单按角色裁剪；管理员工作台不套商家四卡（PRD/阶段清单）。  </li>
+<li>- <strong>主路径（商家）</strong>：登录 → 工作台/上传 → 选启用预设 → 单张或批次处理 → 任务详情/下载（过期拒绝）→ 站内消息。  </li>
+<li>- <strong>返工热点（前端）</strong>：任务页、图库、工作台、预设页触碰次数靠前（见 <code>evidence_metrics.json</code> hot files）。</li>
+</ul>
+<h3 id="22-租户RBAC-与积分">2.2 租户、RBAC 与积分</h3>
+<ul>
+<li>- <strong>租户隔离</strong>：同租户账号可共享积分池；跨租户拒绝。  </li>
+<li>- <strong>积分</strong>：整数流水；图片处理提交前按张冻结；检测通过消费、未通过/前置失败释放等路径分列；技术失败可保持 <code>held_until_tech_support</code> 至客服审计（以 PRD/阶段已记录决定为准）。  </li>
+<li>- <strong>生图</strong>：不预冻、成功入库后按张扣（S5）；与处理链路计费语义分离。</li>
+</ul>
+<h3 id="23-图片处理五层与检测">2.3 图片处理、五层与检测</h3>
+<pre><code>上传硬校验 →（预审，S6 真模型路径）→ 入队
+    → L1…L5 五层处理（S2 起非 placeholder）
+    → 最终检测（S1 替身 → S3 真 Gemini）
+    → 可选自动重做 / 主动重处理（合同边界内）
+    → 网关下载 + expires_at</code></pre>
+<ul>
+<li>- <strong>话术铁律</strong>：替身 ≠ 真 Gemini ≠ 对外「检测通过」≠ 收费开放。  </li>
+<li>- <strong>调参章</strong>：止血 / 试点 / 受控默认强度调整必须写清「未默认晋升」边界（《01》第 6 章）。</li>
+</ul>
+<h3 id="24-增长能力与对外-API">2.4 增长能力与对外 API</h3>
+<ul>
+<li>- <strong>生图入库</strong>：可先无真供应商跑通产品形态（#23）。  </li>
+<li>- <strong>URL 导入</strong>：含 API 型供应商配置（#67 等）。  </li>
+<li>- <strong>客户业务 API</strong>：<code>X-API-Key</code> + scope=<code>image_processing</code> + OpenAPI（FR-033，S5）。  </li>
+<li>- <strong>模型通道</strong>：按职责可配置（预审/生图/检测/导入），平台托管；<strong>客户自建上游 Key</strong> 不在现行合同建议范围。</li>
+</ul>
+<h3 id="25-运营完备S6">2.5 运营完备（S6）</h3>
+<ul>
+<li>- 真预审、锁图/冻号、技术客服解冻与申诉。  </li>
+<li>- 用户/租户管理、系统日志（账号变更类）。  </li>
+<li>- 设备预设运营（405 量级导入/启停；处理页只见启用项）。  </li>
+<li>- 管理员运营指标；供应商密钥/合同 UX。</li>
+</ul>
+<h3 id="26-安全与受控访问">2.6 安全与受控访问</h3>
+<ul>
+<li>- 会话登录；验证码/注册路径按合入实现。  </li>
+<li>- 图片经受控网关，响应不暴露裸磁盘路径。  </li>
+<li>- 密钥不入库；CI <code>secret_scan</code>；生产配置权限收敛。  </li>
+<li>- 生产后安全加固合入（#89）与 UX 迭代并行。</li>
+</ul>
+<hr/>
+<h2 id="3-开发路线图全景Past-Future">3. 开发路线图全景（Past + Future）</h2>
+<h3 id="31-已交付里程碑时间轴对齐已合入-main">3.1 已交付里程碑时间轴（对齐已合入 <code>main</code>）</h3>
+<pre><code>2026-10-31～11-03   材料与仓库基线入库
+        ↓
+#2–#17              需求冻结 / PRD·架构 / 协作与 CI 门禁
+        ↓
+#18–#20             S0 会话·RBAC·积分·LocalDisk·PG 队列（S0_E2E_ENV）
+        ↓
+#21                 S1 单张闭环 + S2 五层退出
+        ↓
+#22                 S3 真检测 + S4 按张批次
+        ↓
+#23–#53             S5 增长 + S6 运营 + 缺口/端测收口
+        ↓
+#55–#58             检测止血 → 试点 → 受控调参
+        ↓
+#59–#69             运维台 UX · 预发四角色 · S7 生产部署合入
+        ↓
+#70–#91             生产后 UX P0/P1/P2 · 安全 · 预设治理
+        ↓
+Tag v2.0.1          钉在 #89 附近；main 续有 #90/#91
+公网                 https://exif-demo.honeybadgersoft.com（应用已切流）</code></pre>
+<h3 id="32-下一阶段仅合同内">3.2 下一阶段（仅合同内）</h3>
+<table><thead><tr><th>波次</th><th>主题</th><th>说明</th></tr></thead><tbody>
+<tr><td>近</td><td>运维硬化</td><td>出口代理自有化替换临期第三方；备份/告警规程；种子口令轮换</td></tr>
+<tr><td>近</td><td>质量门禁</td><td>端测分层（冒烟 / 核心域 / 夜间全量）；显示层回归（勿只信 API）</td></tr>
+<tr><td>中</td><td>体验与数据诚实</td><td>预设变体/去重治理巩固；任务/流水/文案语义一致性</td></tr>
+<tr><td>中</td><td>检测与算法</td><td>在「未擅自默认晋升」门禁下继续合同内调参与证据归档</td></tr>
+<tr><td>远</td><td>经济起步升级</td><td>高可用、存储适配器切换等按架构升级路径，<strong>不</strong>把 OSS 必选写成当前必做</td></tr>
+</tbody></table>
+<p><strong>明确不在本路线图宣称的</strong>：生产收费已开放、ZIP 交付、独立 GPS 选择页、生图成功后自动进入相机参数处理、客户自建上游模型 Key、外部发布包装等 PRD 禁止或未授权项。</p>
+<hr/>
+<h2 id="4-权威与证据索引">4. 权威与证据索引</h2>
+<table><thead><tr><th>用途</th><th>路径</th></tr></thead><tbody>
+<tr><td>产品合同</td><td><code>docs/蜜獾原图-v2-PRD-v2.0.md</code></td></tr>
+<tr><td>架构</td><td><code>docs/蜜獾原图-v2-项目架构-v1.0.md</code></td></tr>
+<tr><td>阶段清单</td><td><code>docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md</code></td></tr>
+<tr><td>进度账本</td><td><code>docs/mihuanyuantu-v2/progress.yaml</code></td></tr>
+<tr><td>协作宪法</td><td><code>AGENTS.md</code></td></tr>
+<tr><td>本复盘证据</td><td><code>docs/项目复盘/evidence_metrics.json</code>、<code>pr_stage_map.json</code></td></tr>
+</tbody></table>
+<p>（HTML 版待 Markdown 确认后制作。）</p>
+  </article>
+  <p class="footer">由 Markdown 生成 · 证据见 evidence_metrics.json / pr_stage_map.json · 公网 https://exif-demo.honeybadgersoft.com</p>
+</main>
+</div>
+<script>
+function filterNav(q){
+  q=(q||'').toLowerCase();
+  document.querySelectorAll('#toc a').forEach(a=>{
+    a.style.display=!q||a.textContent.toLowerCase().includes(q)?'block':'none';
+  });
+}
+</script>
+</body>
+</html>

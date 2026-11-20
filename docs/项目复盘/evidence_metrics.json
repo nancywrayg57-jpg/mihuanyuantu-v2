@@ -1,0 +1,110 @@
+{
+  "schema": "mihuanyuantu-v2.evidence_metrics.v1",
+  "collected_at": "2026-11-20T03:45:00Z",
+  "git": {
+    "remote": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2.git",
+    "ref": "origin/main",
+    "head": "b99d5af8fa206ebddc2e93dad62ef5892598b2b5",
+    "head_short": "b99d5af",
+    "commit_count": 86,
+    "first_commit_subject": "chore: upload detector research input materials",
+    "time_window_note": "2026-10-31 → 2026-11-18 (commit dates on origin/main)",
+    "tags": [
+      "v2.0.1"
+    ]
+  },
+  "pull_requests": {
+    "merged_into_main": 80,
+    "number_range": {
+      "first": 2,
+      "last": 91
+    },
+    "missing_numbers_among_range_note": "Gaps (not merged or never opened as mergeable into main) include e.g. 1,5,7,8,26,40,45,47,61,63,66 — verify via GitHub if citing"
+  },
+  "product": {
+    "public_entry": "https://exif-demo.honeybadgersoft.com",
+    "production_billing": false,
+    "stack_keywords": [
+      "FastAPI",
+      "Next.js/pnpm frontend",
+      "PostgreSQL",
+      "LocalDisk gateway",
+      "Gemini detector",
+      "systemd units realphotos-*"
+    ]
+  },
+  "governance_docs": [
+    "AGENTS.md",
+    "docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md",
+    "docs/蜜獾原图-v2-PRD-v2.0.md",
+    "docs/蜜獾原图-v2-项目架构-v1.0.md"
+  ],
+  "honesty_notes": [
+    "checkpoint.md/handoff.md may lag origin/main; metrics prefer live git+gh.",
+    "No host IP or env var names recorded per admin ABD policy.",
+    "HTML not generated in this phase."
+  ],
+  "hot_files_top15": [
+    {
+      "touches": 60,
+      "path": "docs/mihuanyuantu-v2/progress.yaml"
+    },
+    {
+      "touches": 46,
+      "path": "docs/mihuanyuantu-v2/wiki.md"
+    },
+    {
+      "touches": 44,
+      "path": "checkpoint.md"
+    },
+    {
+      "touches": 39,
+      "path": "handoff.md"
+    },
+    {
+      "touches": 24,
+      "path": "aojuai-main/backend/app/capabilities/realphotos/services/s1_processing.py"
+    },
+    {
+      "touches": 23,
+      "path": "aojuai-main/backend/app/capabilities/realphotos/services/s6_ops.py"
+    },
+    {
+      "touches": 23,
+      "path": "aojuai-main/backend/app/capabilities/realphotos/api/s1.py"
+    },
+    {
+      "touches": 20,
+      "path": "aojuai-main/frontend/src/app/(app)/realphotos/tasks/page.tsx"
+    },
+    {
+      "touches": 19,
+      "path": "docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md"
+    },
+    {
+      "touches": 18,
+      "path": "aojuai-main/frontend/src/app/(app)/realphotos/library/page.tsx"
+    },
+    {
+      "touches": 17,
+      "path": "docs/mihuanyuantu-v2/02-delivery.yaml"
+    },
+    {
+      "touches": 17,
+      "path": "aojuai-main/frontend/src/app/(app)/realphotos/workspace/page.tsx"
+    },
+    {
+      "touches": 15,
+      "path": "aojuai-main/frontend/src/app/(app)/realphotos/presets/page.tsx"
+    },
+    {
+      "touches": 14,
+      "path": "aojuai-main/backend/tests/capabilities/realphotos/test_s6_ops.py"
+    },
+    {
+      "touches": 14,
+      "path": "aojuai-main/backend/app/capabilities/realphotos/api/s6.py"
+    }
+  ],
+  "realphotos_api_modules_note": "Route decorators concentrated in capabilities/realphotos/api/{auth,s1,s5,s6,gateway,wallet,contracts,...}; counts are module-level and may drift—re-grep before citing exact totals."
+}

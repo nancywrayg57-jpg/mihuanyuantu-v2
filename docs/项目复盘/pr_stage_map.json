@@ -1,0 +1,758 @@
+{
+  "schema": "mihuanyuantu-v2.pr_stage_map.v1",
+  "baseline": {
+    "repo": "nancywrayg57-jpg/mihuanyuantu-v2",
+    "ref": "origin/main",
+    "head_sha": "b99d5af8fa206ebddc2e93dad62ef5892598b2b5",
+    "head_short": "b99d5af",
+    "commit_count": 86,
+    "merged_pr_count": 80,
+    "tag_nearest": "v2.0.1",
+    "tag_note": "v2.0.1 points at #89; origin/main is 1 commit ahead (#90), plus docs #91",
+    "public_entry": "https://exif-demo.honeybadgersoft.com",
+    "production_billing": false,
+    "collected_at": "2026-11-20T02:20:00Z",
+    "scope_rule": "merged_to_main_only"
+  },
+  "stages": [
+    {
+      "id": "P0",
+      "title_zh": "需求澄清、合同基线与协作门禁",
+      "dev_stage_ids": [
+        "pre-S0"
+      ],
+      "pr_numbers": [
+        2,
+        3,
+        4,
+        6,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "summary": "PRD/架构/DEV_INSTRUCTIONS/AidevOps 与 PR 合入门禁落地"
+    },
+    {
+      "id": "S0",
+      "title_zh": "S0 基础底座（会话/RBAC/积分/LocalDisk/队列）",
+      "dev_stage_ids": [
+        "S0"
+      ],
+      "pr_numbers": [
+        18,
+        19,
+        20
+      ],
+      "summary": "真会话与租户积分流水、存储网关、PostgreSQL 队列与开发机 claim_one 证据"
+    },
+    {
+      "id": "S1S2",
+      "title_zh": "S1–S2 单张闭环与五层算法证据",
+      "dev_stage_ids": [
+        "S1",
+        "S2"
+      ],
+      "pr_numbers": [
+        21,
+        44,
+        54
+      ],
+      "summary": "单张处理闭环退出与真实五层替换占位；后续物理层调参研究合入"
+    },
+    {
+      "id": "S3S4",
+      "title_zh": "S3–S4 真检测与按张批次结算",
+      "dev_stage_ids": [
+        "S3",
+        "S4"
+      ],
+      "pr_numbers": [
+        22
+      ],
+      "summary": "真 Gemini 检测路径与 1–10 张按张冻结/结算"
+    },
+    {
+      "id": "S5",
+      "title_zh": "S5 增长能力（生图入库/导入/业务 API/模型通道）",
+      "dev_stage_ids": [
+        "S5"
+      ],
+      "pr_numbers": [
+        23,
+        28,
+        41,
+        42,
+        43
+      ],
+      "summary": "文生图入库、S5 退出对齐、URL 导入、FR-033 OpenAPI、可配置模型通道"
+    },
+    {
+      "id": "S6",
+      "title_zh": "S6 运营完备与产品缺口收口",
+      "dev_stage_ids": [
+        "S6"
+      ],
+      "pr_numbers": [
+        24,
+        25,
+        27,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        46,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53
+      ],
+      "summary": "运营台、预设 405、阻断级缺口、浏览器端测与残留缺口收口"
+    },
+    {
+      "id": "DET",
+      "title_zh": "检测质量止血与默认光学参数",
+      "dev_stage_ids": [
+        "post-S6-quality"
+      ],
+      "pr_numbers": [
+        55,
+        56,
+        57,
+        58
+      ],
+      "summary": "检测分止血、非 legacy 试点、默认光学强度调整、注册修复"
+    },
+    {
+      "id": "S7",
+      "title_zh": "上线前四角色端测与 S7 生产部署",
+      "dev_stage_ids": [
+        "S7"
+      ],
+      "pr_numbers": [
+        59,
+        60,
+        62,
+        64,
+        65,
+        67,
+        68,
+        69
+      ],
+      "summary": "运维台 UX、预发端测、API 型导入、生产部署合入、任务详情 GPS 展示"
+    },
+    {
+      "id": "POST",
+      "title_zh": "生产后体验、安全与预设治理",
+      "dev_stage_ids": [
+        "post-S7"
+      ],
+      "pr_numbers": [
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91
+      ],
+      "summary": "UX P0/P1/P2、一致性审计、安全加固、405 预设变体恢复"
+    }
+  ],
+  "coverage": {
+    "mapped_pr_count": 80,
+    "unmapped_merged_prs": [],
+    "unknown_prs_in_map": []
+  },
+  "prs": [
+    {
+      "number": 2,
+      "title": "Align first-knife logic architecture after grill-me",
+      "merged_at": "2026-11-04T08:34:16Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/2"
+    },
+    {
+      "number": 3,
+      "title": "Move duty files to repo root; wire DEV_INSTRUCTIONS only",
+      "merged_at": "2026-11-04T08:44:21Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/3"
+    },
+    {
+      "number": 4,
+      "title": "Hang S0/S1 slice triad on DEV_INSTRUCTIONS; autonomous delivery gate",
+      "merged_at": "2026-11-04T09:28:25Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/4"
+    },
+    {
+      "number": 6,
+      "title": "Align plain wording and require milestone E2E before next stage",
+      "merged_at": "2026-11-05T02:21:41Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/6"
+    },
+    {
+      "number": 9,
+      "title": "CI/CD dual-account gates + PRD/arch baseline (FR-033, arch 1.6)",
+      "merged_at": "2026-11-05T04:01:02Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/9"
+    },
+    {
+      "number": 10,
+      "title": "Grill round-2 doc close: PRD 2.10 / arch 1.7 + S0 freeze",
+      "merged_at": "2026-11-05T06:47:59Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/10"
+    },
+    {
+      "number": 11,
+      "title": "Record no-self-merge on; Collaborator must OAuth Cursor themselves",
+      "merged_at": "2026-11-05T08:38:19Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/11"
+    },
+    {
+      "number": 12,
+      "title": "Move CI/CD dual-account conventions into AGENTS.md §7",
+      "merged_at": "2026-11-05T08:35:28Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/12"
+    },
+    {
+      "number": 13,
+      "title": "Sync post-PR#11 doc mirrors: Q7 confirmed, drop stale pending flags",
+      "merged_at": "2026-11-05T08:48:17Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/13"
+    },
+    {
+      "number": 14,
+      "title": "Drop pre-S0 GitHub approval tracking from ops docs",
+      "merged_at": "2026-11-05T09:00:21Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/14"
+    },
+    {
+      "number": 15,
+      "title": "Drop Collaborator Cursor OAuth binding hard-constraint docs",
+      "merged_at": "2026-11-05T09:03:36Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/15"
+    },
+    {
+      "number": 16,
+      "title": "Add legacy drizzle schema snapshot; fix architecture §3.2 links",
+      "merged_at": "2026-11-05T11:50:25Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/16"
+    },
+    {
+      "number": 17,
+      "title": "Point §1.1 bases to in-repo paths; document sibling 生产物料 credentials",
+      "merged_at": "2026-11-05T12:03:31Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/17"
+    },
+    {
+      "number": 18,
+      "title": "S0 foundation: realphotos session/RBAC/credits/LocalDisk/queue (pause before S1)",
+      "merged_at": "2026-11-05T14:05:52Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/18"
+    },
+    {
+      "number": 19,
+      "title": "Record devhost SSH e2e autonomy and PG claim_one runner",
+      "merged_at": "2026-11-05T14:37:31Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/19"
+    },
+    {
+      "number": 20,
+      "title": "Record S0 development-host PostgreSQL claim_one pass",
+      "merged_at": "2026-11-06T03:58:22Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/20"
+    },
+    {
+      "number": 21,
+      "title": "S1 single-image loop and S2 five-layer exit checks",
+      "merged_at": "2026-11-06T07:06:32Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/21"
+    },
+    {
+      "number": 22,
+      "title": "S3 Gemini detection and S4 per-image batch settlement",
+      "merged_at": "2026-11-06T10:32:13Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/22"
+    },
+    {
+      "number": 23,
+      "title": "Store generation without a supplier and limit business keys",
+      "merged_at": "2026-11-06T13:35:09Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/23"
+    },
+    {
+      "number": 24,
+      "title": "S6 ops controls and platform supplier contracts",
+      "merged_at": "2026-11-07T02:08:08Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/24"
+    },
+    {
+      "number": 25,
+      "title": "S6 ops plus IA page and role desk fixes",
+      "merged_at": "2026-11-07T03:27:13Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/25"
+    },
+    {
+      "number": 27,
+      "title": "Close BLOCKING-FIX A–G gaps without opening S7",
+      "merged_at": "2026-11-07T06:30:07Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/27"
+    },
+    {
+      "number": 28,
+      "title": "PARTIAL-ALIGN A–F: honest pre-review, ops metrics, S5 exit",
+      "merged_at": "2026-11-07T07:30:13Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/28"
+    },
+    {
+      "number": 29,
+      "title": "PRODUCT-GAP-A: seed, presets, inbox, MakerNote, browser smoke",
+      "merged_at": "2026-11-07T08:05:28Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/29"
+    },
+    {
+      "number": 30,
+      "title": "PRESET-BULK-IMPORT: clear placeholders and activate all 405",
+      "merged_at": "2026-11-07T08:54:45Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/30"
+    },
+    {
+      "number": 31,
+      "title": "Close ALIGN-GAP-A5BC contract gaps (G1–G8)",
+      "merged_at": "2026-11-07T10:22:21Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/31"
+    },
+    {
+      "number": 32,
+      "title": "BROWSER-E2E-FIX: F1–F8 login, tickets, users, held, rates, demo, system, generation gateway",
+      "merged_at": "2026-11-07T11:16:45Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/32"
+    },
+    {
+      "number": 33,
+      "title": "Fix EXIF write for legacy GPS skips and f/1.4 ApertureValue",
+      "merged_at": "2026-11-07T12:39:55Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/33"
+    },
+    {
+      "number": 34,
+      "title": "Clarify GPS skip reason copy for fixed-without-coords",
+      "merged_at": "2026-11-07T13:58:11Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/34"
+    },
+    {
+      "number": 35,
+      "title": "UX-CN-PRESET: Chinese labels and preset dialog interactions",
+      "merged_at": "2026-11-08T07:04:59Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/35"
+    },
+    {
+      "number": 36,
+      "title": "FIX-TASK-FAILURE-UX: actionable failure reasons (F1–F6)",
+      "merged_at": "2026-11-08T07:25:11Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/36"
+    },
+    {
+      "number": 37,
+      "title": "FIX-FAILURE-RATE-TECH: R1-R6 e2e green (devhost local)",
+      "merged_at": "2026-11-08T08:41:17Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/37"
+    },
+    {
+      "number": 38,
+      "title": "FIX-CLEAR-FIXTURE-DETECT-BATCH-THUMB: merchant gemini-only + batch thumbs (C1/C2)",
+      "merged_at": "2026-11-08T10:33:16Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/38"
+    },
+    {
+      "number": 39,
+      "title": "UX-PRESET-LOGS: preset import retirement, field tabs, localized logs",
+      "merged_at": "2026-11-10T13:51:25Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/39"
+    },
+    {
+      "number": 41,
+      "title": "MODULE-A-GAP: staging URL import, call-time cost, cleanup queue",
+      "merged_at": "2026-11-11T03:16:56Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/41"
+    },
+    {
+      "number": 42,
+      "title": "MODULE-B-CONTRACT: FR-033 OpenAPI archive; size gate unsupported",
+      "merged_at": "2026-11-11T06:55:38Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/42"
+    },
+    {
+      "number": 43,
+      "title": "MODEL-API-CONFIG: configurable model API channels (no polling)",
+      "merged_at": "2026-11-11T07:49:25Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/43"
+    },
+    {
+      "number": 44,
+      "title": "FIVE-LAYER-PHYS-TUNE: s2-five-layer-2 modest L1/L2 (NEUTRAL)",
+      "merged_at": "2026-11-11T08:17:06Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/44"
+    },
+    {
+      "number": 46,
+      "title": "fix(realphotos): product gap G1–G5 (graphic captcha, lock, upload20, outbox, openapi)",
+      "merged_at": "2026-11-11T11:30:30Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/46"
+    },
+    {
+      "number": 48,
+      "title": "fix(realphotos): remain-gap W1+W2 auth, pagination, alembic, copy guard A",
+      "merged_at": "2026-11-11T12:13:55Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/48"
+    },
+    {
+      "number": 49,
+      "title": "fix(realphotos): remain-gap W3/W4 topology, SDK, OSS stub, arch status",
+      "merged_at": "2026-11-11T12:36:10Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/49"
+    },
+    {
+      "number": 50,
+      "title": "fix(realphotos): audit remain closeout FR-002/031 + alembic/guard residual",
+      "merged_at": "2026-11-11T13:15:52Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/50"
+    },
+    {
+      "number": 51,
+      "title": "fix(realphotos): library delete purges object copies + orphan cleanup",
+      "merged_at": "2026-11-13T12:17:06Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/51"
+    },
+    {
+      "number": 52,
+      "title": "feat(realphotos): skip empty preset EXIF + preset UX hardening",
+      "merged_at": "2026-11-13T12:38:44Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/52"
+    },
+    {
+      "number": 53,
+      "title": "feat(realphotos): OPS supplier key UX (multi-key + detection baseline)",
+      "merged_at": "2026-11-14T02:56:42Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/53"
+    },
+    {
+      "number": 54,
+      "title": "feat(realphotos): five-layer legacy align research + task/library UX copy",
+      "merged_at": "2026-11-14T03:54:36Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/54"
+    },
+    {
+      "number": 55,
+      "title": "fix(realphotos): DET-SCORE hemostasis (Layer0/CA off)",
+      "merged_at": "2026-11-14T06:59:52Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/55"
+    },
+    {
+      "number": 56,
+      "title": "feat(realphotos): DET-SCORE NONLEGACY Bayer/PG pilots (no default promote)",
+      "merged_at": "2026-11-14T07:50:16Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/56"
+    },
+    {
+      "number": 57,
+      "title": "feat(realphotos): DEFAULT-OPT optical 0.32→0.24 (gated)",
+      "merged_at": "2026-11-14T09:31:16Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/57"
+    },
+    {
+      "number": 58,
+      "title": "fix(realphotos): restore merchant self-registration with captcha",
+      "merged_at": "2026-11-14T11:01:20Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/58"
+    },
+    {
+      "number": 59,
+      "title": "feat(realphotos): OPS-DESK-UX 工单/租户管理与检测基线文案",
+      "merged_at": "2026-11-15T02:50:08Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/59"
+    },
+    {
+      "number": 60,
+      "title": "fix(realphotos): OPS-DESK 申诉弹窗 / 冻结列表 / 用户管理空页",
+      "merged_at": "2026-11-15T03:19:35Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/60"
+    },
+    {
+      "number": 62,
+      "title": "feat(realphotos): UI formalization + task live refresh",
+      "merged_at": "2026-11-16T02:12:02Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/62"
+    },
+    {
+      "number": 64,
+      "title": "fix(realphotos): trim blurbs, Chinese ledger types, hide admin tabs",
+      "merged_at": "2026-11-16T03:08:29Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/64"
+    },
+    {
+      "number": 65,
+      "title": "docs(realphotos): prelaunch four-role e2e + §11 closeout",
+      "merged_at": "2026-11-16T03:32:01Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/65"
+    },
+    {
+      "number": 67,
+      "title": "feat(realphotos): API-type URL import supplier",
+      "merged_at": "2026-11-16T05:26:27Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/67"
+    },
+    {
+      "number": 68,
+      "title": "feat(realphotos): S7 production deploy + S7 checklist + P0 build fixes (detection blocked)",
+      "merged_at": "2026-11-17T13:33:39Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/68"
+    },
+    {
+      "number": 69,
+      "title": "feat(realphotos): show actual GPS location, coordinates and altitude in task detail",
+      "merged_at": "2026-11-17T15:34:32Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/69"
+    },
+    {
+      "number": 70,
+      "title": "feat(realphotos): UX P0 迭代1 — 预设只读 / 业务凭证 / 扣费确认 / 流水对账 / 任务编号",
+      "merged_at": "2026-11-18T03:27:56Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/70"
+    },
+    {
+      "number": 71,
+      "title": "fix(realphotos): 积分流水按 chainId 回溯任务号",
+      "merged_at": "2026-11-18T03:37:59Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/71"
+    },
+    {
+      "number": 72,
+      "title": "docs(realphotos): UX P0 迭代1 验收与生产验证记录",
+      "merged_at": "2026-11-18T03:41:38Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/72"
+    },
+    {
+      "number": 73,
+      "title": "docs(realphotos): 对齐 UX P0 记录的最终 main 与生产 HEAD",
+      "merged_at": "2026-11-18T03:43:45Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/73"
+    },
+    {
+      "number": 74,
+      "title": "feat(realphotos): UX P1 迭代2 — 列表/工单/租户/消息/生图/工作台",
+      "merged_at": "2026-11-18T07:08:27Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/74"
+    },
+    {
+      "number": 75,
+      "title": "fix(realphotos): 消息中心图片被清理时回退显示资源编号",
+      "merged_at": "2026-11-18T07:17:33Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/75"
+    },
+    {
+      "number": 76,
+      "title": "docs(realphotos): UX P1 迭代2 验收与生产验证记录",
+      "merged_at": "2026-11-18T07:21:30Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/76"
+    },
+    {
+      "number": 77,
+      "title": "fix(realphotos): 任务操作文案 — 复制不扣分改为按原参数复制，重处理改为重新处理",
+      "merged_at": "2026-11-18T07:36:13Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/77"
+    },
+    {
+      "number": 78,
+      "title": "docs(realphotos): 任务操作复制/重新处理判断与生产记录",
+      "merged_at": "2026-11-18T07:40:32Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/78"
+    },
+    {
+      "number": 79,
+      "title": "feat(realphotos): UX P2 六项 — 移动表格/空态/合同表/弹窗可访问性/加载反馈/帮助入口",
+      "merged_at": "2026-11-18T07:55:14Z",
+      "author_login": "nancywrayg57-jpg",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/79"
+    },
+    {
+      "number": 80,
+      "title": "fix(realphotos): 模型合同表格适配宽度，缺口列不再被挤出",
+      "merged_at": "2026-11-18T07:59:58Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/80"
+    },
+    {
+      "number": 81,
+      "title": "docs(realphotos): UX P2 验收与生产验证记录",
+      "merged_at": "2026-11-18T08:04:58Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/81"
+    },
+    {
+      "number": 82,
+      "title": "docs(realphotos): UX/数据一致性审计指令与 U2 审计报告",
+      "merged_at": "2026-11-18T08:27:46Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/82"
+    },
+    {
+      "number": 83,
+      "title": "fix(realphotos): UX 审计 U3–U6 — 移除演示页/身份清理/预设去重/原文件名",
+      "merged_at": "2026-11-18T08:56:15Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/83"
+    },
+    {
+      "number": 84,
+      "title": "fix(realphotos): topbar duplicate role label",
+      "merged_at": "2026-11-18T09:10:33Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/84"
+    },
+    {
+      "number": 85,
+      "title": "docs(realphotos): UX audit U3-U6 closeout",
+      "merged_at": "2026-11-18T09:14:18Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/85"
+    },
+    {
+      "number": 86,
+      "title": "docs(realphotos): global preset dedupe closeout",
+      "merged_at": "2026-11-18T09:18:30Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/86"
+    },
+    {
+      "number": 87,
+      "title": "fix(realphotos): P2 closeout — RpDialog for user dialogs, compact log identities",
+      "merged_at": "2026-11-18T09:39:21Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/87"
+    },
+    {
+      "number": 88,
+      "title": "docs(realphotos): UX P2 closeout",
+      "merged_at": "2026-11-18T09:43:50Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/88"
+    },
+    {
+      "number": 89,
+      "title": "fix(security): harden auth, access control, and regression gates",
+      "merged_at": "2026-11-18T12:13:09Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/89"
+    },
+    {
+      "number": 90,
+      "title": "fix(realphotos): restore all 405 legacy preset variants",
+      "merged_at": "2026-11-18T12:38:05Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/90"
+    },
+    {
+      "number": 91,
+      "title": "docs(realphotos): 405 preset restore record",
+      "merged_at": "2026-11-18T12:41:41Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/91"
+    }
+  ]
+}

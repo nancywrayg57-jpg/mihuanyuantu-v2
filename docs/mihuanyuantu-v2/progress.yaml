@@ -607,16 +607,37 @@ known_conflicts:
     status: recorded
     detail: "前置校验用库内资产的软删、不属于提交账号或入库字节再次 inspect 失败，发生在按张冻结之后。PostgreSQL 部分成功的可下载张使用 detection_mode=pass，detector=fixture，任务 40 消费 10、任务 41 释放 10。这不是新的 Gemini 小样，也不代替任务 29。SQLite 单测没有代替 /tmp/s4-pg-e2e.log。"
 
-next_action:
-  owner: owner_merge
-  action: "S7 已部署并通过四角色 + 三岗供应商生产端测（REALPHOTOS_S7_PROD_E2E_PASS）。下一步：Owner 以非作者账号审合 PR #68（禁自评自合），通过后打 v2.M.P；并在 2026-12-06 前把第三方订阅出口代理替换为自有 SG/JP 代理（R7）。收费保持 false。"
-  work_order: "REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16"
-  branch: cursor/s7-prod-deploy-9973
-  pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/68"
-  blocker: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16-blocker.md
-  closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16.md
-  production_entry: serving_application
+prod_gap_4pack_2026_11_20:
+  work_order: REALPHOTOS-PROD-GAP-4PACK-2026-11-20
+  work_order_file: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-work-order-2026-11-20.md
+  branch: cursor/prod-gap-4pack-9973
+  baseline_main: d8870f1
+  w2_json_name_hints: done
+  w4_strategy_summary: done_code
+  w3a_queue_wait_copy: done_code
+  w3b_multi_worker: not_authorized_skipped
+  w1_url_import_formal:
+    status: enabled_on_prod
+    base_url: "http://47.85.47.252"
+    formal_supplier: true
+    sample_asset_line: 138
+    sample_asset_json: 139
+  evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-e2e-2026-11-20.txt
+  closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-closeout-2026-11-20.md
   production_billing: false
+  pass_score_unchanged: true
+  next: "Owner 非作者审合 PR；确认后发布前后端使 W2/W3-A/W4 上生产"
+
+next_action:
+  owner: collaborator_pr_then_owner_merge
+  action: "PROD-GAP-4PACK：W1 生产已启用并通过对象级导入；W2/W3-A/W4 代码在 cursor/prod-gap-4pack-9973。下一步：推 PR 待非作者 Owner squash；管理员确认后再发前后端。W3-B/R7/R6 不做。收费 false。"
+  work_order: "REALPHOTOS-PROD-GAP-4PACK-2026-11-20"
+  branch: cursor/prod-gap-4pack-9973
+  evidence: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-e2e-2026-11-20.txt
+  closeout: docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-closeout-2026-11-20.md
+  production_billing: false
+  prior_work_order: "REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16"
+  prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/68"
   prior_work_order: "REALPHOTOS-PRELAUNCH-E2E-2026-11-15（#65 merged）；UI polish #64；OPS-DESK-UX-FIX #60；OPS-DESK-UX #59"
   prior_branch: cursor/prelaunch-e2e-9973
   prior_pr: "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/65"

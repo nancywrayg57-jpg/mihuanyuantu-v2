@@ -79,6 +79,13 @@ export function HelpMenu() {
               </p>
             </section>
             <section>
+              <h3 className="font-medium">大批次要等多久？</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                当前为单 worker 顺序处理：单张约 1.5–3 分钟。任务详情会显示「前方约 N 单 / 预计等待」；无排队时会诚实提示当前空闲。
+                50 张量级仍可能接近约 70 分钟墙钟时间，属预期而非故障。
+              </p>
+            </section>
+            <section>
               <h3 className="font-medium">下载与保留期</h3>
               <p className="mt-1 text-xs text-muted-foreground">
                 结果经资源网关下载，不生成 ZIP；消息保留 30 天，结果文件请在保留期内保存。
