@@ -3,15 +3,15 @@
   "baseline": {
     "repo": "nancywrayg57-jpg/mihuanyuantu-v2",
     "ref": "origin/main",
-    "head_sha": "b99d5af8fa206ebddc2e93dad62ef5892598b2b5",
-    "head_short": "b99d5af",
-    "commit_count": 86,
-    "merged_pr_count": 80,
+    "head_sha": "f5bc1f8063a639f300133cca723b78110e3a93b4",
+    "head_short": "f5bc1f8",
+    "commit_count": 94,
+    "merged_pr_count": 87,
     "tag_nearest": "v2.0.1",
-    "tag_note": "v2.0.1 points at #89; origin/main is 1 commit ahead (#90), plus docs #91",
+    "tag_note": "v2.0.1 points at #89; origin/main advanced through #92–#98 (PROD-GAP-4PACK + import UI)",
     "public_entry": "https://exif-demo.honeybadgersoft.com",
     "production_billing": false,
-    "collected_at": "2026-11-20T02:20:00Z",
+    "collected_at": "2026-11-20T12:15:00Z",
     "scope_rule": "merged_to_main_only"
   },
   "stages": [
@@ -186,10 +186,27 @@
         91
       ],
       "summary": "UX P0/P1/P2、一致性审计、安全加固、405 预设变体恢复"
+    },
+    {
+      "id": "PRODGAP",
+      "title_zh": "PROD-GAP-4PACK 与导入页客户化",
+      "dev_stage_ids": [
+        "post-S7-gap"
+      ],
+      "pr_numbers": [
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98
+      ],
+      "summary": "复制锁修复；URL 导入正式启用；JSON 提示与失败明细；排队文案；策略摘要；受控并发=2；导入页客户文案"
     }
   ],
   "coverage": {
-    "mapped_pr_count": 80,
+    "mapped_pr_count": 87,
     "unmapped_merged_prs": [],
     "unknown_prs_in_map": []
   },
@@ -753,6 +770,55 @@
       "merged_at": "2026-11-18T12:41:41Z",
       "author_login": "xtzhou247",
       "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/91"
+    },
+    {
+      "number": 92,
+      "title": "fix(realphotos): release stale copy guard blocking processing",
+      "merged_at": "2026-11-20T07:00:04Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/92"
+    },
+    {
+      "number": 93,
+      "title": "docs(realphotos): copy latch hotfix record",
+      "merged_at": "2026-11-20T07:09:45Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/93"
+    },
+    {
+      "number": 94,
+      "title": "feat(realphotos): PROD-GAP-4PACK JSON hints, queue wait, strategy summary, URL import",
+      "merged_at": "2026-11-20T11:07:07Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/94"
+    },
+    {
+      "number": 95,
+      "title": "feat(realphotos): W3-B controlled process concurrency",
+      "merged_at": "2026-11-20T11:21:05Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/95"
+    },
+    {
+      "number": 96,
+      "title": "fix(realphotos): wire W3-B concurrency into production run_worker",
+      "merged_at": "2026-11-20T11:40:41Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/96"
+    },
+    {
+      "number": 97,
+      "title": "docs(realphotos): record PROD-GAP-4PACK unified deploy",
+      "merged_at": "2026-11-20T11:44:46Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/97"
+    },
+    {
+      "number": 98,
+      "title": "fix(realphotos): customerize URL import page copy and layout",
+      "merged_at": "2026-11-20T12:05:05Z",
+      "author_login": "xtzhou247",
+      "url": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2/pull/98"
     }
   ]
 }
