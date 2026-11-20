@@ -11,6 +11,7 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.capabilities.realphotos.models import RealphotosImageTask
 from app.capabilities.realphotos.models.copy_guard import RealphotosCopyExecutionGuard
 from app.core.exceptions import BusinessError
 
@@ -19,6 +20,7 @@ COPY_BUSY_MESSAGE = "复制任务进行中，请稍后再试"
 GUARD_STATE_ACTIVE = "active"
 GUARD_STATE_RELEASED = "released"
 LEASE_TTL_DEFERRED = True
+TERMINAL_TASK_STATUSES = {"DELIVERED", "FAILED", "PRE_REVIEW_FAILED"}
 
 
 class RealphotosCopyExecutionGuardService:
@@ -43,6 +45,9 @@ class RealphotosCopyExecutionGuardService:
         guard = await self.get_active(tenant_id=tenant_id, owner_account_id=owner_account_id)
         if guard is None:
             return
+        # 2026-11-20 hotfix：batch 已无未终态任务（含任务被清理）时，旧 guard 不应永久阻塞账号。
+        if await self._release_if_stale(guard):
+            return
         raise BusinessError(
             message=COPY_BUSY_MESSAGE,
             code=ACCOUNT_SPEND_BUSY,
@@ -51,6 +56,22 @@ class RealphotosCopyExecutionGuardService:
                 "guardEpoch": int(guard.guard_epoch),
             },
         )
+
+    async def _release_if_stale(self, guard: RealphotosCopyExecutionGuard) -> bool:
+        statuses = (
+            await self.db.execute(
+                select(RealphotosImageTask.status).where(
+                    RealphotosImageTask.batch_id == int(guard.batch_id),
+                    RealphotosImageTask.deleted_at.is_(None),
+                )
+            )
+        ).scalars().all()
+        if statuses and any(str(status) not in TERMINAL_TASK_STATUSES for status in statuses):
+            return False
+        guard.state = GUARD_STATE_RELEASED
+        guard.version = int(guard.version or 1) + 1
+        await self.db.flush()
+        return True
 
     async def acquire(
         self, *, tenant_id: int, owner_account_id: int, batch_id: int
