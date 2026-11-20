@@ -19,6 +19,7 @@ export default function RealphotosImportsPage() {
   const [fileName, setFileName] = useState('')
   const [frozen, setFrozen] = useState(false)
   const [search, setSearch] = useState('')
+  const [showExample, setShowExample] = useState(false)
 
   useEffect(() => {
     void apiFetch<{ preReviewFrozen?: boolean }>('/api/v1/realphotos/me')
@@ -36,11 +37,11 @@ export default function RealphotosImportsPage() {
     if (error instanceof ApiError) {
       const code = String(error.code || '')
       if (code === 'SERVICE_NOT_CONFIGURED') {
-        setMessage(`导入服务未配置或未启用：${error.message}`)
+        setMessage('导入服务暂不可用，请稍后重试或联系管理员')
         return
       }
       if (code === 'INPUT_INVALID') {
-        setMessage(`条目不合法：${error.message}`)
+        setMessage(error.message ? `条目不合法：${error.message}` : '条目不合法，请检查后重试')
         return
       }
       setMessage(error.message || '导入失败')
@@ -129,59 +130,61 @@ export default function RealphotosImportsPage() {
     }
   }
 
+  const hitCount = search.trim()
+    ? payload.split(/\r?\n/).filter((line) => line.toLowerCase().includes(search.trim().toLowerCase())).length
+    : 0
+
   return (
-    <main className="space-y-6 p-6">
-      <h1 className="text-xl font-medium">URL 导入</h1>
+    <main className="mx-auto max-w-3xl space-y-6 p-6">
+      <header className="space-y-1">
+        <h1 className="text-xl font-medium">URL 导入</h1>
+        <p className="text-sm text-muted-foreground">
+          支持粘贴每行一个图片地址，或粘贴 / 上传 JSON 数组。JSON 每条需包含名称（name）与图片地址（url）。
+        </p>
+      </header>
+
       {frozen ? (
         <p className="text-sm text-amber-800">账号已因预审冻结：导入入口已禁用。</p>
       ) : null}
-      <p className="text-sm text-muted-foreground">
-        URL/JSON 导入已正式可用。失败时请区分：
-        <code className="font-mono">SERVICE_NOT_CONFIGURED</code>（未配置/未启用）、供应商拉取错误、条目非法（如缺少{' '}
-        <code className="font-mono">name</code>）。仍受供应商可用性约束。
-      </p>
+
       {message ? <p className="text-sm">{message}</p> : null}
+
       {failedRows.length > 0 ? (
         <section className="rp-card space-y-2 p-4" data-testid="import-failed-list">
-          <h2 className="text-sm font-medium">失败明细（failed[]）</h2>
+          <h2 className="text-sm font-medium">失败明细</h2>
           <ul className="space-y-1 text-sm text-muted-foreground">
             {failedRows.map((row) => (
               <li key={`${row.index}-${row.code}-${row.message}`}>
-                第 {Number(row.index) + 1} 条 · <code className="font-mono">{row.code}</code> · {row.message}
+                第 {Number(row.index) + 1} 条：{row.message}
               </li>
             ))}
           </ul>
         </section>
       ) : null}
-      <section className="rp-card space-y-3 p-4">
+
+      <section className="rp-card space-y-4 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-sm font-medium">粘贴文本（每行 URL 或 JSON 数组）</h2>
+          <h2 className="text-sm font-medium">粘贴文本</h2>
           <ListSearch value={search} placeholder="在已粘贴内容中定位" onChange={setSearch} />
         </div>
+
         <p className="text-xs text-muted-foreground" data-testid="import-name-hint">
-          JSON 数组/对象：每条必须含 <code className="font-mono">name</code> 与 URL 字段（与后端校验一致）；缺{' '}
-          <code className="font-mono">name</code> 会返回 <code className="font-mono">INPUT_INVALID / 缺少 name</code>
-          。纯 URL 每行一条时不要求 JSON 的 name。
+          纯地址：每行一条即可。JSON：每条对象须含 name 与 url。
         </p>
+
         {search.trim() ? (
-          <p className="text-xs text-muted-foreground">
-            命中{' '}
-            {
-              payload.split(/\r?\n/).filter((line) => line.toLowerCase().includes(search.trim().toLowerCase()))
-                .length
-            }{' '}
-            行
-          </p>
+          <p className="text-xs text-muted-foreground">命中 {hitCount} 行</p>
         ) : null}
+
         <textarea
-          className="rp-input block w-full max-w-xl"
-          rows={6}
+          className="rp-input block w-full"
+          rows={8}
           value={payload}
           disabled={frozen}
-          placeholder={IMPORT_JSON_EXAMPLE}
           onChange={(event) => setPayload(event.target.value)}
         />
-        <div className="flex flex-wrap gap-2">
+
+        <div className="flex flex-wrap items-center gap-2">
           <button
             className="rp-btn text-sm disabled:opacity-50"
             type="button"
@@ -194,20 +197,36 @@ export default function RealphotosImportsPage() {
             className="rp-btn rp-btn-sm text-sm disabled:opacity-50"
             type="button"
             disabled={frozen}
-            onClick={() => setPayload(IMPORT_JSON_EXAMPLE)}
+            onClick={() => setShowExample((open) => !open)}
+            aria-expanded={showExample}
           >
-            填入合法 JSON 示例
+            {showExample ? '收起 JSON 示例' : '查看 JSON 示例'}
           </button>
+          {showExample ? (
+            <button
+              className="rp-btn rp-btn-sm text-sm disabled:opacity-50"
+              type="button"
+              disabled={frozen}
+              onClick={() => setPayload(IMPORT_JSON_EXAMPLE)}
+            >
+              填入示例
+            </button>
+          ) : null}
         </div>
-        <pre className="max-w-xl overflow-x-auto rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
-          {IMPORT_JSON_EXAMPLE}
-        </pre>
+
+        {showExample ? (
+          <pre
+            className="overflow-x-auto rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground"
+            data-testid="import-json-example"
+          >
+            {IMPORT_JSON_EXAMPLE}
+          </pre>
+        ) : null}
       </section>
+
       <section className="rp-card space-y-3 p-4">
         <h2 className="text-sm font-medium">上传 JSON 文件</h2>
-        <p className="text-xs text-muted-foreground">
-          文件内容须为 UTF-8 JSON 数组；每条对象同样必须含 <code className="font-mono">name</code> 与 URL。
-        </p>
+        <p className="text-xs text-muted-foreground">文件须为 UTF-8 编码的 JSON 数组，每条同样需含 name 与 url。</p>
         <div className="flex flex-wrap items-center gap-2">
           <label className={`rp-btn rp-btn-sm ${frozen ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}>
             选择 JSON 文件

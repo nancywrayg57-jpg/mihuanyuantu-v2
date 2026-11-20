@@ -74,7 +74,7 @@ export function summarizeImportResult(data: ImportResult | null | undefined): st
 export function formatFailedBrief(failed: ImportFailedRow[], limit = 5): string {
   return failed
     .slice(0, limit)
-    .map((row) => `#${Number(row.index) + 1} ${row.code}:${row.message}`)
+    .map((row) => `#${Number(row.index) + 1} ${row.message}`)
     .join('；')
 }
 
