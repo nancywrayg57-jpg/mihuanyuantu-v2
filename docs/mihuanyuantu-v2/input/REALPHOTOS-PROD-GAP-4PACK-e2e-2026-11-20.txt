@@ -1,0 +1,56 @@
+REALPHOTOS-PROD-GAP-4PACK e2e evidence · 2026-11-20
+baseline_main: d8870f1
+branch: cursor/prod-gap-4pack-9973
+production_billing: false
+PASS_SCORE: unchanged
+W3-B: not started (no admin concurrency auth)
+
+== Local tests ==
+frontend pnpm test: 21 passed (incl. W2/W3 helpers)
+backend pytest test_queue_summary.py + test_import_fetch.py: 8 passed
+
+== W2 JSON name hints ==
+code: aojuai-main/frontend/src/app/(app)/realphotos/imports/page.tsx
+      aojuai-main/frontend/src/lib/realphotos-import.ts
+checks:
+- precheck missing name -> INPUT_INVALID / 缺少 name (unit)
+- summarize failed[] shows #index code:message (unit)
+- UI: import-name-hint + failed[] list + example JSON fill button
+prod API (merchant, after W1 enable):
+- BAD JSON missing name -> imported=0 code=INPUT_INVALID msg=缺少 name
+marker: PROD_GAP_4PACK_W2_PASS=true
+
+== W4 admin strategy summary ==
+code: aojuai-main/frontend/src/app/(app)/realphotos/provider-contracts/page.tsx
+checks (source + DOM contract):
+- default-strategy-summary shows final_detection provider/modelId/enabled/configVersion
+- rollback copy points to 系统管理 → 模型 API 修改
+- strategy-pass-score-note: 调用成功 ≠ 业务通过 ≠ 已收费；PASS_SCORE 未改
+- optional ops-metrics detectionPassRate / queueDepth when available
+marker: PROD_GAP_4PACK_W4_PASS=true (code; FE deploy pending admin)
+
+== W3-A queue wait copy ==
+code: backend api/s1.py queueSummary on GET processing-tasks (+ detail)
+      frontend tasks/batch/help-menu + realphotos-import wait helpers
+checks:
+- queueSummary aheadCount=0 -> honest empty copy (unit)
+- aheadCount=2 -> 前方约 2 单 / 3–6 分钟 (unit)
+- batch submit toast includes sequential wait copy
+- FAQ: 大批次要等多久？
+marker: PROD_GAP_4PACK_W3A_PASS=true (code; FE/API deploy pending admin)
+
+== W1 URL import formal enable (prod config) ==
+admin material: Base URL=http://47.85.47.252
+sample object: http://47.85.47.252/images/bb330e9a1a8c48f683510cad1c4b23c7.png (1792x1344, ~1.7MB)
+BEFORE: duty=import enabled=False baseUrl=http://47.85.47.252 formalSupplier=True
+ACTION: POST /api/v1/realphotos/provider-contracts/enabled {duty:import,enabled:true}
+AFTER: enabled=True baseUrl=http://47.85.47.252 formalSupplier=True
+LINE import: imported=1 failed=0 formal=True assetId=138
+JSON import: imported=1 failed=0 formal=True assetId=139
+marker: PROD_GAP_4PACK_W1_PASS=true
+R4: closable (object-level import confirmed)
+
+== Deploy note ==
+W1 contract enable is live on production now.
+W2/W3-A/W4 UI+API code require PR squash merge + admin-confirmed frontend/backend release.
+production_billing remains false.

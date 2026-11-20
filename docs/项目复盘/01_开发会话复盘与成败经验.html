@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>蜜獾原图 v2｜开发过程复盘与成败经验</title>
+<style>
+:root{
+  --ink:#17202c;--ink-soft:#314052;--muted:#6f7a86;
+  --paper:#f5f3ee;--panel:#fff;--line:#dde3e5;
+  --teal:#1aa89a;--teal-deep:#0e766d;--amber:#f3be5a;--coral:#ee8066;
+  --sidebar:#101924;--sidebar-soft:#1c2a39;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:Inter,"PingFang SC","Microsoft YaHei",sans-serif;
+  --display:"Noto Serif SC","Songti SC",Georgia,serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.65}
+a{color:var(--teal-deep);text-decoration:none}
+a:hover{text-decoration:underline}
+.layout{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;overflow:auto;background:var(--sidebar);color:#e8eef4;padding:20px 16px}
+.sidebar .brand{font-family:var(--display);font-size:1.05rem;color:var(--amber);margin:0 0 4px}
+.sidebar h1{font-size:.95rem;margin:0 0 8px;line-height:1.35;color:#fff;font-weight:600}
+.sidebar .meta{font-size:.72rem;opacity:.8;margin-bottom:12px;color:#b7c4d2}
+.sidebar input{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #2a3a4c;background:var(--sidebar-soft);color:#fff;margin-bottom:12px}
+.sidebar nav a{display:block;color:#c9d6e4;padding:6px 8px;border-radius:8px;font-size:.84rem;margin:2px 0}
+.sidebar nav a:hover{background:#243447;text-decoration:none;color:#fff}
+.sidebar nav a.h2{font-weight:600;color:#fff}
+.sidebar nav a.h3{padding-left:16px;font-size:.78rem;opacity:.9}
+.sidebar .navlinks{margin-top:16px;padding-top:12px;border-top:1px solid #2a3a4c;font-size:.8rem}
+.sidebar .navlinks a{color:var(--amber)}
+.main{padding:28px 36px 64px;max-width:1080px}
+.hero{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin-bottom:22px;box-shadow:0 12px 36px rgba(18,34,51,.06)}
+.hero .eyebrow{color:var(--teal-deep);font-size:.78rem;font-weight:600;letter-spacing:.04em;margin:0 0 6px}
+.hero h1{margin:0 0 8px;font-size:1.65rem;font-family:var(--display);color:var(--ink)}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+.badge{display:inline-flex;padding:4px 10px;border-radius:999px;background:#eef8f6;color:var(--teal-deep);font-size:.76rem;border:1px solid #c9e8e3}
+.badge.amber{background:#fff6e5;color:#8a6a1a;border-color:#f0d9a0}
+.content h2{margin-top:2rem;padding-top:.5rem;border-top:1px solid var(--line);color:var(--ink);font-size:1.28rem;font-family:var(--display)}
+.content h3{color:var(--ink-soft);margin-top:1.35rem;font-size:1.05rem}
+.content p,.content li{font-size:.95rem}
+.content table{width:100%;border-collapse:collapse;margin:12px 0 18px;font-size:.86rem;background:var(--panel)}
+.content th,.content td{border:1px solid var(--line);padding:8px 10px;vertical-align:top;text-align:left}
+.content th{background:#eef6f4;color:var(--teal-deep)}
+.content tr:nth-child(even) td{background:#fafbf9}
+.content code{font-family:var(--mono);font-size:.84em;background:#eef2f4;padding:1px 5px;border-radius:4px}
+.content pre{background:#101924;color:#e7eef7;padding:14px 16px;border-radius:12px;overflow:auto;font-family:var(--mono);font-size:.78rem;line-height:1.5}
+.content blockquote{margin:12px 0;padding:10px 14px;border-left:4px solid var(--teal);background:#f0f7f5;color:var(--muted)}
+.content hr{border:none;border-top:1px solid var(--line);margin:24px 0}
+.content ul{padding-left:1.2rem}
+.arch{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:16px 0}
+.arch svg{width:100%;height:auto;display:block}
+.footer{margin-top:40px;color:var(--muted);font-size:.82rem}
+@media (max-width:960px){.layout{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.main{padding:18px}}
+@media print{
+  body{background:#fff}.sidebar{display:none}.layout{display:block}.main{max-width:none;padding:0}
+  a{color:inherit;text-decoration:none}.content h2{break-before:page}.content h2:first-of-type{break-before:auto}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">蜜獾原图 v2</div>
+  <h1>蜜獾原图 v2｜开发过程复盘与成败经验</h1>
+  <div class="meta">离线文档 · 双击即可打开 · 支持打印 PDF</div>
+  <input id="q" type="search" placeholder="过滤目录…" oninput="filterNav(this.value)"/>
+  <nav id="toc"><a class="h2" href="#0-取证口径说明">0. 取证口径说明</a><a class="h2" href="#1-九章全景演进表">1. 九章全景演进表</a><a class="h3" href="#第-2-章-S1S2-单张闭环与五层算法">第 2 章 · S1–S2 单张闭环与五层算法</a><a class="h3" href="#第-3-章-S3S4-真检测与按张批次">第 3 章 · S3–S4 真检测与按张批次</a><a class="h3" href="#第-4-章-S5-增长能力">第 4 章 · S5 增长能力</a><a class="h3" href="#第-5-章-S6-运营完备与缺口收口">第 5 章 · S6 运营完备与缺口收口</a><a class="h3" href="#第-6-章-检测质量止血与默认光学参数">第 6 章 · 检测质量止血与默认光学参数</a><a class="h3" href="#第-7-章-上线前端测与-S7-生产部署">第 7 章 · 上线前端测与 S7 生产部署</a><a class="h3" href="#第-8-章-生产后体验安全与预设治理">第 8 章 · 生产后体验、安全与预设治理</a><a class="h2" href="#2-成功经验可固化">2. 成功经验（可固化）</a><a class="h3" href="#21-里程碑端测门禁">2.1 里程碑端测门禁</a><a class="h3" href="#22-积分与批次按张可对账">2.2 积分与批次按张可对账</a><a class="h3" href="#23-先清单后编码小步合入">2.3 先清单后编码、小步合入</a><a class="h3" href="#24-合同权威顺序">2.4 合同权威顺序</a><a class="h2" href="#3-失败教训与返工类型">3. 失败教训与返工类型</a><a class="h3" href="#教训-1环境错位导致的假完成">教训 1：环境错位导致的「假完成」</a><a class="h3" href="#教训-2话术跑赢能力">教训 2：话术跑赢能力</a><a class="h3" href="#教训-3有台无实-不诚实占位">教训 3：有台无实 / 不诚实占位</a><a class="h3" href="#教训-4批次积分若按整批感觉验收必翻车">教训 4：批次积分若按「整批感觉」验收必翻车</a><a class="h3" href="#教训-5生产依赖临期">教训 5：生产依赖临期</a><a class="h3" href="#教训-6显示回归被-API-断言放过">教训 6：显示回归被 API 断言放过</a><a class="h2" href="#4-同类-AI-协同交付避坑清单SOP-摘要">4. 同类 AI 协同交付｜避坑清单（SOP 摘要）</a><a class="h2" href="#5-结语">5. 结语</a></nav>
+  <div class="navlinks">
+    <a href="index.html">← 总览门户</a><br/>
+    <a href="01_开发会话复盘与成败经验.html">01 复盘</a><br/>
+    <a href="02_项目架构与开发路线图.html">02 架构</a><br/>
+    <a href="03_后续优化与演进建议.html">03 演进</a>
+  </div>
+</aside>
+<main class="main">
+  <header class="hero">
+    <p class="eyebrow">开发过程复盘 · 成败经验</p>
+    <h1>蜜獾原图 v2｜开发过程复盘与成败经验</h1>
+    <div class="badges"><span class="badge">HEAD b99d5af</span><span class="badge">commits 86</span><span class="badge">PRs 80</span><span class="badge amber">production_billing=false</span></div>
+  </header>
+  <article class="content">
+<h2 id="0-取证口径说明">0. 取证口径说明</h2>
+<table><thead><tr><th>指标</th><th>实测值</th><th>来源</th></tr></thead><tbody>
+<tr><td>Git 提交数（<code>origin/main</code>）</td><td>86</td><td><code>git rev-list --count origin/main</code></td></tr>
+<tr><td>已合入 PR（base=<code>main</code>）</td><td>80</td><td><code>gh pr list --state merged</code></td></tr>
+<tr><td>最近 Tag</td><td><code>v2.0.1</code></td><td><code>git tag</code>；指向安全加固相关合入附近</td></tr>
+<tr><td>公网入口</td><td>已切到应用</td><td>生产验证记录 / progress 收口</td></tr>
+</tbody></table>
+<hr/>
+<h2 id="1-九章全景演进表">1. 九章全景演进表</h2>
+<table><thead><tr><th>项</th><th>内容</th></tr></thead><tbody>
+<tr><td>目标</td><td><strong>真会话 + 租户/角色隔离</strong>先做对，禁止用原型 mock 冒充登录</td></tr>
+<tr><td>关键证据（PR / Commit / Log）</td><td>PR #18 <code>3a2f131</code>（session/RBAC/credits/LocalDisk/queue）；#19 <code>31e69d5</code>（开发机端测自治）；#20 <code>25fafd6</code>（claim_one 登记）。日志：<code>/tmp/s0-pg-claim-one-smoke.log</code> → <strong><code>S0_PG_CLAIM_ONE_PASS</code></strong>；门禁名 <code>S0_E2E_ENV</code>（wiki/progress 收口）</td></tr>
+<tr><td>暴露问题</td><td><strong>验证环境错位</strong>：本机/Cloud 绿了，开发机 PostgreSQL / worker 未证就被当成完成</td></tr>
+<tr><td>解决方式</td><td>用 <code>S0_E2E_ENV</code> 卡住，直至上述 PASS 标记出现才关项</td></tr>
+<tr><td>教训</td><td>阶段完成以「指定环境 + 日志标记」为准</td></tr>
+</tbody></table>
+<h3 id="第-2-章-S1S2-单张闭环与五层算法">第 2 章 · S1–S2 单张闭环与五层算法</h3>
+<table><thead><tr><th>项</th><th>内容</th></tr></thead><tbody>
+<tr><td>目标</td><td>先证明 <strong>商家主路径</strong>：上传 → 选预设 → 单张提交 → 出 JPG → 可下载（检测可用替身）</td></tr>
+<tr><td>关键证据（PR / Commit / Log）</td><td>PR #21 <code>c3eb69f</code>（单张闭环 + S2 五层退出）。日志：<code>/tmp/s1-pg-e2e.log</code>、<code>/tmp/s1-browser-e2e.txt</code>；<code>/tmp/s2-pg-e2e.log</code> → <strong><code>S2_PG_E2E_PASS</code></strong>。同主题后续 #44、#54（物理层/legacy 对齐研究，非 S1 主退出替代）</td></tr>
+<tr><td>暴露问题</td><td><strong>检测仍是规则替身</strong>，却容易被口头说成「检测通过」</td></tr>
+<tr><td>解决方式</td><td>话术三分（替身 / 真 Gemini / 收费）；清单写明 S1 替身、真检属 S3；<code>production_billing=false</code> 未开前禁对外宣称；只认端测证据</td></tr>
+<tr><td>教训</td><td>「商家路径能跑」≠「生产检测已通过」</td></tr>
+</tbody></table>
+<h3 id="第-3-章-S3S4-真检测与按张批次">第 3 章 · S3–S4 真检测与按张批次</h3>
+<table><thead><tr><th>项</th><th>内容</th></tr></thead><tbody>
+<tr><td>目标</td><td>守住 <strong>积分账</strong>：部分成功时禁止整批乱扣/乱放；过关须 <strong>按张日志可拆</strong> + <strong>至少一单双张对照</strong></td></tr>
+<tr><td>关键证据（PR / Commit / Log）</td><td>PR #22 <code>dae37a3</code>（S3 Gemini + S4 按张批次）。日志：<code>/tmp/s3-pg-e2e.log</code> → <strong><code>S3_PG_E2E_PASS</code></strong>；<code>/tmp/s3-pg-e2e-controls.log</code> → <strong><code>S3_PG_CONTROLS_PASS</code></strong>；<code>/tmp/s4-pg-e2e.log</code> → <strong><code>S4_PG_E2E_PASS</code></strong>（例：task40 <code>consumed_detection_pass amount=10</code>，task41 <code>released_precheck amount=10</code>，<code>flat_batch_fee=false</code>）</td></tr>
+<tr><td>暴露问题</td><td>若按「整批感觉」验收，部分成功场景账面会说不清</td></tr>
+<tr><td>解决方式</td><td>开发机 PG 分列日志为最低证明；fixture 对账样本与真 Gemini 小样分开陈述</td></tr>
+<tr><td>教训</td><td>批次验收看「每张处置 + 合计」，禁止整批一口价叙事</td></tr>
+</tbody></table>
+<h3 id="第-4-章-S5-增长能力">第 4 章 · S5 增长能力</h3>
+<table><thead><tr><th>项</th><th>内容</th></tr></thead><tbody>
+<tr><td>目标</td><td>优先 <strong>文生图/图生图可入库</strong>，形态先通（可不接真供应商）</td></tr>
+<tr><td>关键证据（PR / Commit / Log）</td><td>PR #23 <code>d6f4b5d</code>（无供应商也可存生图）；#28 <code>922ef06</code>（PARTIAL-ALIGN，含 S5 退出对齐）。日志：<code>/tmp/s5-pg-e2e.log</code> → <strong><code>S5_PG_E2E_PASS</code></strong>（<code>supplier_connected=false</code>）。后置增强：#41 <code>/tmp/module-a-gap-e2e.log</code>；#42 FR-033 OpenAPI；#43 模型通道</td></tr>
+<tr><td>暴露问题</td><td><strong>入库成功</strong> 被误解为 <strong>真供应商已接 / 可对外卖生图</strong></td></tr>
+<tr><td>解决方式</td><td>进度与证据标明未接通供应商、收费未开；导入/API/通道写成增强，不写成「主线已卖出」</td></tr>
+<tr><td>教训</td><td>先证明「能存、能看、能记账」；接通与收费另证</td></tr>
+</tbody></table>
+<h3 id="第-5-章-S6-运营完备与缺口收口">第 5 章 · S6 运营完备与缺口收口</h3>
+<table><thead><tr><th>项</th><th>内容</th></tr></thead><tbody>
+<tr><td>目标</td><td>① <strong>真预审 + 冻号/解冻与技术客服台</strong>；② <strong>用户/租户管理与系统日志可运营</strong></td></tr>
+<tr><td>关键证据（PR / Commit / Log）</td><td>主线 #24/#25（S6 运营台）；阻断与诚实口径 #27 <code>52f5d46</code>、#28 <code>922ef06</code>；浏览器端测 #32 <code>4bc554d</code>（F1–F8）。日志：<code>/tmp/s6-pg-e2e.log</code> → <strong><code>S6_PG_E2E_PASS</code></strong>；供应商实呼抽样 <code>/tmp/supplier-live-e2e.log</code>（非生产收费）。其后 #29–#39、#46–#53 为缺口/预设/残留收口</td></tr>
+<tr><td>暴露问题</td><td><strong>菜单/台子有了，关键动作不通或不诚实</strong>（例如预审仍占位却像已上真）</td></tr>
+<tr><td>解决方式</td><td>BLOCKING-FIX / PARTIAL-ALIGN / 浏览器端测等多轮把「动作通 + 口径诚实」补齐</td></tr>
+<tr><td>教训</td><td>「菜单在」代替不了「写路径真实且话术诚实」</td></tr>
+</tbody></table>
+<h3 id="第-6-章-检测质量止血与默认光学参数">第 6 章 · 检测质量止血与默认光学参数</h3>
+<table><thead><tr><th>项</th><th>内容</th></tr></thead><tbody>
+<tr><td>目标</td><td>止血 → 试点 → 受控调参（注册修复为旁路）</td></tr>
+<tr><td>关键证据（PR / Commit / Log）</td><td>#55 <code>cd8d7bc</code>（DET-SCORE 止血 Layer0/CA off）→ #56（NONLEGACY 试点，no default promote）→ #57（光学强度受控调整）；（#58 注册修复旁路）。消融/确认证据见 <code>docs/mihuanyuantu-v2/input/FIVE-LAYER-DEFAULT-OPT-<em></code>、<code>DET-SCORE-</em></code></td></tr>
+<tr><td>暴露问题 / 红线</td><td>试点分数↑ ≠ 默认晋升；止血关层 ≠ 永久废弃；端测/消融通过 ≠ 对外达标或开放收费</td></tr>
+<tr><td>解决方式</td><td>每步写明「做了什么 / 未晋升什么」；保持 <code>production_billing=false</code> 叙事</td></tr>
+<tr><td>教训</td><td>调参章必须同时写能力变化与未宣称边界</td></tr>
+</tbody></table>
+<h3 id="第-7-章-上线前端测与-S7-生产部署">第 7 章 · 上线前端测与 S7 生产部署</h3>
+<table><thead><tr><th>项</th><th>内容</th></tr></thead><tbody>
+<tr><td>目标</td><td>四角色主路径 + 三岗供应商真实外呼 + 发布/回滚与入口切流 + TLS/冒烟 <strong>都要</strong>；</td></tr>
+<tr><td>关键证据（PR / Commit / Log）</td><td>运维台 #59/#60；预发 #65 <code>d6a28d9</code> → <code>docs/.../REALPHOTOS-PRELAUNCH-E2E-2026-11-15<em></code>、标记 <strong><code>REALPHOTOS_PRELAUNCH_E2E_PASS</code></strong>；S7 #68 <code>d8b3f43</code> → <code>docs/.../REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16</em></code>、<code>/tmp/realphotos-s7-prod-e2e.log</code> → <strong><code>REALPHOTOS_S7_PROD_E2E_PASS</code></strong>；公网入口 <code>https://exif-demo.honeybadgersoft.com</code> 已切应用</td></tr>
+<tr><td>暴露问题 / 主风险</td><td><strong>出口代理 / 第三方依赖有到期日</strong>，可能切断检测外呼；</td></tr>
+<tr><td>解决方式</td><td>四角色+三岗+切流证据收口；依赖到期写入收口风险清单（R7）</td></tr>
+<tr><td>教训</td><td>生产依赖按一等风险管理；</td></tr>
+</tbody></table>
+<h3 id="第-8-章-生产后体验安全与预设治理">第 8 章 · 生产后体验、安全与预设治理</h3>
+<table><thead><tr><th>项</th><th>内容</th></tr></thead><tbody>
+<tr><td>目标</td><td><strong>体验可运营</strong>：UX P0 → P1 → P2 分轮收口</td></tr>
+<tr><td>关键证据（PR / Commit / Log）</td><td>UX P0 #70 <code>5abdffe</code> + 验收 docs #72/#73；P1 #74–#78；P2 #79–#81/#87–#88。安全 #89 <code>8485c09</code>；Tag <strong><code>v2.0.1</code></strong>（钉 #89 附近）。预设审计/去重/变体 #83–#91；轮次记录见 <code>docs/mihuanyuantu-v2/input/REALPHOTOS-UX-*</code></td></tr>
+<tr><td>暴露问题</td><td>只看 API/字段绿会漏显示回归；文案与计费语义易漂移</td></tr>
+<tr><td>解决方式</td><td>以渲染页验收 + 每轮留验证记录；流水任务号等专项返修（如 #71）</td></tr>
+<tr><td>教训</td><td>上线后体验用迭代 + 证据包推进，禁止「感觉差不多」</td></tr>
+</tbody></table>
+<hr/>
+<h2 id="2-成功经验可固化">2. 成功经验（可固化）</h2>
+<h3 id="21-里程碑端测门禁">2.1 里程碑端测门禁</h3>
+<p><strong>每个里程碑必须有指定环境的端到端证据，才能开下一阶段。</strong>  </p>
+<p>S0 的 <code>S0_E2E_ENV</code> + <code>S0_PG_CLAIM_ONE_PASS</code> 是原型；S1–S4 的开发机 PG 日志、预发四角色端测、S7 生产端测是同一纪律在不同阶段的展开。</p>
+<h3 id="22-积分与批次按张可对账">2.2 积分与批次按张可对账</h3>
+<p>部分成功场景用「每张处置 + 批次合计」验收；明确禁止整批一口价叙事。对账可以用 fixture 换确定性，但不得把 fixture 样本写成「新的生产检测小样」。</p>
+<h3 id="23-先清单后编码小步合入">2.3 先清单后编码、小步合入</h3>
+<p><code>DEV_INSTRUCTIONS</code> 要求阶段具备 <code>tasks</code> / <code>exit_evidence</code> / <code>forbidden</code> 才开工；功能以 PR 合入 <code>main</code>，复盘与对外叙述只认已合入事实。生产后 UX 按 P0/P1/P2 轮次留验证记录，降低「改完无证」。</p>
+<h3 id="24-合同权威顺序">2.4 合同权威顺序</h3>
+<p>产品行为听 PRD，落地结构听架构，阶段路径听 <code>DEV_INSTRUCTIONS</code>；冲突停止实现并提问。</p>
+<hr/>
+<h2 id="3-失败教训与返工类型">3. 失败教训与返工类型</h2>
+<h3 id="教训-1环境错位导致的假完成">教训 1：环境错位导致的「假完成」</h3>
+<ul>
+<li>- <strong>表象</strong>：本机 pytest / Cloud CI 已绿，阶段却在开发机 PostgreSQL、<code>claim_one</code>、worker 消费等关键项上站不住；口头或进度文件容易先写成「S0 完成」。  </li>
+<li>- <strong>根因</strong>：把「方便跑通的验证环境」默认为「主验收环境」。S0 的队列认领、租约与持久化行为依赖真实 PG，SQLite/Cloud 替身无法覆盖。  </li>
+<li>- <strong>代价</strong>：若未拦住，会带着未证底座进入 S1，后续单张闭环与积分流水的失败更难归因。  </li>
+<li>- <strong>证据</strong>：第 1 章；<code>/tmp/s0-pg-claim-one-smoke.log</code> → <code>S0_PG_CLAIM_ONE_PASS</code>；门禁名 <code>S0_E2E_ENV</code>；PR #19/#20。  </li>
+<li>- <strong>固化</strong>：为不可替代项单独命名门禁与日志标记；未出现约定 PASS 字符串不得关项、不得开下一阶段。</li>
+</ul>
+<h3 id="教训-2话术跑赢能力">教训 2：话术跑赢能力</h3>
+<ul>
+<li>- <strong>表象</strong>：商家路径能出 JPG、生图能入库、调参试点分数有提升时，对内对外容易说成「检测已通过」「供应商已接通」「已可卖」「已默认晋升」。  </li>
+<li>- <strong>根因</strong>：演示压力与阶段边界不同步；「能看见结果」与「合同意义上的通过/接通/收费」被揉成一句话。  </li>
+<li>- <strong>代价</strong>：后续阶段被迫反复澄清；一旦对外使用错误承诺，撤回成本高于补证据。  </li>
+<li>- <strong>证据</strong>：第 2/4/6 章；阶段清单区分 S1 替身 vs S3 真 Gemini；S5 证据含 <code>supplier_connected=false</code>；调参 PR 标题含 no default promote。  </li>
+<li>- <strong>固化</strong>：对外句子必须能指回阶段清单与证据字段；固定四分法——替身 / 真模型调用 / 供应商接通 / 收费开放——禁止互相冒充。</li>
+</ul>
+<h3 id="教训-3有台无实-不诚实占位">教训 3：有台无实 / 不诚实占位</h3>
+<ul>
+<li>- <strong>表象</strong>：S6 运营菜单、工单台、用户管理等页面齐全，但预审仍可能是占位、解冻/加减分等关键写路径不通，或文案让人以为「已经上真」。  </li>
+<li>- <strong>根因</strong>：先铺信息架构与路由，后补真实供应商与写路径；验收若只点菜单打开，会漏掉「动作是否生效、口径是否诚实」。  </li>
+<li>- <strong>代价</strong>：技术客服/管理员无法履职，或按错误口径操作；BLOCKING-FIX / PARTIAL-ALIGN / 浏览器端测被迫多轮返修。  </li>
+<li>- <strong>证据</strong>：第 5 章；PR #27/#28/#32；<code>/tmp/s6-pg-e2e.log</code> → <code>S6_PG_E2E_PASS</code>。  </li>
+<li>- <strong>固化</strong>：运营页验收以关键写路径（预审、解冻、加减分、预设启停等）真实可跑 + 诚实文案为准，不以「菜单在」为准。</li>
+</ul>
+<h3 id="教训-4批次积分若按整批感觉验收必翻车">教训 4：批次积分若按「整批感觉」验收必翻车</h3>
+<ul>
+<li>- <strong>表象</strong>：1–10 张批次里部分成功、部分前置失败时，若只看「这批好像扣了分」，说不清每张是消费还是释放，也说不清合计是否等于假「整批一口价」。  </li>
+<li>- <strong>根因</strong>：验收粒度停在批次或 API 总览，没有强制「每张处置分列 + 双张对照样本」。  </li>
+<li>- <strong>代价</strong>：积分客诉无法用日志自证；fixture 对账样本还可能被误写成「新的生产 Gemini 小样」。  </li>
+<li>- <strong>证据</strong>：第 3 章；<code>/tmp/s4-pg-e2e.log</code> → <code>S4_PG_E2E_PASS</code>（例：task40 消费 10、task41 释放 10，<code>flat_batch_fee=false</code>）。  </li>
+<li>- <strong>固化</strong>：过关最低证明 = 开发机 PG 按张分列日志 + 至少一单「成功消费 / 失败释放」双张对照；fixture 与真检小样分栏陈述。</li>
+</ul>
+<h3 id="教训-5生产依赖临期">教训 5：生产依赖临期</h3>
+<ul>
+<li>- <strong>表象</strong>：最终检测外呼依赖第三方订阅出口节点；节点名称自带到期日（约 2026-12-06）。到期未替换则检测链路中断，商家任务会卡在检测环节。  </li>
+<li>- <strong>根因</strong>：为解除地域/出口阻断，临时落地第三方节点并完成了当时的端测；临期风险若不当成一等生产依赖登记，容易拖到临近到期才处理。  </li>
+<li>- <strong>代价</strong>：检测从「业务可用」突然变为「基础设施不可用」；与「检测分数高低」无关，是通路问题。  </li>
+<li>- <strong>证据</strong>：第 7 章；S7 收口残余 <strong>R7</strong>；<code>REALPHOTOS-S7-PROD-DEPLOY-E2E-2026-11-16*</code>。  </li>
+<li>- <strong>固化</strong>：第三方/出口类依赖必须登记到期日与替换方案；替换先于到期执行，并在切换后抽检处理→检测主路径。</li>
+</ul>
+<h3 id="教训-6显示回归被-API-断言放过">教训 6：显示回归被 API 断言放过</h3>
+<ul>
+<li>- <strong>表象</strong>：接口返回里字段存在、状态码 200，自动化或抽检就判 PASS；但页面表格/顶栏/空态仍错——例如流水对不上任务号、列被挤掉、文案与扣费语义不一致。人眼或截图才能发现。  </li>
+<li>- <strong>根因</strong>：把「数据层正确」当成「体验层正确」。API 断言不覆盖 CSS 布局、条件渲染、文案键绑定和空态分支。  </li>
+<li>- <strong>代价</strong>：生产后 UX 被迫按 P0→P1→P2 多轮返修；客服对账与商家理解成本上升；若只合并「接口绿」的 PR，显示债会累积。  </li>
+<li>- <strong>证据</strong>：第 8 章；UX 轮次 <code>#70</code>–<code>#88</code> 与 <code>REALPHOTOS-UX-*</code> 验收记录；流水任务号等专项（如 #71）；wiki 亦强调勿用 API 样本代替渲染表验收。  </li>
+<li>- <strong>固化</strong>：体验相关改动以<strong>实际页面渲染</strong>（Playwright DOM / 截图 / 真人点表）为验收对象；每轮留下验证记录；关键对账页必须能从显示回溯到业务锚点（如任务号）。</li>
+</ul>
+<hr/>
+<h2 id="4-同类-AI-协同交付避坑清单SOP-摘要">4. 同类 AI 协同交付｜避坑清单（SOP 摘要）</h2>
+<ol>
+<li>1. <strong>只认指定环境端测标记</strong>，本机/CI 绿不能自动关项。</li>
+<li>2. <strong>开下一阶段前</strong>，本阶段 <code>exit_evidence</code> + 端测必须齐。</li>
+<li>4. <strong>积分按张</strong>：部分成功要有分列证据。</li>
+<li>5. <strong>运营台先证写路径</strong>，再谈菜单完整。</li>
+<li>6. <strong>调参默认晋升必须显式门禁</strong>；试点默认不晋升。</li>
+<li>7. <strong>部署成功与收费开关解耦表述</strong>，避免用收费状态否定已完成的发布证据。</li>
+<li>8. <strong>生产第三方依赖登记到期日</strong>。</li>
+<li>9. <strong>体验验收看渲染</strong>，不只看 API。</li>
+<li>10. <strong>复盘数字以采集 JSON 为准</strong>，不用过期 handoff 口述改数。</li>
+<li>11. <strong>合入纪律抽象化</strong>：PR 进 <code>main</code>、禁止直接推保护分支、关键门禁必过（细节见仓库 <code>AGENTS.md</code>，本文不展开账号争议）。</li>
+<li>12. <strong>密钥与主机信息不进复盘正文</strong>。</li>
+</ol>
+<hr/>
+<h2 id="5-结语">5. 结语</h2>
+<p>蜜獾原图 v2 从合同门禁到 S0–S7 再至生产后 UX，质量来自 <strong>门禁化推进</strong>，而不是单次「感觉做完」。</p>
+<p>（文档对齐 <code>origin/main</code> <code>b99d5af</code>；机器可读映射见 <code>pr_stage_map.json</code>。HTML 版待正文确认后再制。）</p>
+  </article>
+  <p class="footer">由 Markdown 生成 · 证据见 evidence_metrics.json / pr_stage_map.json · 公网 https://exif-demo.honeybadgersoft.com</p>
+</main>
+</div>
+<script>
+function filterNav(q){
+  q=(q||'').toLowerCase();
+  document.querySelectorAll('#toc a').forEach(a=>{
+    a.style.display=!q||a.textContent.toLowerCase().includes(q)?'block':'none';
+  });
+}
+</script>
+</body>
+</html>

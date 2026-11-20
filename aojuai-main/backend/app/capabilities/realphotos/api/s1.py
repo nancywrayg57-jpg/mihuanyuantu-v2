@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import math
 import re
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.api.deps import CurrentUser, DBSession, PermissionChecker, TenantCtx
 from app.capabilities.realphotos.permissions import (
@@ -129,6 +130,37 @@ async def _tenant_task_no_map(db, *, tenant_id: int, task_ids: list[int]) -> dic
     from app.capabilities.realphotos.services.task_numbering import processing_task_no_map
 
     return await processing_task_no_map(db, tenant_id=tenant_id, task_ids=task_ids)
+
+
+# W3-A：单 worker 顺序处理的产品可见性口径（与生产实测 1.5–3 分钟/张对齐）。
+_QUEUE_MINUTES_PER_IMAGE_MIN = 1.5
+_QUEUE_MINUTES_PER_IMAGE_MAX = 3.0
+
+
+async def _queue_summary(db) -> dict[str, Any]:
+    """全局 queued+running 作业数 → 前方约 N 单 / 预计等待；无数据亦返回诚实字段。"""
+    from app.capabilities.realphotos.models import RealphotosExecutionJob
+
+    ahead = int(
+        await db.scalar(
+            select(func.count())
+            .select_from(RealphotosExecutionJob)
+            .where(
+                RealphotosExecutionJob.status.in_(("queued", "running")),
+                RealphotosExecutionJob.deleted_at.is_(None),
+            )
+        )
+        or 0
+    )
+    return {
+        "aheadCount": ahead,
+        "estimatedWaitMinutesMin": int(math.ceil(ahead * _QUEUE_MINUTES_PER_IMAGE_MIN)) if ahead > 0 else 0,
+        "estimatedWaitMinutesMax": int(math.ceil(ahead * _QUEUE_MINUTES_PER_IMAGE_MAX)) if ahead > 0 else 0,
+        "minutesPerImageMin": _QUEUE_MINUTES_PER_IMAGE_MIN,
+        "minutesPerImageMax": _QUEUE_MINUTES_PER_IMAGE_MAX,
+        "processingMode": "sequential_single_worker",
+        "available": True,
+    }
 
 
 async def _enrich_task_detail(
@@ -464,12 +496,14 @@ async def list_processing_tasks(
                 include_lock=False,
             )
         )
+    queue_summary = await _queue_summary(db)
     return SuccessResponse(
         data={
             "items": payloads,
             "page": max(1, int(page or 1)),
             "pageSize": min(50, max(1, int(page_size or 10))),
             "total": total,
+            "queueSummary": queue_summary,
         }
     )
 
@@ -538,6 +572,7 @@ async def get_task(
         task=task,
         task_no=no_map.get(int(task.id)),
     )
+    payload["queueSummary"] = await _queue_summary(db)
     return SuccessResponse(data=payload)
 
 

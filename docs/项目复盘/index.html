@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>蜜獾原图 v2 · 项目复盘门户</title>
+<style>
+:root{
+  --ink:#17202c;--ink-soft:#314052;--muted:#6f7a86;
+  --paper:#f5f3ee;--panel:#fff;--line:#dde3e5;
+  --teal:#1aa89a;--teal-deep:#0e766d;--amber:#f3be5a;--coral:#ee8066;
+  --sidebar:#101924;--sidebar-soft:#1c2a39;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:Inter,"PingFang SC","Microsoft YaHei",sans-serif;
+  --display:"Noto Serif SC","Songti SC",Georgia,serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.65}
+a{color:var(--teal-deep);text-decoration:none}
+a:hover{text-decoration:underline}
+.layout{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;overflow:auto;background:var(--sidebar);color:#e8eef4;padding:20px 16px}
+.sidebar .brand{font-family:var(--display);font-size:1.05rem;color:var(--amber);margin:0 0 4px}
+.sidebar h1{font-size:.95rem;margin:0 0 8px;line-height:1.35;color:#fff;font-weight:600}
+.sidebar .meta{font-size:.72rem;opacity:.8;margin-bottom:12px;color:#b7c4d2}
+.sidebar input{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #2a3a4c;background:var(--sidebar-soft);color:#fff;margin-bottom:12px}
+.sidebar nav a{display:block;color:#c9d6e4;padding:6px 8px;border-radius:8px;font-size:.84rem;margin:2px 0}
+.sidebar nav a:hover{background:#243447;text-decoration:none;color:#fff}
+.sidebar nav a.h2{font-weight:600;color:#fff}
+.sidebar nav a.h3{padding-left:16px;font-size:.78rem;opacity:.9}
+.sidebar .navlinks{margin-top:16px;padding-top:12px;border-top:1px solid #2a3a4c;font-size:.8rem}
+.sidebar .navlinks a{color:var(--amber)}
+.main{padding:28px 36px 64px;max-width:1080px}
+.hero{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin-bottom:22px;box-shadow:0 12px 36px rgba(18,34,51,.06)}
+.hero .eyebrow{color:var(--teal-deep);font-size:.78rem;font-weight:600;letter-spacing:.04em;margin:0 0 6px}
+.hero h1{margin:0 0 8px;font-size:1.65rem;font-family:var(--display);color:var(--ink)}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+.badge{display:inline-flex;padding:4px 10px;border-radius:999px;background:#eef8f6;color:var(--teal-deep);font-size:.76rem;border:1px solid #c9e8e3}
+.badge.amber{background:#fff6e5;color:#8a6a1a;border-color:#f0d9a0}
+.content h2{margin-top:2rem;padding-top:.5rem;border-top:1px solid var(--line);color:var(--ink);font-size:1.28rem;font-family:var(--display)}
+.content h3{color:var(--ink-soft);margin-top:1.35rem;font-size:1.05rem}
+.content p,.content li{font-size:.95rem}
+.content table{width:100%;border-collapse:collapse;margin:12px 0 18px;font-size:.86rem;background:var(--panel)}
+.content th,.content td{border:1px solid var(--line);padding:8px 10px;vertical-align:top;text-align:left}
+.content th{background:#eef6f4;color:var(--teal-deep)}
+.content tr:nth-child(even) td{background:#fafbf9}
+.content code{font-family:var(--mono);font-size:.84em;background:#eef2f4;padding:1px 5px;border-radius:4px}
+.content pre{background:#101924;color:#e7eef7;padding:14px 16px;border-radius:12px;overflow:auto;font-family:var(--mono);font-size:.78rem;line-height:1.5}
+.content blockquote{margin:12px 0;padding:10px 14px;border-left:4px solid var(--teal);background:#f0f7f5;color:var(--muted)}
+.content hr{border:none;border-top:1px solid var(--line);margin:24px 0}
+.content ul{padding-left:1.2rem}
+.arch{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:16px 0}
+.arch svg{width:100%;height:auto;display:block}
+.footer{margin-top:40px;color:var(--muted);font-size:.82rem}
+@media (max-width:960px){.layout{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.main{padding:18px}}
+@media print{
+  body{background:#fff}.sidebar{display:none}.layout{display:block}.main{max-width:none;padding:0}
+  a{color:inherit;text-decoration:none}.content h2{break-before:page}.content h2:first-of-type{break-before:auto}
+}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 10px 28px rgba(18,34,51,.05)}
+.card h2{margin:0 0 8px;font-size:1.05rem;font-family:var(--display)}
+.card p{margin:0;color:var(--muted);font-size:.88rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:16px}
+.stat{background:#eef8f6;border:1px solid #c9e8e3;border-radius:12px;padding:12px}
+.stat b{display:block;font-size:1.2rem;color:var(--teal-deep)}
+.stat span{font-size:.75rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">蜜獾原图 v2</div>
+  <h1>项目复盘门户</h1>
+  <div class="meta">Markdown + HTML · 内部讲述用</div>
+  <nav>
+    <a class="h2" href="01_开发会话复盘与成败经验.html">01 开发过程复盘</a>
+    <a class="h2" href="02_项目架构与开发路线图.html">02 架构与路线图</a>
+    <a class="h2" href="03_后续优化与演进建议.html">03 产品演进建议</a>
+    <a class="h2" href="README.md">README.md</a>
+  </nav>
+</aside>
+<main class="main">
+  <header class="hero">
+    <p class="eyebrow">PROJECT RETROSPECTIVE</p>
+    <h1>蜜獾原图 v2 · 项目复盘</h1>
+    <p style="margin:8px 0 0;color:var(--muted)">公网入口：<a href="https://exif-demo.honeybadgersoft.com">https://exif-demo.honeybadgersoft.com</a></p>
+    <div class="stats">
+      <div class="stat"><b>86</b><span>origin/main 提交</span></div>
+      <div class="stat"><b>80</b><span>已合入 PR</span></div>
+      <div class="stat"><b>v2.0.1</b><span>最近 Tag</span></div>
+      <div class="stat"><b>b99d5af</b><span>HEAD short</span></div>
+      <div class="stat"><b>false</b><span>production_billing</span></div>
+    </div>
+  </header>
+  <div class="cards">
+    <a class="card" href="01_开发会话复盘与成败经验.html"><h2>01 开发过程复盘</h2><p>九章演进、成功经验、失败教训与 SOP。</p></a>
+    <a class="card" href="02_项目架构与开发路线图.html"><h2>02 架构与路线图</h2><p>逻辑架构、子系统与 Past/Future 路线。</p></a>
+    <a class="card" href="03_后续优化与演进建议.html"><h2>03 产品演进建议</h2><p>仅现行部署仍存在的产品缺口（P0/P1/P2）。</p></a>
+  </div>
+  <p class="footer">证据：evidence_metrics.json · pr_stage_map.json · 仅已合入 main 的事实</p>
+</main>
+</div>
+</body>
+</html>

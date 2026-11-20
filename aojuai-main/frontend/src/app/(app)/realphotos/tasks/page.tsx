@@ -34,6 +34,7 @@ import {
   presetDisplayName,
   taskStatusLabel,
 } from '@/lib/realphotos-labels'
+import { formatQueueWaitCopy } from '@/lib/realphotos-import'
 import { formatDateTimeShort } from '@/lib/realphotos-time'
 import { ticketStatusLabel, ticketTypeLabel } from '@/lib/realphotos-labels'
 
@@ -50,6 +51,14 @@ type Detection = {
   colorRealism?: number
   overallRealism?: number
   detector?: string
+}
+
+type QueueSummary = {
+  aheadCount?: number | null
+  estimatedWaitMinutesMin?: number | null
+  estimatedWaitMinutesMax?: number | null
+  processingMode?: string | null
+  available?: boolean
 }
 
 type ProcessingTask = {
@@ -92,6 +101,7 @@ type ProcessingTask = {
     passScoreThreshold?: number
     accepted?: boolean
   } | null
+  queueSummary?: QueueSummary | null
 }
 
 type GenerationItem = {
@@ -255,6 +265,7 @@ export default function RealphotosTasksPage() {
   const [loadingProc, setLoadingProc] = useState(true)
   const [loadingGen, setLoadingGen] = useState(true)
   const [downloading, setDownloading] = useState<{ done: number; total: number } | null>(null)
+  const [queueSummary, setQueueSummary] = useState<QueueSummary | null>(null)
 
   const loadProcessing = useCallback(async () => {
     setLoadingProc(true)
@@ -264,11 +275,12 @@ export default function RealphotosTasksPage() {
         page_size: String(PAGE_SIZE),
       })
       if (procStatus !== 'all') qs.set('status', procStatus)
-      const data = await apiFetch<{ items: ProcessingTask[]; total: number }>(
+      const data = await apiFetch<{ items: ProcessingTask[]; total: number; queueSummary?: QueueSummary }>(
         `/api/v1/realphotos/processing-tasks?${qs.toString()}`,
       )
       setProcItems(data.items || [])
       setProcTotal(data.total || 0)
+      setQueueSummary(data.queueSummary || null)
     } finally {
       setLoadingProc(false)
     }
@@ -680,6 +692,9 @@ export default function RealphotosTasksPage() {
 
       {tab === 'processing' ? (
         <section className="rp-card space-y-3 p-4">
+          <p className="text-xs text-muted-foreground" data-testid="queue-wait-copy">
+            {formatQueueWaitCopy(queueSummary?.aheadCount)}
+          </p>
           {myTickets.length > 0 ? (
             <details className="rp-card p-3 text-sm">
               <summary className="cursor-pointer font-medium">我的申诉（{myTickets.length}）</summary>
@@ -878,6 +893,10 @@ export default function RealphotosTasksPage() {
                 <dl className="rp-kv">
                   <dt>状态</dt>
                   <dd>{taskStatusLabel(detail.status)}</dd>
+                  <dt>队列 / 预计等待</dt>
+                  <dd data-testid="task-queue-wait">
+                    {formatQueueWaitCopy(detail.queueSummary?.aheadCount ?? queueSummary?.aheadCount)}
+                  </dd>
                   <dt>预设名称</dt>
                   <dd>{presetDisplayName(detail)}</dd>
                   <dt>创建时间</dt>

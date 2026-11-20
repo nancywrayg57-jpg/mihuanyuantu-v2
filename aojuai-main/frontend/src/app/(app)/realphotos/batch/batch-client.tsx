@@ -10,6 +10,7 @@ import { RpDialog } from '@/components/realphotos/rp-table'
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { toastTask } from '@/components/realphotos/surface'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
+import { formatBatchSubmitWaitCopy } from '@/lib/realphotos-import'
 import { gpsSubmitGuard } from '@/lib/realphotos-gps-submit'
 import { deviceTypeLabel, gpsModeLabel } from '@/lib/realphotos-labels'
 import { PRESET_FIELD_DEFS, type PresetFieldDef } from '@/lib/realphotos-preset-fields'
@@ -322,7 +323,8 @@ export function RealphotosBatchClient() {
       )
       window.sessionStorage.setItem('realphotos.s4.batchId', data.batchId)
       if (data.tasks[0]) window.sessionStorage.setItem('realphotos.s1.taskId', data.tasks[0].id)
-      const text = `批次 ${data.batchId} 已提交，共 ${data.tasks.length} 张。到任务详情查看。`
+      const wait = formatBatchSubmitWaitCopy(data.tasks.length)
+      const text = `批次 ${data.batchId} 已提交，共 ${data.tasks.length} 张。${wait}到任务详情查看。`
       setNotice(text)
       toastTask(text, true)
       setConfirmOpen(false)
@@ -585,6 +587,7 @@ export function RealphotosBatchClient() {
           </dl>
           <p className="text-xs text-muted-foreground">
             提交后按张冻结；检测未通过或处理失败时按规则释放或走申诉，具体以任务详情与积分流水为准。
+            {formatBatchSubmitWaitCopy(library.length)}
           </p>
           <div className="flex flex-wrap gap-2">
             <RpButton variant="primary" type="button" disabled={submitting} onClick={() => void submitBatch()}>

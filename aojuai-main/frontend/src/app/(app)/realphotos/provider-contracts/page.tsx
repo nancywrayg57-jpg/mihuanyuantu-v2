@@ -66,12 +66,26 @@ function limitTags(caps: Record<string, unknown>): Array<{ label: string; tone: 
   return tags
 }
 
+type OpsMetrics = {
+  queueDepth?: number | null
+  detectionPassRate?: number | null
+  failureRate?: number | null
+}
+
+function formatRate(value: number | null | undefined): string {
+  if (value == null || Number.isNaN(Number(value))) return '暂无抽样数据'
+  const n = Number(value)
+  const pct = n <= 1 ? n * 100 : n
+  return `${pct.toFixed(1)}%`
+}
+
 export default function RealphotosProviderContractsPage() {
   const [items, setItems] = useState<Contract[]>([])
   const [message, setMessage] = useState('')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [capabilityTarget, setCapabilityTarget] = useState<Contract | null>(null)
+  const [opsMetrics, setOpsMetrics] = useState<OpsMetrics | null>(null)
 
   useEffect(() => {
     setLoading(true)
@@ -79,6 +93,9 @@ export default function RealphotosProviderContractsPage() {
       .then((data) => setItems(data.items))
       .catch((error: unknown) => setMessage(error instanceof ApiError ? error.message : '读取失败'))
       .finally(() => setLoading(false))
+    void apiFetch<OpsMetrics>('/api/v1/realphotos/ops-metrics')
+      .then((data) => setOpsMetrics(data))
+      .catch(() => setOpsMetrics(null))
   }, [])
 
   const visibleItems = useMemo(
@@ -98,10 +115,67 @@ export default function RealphotosProviderContractsPage() {
     [items, search],
   )
 
+  const detection = items.find((item) => item.duty === 'final_detection')
+  const importContract = items.find((item) => item.duty === 'import')
+
   return (
     <main className="space-y-4 p-6">
       <h1 className="text-lg font-medium">模型合同</h1>
       <p className="text-sm">{message}</p>
+
+      <section className="rp-card space-y-3 p-4 shadow-sm" data-testid="default-strategy-summary">
+        <h2 className="text-sm font-medium">检测 / 处理默认策略摘要（只读）</h2>
+        {detection ? (
+          <dl className="grid gap-2 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="text-muted-foreground">最终检测供应商</dt>
+              <dd>{detection.provider || '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">模型 modelId</dt>
+              <dd className="break-all font-mono text-xs">{detection.modelId || '空'}</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">启用状态</dt>
+              <dd>{detection.enabled ? '启用' : '停用'}</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">configVersion</dt>
+              <dd className="font-mono text-xs">{detection.configVersion || '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">处理默认（服务端）</dt>
+              <dd>见服务端默认（五层 pipeline），本页不虚构参数表</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">最近抽样通过率</dt>
+              <dd>
+                {opsMetrics ? formatRate(opsMetrics.detectionPassRate) : '暂无抽样数据'}
+                {opsMetrics?.queueDepth != null ? ` · 队列深度 ${opsMetrics.queueDepth}` : ''}
+              </dd>
+            </div>
+          </dl>
+        ) : (
+          <p className="text-sm text-muted-foreground">暂无最终检测合同；加载后显示摘要。</p>
+        )}
+        {importContract ? (
+          <p className="text-xs text-muted-foreground">
+            URL 导入：{importContract.enabled ? '启用' : '停用'} · Base{' '}
+            <span className="break-all font-mono">{importContract.baseUrl || '—'}</span>
+          </p>
+        ) : null}
+        <div className="space-y-1 border-t pt-3 text-xs text-muted-foreground">
+          <p>
+            回退说明：若需改回上一检测模型，请到「系统管理 → 模型 API」对「最终检测」使用现有「修改」对话框改回
+            modelId / Base URL；本页只读，不会自动改模型。
+          </p>
+          <p data-testid="strategy-pass-score-note">
+            话术对齐：调用成功 ≠ 业务通过 ≠ 已收费；通过线仍为服务端 PASS_SCORE（本包未修改）。
+            production_billing 保持 false。
+          </p>
+        </div>
+      </section>
+
       <section className="rp-card p-4 shadow-sm space-y-3">
         <ListSearch value={search} placeholder="职责 / 供应商 / 模型" onChange={setSearch} />
         <RpTableScroll>
