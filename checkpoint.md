@@ -17,7 +17,7 @@
 | W4 | PASS 代码（策略摘要只读）；待发版 |
 | production_billing | false |
 | 证据 | `docs/mihuanyuantu-v2/input/REALPHOTOS-PROD-GAP-4PACK-e2e-2026-11-20.txt` |
-| 下一步 | 推 PR → 非作者 Owner squash → 管理员确认发前后端 |
+| 下一步 | PR #94 → 非作者 Owner squash → 管理员确认发前后端 |
 
 ## §1 生产机快照（承接 S7）
 

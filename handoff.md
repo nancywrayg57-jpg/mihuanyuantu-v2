@@ -29,6 +29,6 @@
 
 ## 4. 下一步
 
-1. Collaborator 推分支开 PR；Owner **非作者** squash 合入。
+1. Collaborator 推分支PR #94；Owner **非作者** squash 合入。
 2. 管理员确认后发前后端，使导入页提示 / 队列文案 / 策略摘要上线。
 3. 未授权不启动 W3-B 多 worker。
