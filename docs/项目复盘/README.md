@@ -1,7 +1,7 @@
 # 蜜獾原图 v2 · 项目复盘文档索引
 
 公网入口：[https://exif-demo.honeybadgersoft.com](https://exif-demo.honeybadgersoft.com)  
-证据采集见 `evidence_metrics.json` · `origin/main`：`b99d5af` · 提交数：**86** · 已合入 PR：**80** · Tag：`v2.0.1` · `production_billing`：**false**
+证据采集见 `evidence_metrics.json` · `origin/main`：`f5bc1f8` · 提交数：**94** · 已合入 PR：**87** · Tag：`v2.0.1` · `production_billing`：**false**
 
 ## 文档清单
 
@@ -17,11 +17,12 @@
 
 | 指标 | 值 |
 | --- | ---: |
-| `origin/main` 提交数 | 86 |
-| 已合入 PR | 80 |
+| `origin/main` 提交数 | 94 |
+| 已合入 PR | 87 |
 | Tag | v2.0.1 |
 | 公网入口 | 已切应用 |
 | 生产收费 | false |
+| 最近交付 | PROD-GAP-4PACK + 导入页客户化（#94–#98） |
 
 返工热点文件 Top（`git log --name-only` 触碰次数）：`progress.yaml`、`wiki.md`、`checkpoint.md`、`handoff.md`、`s1_processing.py`、`s6_ops.py`、任务/图库/工作台前端页等——详见 `evidence_metrics.json`。
 
@@ -34,12 +35,12 @@
 ## 阅读建议
 
 1. 先扫本 README 数字与范围。  
-2. 工程成败与避坑 → `01_*`。  
+2. 工程成败与避坑 → `01_*`（含第 9 章 PROD-GAP）。  
 3. 架构与已走路线 → `02_*`。  
-4. 下一步只做合同内事项 → `03_*`。
+4. 下一步只做合同内事项 → `03_*`（R7/R6 仍待授权；原导入/提示/吞吐/策略缺口已关闭）。
 
 ## 口径备忘
 
-- 只写已合入 `main` 的事实。  
-- 《01》含 2026-11-20 管理员边问边证结论。  
-- HTML：离线自包含，风格贴近蜜獾原图运营工具气质；可用 `python scripts/build_html_reports.py` 从 Markdown 重新生成。
+- 只写已合入 `main` 的事实；缺口关闭以合入 + 部署双证为准。  
+- 《01》含 2026-11-20 管理员边问边证结论，并追加第 9 章。  
+- HTML：离线自包含，风格贴近蜜獾原图运营工具气质；Markdown 更新后须管理员确认再重生 HTML（`python scripts/build_html_reports.py`）。

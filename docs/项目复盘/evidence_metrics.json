@@ -1,23 +1,23 @@
 {
   "schema": "mihuanyuantu-v2.evidence_metrics.v1",
-  "collected_at": "2026-11-20T03:45:00Z",
+  "collected_at": "2026-11-20T12:15:00Z",
   "git": {
     "remote": "https://github.com/nancywrayg57-jpg/mihuanyuantu-v2.git",
     "ref": "origin/main",
-    "head": "b99d5af8fa206ebddc2e93dad62ef5892598b2b5",
-    "head_short": "b99d5af",
-    "commit_count": 86,
+    "head": "f5bc1f8063a639f300133cca723b78110e3a93b4",
+    "head_short": "f5bc1f8",
+    "commit_count": 94,
     "first_commit_subject": "chore: upload detector research input materials",
-    "time_window_note": "2026-10-31 → 2026-11-18 (commit dates on origin/main)",
+    "time_window_note": "2026-10-31 → 2026-11-20 (commit dates on origin/main)",
     "tags": [
       "v2.0.1"
     ]
   },
   "pull_requests": {
-    "merged_into_main": 80,
+    "merged_into_main": 87,
     "number_range": {
       "first": 2,
-      "last": 91
+      "last": 98
     },
     "missing_numbers_among_range_note": "Gaps (not merged or never opened as mergeable into main) include e.g. 1,5,7,8,26,40,45,47,61,63,66 — verify via GitHub if citing"
   },
