@@ -348,7 +348,7 @@ def render_index() -> None:
     </div>
   </header>
   <div class="cards">
-    <a class="card" href="01_开发会话复盘与成败经验.html"><h2>01 开发过程复盘</h2><p>九章演进、成功经验、失败教训与 SOP。</p></a>
+    <a class="card" href="01_开发会话复盘与成败经验.html"><h2>01 开发过程复盘</h2><p>全景演进（含第 9 章 PROD-GAP）、成功经验、失败教训与 SOP。</p></a>
     <a class="card" href="02_项目架构与开发路线图.html"><h2>02 架构与路线图</h2><p>逻辑架构、子系统与 Past/Future 路线。</p></a>
     <a class="card" href="03_后续优化与演进建议.html"><h2>03 产品演进建议</h2><p>仅现行部署仍存在的产品缺口（P0/P1/P2）。</p></a>
   </div>

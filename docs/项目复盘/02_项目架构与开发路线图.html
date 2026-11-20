@@ -79,11 +79,11 @@ a:hover{text-decoration:underline}
   <header class="hero">
     <p class="eyebrow">架构全景 · 开发路线图</p>
     <h1>蜜獾原图 v2｜项目系统架构全景与开发路线图</h1>
-    <div class="badges"><span class="badge">HEAD b99d5af</span><span class="badge">commits 86</span><span class="badge">PRs 80</span><span class="badge amber">production_billing=false</span></div>
+    <div class="badges"><span class="badge">HEAD f5bc1f8</span><span class="badge">commits 94</span><span class="badge">PRs 87</span><span class="badge amber">production_billing=false</span></div>
   </header>
   <article class="content">
 <blockquote><p>独立可读摘要。产品行为听 <code>docs/蜜獾原图-v2-PRD-v2.0.md</code>；落地结构听 <code>docs/蜜獾原图-v2-项目架构-v1.0.md</code>；阶段听 <code>docs/mihuanyuantu-v2/DEV_INSTRUCTIONS.md</code>。  </p></blockquote>
-<blockquote><p>取证基线：<code>origin/main</code> <code>b99d5af</code>；已合入 PR 80；Tag <code>v2.0.1</code>；公网入口 <code>https://exif-demo.honeybadgersoft.com</code>；<code>production_billing=false</code>（事实）。  </p></blockquote>
+<blockquote><p>取证基线：<code>origin/main</code> <code>f5bc1f8</code>；提交数 94；已合入 PR 87；Tag <code>v2.0.1</code>；公网入口 <code>https://exif-demo.honeybadgersoft.com</code>；<code>production_billing=false</code>（事实）。  </p></blockquote>
 <blockquote><p>指标见 <code>evidence_metrics.json</code>；阶段↔PR 见 <code>pr_stage_map.json</code>。本文不写内网主机/口令/环境变量名。</p></blockquote>
 <h2 id="1-总体系统架构">1. 总体系统架构</h2>
 <h3 id="11-逻辑架构文字同构">1.1 逻辑架构（文字同构）</h3>
@@ -156,9 +156,10 @@ a:hover{text-decoration:underline}
 <h3 id="24-增长能力与对外-API">2.4 增长能力与对外 API</h3>
 <ul>
 <li>- <strong>生图入库</strong>：可先无真供应商跑通产品形态（#23）。  </li>
-<li>- <strong>URL 导入</strong>：含 API 型供应商配置（#67 等）。  </li>
+<li>- <strong>URL 导入</strong>：API 型供应商合同已正式启用（PROD-GAP W1，#94）；商家页支持粘贴 URL / JSON / 上传，失败明细对客展示；示例 JSON 默认折叠（#98）。  </li>
+<li>- <strong>排队与吞吐</strong>：任务/批量侧展示预计等待（W3-A）；process worker 受控并发灰度上限 1–4，生产当前为 2（W3-B，#95/#96）。  </li>
 <li>- <strong>客户业务 API</strong>：<code>X-API-Key</code> + scope=<code>image_processing</code> + OpenAPI（FR-033，S5）。  </li>
-<li>- <strong>模型通道</strong>：按职责可配置（预审/生图/检测/导入），平台托管；<strong>客户自建上游 Key</strong> 不在现行合同建议范围。</li>
+<li>- <strong>模型通道</strong>：按职责可配置（预审/生图/检测/导入），平台托管；管理端可只读查看策略摘要（W4）；<strong>客户自建上游 Key</strong> 不在现行合同建议范围。</li>
 </ul>
 <h3 id="25-运营完备S6">2.5 运营完备（S6）</h3>
 <ul>
@@ -195,14 +196,19 @@ a:hover{text-decoration:underline}
         ↓
 #70–#91             生产后 UX P0/P1/P2 · 安全 · 预设治理
         ↓
-Tag v2.0.1          钉在 #89 附近；main 续有 #90/#91
+#92–#93             复制锁陈旧守卫修复与证据
+        ↓
+#94–#98             PROD-GAP-4PACK（导入/提示/排队/策略）+ W3-B 并发 + 导入页客户化
+        ↓
+Tag v2.0.1          钉在 #89 附近；main 已前进至 #98（`f5bc1f8`）
 公网                 https://exif-demo.honeybadgersoft.com（应用已切流）</code></pre>
 <h3 id="32-下一阶段仅合同内">3.2 下一阶段（仅合同内）</h3>
 <table><thead><tr><th>波次</th><th>主题</th><th>说明</th></tr></thead><tbody>
-<tr><td>近</td><td>运维硬化</td><td>出口代理自有化替换临期第三方；备份/告警规程；种子口令轮换</td></tr>
+<tr><td>近</td><td>运维硬化</td><td>出口代理自有化替换临期第三方（<strong>R7</strong>）；备份/告警规程；种子口令轮换（<strong>R6</strong>）——均须另行授权</td></tr>
 <tr><td>近</td><td>质量门禁</td><td>端测分层（冒烟 / 核心域 / 夜间全量）；显示层回归（勿只信 API）</td></tr>
 <tr><td>中</td><td>体验与数据诚实</td><td>预设变体/去重治理巩固；任务/流水/文案语义一致性</td></tr>
 <tr><td>中</td><td>检测与算法</td><td>在「未擅自默认晋升」门禁下继续合同内调参与证据归档</td></tr>
+<tr><td>中</td><td>吞吐观察（可选）</td><td>在并发=2 灰度下可选大批次墙钟对比；再升并发须授权</td></tr>
 <tr><td>远</td><td>经济起步升级</td><td>高可用、存储适配器切换等按架构升级路径，<strong>不</strong>把 OSS 必选写成当前必做</td></tr>
 </tbody></table>
 <p><strong>明确不在本路线图宣称的</strong>：生产收费已开放、ZIP 交付、独立 GPS 选择页、生图成功后自动进入相机参数处理、客户自建上游模型 Key、外部发布包装等 PRD 禁止或未授权项。</p>
