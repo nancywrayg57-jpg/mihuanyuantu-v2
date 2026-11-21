@@ -41,7 +41,8 @@ _LOG = logging.getLogger("realphotos.supplier_config")
 _ADMIN_DUTIES = frozenset(
     {"pre_review", "generation", "prompt_opt", "final_detection", "import"}
 )
-_NO_SECRET_DUTIES = frozenset({"import"})
+# import may be anonymous historically; Key is optional unless capabilities.authRequired.
+_NO_SECRET_DUTIES: frozenset[str] = frozenset()
 _URL_RE = re.compile(r"^https?://", re.I)
 
 # ensure() may refresh only these capability keys on non-adminManaged generation rows.
@@ -117,11 +118,12 @@ _SPECS: tuple[dict[str, Any], ...] = (
         "provider": "api-image-host",
         "model_id": "api-image-host",
         "region": "47.85.47.252",
-        "credential_ref": "生产物料清单§4 API 型导入（无鉴权联调站可作默认基址）",
+        "credential_ref": "生产物料 / duty-secrets#import（X-API-Key）",
         "base_url": "http://47.85.47.252",
         "capabilities": {
             "formalSupplier": True,
-            "authRequired": False,
+            "authRequired": True,
+            "authHeader": "X-API-Key",
             "pathPrefix": "/api/images/",
             "methods": ["GET"],
             "listPath": "/api/images",
@@ -129,9 +131,9 @@ _SPECS: tuple[dict[str, Any], ...] = (
         },
         "gap_note": (
             "API 型 URL 导入：粘贴 /images/ 或 /api/images/ URL，"
-            "运行时统一 GET {base}/api/images/<file>。无 Key；基址可管理端配置。"
+            "运行时统一 GET {base}/api/images/<file>；图站要求鉴权时带头 X-API-Key。"
         ),
-        "secret_duty": "",
+        "secret_duty": "import",
     },
     {
         "duty": "final_detection",
@@ -298,10 +300,16 @@ def _next_config_version() -> str:
 def _seed_enabled(spec: dict[str, Any]) -> bool:
     duty = str(spec["duty"])
     if duty == "import":
-        # Formal API import: seed enabled when base_url is present (no Key required).
-        return bool(str(spec.get("base_url") or "").strip()) and bool(
-            dict(spec["capabilities"]).get("formalSupplier") is True
-        )
+        # Formal API import: base_url required; Key required when authRequired.
+        caps = dict(spec.get("capabilities") or {})
+        if not str(spec.get("base_url") or "").strip() or caps.get("formalSupplier") is not True:
+            return False
+        if caps.get("authRequired") is True:
+            return bool(
+                has_duty_secret("import")
+                or str(getattr(settings, "REALPHOTOS_IMPORT_API_KEY", "") or "").strip()
+            )
+        return True
     if duty == "final_detection":
         return has_duty_secret("final_detection") or bool(str(settings.GEMINI_API_KEY or "").strip())
     secret_duty = str(spec.get("secret_duty") or "")
@@ -504,12 +512,11 @@ class RealphotosSupplierConfigService:
         if label == "import":
             # Keep formal API import markers even when admin edits base/enabled.
             caps.setdefault("formalSupplier", True)
-            caps.setdefault("authRequired", False)
+            caps.setdefault("authRequired", True)
+            caps.setdefault("authHeader", "X-API-Key")
             caps.setdefault("pathPrefix", "/api/images/")
             caps.setdefault("methods", ["GET"])
         if api_key and str(api_key).strip():
-            if label in _NO_SECRET_DUTIES:
-                raise BusinessError(message="URL 导入供应商无需 API Key", code="INPUT_INVALID")
             public_cred = append_duty_credential(
                 label,
                 str(api_key).strip(),
@@ -544,6 +551,14 @@ class RealphotosSupplierConfigService:
                 if label == "import":
                     if not str(row.base_url or "").strip():
                         raise BusinessError(message="启用前须填写 Base URL", code="INPUT_INVALID")
+                    auth_required = bool((row.capabilities or {}).get("authRequired"))
+                    if auth_required and not (
+                        key_written or has_duty_secret(label) or str(getattr(settings, "REALPHOTOS_IMPORT_API_KEY", "") or "").strip()
+                    ):
+                        raise BusinessError(
+                            message="启用前须配置导入 API Key（X-API-Key）",
+                            code="INPUT_INVALID",
+                        )
                 elif not has_duty_secret(label):
                     raise BusinessError(message="启用前须配置 API Key", code="INPUT_INVALID")
             row.enabled = want_enabled

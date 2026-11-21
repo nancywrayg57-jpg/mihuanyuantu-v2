@@ -591,6 +591,8 @@ class RealphotosGrowthService:
         from app.capabilities.realphotos.services.s1_processing import RealphotosS1Service
         from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
         from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
+        from app.capabilities.realphotos.services.supplier_secrets import read_duty_secret
+        from app.core.config import settings
 
         # FR-002：冻结账号禁止 URL/JSON 导入入库
         await RealphotosOpsService(self.db).assert_can_create_task(
@@ -611,6 +613,15 @@ class RealphotosGrowthService:
         formal = caps.get("formalSupplier") is True
         base_url = normalize_import_base_url(str(contract.base_url or ""))
         allowed_hosts = host_allowlist_from_base_url(base_url)
+        import_api_key = (
+            read_duty_secret("import")
+            or str(getattr(settings, "REALPHOTOS_IMPORT_API_KEY", "") or "").strip()
+        )
+        if caps.get("authRequired") is True and not import_api_key:
+            raise BusinessError(
+                message="导入供应商要求 API Key，但未配置 duty=import 凭据",
+                code="SERVICE_NOT_CONFIGURED",
+            )
         s1 = RealphotosS1Service(self.db)
         imported: list[dict] = []
         failed: list[dict] = []
@@ -627,6 +638,7 @@ class RealphotosGrowthService:
                     url,
                     allowed_hosts=allowed_hosts,
                     base_url=base_url,
+                    api_key=import_api_key or None,
                 )
                 asset = await s1.upload(
                     tenant_id=int(tenant_id),

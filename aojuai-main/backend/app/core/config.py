@@ -340,6 +340,8 @@ class Settings(BaseSettings):
     REALPHOTOS_IMPORT_STAGING: str = ""
     # SEC-F03：导入供应商 Base URL；空则运行时 SERVICE_NOT_CONFIGURED（禁止硬编码公网默认）。
     REALPHOTOS_IMPORT_BASE_URL: str = ""
+    # Optional X-API-Key for API-type image host (duty=import). Prefer duty-secrets store.
+    REALPHOTOS_IMPORT_API_KEY: str = ""
     # duty|model_id → {unit_cost, currency, unit_name}; empty = no known unit price.
     REALPHOTOS_UNIT_COSTS_JSON: str = ""
     # E2E only: force notify outbox deliver to fail for the first N attempts.

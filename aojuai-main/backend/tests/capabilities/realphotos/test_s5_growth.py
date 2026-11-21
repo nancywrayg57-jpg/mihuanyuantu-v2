@@ -326,9 +326,13 @@ async def test_prompt_optimization_and_template_do_not_share_generation_freeze(d
 
 
 @pytest.mark.asyncio
-async def test_url_import_rejects_101_and_skips_bad_hosts(db):
+async def test_url_import_rejects_101_and_skips_bad_hosts(db, monkeypatch):
     ctx = await _funded(db)
     from app.capabilities.realphotos.services.supplier_config import RealphotosSupplierConfigService
+    from app.core.config import settings
+
+    # authRequired import seed needs a Key (or duty secret) before the contract enables.
+    monkeypatch.setattr(settings, "REALPHOTOS_IMPORT_API_KEY", "test-import-key", raising=False)
 
     suppliers = RealphotosSupplierConfigService(db)
     await suppliers.ensure()

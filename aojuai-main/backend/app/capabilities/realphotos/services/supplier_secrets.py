@@ -25,7 +25,7 @@ from app.capabilities.realphotos.services.supplier_material import read_material
 from app.core.config import settings
 
 _STORE_NAME = "realphotos-duty-secrets.json"
-_DUTIES = frozenset({"generation", "prompt_opt", "pre_review", "final_detection"})
+_DUTIES = frozenset({"generation", "prompt_opt", "pre_review", "final_detection", "import"})
 
 
 def secret_store_paths() -> list[Path]:
@@ -243,6 +243,10 @@ def read_duty_secret(duty: str) -> str:
         return str(chosen.get("secret") or "").strip() if chosen else ""
     if label == "final_detection":
         env = str(settings.GEMINI_API_KEY or "").strip()
+        if env:
+            return env
+    if label == "import":
+        env = str(getattr(settings, "REALPHOTOS_IMPORT_API_KEY", "") or "").strip()
         if env:
             return env
     return read_material_secret(label)

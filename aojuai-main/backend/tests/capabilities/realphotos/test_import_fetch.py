@@ -45,6 +45,7 @@ def test_allowlist_only_contract_host():
 async def test_fetch_rewrites_static_to_api(monkeypatch):
     hosts = {"47.85.47.252"}
     seen: list[str] = []
+    client_headers: dict[str, str] = {}
 
     class FakeResponse:
         status_code = 200
@@ -53,7 +54,8 @@ async def test_fetch_rewrites_static_to_api(monkeypatch):
 
     class FakeClient:
         def __init__(self, *args, **kwargs):
-            pass
+            client_headers.clear()
+            client_headers.update(kwargs.get("headers") or {})
 
         async def __aenter__(self):
             return self
@@ -73,6 +75,42 @@ async def test_fetch_rewrites_static_to_api(monkeypatch):
     )
     assert raw.startswith(b"fakepng")
     assert seen == ["http://47.85.47.252/api/images/f4.png"]
+    assert "X-API-Key" not in client_headers
+
+
+@pytest.mark.asyncio
+async def test_fetch_sends_x_api_key_when_provided(monkeypatch):
+    hosts = {"47.85.47.252"}
+    client_headers: dict[str, str] = {}
+
+    class FakeResponse:
+        status_code = 200
+        content = b"fakepng-bytes-here!!"
+        headers: dict[str, str] = {}
+
+    class FakeClient:
+        def __init__(self, *args, **kwargs):
+            client_headers.clear()
+            client_headers.update(kwargs.get("headers") or {})
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return False
+
+        async def get(self, url):
+            return FakeResponse()
+
+    monkeypatch.setattr(httpx, "AsyncClient", FakeClient)
+    raw = await fetch_import_bytes(
+        "http://47.85.47.252/api/images/f4.png",
+        allowed_hosts=hosts,
+        base_url="http://47.85.47.252",
+        api_key="demo-import-key",
+    )
+    assert raw.startswith(b"fakepng")
+    assert client_headers.get("X-API-Key") == "demo-import-key"
 
 def test_missing_import_base_url_is_not_configured(monkeypatch):
     """SEC-F03：未配置时不得回落到硬编码公网地址。"""
