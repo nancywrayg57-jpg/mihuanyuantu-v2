@@ -1,0 +1,5 @@
+frontend/node_modules/
+frontend/dist/
+pocketbase/pb_data/
+*.log
+.DS_Store
