@@ -102,15 +102,25 @@ async def fetch_import_bytes(
     *,
     allowed_hosts: set[str],
     base_url: str | None = None,
+    api_key: str | None = None,
 ) -> bytes:
-    """Fetch image bytes via the supplier API path, not the pasted URL verbatim."""
+    """Fetch image bytes via the supplier API path, not the pasted URL verbatim.
+
+    When ``api_key`` is set, send ``X-API-Key`` (image-host Swagger contract).
+    Anonymous GET remains supported for hosts that do not require auth.
+    """
     assert_import_url_allowed(url, allowed_hosts=allowed_hosts)
     filename = extract_import_filename(url)
     current = api_download_url(base_url=base_url or default_import_base_url(), filename=filename)
     _assert_host_allowed(current, allowed_hosts=allowed_hosts)
 
+    headers: dict[str, str] = {}
+    key = str(api_key or "").strip()
+    if key:
+        headers["X-API-Key"] = key
+
     timeout = httpx.Timeout(IMPORT_FETCH_TIMEOUT_SECONDS, connect=10.0)
-    async with httpx.AsyncClient(timeout=timeout, follow_redirects=False) as client:
+    async with httpx.AsyncClient(timeout=timeout, follow_redirects=False, headers=headers) as client:
         for _ in range(MAX_REDIRECTS + 1):
             response = await client.get(current)
             if response.status_code in {301, 302, 303, 307, 308}:
