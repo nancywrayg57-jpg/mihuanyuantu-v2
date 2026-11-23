@@ -1,0 +1,952 @@
+<script setup>
+import { computed, nextTick, ref, watch } from 'vue'
+import {
+  Heart,
+  MessageCircle,
+  Trash2,
+  ExternalLink,
+  Pencil,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  Download,
+  RotateCw,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-vue-next'
+import pb from '../lib/pb'
+import { useAuthStore } from '../stores/auth'
+import { useLocaleStore } from '../stores/locale'
+import { zhError } from '../lib/errors'
+import VoiceRecorder from './VoiceRecorder.vue'
+import EditArchiveModal from './EditArchiveModal.vue'
+import VideoPlayer from './VideoPlayer.vue'
+import { coverOrThumbUrl, formatDuration, thumbUrl } from '../lib/mediaPrepare'
+
+const props = defineProps({
+  archive: { type: Object, required: true },
+  memoryCount: { type: Number, default: 0 },
+})
+const emit = defineEmits(['deleted', 'updated', 'memory'])
+
+const auth = useAuthStore()
+const i18n = useLocaleStore()
+const liked = ref(false)
+const likeId = ref('')
+const likes = ref(props.archive.likes_count || 0)
+const showMemories = ref(false)
+const memories = ref([])
+const textContent = ref('')
+const busy = ref(false)
+const confirmDelete = ref(false)
+const editOpen = ref(false)
+const actionError = ref('')
+/** Expand nested VideoPlayer only after user taps poster (avoids list black frames). */
+const videoExpanded = ref(false)
+
+watch(
+  () => props.archive.likes_count,
+  (v) => {
+    likes.value = v || 0
+  },
+)
+
+const uploaderId = computed(() => {
+  const u = props.archive.uploader
+  return typeof u === 'string' ? u : u?.id || ''
+})
+
+const canEdit = computed(
+  () => auth.isAdmin || (!!auth.user?.id && uploaderId.value === auth.user.id),
+)
+
+const files = computed(() => {
+  const raw = props.archive.media_files
+  return Array.isArray(raw) ? raw.filter(Boolean) : raw ? [raw] : []
+})
+const slide = ref(0)
+/** When true, list face prefers cover_file over media_files[slide]. Cleared once user browses the album. */
+const preferCoverFace = ref(true)
+const lightboxOpen = ref(false)
+const lightboxIndex = ref(0)
+/** 'landscape' | 'portrait' — drives stage aspect / fill by image orientation */
+const lightboxOrient = ref('portrait')
+/** CSS aspect-ratio from natural pixels, e.g. "1920 / 1278" */
+const lightboxAspect = ref('3 / 4')
+const swipeStartX = ref(0)
+const swipeStartY = ref(0)
+const swipeDeltaX = ref(0)
+const swipeActive = ref(false)
+const lightboxError = ref(false)
+const lightboxZoom = ref(1)
+const lightboxRotate = ref(0)
+const pinchStartDist = ref(0)
+const pinchStartZoom = ref(1)
+
+watch(
+  () => props.archive.id,
+  () => {
+    slide.value = 0
+    preferCoverFace.value = true
+    lightboxOpen.value = false
+    lightboxIndex.value = 0
+    swipeDeltaX.value = 0
+    videoExpanded.value = false
+    resetLightboxView()
+  },
+)
+watch(
+  () => props.archive.cover_file,
+  () => {
+    preferCoverFace.value = true
+  },
+)
+watch(files, (list) => {
+  if (slide.value >= list.length) slide.value = Math.max(0, list.length - 1)
+  if (lightboxIndex.value >= list.length) lightboxIndex.value = Math.max(0, list.length - 1)
+})
+
+/** Invalidate stale Image()/load callbacks when the slide changes. */
+let lightboxOrientSeq = 0
+
+function applyLightboxOrient(nw, nh, seq = lightboxOrientSeq) {
+  if (seq !== lightboxOrientSeq) return
+  if (!nw || !nh) return
+  lightboxOrient.value = nw >= nh ? 'landscape' : 'portrait'
+  lightboxAspect.value = `${nw} / ${nh}`
+}
+
+function detectLightboxOrient(src) {
+  if (!src || typeof Image === 'undefined') return
+  const seq = ++lightboxOrientSeq
+  const im = new Image()
+  im.onload = () => applyLightboxOrient(im.naturalWidth, im.naturalHeight, seq)
+  im.onerror = () => {
+    if (seq === lightboxOrientSeq) lightboxOrient.value = 'portrait'
+  }
+  im.src = src
+}
+
+function syncLightboxOrientFromDom(seq = lightboxOrientSeq) {
+  const tryApply = () => {
+    if (seq !== lightboxOrientSeq) return true
+    const img = document.querySelector('[data-testid="lightbox-image"]')
+    if (img?.naturalWidth && img.naturalHeight) {
+      applyLightboxOrient(img.naturalWidth, img.naturalHeight, seq)
+      return true
+    }
+    return false
+  }
+  if (tryApply()) return
+  requestAnimationFrame(() => {
+    if (tryApply()) return
+    setTimeout(tryApply, 50)
+  })
+}
+
+function syncLightboxOrient() {
+  const item = imageUrls.value[lightboxIndex.value]
+  const src = item?.full || item?.url
+  detectLightboxOrient(src)
+  nextTick(() => syncLightboxOrientFromDom())
+}
+
+function resetLightboxView() {
+  lightboxError.value = false
+  lightboxZoom.value = 1
+  lightboxRotate.value = 0
+  pinchStartDist.value = 0
+  pinchStartZoom.value = 1
+  swipeDeltaX.value = 0
+}
+
+function openLightbox(index = slide.value) {
+  const i = Math.max(0, Math.min(Number(index) || 0, Math.max(0, imageUrls.value.length - 1)))
+  lightboxIndex.value = i
+  slide.value = i
+  resetLightboxView()
+  lightboxOpen.value = true
+  syncLightboxOrient()
+}
+function closeLightbox() {
+  lightboxOpen.value = false
+  swipeActive.value = false
+  resetLightboxView()
+  lightboxOrientSeq += 1
+}
+function lightboxPrev() {
+  if (!imageUrls.value.length) return
+  lightboxIndex.value = (lightboxIndex.value - 1 + imageUrls.value.length) % imageUrls.value.length
+  slide.value = lightboxIndex.value
+  resetLightboxView()
+  syncLightboxOrient()
+}
+function lightboxNext() {
+  if (!imageUrls.value.length) return
+  lightboxIndex.value = (lightboxIndex.value + 1) % imageUrls.value.length
+  slide.value = lightboxIndex.value
+  resetLightboxView()
+  syncLightboxOrient()
+}
+
+function onLightboxImgLoad(e) {
+  lightboxError.value = false
+  applyLightboxOrient(e?.target?.naturalWidth, e?.target?.naturalHeight)
+}
+function onLightboxImgError() {
+  lightboxError.value = true
+}
+
+const lightboxImgStyle = computed(() => {
+  const parts = []
+  if (swipeDeltaX.value) parts.push(`translateX(${swipeDeltaX.value}px)`)
+  if (lightboxRotate.value) parts.push(`rotate(${lightboxRotate.value}deg)`)
+  if (lightboxZoom.value !== 1) parts.push(`scale(${lightboxZoom.value})`)
+  return {
+    transform: parts.length ? parts.join(' ') : undefined,
+    transition: swipeDeltaX.value || pinchStartDist.value ? 'none' : 'transform 0.15s ease-out',
+  }
+})
+
+function zoomLightbox(delta) {
+  lightboxZoom.value = Math.min(4, Math.max(1, Math.round((lightboxZoom.value + delta) * 100) / 100))
+}
+function rotateLightbox() {
+  lightboxRotate.value = (lightboxRotate.value + 90) % 360
+}
+function downloadLightboxImage() {
+  const item = imageUrls.value[lightboxIndex.value]
+  const href = item?.full || item?.url
+  if (!href) return
+  const a = document.createElement('a')
+  a.href = href
+  a.download = item?.name || `${props.archive.title || 'photo'}.jpg`
+  a.target = '_blank'
+  a.rel = 'noopener'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+}
+
+function touchDistance(touches) {
+  if (!touches || touches.length < 2) return 0
+  const dx = touches[0].clientX - touches[1].clientX
+  const dy = touches[0].clientY - touches[1].clientY
+  return Math.hypot(dx, dy)
+}
+
+function onLightboxTouchStart(e) {
+  if (!e.touches?.length) return
+  if (e.touches.length >= 2) {
+    swipeActive.value = false
+    swipeDeltaX.value = 0
+    pinchStartDist.value = touchDistance(e.touches)
+    pinchStartZoom.value = lightboxZoom.value
+    return
+  }
+  swipeActive.value = true
+  swipeStartX.value = e.touches[0].clientX
+  swipeStartY.value = e.touches[0].clientY
+  swipeDeltaX.value = 0
+}
+function onLightboxTouchMove(e) {
+  if (e.touches?.length >= 2 && pinchStartDist.value > 0) {
+    const dist = touchDistance(e.touches)
+    if (dist > 0) {
+      lightboxZoom.value = Math.min(4, Math.max(1, pinchStartZoom.value * (dist / pinchStartDist.value)))
+    }
+    e.preventDefault?.()
+    return
+  }
+  if (!swipeActive.value || !e.touches?.length) return
+  if (lightboxZoom.value > 1.05) return
+  const dx = e.touches[0].clientX - swipeStartX.value
+  const dy = e.touches[0].clientY - swipeStartY.value
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
+    swipeDeltaX.value = dx
+    e.preventDefault?.()
+  }
+}
+function onLightboxTouchEnd() {
+  pinchStartDist.value = 0
+  if (!swipeActive.value) return
+  const dx = swipeDeltaX.value
+  swipeActive.value = false
+  swipeDeltaX.value = 0
+  if (lightboxZoom.value > 1.05) return
+  if (imageUrls.value.length < 2) return
+  if (dx <= -48) lightboxNext()
+  else if (dx >= 48) lightboxPrev()
+}
+
+function onLightboxWheel(e) {
+  if (!lightboxOpen.value) return
+  e.preventDefault?.()
+  zoomLightbox(e.deltaY < 0 ? 0.15 : -0.15)
+}
+
+function onLightboxKeydown(e) {
+  if (!lightboxOpen.value) return
+  if (e.key === 'Escape') closeLightbox()
+  else if (e.key === 'ArrowLeft') lightboxPrev()
+  else if (e.key === 'ArrowRight') lightboxNext()
+}
+
+watch(lightboxOpen, (open) => {
+  if (typeof window === 'undefined') return
+  if (open) window.addEventListener('keydown', onLightboxKeydown)
+  else window.removeEventListener('keydown', onLightboxKeydown)
+})
+const firstFile = computed(() => files.value[0] || '')
+const activeFile = computed(() => files.value[slide.value] || firstFile.value || '')
+const fileUrl = computed(() =>
+  activeFile.value ? pb.files.getURL(props.archive, activeFile.value) : '',
+)
+const listCoverUrl = computed(() => coverOrThumbUrl(pb, props.archive))
+const isPdf = computed(() => String(firstFile.value).toLowerCase().endsWith('.pdf'))
+const isVideo = computed(() => props.archive.category === 'video')
+const isAudio = computed(() => props.archive.category === 'audio')
+const isImageLike = computed(() => ['image', 'scan'].includes(props.archive.category))
+const isLink = computed(() => props.archive.category === 'link')
+const imageUrls = computed(() =>
+  files.value.map((name) => ({
+    name,
+    url: thumbUrl(pb, props.archive, name, '600x0') || pb.files.getURL(props.archive, name),
+    full: pb.files.getURL(props.archive, name),
+  })),
+)
+const multiCount = computed(() => (isImageLike.value ? files.value.length : 0))
+const durationLabel = computed(() => {
+  const d = Number(props.archive.duration_sec || 0)
+  return d > 0 ? formatDuration(d) : ''
+})
+const showListCover = computed(
+  () => isImageLike.value || (isVideo.value && !!listCoverUrl.value) || (isAudio.value && !!listCoverUrl.value),
+)
+/** List / default face: prefer cover_file (crop + set-cover) until user browses media. */
+const cardFaceUrl = computed(() => {
+  if (isImageLike.value && preferCoverFace.value && listCoverUrl.value) return listCoverUrl.value
+  return imageUrls.value[slide.value]?.url || listCoverUrl.value || fileUrl.value
+})
+
+function browseSlide(nextIndex) {
+  preferCoverFace.value = false
+  if (!files.value.length) return
+  const n = files.value.length
+  slide.value = ((nextIndex % n) + n) % n
+}
+function prevSlide() {
+  browseSlide(slide.value - 1)
+}
+function nextSlide() {
+  browseSlide(slide.value + 1)
+}
+function selectSlide(i) {
+  preferCoverFace.value = false
+  slide.value = i
+}
+
+async function checkLiked() {
+  try {
+    const list = await pb.collection('archive_likes').getList(1, 1, {
+      filter: `archive_id="${props.archive.id}" && user_id="${auth.user.id}"`,
+    })
+    if (list.items[0]) {
+      liked.value = true
+      likeId.value = list.items[0].id
+    }
+  } catch (_) {}
+}
+
+checkLiked()
+
+async function toggleLike() {
+  if (busy.value) return
+  busy.value = true
+  actionError.value = ''
+  try {
+    if (liked.value && likeId.value) {
+      await pb.collection('archive_likes').delete(likeId.value)
+      liked.value = false
+      likeId.value = ''
+      likes.value = Math.max(0, likes.value - 1)
+    } else {
+      const rec = await pb.collection('archive_likes').create({
+        archive_id: props.archive.id,
+        user_id: auth.user.id,
+      })
+      liked.value = true
+      likeId.value = rec.id
+      likes.value += 1
+    }
+    // likes_count is maintained by PocketBase hook — do not PATCH archives here
+    emit('updated', { ...props.archive, likes_count: likes.value })
+  } catch (e) {
+    actionError.value = zhError(e, '点赞失败，请稍后重试')
+  } finally {
+    busy.value = false
+  }
+}
+
+async function loadMemories() {
+  actionError.value = ''
+  try {
+    showMemories.value = true
+    const list = await pb.collection('memories').getList(1, 50, {
+      filter: `archive_id="${props.archive.id}"`,
+      sort: '-created',
+    })
+    memories.value = list.items
+  } catch (e) {
+    actionError.value = zhError(e, '加载留言失败')
+  }
+}
+
+async function postText() {
+  if (!textContent.value.trim()) return
+  actionError.value = ''
+  try {
+    const rec = await pb.collection('memories').create({
+      archive_id: props.archive.id,
+      author: auth.user.id,
+      author_name: auth.displayName,
+      content_type: 'text',
+      text_content: textContent.value.trim(),
+    })
+    textContent.value = ''
+    memories.value.unshift(rec)
+    emit('memory', rec)
+  } catch (e) {
+    actionError.value = zhError(e, '发布留言失败')
+  }
+}
+
+async function postVoice({ blob, duration }) {
+  actionError.value = ''
+  try {
+    const form = new FormData()
+    form.append('archive_id', props.archive.id)
+    form.append('author', auth.user.id)
+    form.append('author_name', auth.displayName)
+    form.append('content_type', 'voice')
+    form.append('voice_duration', String(duration || 0))
+    const ext = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm'
+    form.append('voice_file', blob, `voice.${ext}`)
+    const rec = await pb.collection('memories').create(form)
+    memories.value.unshift(rec)
+    emit('memory', rec)
+  } catch (e) {
+    actionError.value = zhError(e, '发布语音失败')
+  }
+}
+
+async function doDelete() {
+  actionError.value = ''
+  try {
+    await pb.collection('archives').delete(props.archive.id)
+    confirmDelete.value = false
+    emit('deleted', props.archive.id)
+  } catch (e) {
+    actionError.value = zhError(e, '删除失败')
+    confirmDelete.value = false
+  }
+}
+
+function askDelete() {
+  confirmDelete.value = true
+}
+
+function onEdited(rec) {
+  emit('updated', rec)
+}
+
+function voiceUrl(m) {
+  const name = Array.isArray(m.voice_file) ? m.voice_file[0] : m.voice_file
+  return name ? pb.files.getURL(m, name) : ''
+}
+
+/** Admin: any; member/guest: own comments only. */
+function canDeleteMemory(m) {
+  if (!auth.user?.id) return false
+  if (auth.isAdmin) return true
+  const authorId = typeof m.author === 'string' ? m.author : m.author?.id
+  return !!authorId && authorId === auth.user.id
+}
+
+async function deleteMemory(m) {
+  if (!canDeleteMemory(m) || busy.value) return
+  if (!window.confirm('确认删除这条追忆留言？')) return
+  busy.value = true
+  actionError.value = ''
+  try {
+    await pb.collection('memories').delete(m.id)
+    memories.value = memories.value.filter((x) => x.id !== m.id)
+    emit('memory', { ...m, _deleted: true, archive_id: m.archive_id || props.archive.id })
+  } catch (e) {
+    actionError.value = zhError(e, '删除留言失败')
+  } finally {
+    busy.value = false
+  }
+}
+</script>
+
+<template>
+  <article class="bg-parchment border border-clay overflow-hidden flex flex-col">
+    <div class="aspect-[4/3] bg-rice relative overflow-hidden">
+      <template v-if="isLink">
+        <a
+          :href="archive.external_link"
+          target="_blank"
+          rel="noopener"
+          class="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center hover:bg-clay/20"
+          data-testid="archive-link-card"
+        >
+          <img
+            v-if="listCoverUrl"
+            :src="listCoverUrl"
+            alt=""
+            class="absolute inset-0 w-full h-full object-cover"
+            data-testid="archive-link-cover"
+          />
+          <div
+            class="relative z-10 flex flex-col items-center gap-2"
+            :class="listCoverUrl ? 'bg-ink/55 text-parchment px-4 py-3' : ''"
+          >
+            <ExternalLink class="w-10 h-10" :class="listCoverUrl ? 'text-parchment' : 'text-celadon'" />
+            <span class="font-song text-lg">{{ listCoverUrl ? i18n.t('newsLink') : i18n.t('newsClip') }}</span>
+          </div>
+        </a>
+      </template>
+      <template v-else-if="isPdf">
+        <a :href="fileUrl" target="_blank" class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#f3ebe0]">
+          <div class="w-20 h-28 border-2 border-cinnabar/40 bg-parchment shadow-sm flex items-center justify-center font-song text-cinnabar">
+            PDF
+          </div>
+          <span class="text-mute">复古卷宗封面</span>
+        </a>
+      </template>
+      <template v-else-if="isVideo">
+        <div class="absolute inset-0">
+          <VideoPlayer v-if="videoExpanded" :archive="archive" />
+          <button
+            v-else
+            type="button"
+            class="absolute inset-0 w-full h-full p-0 border-0 cursor-pointer group"
+            data-testid="video-poster-play"
+            :aria-label="`播放 ${archive.title}`"
+            @click="videoExpanded = true"
+          >
+            <img
+              v-if="listCoverUrl"
+              :src="listCoverUrl"
+              :alt="archive.title"
+              class="absolute inset-0 w-full h-full object-cover"
+              data-testid="video-poster-img"
+            />
+            <div
+              v-else
+              class="absolute inset-0 bg-ink/85 grid place-items-center text-parchment/80 font-song"
+              data-testid="video-poster-placeholder"
+            >
+              视频
+            </div>
+            <span
+              class="absolute inset-0 grid place-items-center"
+            >
+              <span
+                class="w-14 h-14 rounded-full bg-ink/60 border border-parchment/50 grid place-items-center text-parchment group-hover:bg-cinnabar/90"
+              >
+                <Play class="w-7 h-7 fill-current" />
+              </span>
+            </span>
+          </button>
+          <span
+            v-if="durationLabel"
+            class="absolute bottom-2 left-2 z-10 text-xs bg-ink/70 text-parchment px-1.5 py-0.5"
+            data-testid="video-duration"
+          >{{ durationLabel }}</span>
+        </div>
+      </template>
+      <template v-else-if="isAudio && fileUrl">
+        <div class="absolute inset-0 flex flex-col justify-end p-4 gap-3">
+          <img
+            v-if="listCoverUrl"
+            :src="listCoverUrl"
+            alt=""
+            class="absolute inset-0 w-full h-full object-cover opacity-40"
+          />
+          <div class="vinyl-bar h-16 rounded-sm opacity-90 relative" />
+          <audio :src="fileUrl" controls class="w-full relative" />
+          <span
+            v-if="durationLabel"
+            class="absolute top-2 right-2 text-xs bg-ink/70 text-parchment px-1.5 py-0.5"
+          >{{ durationLabel }}</span>
+        </div>
+      </template>
+      <template v-else-if="isImageLike && imageUrls.length">
+        <button
+          type="button"
+          class="block w-full h-full p-0 border-0 cursor-zoom-in"
+          data-testid="archive-thumb-link"
+          @click="openLightbox(slide)"
+        >
+          <img
+            :src="cardFaceUrl"
+            :alt="`${archive.title}（${slide + 1}/${imageUrls.length}）`"
+            class="w-full h-full object-cover pointer-events-none"
+            loading="lazy"
+            data-testid="archive-thumb"
+          />
+        </button>
+        <div
+          v-if="multiCount > 1"
+          class="absolute top-2 right-2 z-10 text-xs bg-ink/75 text-parchment px-2 py-0.5"
+          data-testid="archive-multi-badge"
+        >
+          {{ preferCoverFace && listCoverUrl ? '封面' : `${slide + 1}/${multiCount} 张` }}
+        </div>
+        <div v-if="multiCount > 1" class="absolute inset-y-0 left-0 right-0 z-10 flex items-center justify-between px-1 pointer-events-none">
+          <button
+            type="button"
+            class="pointer-events-auto min-h-tap min-w-[44px] grid place-items-center bg-ink/45 text-parchment"
+            data-testid="archive-prev"
+            aria-label="上一张"
+            @click.stop="prevSlide"
+          >
+            <ChevronLeft class="w-6 h-6" />
+          </button>
+          <button
+            type="button"
+            class="pointer-events-auto min-h-tap min-w-[44px] grid place-items-center bg-ink/45 text-parchment"
+            data-testid="archive-next"
+            aria-label="下一张"
+            @click.stop="nextSlide"
+          >
+            <ChevronRight class="w-6 h-6" />
+          </button>
+        </div>
+        <div
+          v-if="multiCount > 1"
+          class="absolute bottom-2 left-2 right-2 z-10 flex gap-1 overflow-x-auto pointer-events-auto"
+          data-testid="archive-thumbs"
+        >
+          <button
+            v-for="(img, i) in imageUrls"
+            :key="img.name"
+            type="button"
+            class="shrink-0 w-10 h-10 border-2 overflow-hidden"
+            :class="!preferCoverFace && i === slide ? 'border-cinnabar' : 'border-parchment/80'"
+            @click.stop="selectSlide(i)"
+          >
+            <img :src="img.url" :alt="`缩略图 ${i + 1}`" class="w-full h-full object-cover" />
+          </button>
+        </div>
+      </template>
+      <template v-else>
+        <div class="absolute inset-0 grid place-items-center text-mute">暂无预览</div>
+      </template>
+    </div>
+
+    <div class="p-4 flex-1 flex flex-col gap-3">
+      <h3 class="font-song text-xl leading-snug">{{ archive.title }}</h3>
+      <dl class="text-sm text-mute space-y-1">
+        <div>{{ i18n.t('time') }}：{{ archive.occurred_time }}</div>
+        <div>{{ i18n.t('related') }}：{{ archive.related_persons }}</div>
+        <div>{{ i18n.t('uploader') }}：{{ archive.uploader_name || '—' }}</div>
+      </dl>
+      <p v-if="archive.description" class="text-ink/90">{{ archive.description }}</p>
+      <p v-if="actionError" class="text-cinnabar text-sm">{{ actionError }}</p>
+
+      <div
+        class="mt-auto flex flex-nowrap items-center gap-1 sm:gap-2 pt-2 overflow-x-auto"
+        data-testid="archive-actions"
+      >
+        <button
+          type="button"
+          class="inline-flex items-center gap-1 sm:gap-1.5 min-h-tap px-2 sm:px-3 border border-clay shrink-0"
+          :class="liked ? 'text-cinnabar' : ''"
+          @click="toggleLike"
+        >
+          <Heart class="w-5 h-5" :fill="liked ? 'currentColor' : 'none'" />
+          {{ likes }}
+        </button>
+        <button
+          type="button"
+          class="inline-flex items-center gap-1 sm:gap-1.5 min-h-tap px-2 sm:px-3 border border-clay shrink-0"
+          @click="loadMemories"
+        >
+          <MessageCircle class="w-5 h-5" />
+          {{ memoryCount }}
+        </button>
+        <button
+          v-if="canEdit"
+          type="button"
+          data-testid="edit-archive"
+          class="inline-flex items-center gap-1 sm:gap-1.5 min-h-tap px-2 sm:px-3 border border-celadon text-celadon shrink-0"
+          @click="editOpen = true"
+        >
+          <Pencil class="w-5 h-5" /> {{ i18n.t('edit') }}
+        </button>
+        <button
+          v-if="auth.isAdmin"
+          type="button"
+          data-testid="delete-archive"
+          class="inline-flex items-center gap-1 sm:gap-1.5 min-h-tap px-2 sm:px-3 border border-cinnabar text-cinnabar shrink-0"
+          @click="askDelete"
+        >
+          <Trash2 class="w-5 h-5" /> {{ i18n.t('delete') }}
+        </button>
+      </div>
+
+      <div v-if="showMemories" class="border-t border-clay pt-3 space-y-3">
+        <div class="space-y-2 max-h-48 overflow-auto">
+          <div v-for="m in memories" :key="m.id" class="text-sm border border-clay/70 p-2 bg-rice">
+            <div class="flex items-start justify-between gap-2 text-mute mb-1">
+              <span>{{ m.author_name }} · {{ m.content_type === 'voice' ? '语音' : '文字' }}</span>
+              <button
+                v-if="canDeleteMemory(m)"
+                type="button"
+                class="shrink-0 text-cinnabar underline underline-offset-2"
+                data-testid="delete-memory"
+                @click="deleteMemory(m)"
+              >
+                删除
+              </button>
+            </div>
+            <p v-if="m.content_type === 'text'">{{ m.text_content }}</p>
+            <audio v-else-if="voiceUrl(m)" :src="voiceUrl(m)" controls class="w-full" />
+          </div>
+          <p v-if="!memories.length" class="text-mute">暂无追忆，来写一句吧</p>
+        </div>
+        <textarea
+          v-model="textContent"
+          rows="2"
+          class="w-full px-3 py-2 border border-clay bg-rice"
+          placeholder="写下对这段记忆的追忆…"
+        />
+        <button type="button" class="min-h-tap px-4 bg-celadon text-parchment" @click="postText">
+          发布文字追忆
+        </button>
+        <VoiceRecorder @publish="postVoice" />
+      </div>
+    </div>
+
+    <EditArchiveModal :open="editOpen" :archive="archive" @close="editOpen = false" @saved="onEdited" />
+
+    <div
+      v-if="confirmDelete"
+      class="fixed inset-0 z-[60] bg-ink/50 flex items-center justify-center p-4"
+      data-testid="delete-confirm-dialog"
+    >
+      <div class="bg-parchment border border-clay max-w-md w-full p-6 space-y-4">
+        <p class="font-song text-lg leading-relaxed">
+          确认要永久删除这条珍贵的家族记忆吗？此操作不可恢复。
+        </p>
+        <div class="flex gap-3">
+          <button type="button" class="flex-1 min-h-tap border border-clay" @click="confirmDelete = false">
+            取消
+          </button>
+          <button
+            type="button"
+            data-testid="confirm-delete"
+            class="flex-1 min-h-tap bg-cinnabar text-parchment"
+            @click="doDelete"
+          >
+            确认删除
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </article>
+
+    <!-- Teleport so fixed overlay is not clipped by card stacking contexts -->
+    <Teleport to="body">
+      <div
+        v-if="lightboxOpen && imageUrls.length"
+        class="fixed inset-0 z-[80] bg-ink flex flex-col touch-pan-y"
+        data-testid="image-lightbox"
+        :data-orient="lightboxOrient"
+        @click.self="closeLightbox"
+        @touchstart.passive="onLightboxTouchStart"
+        @touchmove="onLightboxTouchMove"
+        @touchend="onLightboxTouchEnd"
+        @touchcancel="onLightboxTouchEnd"
+        @wheel.prevent="onLightboxWheel"
+      >
+        <div
+          class="shrink-0 relative z-[2] flex items-center justify-between gap-2 px-3 sm:px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2"
+        >
+          <span class="text-parchment/80 text-sm shrink-0" data-testid="lightbox-index">
+            {{ lightboxIndex + 1 }} / {{ imageUrls.length }}
+          </span>
+          <div class="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
+            <button
+              type="button"
+              class="min-h-tap min-w-[40px] grid place-items-center border border-parchment/50 text-parchment bg-ink/70"
+              data-testid="lightbox-zoom-out"
+              title="缩小"
+              @click.stop="zoomLightbox(-0.25)"
+            >
+              <ZoomOut class="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              class="min-h-tap min-w-[40px] grid place-items-center border border-parchment/50 text-parchment bg-ink/70"
+              data-testid="lightbox-zoom-in"
+              title="放大"
+              @click.stop="zoomLightbox(0.25)"
+            >
+              <ZoomIn class="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              class="min-h-tap min-w-[40px] grid place-items-center border border-parchment/50 text-parchment bg-ink/70"
+              data-testid="lightbox-rotate"
+              title="旋转"
+              @click.stop="rotateLightbox"
+            >
+              <RotateCw class="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              class="min-h-tap min-w-[40px] grid place-items-center border border-parchment/50 text-parchment bg-ink/70"
+              data-testid="lightbox-download"
+              title="下载"
+              @click.stop="downloadLightboxImage"
+            >
+              <Download class="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              class="min-h-tap px-4 border border-parchment/70 text-parchment bg-ink/80"
+              data-testid="lightbox-close"
+              @click.stop="closeLightbox"
+            >
+              关闭
+            </button>
+          </div>
+        </div>
+        <div class="flex-1 relative min-h-0 overflow-hidden" data-testid="lightbox-stage-wrap">
+          <button
+            v-if="imageUrls.length > 1"
+            type="button"
+            class="hidden md:grid absolute left-2 top-1/2 -translate-y-1/2 z-[3] min-h-[48px] min-w-[48px] place-items-center bg-ink/55 border border-parchment/40 text-parchment"
+            data-testid="lightbox-prev"
+            aria-label="上一张"
+            @click.stop="lightboxPrev"
+          >
+            <ChevronLeft class="w-7 h-7" />
+          </button>
+          <button
+            v-if="imageUrls.length > 1"
+            type="button"
+            class="hidden md:grid absolute right-2 top-1/2 -translate-y-1/2 z-[3] min-h-[48px] min-w-[48px] place-items-center bg-ink/55 border border-parchment/40 text-parchment"
+            data-testid="lightbox-next"
+            aria-label="下一张"
+            @click.stop="lightboxNext"
+          >
+            <ChevronRight class="w-7 h-7" />
+          </button>
+          <div
+            v-if="lightboxError"
+            class="absolute inset-0 z-[4] flex flex-col items-center justify-center gap-3 p-6 text-center text-parchment"
+            data-testid="lightbox-error"
+          >
+            <p class="font-song text-lg">图片无法显示</p>
+            <p class="text-sm text-parchment/75 max-w-sm">
+              可能是 HEIC 等格式当前浏览器不支持，或文件损坏。请下载后用系统相册打开，或重新上传 JPEG。
+            </p>
+            <button
+              type="button"
+              class="min-h-tap px-4 border border-parchment/60"
+              data-testid="lightbox-error-download"
+              @click.stop="downloadLightboxImage"
+            >
+              下载原图
+            </button>
+          </div>
+          <div
+            class="lightbox-stage"
+            :class="lightboxOrient === 'landscape' ? 'lightbox-stage--landscape' : 'lightbox-stage--portrait'"
+            :style="{ '--lb-aspect': lightboxAspect }"
+            data-testid="lightbox-stage"
+          >
+            <img
+              :key="`${lightboxIndex}-${imageUrls[lightboxIndex]?.name || ''}`"
+              :src="imageUrls[lightboxIndex]?.full || imageUrls[lightboxIndex]?.url"
+              :alt="`${archive.title} 大图 ${lightboxIndex + 1}`"
+              class="lightbox-img select-none"
+              :class="lightboxOrient === 'landscape' ? 'lightbox-img--landscape' : 'lightbox-img--portrait'"
+              :style="lightboxImgStyle"
+              data-testid="lightbox-image"
+              draggable="false"
+              @load="onLightboxImgLoad"
+              @error="onLightboxImgError"
+              @click.stop
+            />
+          </div>
+        </div>
+      </div>
+    </Teleport>
+</template>
+
+<style scoped>
+.lightbox-stage {
+  position: absolute;
+  overflow: hidden;
+}
+
+.lightbox-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-position: center;
+  object-fit: cover;
+  transition: transform 0.15s ease-out;
+}
+
+/* Portrait: fill the upright phone frame. */
+.lightbox-stage--portrait {
+  inset: 0;
+}
+
+/*
+ * Landscape: keep content upright; use a landscape-aspect stage that
+ * fills phone width and is vertically centered (true landscape fill,
+ * not a 90°-rotated sideways photo).
+ */
+.lightbox-stage--landscape {
+  left: 0;
+  right: 0;
+  width: 100%;
+  top: 50%;
+  bottom: auto;
+  height: auto;
+  aspect-ratio: var(--lb-aspect, 3 / 2);
+  max-height: 100%;
+  transform: translateY(-50%);
+}
+
+@media (min-width: 768px) {
+  .lightbox-stage--portrait,
+  .lightbox-stage--landscape {
+    inset: 0;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: auto;
+    transform: none;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+  }
+  .lightbox-img--landscape,
+  .lightbox-img--portrait {
+    object-fit: contain;
+  }
+}
+</style>
