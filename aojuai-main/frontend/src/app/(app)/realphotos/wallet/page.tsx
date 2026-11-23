@@ -95,7 +95,7 @@ export default function RealphotosWalletPage() {
       return
     }
     try {
-      const data = await apiFetch<{ id: string; creditPoints: number; priceFormula: string }>(
+      const data = await apiFetch<{ id: string; creditPoints: number }>(
         '/api/v1/realphotos/recharge-orders',
         {
           method: 'POST',
@@ -106,7 +106,7 @@ export default function RealphotosWalletPage() {
           }),
         },
       )
-      const text = `已提交充值单 ${data.id}，${data.creditPoints} 积分，公式 ${data.priceFormula}。等待订单客服确认。`
+      const text = `已提交充值单 ${data.id}，${data.creditPoints} 积分。等待订单客服确认。`
       setMessage(text)
       toastTask(text, true)
     } catch (error: unknown) {

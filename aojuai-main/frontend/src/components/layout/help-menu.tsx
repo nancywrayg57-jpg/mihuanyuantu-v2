@@ -81,8 +81,7 @@ export function HelpMenu() {
             <section>
               <h3 className="font-medium">大批次要等多久？</h3>
               <p className="mt-1 text-xs text-muted-foreground">
-                处理按张进行，单张约 1.5–3 分钟。运维可打开受控并发（默认仍可回滚为 1 槽）；任务详情会显示「前方约 N
-                单 / 预计等待」。无排队时会诚实提示当前空闲。大批次墙钟仍受上游限流与机型资源约束。
+                处理按张进行，单张约 1.5–3 分钟。任务详情会显示前方排队与预计等待；无排队时会提示当前空闲。大批次耗时仍受上游限流与机型资源约束。
               </p>
             </section>
             <section>

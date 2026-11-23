@@ -78,7 +78,7 @@ export function formatFailedBrief(failed: ImportFailedRow[], limit = 5): string 
     .join('；')
 }
 
-/** 大批次等待：单张墙钟约 1.5–3 分钟；并发槽由 processConcurrency 分摊。 */
+/** 大批次等待：单张墙钟约 1.5–3 分钟。 */
 export const BATCH_WAIT_MINUTES_PER_IMAGE = { min: 1.5, max: 3 } as const
 
 function normalizeConcurrency(raw: number | null | undefined): number {
@@ -87,27 +87,22 @@ function normalizeConcurrency(raw: number | null | undefined): number {
   return Math.min(4, n)
 }
 
-function processingModeLabel(concurrency: number): string {
-  return concurrency > 1 ? `受控并发 ${concurrency} 槽` : '单 worker 顺序处理'
-}
-
 export function formatQueueWaitCopy(
   aheadCount: number | null | undefined,
   processConcurrency: number | null | undefined = 1,
 ): string {
   const concurrency = normalizeConcurrency(processConcurrency)
-  const mode = processingModeLabel(concurrency)
   if (aheadCount == null || Number.isNaN(Number(aheadCount))) {
-    return `排队信息暂不可用；当前为${mode}，单张约 1.5–3 分钟。`
+    return '排队信息暂不可用；单张约 1.5–3 分钟。'
   }
   const n = Math.max(0, Math.floor(Number(aheadCount)))
   if (n <= 0) {
-    return `当前无排队。提交后按${mode}，单张约 1.5–3 分钟。`
+    return '当前无排队，单张约 1.5–3 分钟。'
   }
   const waves = Math.ceil(n / concurrency)
   const minM = Math.ceil(waves * BATCH_WAIT_MINUTES_PER_IMAGE.min)
   const maxM = Math.ceil(waves * BATCH_WAIT_MINUTES_PER_IMAGE.max)
-  return `前方约 ${n} 单，预计等待约 ${minM}–${maxM} 分钟（${mode}）。`
+  return `前方约 ${n} 单，预计等待约 ${minM}–${maxM} 分钟。`
 }
 
 export function formatBatchSubmitWaitCopy(
@@ -115,10 +110,9 @@ export function formatBatchSubmitWaitCopy(
   processConcurrency: number | null | undefined = 1,
 ): string {
   const concurrency = normalizeConcurrency(processConcurrency)
-  const mode = processingModeLabel(concurrency)
   const n = Math.max(1, Math.floor(Number(imageCount) || 1))
   const waves = Math.ceil(n / concurrency)
   const minM = Math.ceil(waves * BATCH_WAIT_MINUTES_PER_IMAGE.min)
   const maxM = Math.ceil(waves * BATCH_WAIT_MINUTES_PER_IMAGE.max)
-  return `当前为${mode}；本批 ${n} 张预计约 ${minM}–${maxM} 分钟（单张约 1.5–3 分钟）。`
+  return `本批 ${n} 张预计约 ${minM}–${maxM} 分钟（单张约 1.5–3 分钟）。`
 }

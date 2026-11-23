@@ -333,7 +333,7 @@ export function RealphotosBatchClient() {
       window.sessionStorage.setItem('realphotos.s4.batchId', data.batchId)
       if (data.tasks[0]) window.sessionStorage.setItem('realphotos.s1.taskId', data.tasks[0].id)
       const wait = formatBatchSubmitWaitCopy(data.tasks.length, processConcurrency)
-      const text = `批次 ${data.batchId} 已提交，共 ${data.tasks.length} 张。${wait}到任务详情查看。`
+      const text = `批次 ${data.batchId} 已提交，共 ${data.tasks.length} 张。${wait}可到任务详情查看。`
       setNotice(text)
       toastTask(text, true)
       setConfirmOpen(false)
