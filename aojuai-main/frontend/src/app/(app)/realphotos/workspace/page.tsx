@@ -198,7 +198,7 @@ export default function RealphotosWorkspacePage() {
     view === 'admin'
       ? '平台运营概览：队列、失败率与成本'
       : view === 'order_support'
-        ? '待确认的充值单，确认后积分即时到账'
+        ? '已处理充值单历史；新充值单请到充值确认台处理'
         : view === 'tech_support'
           ? '待处理工单，处理结果会通知商家'
           : '查看积分、任务与近期处理结果；处理新图从「批量原图」开始'
