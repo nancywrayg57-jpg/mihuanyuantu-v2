@@ -399,8 +399,7 @@ async def create_optimization(
     roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
     if ROLE_MERCHANT not in roles:
         raise ForbiddenError(
-            message="生图与提示词优化仅商家账号可用；平台管理员/技术客服请使用商家账号",
-            code="FORBIDDEN",
+            message="生图与提示词优化仅商家账号可用；平台管理员/技术客服请使用商家账号"
         )
     row = await RealphotosGrowthService(db).optimize_prompt(
         tenant_id=int(tenant_ctx.tenant_id),
