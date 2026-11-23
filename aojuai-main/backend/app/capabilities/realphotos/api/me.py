@@ -28,6 +28,7 @@ from app.capabilities.realphotos.permissions import (
     WORKSPACE_READ,
 )
 from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
+from app.capabilities.realphotos.services.s1_recharge import RealphotosRechargeService
 from app.capabilities.realphotos.services.s6_ops import RealphotosOpsService
 from app.capabilities.realphotos.services.task_numbering import (
     generation_task_no_map,
@@ -306,42 +307,20 @@ async def get_workspace(
         ops_metrics = await RealphotosOpsService(db).metrics(actor_role_codes=roles)
 
     elif view == "order_support":
-        pending_rows = (
-            await db.execute(
-                select(RealphotosRechargeOrder)
-                .where(
-                    RealphotosRechargeOrder.status == "pending",
-                    RealphotosRechargeOrder.deleted_at.is_(None),
-                )
-                .order_by(RealphotosRechargeOrder.id.asc())
-                .limit(20)
-            )
-        ).scalars().all()
-        pending_count = int(
+        processed_count = int(
             await db.scalar(
                 select(func.count())
                 .select_from(RealphotosRechargeOrder)
                 .where(
-                    RealphotosRechargeOrder.status == "pending",
+                    RealphotosRechargeOrder.status.in_(("confirmed", "rejected")),
                     RealphotosRechargeOrder.deleted_at.is_(None),
                 )
             )
             or 0
         )
         order_desk = {
-            "pendingRechargeOrders": pending_count,
-            "items": [
-                {
-                    "id": str(int(row.id)),
-                    "tenantId": str(int(row.tenant_id)),
-                    "requesterUserId": str(int(row.requester_user_id)),
-                    "tierYuan": int(row.tier_yuan),
-                    "creditPoints": int(row.credit_points),
-                    "status": row.status,
-                    "createdAt": row.created_at.isoformat() if row.created_at else None,
-                }
-                for row in pending_rows
-            ],
+            "processedRechargeOrders": processed_count,
+            "items": await RealphotosRechargeService(db).list_processed_display(limit=20),
         }
 
     elif view == "tech_support":

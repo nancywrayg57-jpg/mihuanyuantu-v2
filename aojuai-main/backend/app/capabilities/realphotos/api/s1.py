@@ -939,24 +939,8 @@ async def list_recharge_orders(
     db: DBSession,
     _: None = Depends(PermissionChecker([ORDER_SUPPORT_READ])),
 ) -> dict[str, Any]:
-    rows = await RealphotosRechargeService(db).list_pending()
-    return SuccessResponse(
-        data={
-            "items": [
-                {
-                    "id": str(int(order.id)),
-                    "tenantId": str(int(order.tenant_id)),
-                    "requesterUserId": str(int(order.requester_user_id)),
-                    "tierYuan": int(order.tier_yuan),
-                    "creditPoints": int(order.credit_points),
-                    "voucherNote": order.voucher_note,
-                    "status": order.status,
-                    "priceFormula": order.price_formula,
-                }
-                for order in rows
-            ]
-        }
-    )
+    items = await RealphotosRechargeService(db).list_pending_display()
+    return SuccessResponse(data={"items": items})
 
 
 @router.post("/recharge-orders")

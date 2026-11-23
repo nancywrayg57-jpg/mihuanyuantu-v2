@@ -10,8 +10,9 @@ from app.capabilities.realphotos.permissions import ROLE_ORDER_SUPPORT
 from app.capabilities.realphotos.services.credit_service import RealphotosCreditService
 from app.capabilities.realphotos.services.s1_catalog import credits_for_tier_yuan, price_formula
 from app.core.exceptions import BusinessError, NotFoundError
+from app.domain.auth.models import Tenant
 from app.domain.roles.models import Role
-from app.domain.users.models import UserRole
+from app.domain.users.models import User, UserRole
 
 
 def is_recharge_inbox_event(event_key: str | None, title: str | None = None) -> bool:
@@ -109,6 +110,64 @@ class RealphotosRechargeService:
             .limit(max(1, min(int(limit), 100)))
         )
         return list(rows.scalars().all())
+
+    async def list_pending_display(self, *, limit: int = 50) -> list[dict]:
+        """待处理单 + 租户/账号展示信息，避免前端只看到 tenant_id。"""
+        return await self._display_rows(await self.list_pending(limit=limit))
+
+    async def list_processed_display(self, *, limit: int = 20) -> list[dict]:
+        """订单客服工作台：已处理（确认/拒绝）的充值历史。"""
+        rows = (
+            await self.db.execute(
+                select(RealphotosRechargeOrder)
+                .where(
+                    RealphotosRechargeOrder.status.in_(("confirmed", "rejected")),
+                    RealphotosRechargeOrder.deleted_at.is_(None),
+                )
+                .order_by(RealphotosRechargeOrder.updated_at.desc())
+                .limit(max(1, min(int(limit), 100)))
+            )
+        ).scalars().all()
+        return await self._display_rows(list(rows))
+
+    async def _display_rows(self, rows: list[RealphotosRechargeOrder]) -> list[dict]:
+        if not rows:
+            return []
+        tenant_ids = {int(row.tenant_id) for row in rows}
+        user_ids = {int(row.requester_user_id) for row in rows}
+        tenants = {
+            int(row.id): row
+            for row in (
+                await self.db.execute(select(Tenant).where(Tenant.id.in_(tenant_ids)))
+            ).scalars().all()
+        }
+        users = {
+            int(row.id): row
+            for row in (
+                await self.db.execute(select(User).where(User.id.in_(user_ids)))
+            ).scalars().all()
+        }
+        result: list[dict] = []
+        for row in rows:
+            tenant = tenants.get(int(row.tenant_id))
+            user = users.get(int(row.requester_user_id))
+            result.append(
+                {
+                    "id": str(int(row.id)),
+                    "tenantId": str(int(row.tenant_id)),
+                    "tenantName": str(getattr(tenant, "name", "") or ""),
+                    "tenantCode": str(getattr(tenant, "code", "") or ""),
+                    "requesterUserId": str(int(row.requester_user_id)),
+                    "requesterUsername": str(getattr(user, "username", "") or ""),
+                    "tierYuan": int(row.tier_yuan),
+                    "creditPoints": int(row.credit_points),
+                    "voucherNote": row.voucher_note,
+                    "status": row.status,
+                    "createdAt": row.created_at.isoformat() if row.created_at else None,
+                    "updatedAt": row.updated_at.isoformat() if row.updated_at else None,
+                }
+            )
+        return result
 
     async def confirm(self, *, order_id: int, operator_user_id: int) -> RealphotosRechargeOrder:
         order = await self._order(order_id)

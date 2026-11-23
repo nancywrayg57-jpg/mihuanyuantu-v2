@@ -10,6 +10,10 @@ import { taskStatusLabel } from '@/lib/realphotos-labels'
 type Order = {
   id: string
   tenantId: string
+  tenantName?: string
+  tenantCode?: string
+  requesterUserId: string
+  requesterUsername?: string
   tierYuan: number
   creditPoints: number
   voucherNote: string
@@ -77,6 +81,10 @@ export default function RealphotosOrderSupportPage() {
           search,
           item.id,
           item.tenantId,
+          item.tenantName,
+          item.tenantCode,
+          item.requesterUserId,
+          item.requesterUsername,
           item.tierYuan,
           item.creditPoints,
           item.voucherNote,
@@ -94,7 +102,7 @@ export default function RealphotosOrderSupportPage() {
       <section className="rp-card space-y-3 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-medium">充值单</h2>
-          <ListSearch value={search} placeholder="单号 / 租户 / 凭证" onChange={setSearch} />
+          <ListSearch value={search} placeholder="单号 / 租户 / 账号 / 凭证" onChange={setSearch} />
         </div>
         <label className="block text-sm">
           拒单原因
@@ -108,7 +116,7 @@ export default function RealphotosOrderSupportPage() {
           <thead>
             <tr>
               <th className="text-left">订单</th>
-              <th className="text-left">租户</th>
+              <th className="text-left">租户 / 账号</th>
               <th className="text-left">金额</th>
               <th className="text-left">积分</th>
               <th className="text-left">凭证</th>
@@ -125,7 +133,13 @@ export default function RealphotosOrderSupportPage() {
               visibleOrders.map((order) => (
                 <tr key={order.id}>
                   <td>{order.id}</td>
-                  <td>{order.tenantId}</td>
+                  <td>
+                    <div>{order.tenantName || order.tenantCode || `租户 #${order.tenantId}`}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {[order.tenantCode, order.requesterUsername].filter(Boolean).join(' · ') ||
+                        `#${order.tenantId}`}
+                    </div>
+                  </td>
                   <td>{order.tierYuan}</td>
                   <td>{order.creditPoints}</td>
                   <td>{order.voucherNote}</td>
