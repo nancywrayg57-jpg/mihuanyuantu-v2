@@ -6,6 +6,7 @@ import { ListSearch, matchSearchText } from '@/components/realphotos/list-search
 import { RpPageHeader } from '@/components/realphotos/rp-page-header'
 import { RpEmptyState, RpSkeletonRows, RpTableScroll } from '@/components/realphotos/rp-table'
 import { toastTask } from '@/components/realphotos/surface'
+import { useAuth } from '@/hooks/useAuth'
 import { ApiError, apiFetch } from '@/lib/api'
 import { ledgerEntryTypeLabel } from '@/lib/realphotos-labels'
 import { formatDateTimeShort } from '@/lib/realphotos-time'
@@ -48,6 +49,8 @@ function taskRef(row: Ledger): string {
 }
 
 export default function RealphotosWalletPage() {
+  const { session } = useAuth()
+  const isMerchant = (session?.roles || []).includes('rp_merchant')
   const [wallet, setWallet] = useState<Wallet | null>(null)
   const [ledger, setLedger] = useState<Ledger[]>([])
   const [tier, setTier] = useState<number>(100)
@@ -75,12 +78,22 @@ export default function RealphotosWalletPage() {
   }
 
   useEffect(() => {
+    if (!isMerchant) {
+      setLedgerLoading(false)
+      return
+    }
     void reload().catch((error: unknown) =>
       setMessage(error instanceof ApiError ? error.message : '钱包加载失败'),
     )
-  }, [ledgerPage])
+  }, [ledgerPage, isMerchant])
 
   async function createOrder() {
+    if (!isMerchant) {
+      const text = '充值单仅商家账号可提交；平台管理员请在用户管理中调整积分，订单客服请在充值台确认'
+      setMessage(text)
+      toastTask(text, false)
+      return
+    }
     try {
       const data = await apiFetch<{ id: string; creditPoints: number; priceFormula: string }>(
         '/api/v1/realphotos/recharge-orders',
@@ -122,7 +135,7 @@ export default function RealphotosWalletPage() {
   )
 
   async function exportLedger() {
-    if (exporting) return
+    if (!isMerchant || exporting) return
     setExporting(true)
     try {
       const all: Ledger[] = []
@@ -198,6 +211,11 @@ export default function RealphotosWalletPage() {
     <main className="space-y-6 p-6">
       <RpPageHeader title="积分与充值" />
       <p className="text-sm text-muted-foreground">{message}</p>
+      {!isMerchant ? (
+        <p className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+          积分与充值仅商家账号可用；平台管理员请在「用户管理」调整积分，订单客服请在「充值台」确认订单。
+        </p>
+      ) : null}
       <section className="rp-card p-4 shadow-sm">
       <table className="rp-table">
         <thead>
@@ -243,7 +261,12 @@ export default function RealphotosWalletPage() {
               onChange={(event) => setNote(event.target.value)}
             />
           </label>
-          <button className="rp-btn rp-btn-primary text-sm" type="button" onClick={() => void createOrder()}>
+          <button
+            className="rp-btn rp-btn-primary text-sm"
+            type="button"
+            disabled={!isMerchant}
+            onClick={() => void createOrder()}
+          >
             提交充值单
           </button>
         </div>
@@ -253,7 +276,12 @@ export default function RealphotosWalletPage() {
           <h2 className="text-sm font-medium">流水</h2>
           <div className="flex flex-wrap items-center gap-2">
             <ListSearch value={search} placeholder="流水 / 类型 / 任务号 / 账号" onChange={setSearch} />
-            <button className="rp-btn rp-btn-sm" type="button" disabled={exporting} onClick={() => void exportLedger()}>
+            <button
+              className="rp-btn rp-btn-sm"
+              type="button"
+              disabled={!isMerchant || exporting}
+              onClick={() => void exportLedger()}
+            >
               {exporting ? '导出中…' : '导出 CSV'}
             </button>
           </div>
