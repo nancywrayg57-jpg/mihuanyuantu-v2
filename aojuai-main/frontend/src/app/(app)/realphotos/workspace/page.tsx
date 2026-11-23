@@ -39,15 +39,19 @@ type WorkspacePayload = {
     merchantCards: boolean
   } | null
   orderSupportDesk?: {
-    pendingRechargeOrders: number
+    processedRechargeOrders: number
     items: Array<{
       id: string
       tenantId: string
+      tenantName?: string
+      tenantCode?: string
       requesterUserId: string
+      requesterUsername?: string
       tierYuan: number
       creditPoints: number
       status: string
       createdAt?: string | null
+      updatedAt?: string | null
     }>
   } | null
   techSupportDesk?: {
@@ -308,7 +312,7 @@ export default function RealphotosWorkspacePage() {
         <section className="rp-card rounded-xl border border-border bg-card shadow-sm p-4 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-medium">
-              待处理充值单 · {data.orderSupportDesk.pendingRechargeOrders}
+              已处理充值单 · {data.orderSupportDesk.processedRechargeOrders}
             </h2>
             <Link className="text-sm underline" href="/realphotos/order-support">
               打开充值确认
@@ -318,27 +322,33 @@ export default function RealphotosWorkspacePage() {
             <thead>
               <tr>
                 <th className="text-left">单号</th>
-                <th className="text-left">租户</th>
-                <th className="text-left">申请人</th>
+                <th className="text-left">租户 / 账号</th>
                 <th className="text-left">档位</th>
                 <th className="text-left">积分</th>
-                <th className="text-left">时间</th>
+                <th className="text-left">状态</th>
+                <th className="text-left">处理时间</th>
               </tr>
             </thead>
             <tbody>
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td className="rp-empty" colSpan={6}>当前没有待确认的充值单。商家提交充值申请后会出现在这里。</td>
+                  <td className="rp-empty" colSpan={6}>暂无已处理充值单。</td>
                 </tr>
               ) : (
                 filteredOrders.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
-                    <td>{item.tenantId}</td>
-                    <td>{item.requesterUserId}</td>
+                    <td>
+                      <div>{item.tenantName || item.tenantCode || `租户 #${item.tenantId}`}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {[item.tenantCode, item.requesterUsername].filter(Boolean).join(' · ') ||
+                          `#${item.tenantId}`}
+                      </div>
+                    </td>
                     <td>{item.tierYuan} 元</td>
                     <td>{item.creditPoints}</td>
-                    <td>{formatDateTimeShort(item.createdAt) || '—'}</td>
+                    <td>{taskStatusLabel(item.status)}</td>
+                    <td>{formatDateTimeShort(item.updatedAt || item.createdAt) || '—'}</td>
                   </tr>
                 ))
               )}
