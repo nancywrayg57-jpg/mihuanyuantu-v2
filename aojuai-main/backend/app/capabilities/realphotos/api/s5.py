@@ -11,7 +11,12 @@ from sqlalchemy import select
 
 from app.api.deps import CurrentUser, DBSession, PermissionChecker, TenantCtx
 from app.capabilities.realphotos.constants import IMAGE_PROCESSING_SCOPE
-from app.capabilities.realphotos.permissions import ADMIN_READ, ROLE_ADMIN, WORKSPACE_READ
+from app.capabilities.realphotos.permissions import (
+    ADMIN_READ,
+    ROLE_ADMIN,
+    ROLE_MERCHANT,
+    WORKSPACE_READ,
+)
 from app.capabilities.realphotos.services.s5_growth import RealphotosGrowthService
 from app.capabilities.realphotos.services.task_numbering import generation_task_no_map
 from app.core.exceptions import BusinessError, ForbiddenError, NotFoundError
@@ -391,6 +396,12 @@ async def create_optimization(
     db: DBSession,
     _: None = Depends(PermissionChecker([WORKSPACE_READ])),
 ) -> dict[str, Any]:
+    roles = await _roles(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    if ROLE_MERCHANT not in roles:
+        raise ForbiddenError(
+            message="生图与提示词优化仅商家账号可用；平台管理员/技术客服请使用商家账号",
+            code="FORBIDDEN",
+        )
     row = await RealphotosGrowthService(db).optimize_prompt(
         tenant_id=int(tenant_ctx.tenant_id),
         owner_account_id=int(current_user.id),

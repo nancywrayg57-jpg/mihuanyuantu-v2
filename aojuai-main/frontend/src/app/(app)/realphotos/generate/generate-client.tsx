@@ -8,6 +8,7 @@ import { ListSearch, matchSearchText } from '@/components/realphotos/list-search
 import { RpEmptyState, RpSkeletonRows, RpTableScroll } from '@/components/realphotos/rp-table'
 import { toast } from 'sonner'
 import { toastTask } from '@/components/realphotos/surface'
+import { useAuth } from '@/hooks/useAuth'
 import { ApiError, apiFetch, apiFetchBlob } from '@/lib/api'
 import { formatDateTimeShort } from '@/lib/realphotos-time'
 import { inspectLocalFile } from '@/lib/realphotos-s1'
@@ -43,6 +44,8 @@ type RecentAsset = { id: string; objectKey?: string | null; displayName?: string
 
 export function RealphotosGenerateClient() {
   const searchParams = useSearchParams()
+  const { session } = useAuth()
+  const isMerchant = (session?.roles || []).includes('rp_merchant')
   const initialMode = searchParams.get('mode') === 'image_to_image' ? 'image_to_image' : 'text_to_image'
   const [mode, setMode] = useState(initialMode)
   const [prompt, setPrompt] = useState('')
@@ -197,6 +200,10 @@ export function RealphotosGenerateClient() {
   }
 
   async function optimize() {
+    if (!isMerchant) {
+      setMessage('生图与提示词优化仅商家账号可用；平台管理员/技术客服请使用商家账号')
+      return
+    }
     if (!prompt.trim()) {
       setMessage('请先输入正向提示词再优化')
       return
@@ -241,6 +248,10 @@ export function RealphotosGenerateClient() {
   }
 
   async function submit() {
+    if (!isMerchant) {
+      setMessage('生图与提示词优化仅商家账号可用；平台管理员/技术客服请使用商家账号')
+      return
+    }
     if (mode === 'image_to_image' && !reference) {
       const text = '图生图需要一张参考图'
       setMessage(text)
@@ -318,6 +329,11 @@ export function RealphotosGenerateClient() {
     <main className="space-y-6 p-6">
       <h1 className="text-xl font-medium">生图入库</h1>
       <p className="text-sm">{message}</p>
+      {!isMerchant ? (
+        <p className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+          生图与提示词优化按商家租户积分计费，仅商家账号可用；平台管理员/技术客服请使用商家账号。
+        </p>
+      ) : null}
       <section className="rp-card space-y-3 p-4">
         <h2 className="text-sm font-medium">选用 AI 提示词模板</h2>
         <div className="flex flex-wrap gap-2 text-sm">
@@ -410,7 +426,7 @@ export function RealphotosGenerateClient() {
         {lastSizes ? <p className="text-xs text-muted-foreground">{lastSizes}</p> : null}
         <div className="space-y-2 text-sm">
           <div className="flex flex-wrap gap-2">
-            <button className="rp-btn" type="button" onClick={() => void optimize()}>
+            <button className="rp-btn" type="button" disabled={!isMerchant} onClick={() => void optimize()}>
               提示词优化
             </button>
             <button
@@ -436,7 +452,7 @@ export function RealphotosGenerateClient() {
           <button
             className="rp-btn rp-btn-primary rp-btn-lg"
             type="button"
-            disabled={submitting}
+            disabled={submitting || !isMerchant}
             onClick={() => void submit()}
           >
             {submitting ? '提交中…' : '提交生图'}

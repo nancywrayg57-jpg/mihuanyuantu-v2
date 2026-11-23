@@ -965,8 +965,14 @@ async def create_recharge(
     current_user: CurrentUser,
     tenant_ctx: TenantCtx,
     db: DBSession,
-    _: None = Depends(PermissionChecker([WALLET_READ])),
+    _: None = Depends(PermissionChecker([WORKSPACE_READ])),
 ) -> dict[str, Any]:
+    roles = await _role_codes(db, int(current_user.id), int(tenant_ctx.tenant_id))
+    if ROLE_MERCHANT not in roles:
+        raise ForbiddenError(
+            message="充值单仅商家账号可提交；平台管理员请在用户管理中调整积分，订单客服请在充值台确认",
+            code="FORBIDDEN",
+        )
     order = await RealphotosRechargeService(db).create_order(
         tenant_id=int(tenant_ctx.tenant_id),
         requester_user_id=int(current_user.id),
